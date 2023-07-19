@@ -1,0 +1,562 @@
+﻿@model SCC.ViewModels.NotificationMatrixViewModel
+
+@using SCC.Controllers;
+@using SCC_BL;
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_USER;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(UserController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    ViewBag.Title = "Asignación de roles y permisos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<style>
+    td {
+        text-align: center;
+    }
+</style>
+
+<form action="@Url.Action(nameof(UserController.NotificationMatrix), mainControllerName)" method="post">
+    <table id="tbInfo" style="margin: 0 auto;">
+        <thead>
+            <tr>
+                <th>Entidad</th>
+                <th>Disputa de transacción</th>
+                <th>Devolución de transacción</th>
+                <th>Invalidación de transacción</th>
+                <th>Conformidad de transacción</th>
+                <th>Monitoreado su equipo con nota cero</th>
+                <th>Calibración</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>Supervisor Directo</th>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTransactionDispute,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTransactionDispute,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTransactionDevolution,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTransactionDevolution,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTransactionInvalidation,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTransactionInvalidation,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTransactionConfirmation,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTransactionConfirmation,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTeamMonitoringZero,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorTeamMonitoringZero,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorCalibration,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.DirectSupervisorCalibration,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>Supervisor Directo e Indirectos</th>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTransactionDispute,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTransactionDispute,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTransactionDevolution,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTransactionDevolution,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTransactionInvalidation,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTransactionInvalidation,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTransactionConfirmation,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTransactionConfirmation,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTeamMonitoringZero,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorTeamMonitoringZero,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorCalibration,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.IndirectSupervisorCalibration,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>Usuario Monitoreado</th>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTransactionDispute,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTransactionDispute,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTransactionDevolution,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTransactionDevolution,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTransactionInvalidation,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTransactionInvalidation,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTransactionConfirmation,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTransactionConfirmation,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTeamMonitoringZero,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserTeamMonitoringZero,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserCalibration,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoredUserCalibration,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>Usuario Monitoreador</th>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTransactionDispute,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTransactionDispute,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTransactionDevolution,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTransactionDevolution,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTransactionInvalidation,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTransactionInvalidation,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTransactionConfirmation,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTransactionConfirmation,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTeamMonitoringZero,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserTeamMonitoringZero,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+                <td>
+                    <div class="radio-control d-inline-block">
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserCalibration,
+                            false,
+                            new
+                                 {
+                                label = "NO"
+                            }
+                        )
+                        @Html.RadioButtonFor(model =>
+                            Model.MonitoringUserCalibration,
+                            true,
+                            new
+                                 {
+                                label = "SI"
+                            }
+                        )
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="text-center m-5">
+        <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+    </div>
+</form>
+<script>
+    $(document).ready(function () {
+        $('#tbInfo').DataTable({
+            paging: false,
+            ordering: false,
+            info: false,
+            searching: false,
+        });
+    });
+</script>

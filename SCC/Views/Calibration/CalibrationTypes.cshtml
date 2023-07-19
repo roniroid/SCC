@@ -1,0 +1,239 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.CalibrationTypeViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_CALIBRATION;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(CalibrationController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    bool hasModel = Model.Catalog.ID != null && Model.Catalog.ID > 0;
+
+    ViewBag.Title = "Crear tipos de calibración";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Crear / Editar tipo de calibración</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                @{
+                    string formAction = Url.Action(nameof(CalibrationController.EditType), mainControllerName);
+                }
+                <form id="frmManage" action="@formAction" method="post">
+                    @Html.HiddenFor(modelitem => Model.Catalog.ID)
+                    @Html.HiddenFor(modelitem => Model.Catalog.Active)
+                    @Html.HiddenFor(modelitem => Model.Catalog.CategoryID)
+
+                    <div class="accordion-body">
+                        @if (hasModel)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    ID del sistema
+                                </div>
+                                <div class="col-7">
+                                    <strong>@Model.Catalog.ID</strong>
+                                </div>
+                            </div>
+                        }
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Nombre del nuevo tipo <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Catalog.Description, null, new { @class = "property-field-control", placeholder = "Nombre del nuevo tipo", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS))
+                            {
+                                <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+
+                                if (hasModel)
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                                }
+                                else
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                                }
+                            }
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="tableContainer">
+    <table class="display cell-border" id="tbInfo">
+        <thead>
+            <tr>
+                <th>
+                    Tipos de calibración
+                </th>
+                <th>
+                    Acciones
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Catalog catalog in Model.CalibrationTypeList)
+            {
+                <tr>
+                    <td>@catalog.Description</td>
+                    <td>
+                        <button data-elementid="@catalog.ID" class="btn-element-action btn-element-action-primary btn-calibration-type-edit" title="Editar">
+                            <i class='bx bxs-pencil'></i>
+                        </button>
+                        <form class="d-inline frm-delete" action="@Url.Action(nameof(CalibrationController.DeleteType), mainControllerName)" method="post">
+                            @Html.Hidden("typeID", catalog.ID)
+                            <button class="btn-element-action btn-element-action-danger btn-calibration-type-delete" type="submit" title="Eliminar">
+                                <i class='bx bxs-trash'></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de tipos de calibración' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    },
+                    "columns": [0],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+        });
+    });
+
+    $('.btn-calibration-type-edit').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(CalibrationController.CalibrationTypes), mainControllerName)?calibrationTypeID=' + elementID, '_self');
+        }
+    });
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(CalibrationController.CalibrationTypes), mainControllerName)', '_self');
+    });
+
+    $('.frm-delete').submit((e) => {
+        let message = '¿Quieres eliminar este elemento del sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+
+    $('#btnSubmit').click(() => {
+        /*const requiredAdviseElement = $('.required-advise');
+
+        if (
+            ($('#userList').val() == '' || $('#userList').val() == null) ||
+            ($('#moduleList').val() == '' || $('#moduleList').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }*/
+
+        const message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+</script>

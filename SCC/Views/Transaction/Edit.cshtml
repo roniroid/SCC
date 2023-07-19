@@ -1,0 +1,169 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model Transaction
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_TRANSACTION;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(TransactionController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    bool hasModel = Model.ID != null && Model.ID > 0;
+
+    ViewBag.Title = "Formulario de monitoreo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="panel panel-program-list">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Selección de programa</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <div class="row d-block text-center text-danger required-advise d-none m-5">
+                        Por favor, ingrese todos los datos requeridos
+                    </div>
+                    <div class="row property-field">
+                        <div class="col-5 property-field-label">
+                            Programas disponibles <span class="required">*</span>
+                        </div>
+                        <div class="col-7">
+                            @Html.DropDownList(
+                                "programList",
+                                (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Edit.ProgramList.NAME] as SelectList),
+                                "Seleccione un programa",
+                                new
+                                {
+                                    @class = "property-field-control btn-program-selector",
+                                    placeholder = "Usuarios disponibles para el grupo",
+                                    title = "Usuarios disponibles para el grupo"
+                                }
+                            )
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="formContainer">
+</div>
+<script>
+    $(document).ready(() => {
+        fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            startMultiSelect('#programList', data);
+        });
+
+        @if (Model.ID > 0)
+        {
+            @:loadFormWindow(null, @Model.ID);
+        }
+        else
+        if (Model.FormID > 0) {
+            int programID = 0;
+
+            using (ProgramFormCatalog programFormCatalog = ProgramFormCatalog.ProgramFormCatalogWithFormID(Model.FormID))
+            {
+                List<ProgramFormCatalog> programFormCatalogList = programFormCatalog.SelectByFormID();
+                programID = programFormCatalogList.FirstOrDefault().ProgramID;
+            }
+
+            @:loadFormWindow(@programID);
+        }
+    });
+
+    $('.btn-program-selector').change((e, element) => {
+        const containerID = 'formContainer';
+
+        if ($('#' + containerID).html() != '') {
+            if (confirm('¿Quiere cargar una nueva ventana?') != true) {
+                return;
+            }
+        }
+
+        loadFormWindow($(e.currentTarget).val());
+    });
+
+    function loadFormWindow(programID, transactionID = null) {
+        const containerID = 'formContainer';
+
+        $('#' + containerID).html('');
+
+        $('#' + containerID).html('<div class="d-flex justify-content-center"><div class="d-flex align-items-center"><strong>Cargando...</strong><div class="spinner-border ml-auto" role="status" aria-hidden="true"></div></div></div>');
+
+        let url = '@Url.Action(nameof(TransactionController._FormView), mainControllerName)';
+
+        if (programID != null) {
+            url = url + '?programID=' + programID;
+        }
+        else {
+            url = url + '?transactionID=' + transactionID;
+        }
+
+        @if (!string.IsNullOrEmpty(Request["calibratedTransactionID"]))
+        {
+            @:url = url + '&calibratedTransactionID=' + @Request["calibratedTransactionID"];
+        }
+
+        @if (!string.IsNullOrEmpty(Request["typeID"]))
+        {
+            @:url = url + '&typeID=' + @Request["typeID"];
+        }
+
+        @if (!string.IsNullOrEmpty(Request["hasDisputation"]))
+        {
+            @:url = url + '&hasDisputation=' + @Request["hasDisputation"];
+        }
+
+        @if (!string.IsNullOrEmpty(Request["hasInvalidation"]))
+        {
+            @:url = url + '&hasInvalidation=' + @Request["hasInvalidation"];
+        }
+
+        @if (!string.IsNullOrEmpty(Request["hasDevolution"]))
+        {
+            @:url = url + '&hasDevolution=' + @Request["hasDevolution"];
+        }
+
+        loadHtmlToControl(
+            url,
+            containerID,
+            (response) => {
+                try {
+                    window.open(JSON.parse(response).error_url, '_self');
+                } catch (e) {
+                    console.error(e);
+                }
+
+                $('.panel-program-list').addClass('d-none');
+            }
+        );
+    }
+</script>

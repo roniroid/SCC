@@ -1,0 +1,1017 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.BIFieldManagementViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_BUSINESSINTELLIGENCEFIELD;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(BIFieldController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    bool hasModel = Model.BusinessIntelligenceField.ID != null && Model.BusinessIntelligenceField.ID > 0;
+
+    bool hasParent = Model.BusinessIntelligenceField.ParentBIFieldID != null && Model.BusinessIntelligenceField.ParentBIFieldID > 0;
+
+    string formAction =
+        !hasModel ?
+            @Url.Action(nameof(BIFieldController.Create), mainControllerName) :
+            @Url.Action(nameof(BIFieldController.Edit), mainControllerName);
+
+    ViewBag.Title = "Administración de campos de inteligencia de negocios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<link href="~/Content/Custom/BIField/Manage.css" rel="stylesheet" />
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Crear / Editar campo de inteligencia de negocios</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse @(hasModel || hasParent ? "show" : string.Empty)" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                <form id="frmManage" action="@formAction" method="post">
+                    @Html.HiddenFor(modelitem => Model.BusinessIntelligenceField.ID, new { id = "hdID" })
+                    @Html.HiddenFor(modelitem => Model.BusinessIntelligenceField.ParentBIFieldID, new { id = "hdParentBIFieldID" })
+                    @Html.HiddenFor(modelitem => Model.BusinessIntelligenceField.BasicInfo, new { id = "hdBasicInfo" })
+                    @Html.HiddenFor(modelitem => Model.BusinessIntelligenceField.BasicInfoID, new { id = "hdBasicInfoID" })
+                    @Html.HiddenFor(modelitem => Model.BusinessIntelligenceField.Order, new { id = "hdOrder" })
+
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        @if (hasModel)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    ID del sistema
+                                </div>
+                                <div class="col-7">
+                                    <strong>@Model.BusinessIntelligenceField.ID</strong>
+                                </div>
+                            </div>
+                        }
+                        @if (hasParent)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    Nombre del padre
+                                </div>
+                                <div class="col-7">
+                                    @{
+                                        string parentName = string.Empty;
+
+                                        using (BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField(Model.BusinessIntelligenceField.ParentBIFieldID.Value))
+                                        {
+                                            businessIntelligenceField.SetDataByID();
+                                            parentName = businessIntelligenceField.Name;
+                                        }
+                                    }
+                                    <strong>@parentName</strong>
+                                </div>
+                            </div>
+                        }
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Nombre <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.BusinessIntelligenceField.Name, null, new { @class = "property-field-control", placeholder = "Nombre", autocomplete = "off", required = "", id = "txtName" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Descripción <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.BusinessIntelligenceField.Description, null, new { @class = "property-field-control", placeholder = "Descripción", autocomplete = "off", required = "", id = "txtDescription" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Comentario forzado
+                            </div>
+                            <div class="col-7">
+                                <div class="radio-control d-inline-block">
+                                    @Html.RadioButtonFor(model =>
+                                        Model.BusinessIntelligenceField.HasForcedComment,
+                                        false,
+                                        new
+                                        {
+                                            label = "NO"
+                                        }
+                                    )
+                                    @Html.RadioButtonFor(model =>
+                                        Model.BusinessIntelligenceField.HasForcedComment,
+                                        true,
+                                        new
+                                        {
+                                            label = "SI",
+                                            id = "HasForcedComment_Yes"
+                                        }
+                                    )
+                                </div>
+                            </div>
+                        </div>
+                        <div class="m-5 text-secondary">
+                            <hr>
+                            <div class="text-center">
+                                <h6>Respuestas</h6>
+                                <button class="btn-element-action btn-element-action-secondary" id="btnAddNewOption" type="button" title="Agregar nueva">
+                                    <i class='bx bx-plus-medical'></i>
+                                </button>
+                            </div>
+                            <table id="answerTable" class="m-">
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            Descripción
+                                        </th>
+                                        <th class="text-center">
+                                            Comentario forzado
+                                        </th>
+                                        <th class="text-center">
+                                            Acciones
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="answerTableBody">
+                                    @{
+                                        int biFieldCounter = 4000;
+                                    }
+
+                                    @if (Model.BusinessIntelligenceField.ChildList != null)
+                                    {
+                                        foreach (BusinessIntelligenceField businessIntelligenceField in Model.BusinessIntelligenceField.ChildList.OrderBy(e => e.Order))
+                                        {
+                                            int spaceCounter = 0;
+
+                                            SCC_BL.BusinessIntelligenceField auxBusinessIntelligenceField = businessIntelligenceField;
+
+                                            while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
+                                            {
+                                                SCC_BL.BusinessIntelligenceField parentBusinessIntelligenceField =
+                                                    Model.BIFieldList
+                                                        .Where(e =>
+                                                            e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value)
+                                                        .FirstOrDefault();
+
+                                                auxBusinessIntelligenceField = Model.BIFieldList.Where(e => e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value).FirstOrDefault();
+
+                                                if (parentBusinessIntelligenceField.ParentBIFieldID != null && parentBusinessIntelligenceField.ParentBIFieldID != 0)
+                                                {
+                                                    spaceCounter++;
+                                                }
+                                            }
+
+                                            <tr class="option-table-row" data-bifieldorder="@businessIntelligenceField.Order" data-bifieldid="@businessIntelligenceField.ID" data-bifielddeleted="@(businessIntelligenceField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)" data-bifieldghostid="@biFieldCounter">
+                                                <td class="td-name">
+                                                    <div class="bifield-container">
+                                                        @for (int i = 0; i < spaceCounter; i++)
+                                                        {
+                                                            <div class="bifield-marginator px-4"></div>
+                                                        }
+                                                        <span class="bifield-taker-out">
+                                                            <button class="btn-element-action btn-element-action-secondary btn-biField-answer-taker-out" type="button" title="Sacar">
+                                                                <i class='bx bxs-left-arrow'></i>
+                                                            </button>
+                                                        </span>
+                                                        <span class="bifield-tabber">
+                                                            <button class="btn-element-action btn-element-action-secondary btn-biField-answer-tabber" type="button" title="Anidar">
+                                                                <i class='bx bxs-right-arrow'></i>
+                                                            </button>
+                                                        </span>
+                                                        <span class="bifield-climb-up">
+                                                            <button class="btn-element-action btn-element-action-secondary btn-biField-answer-climb-up" type="button" title="Subir">
+                                                                <i class='bx bxs-up-arrow'></i>
+                                                            </button>
+                                                        </span>
+                                                        <span class="bifield-go-down">
+                                                            <button class="btn-element-action btn-element-action-secondary btn-biField-answer-go-down" type="button" title="Bajar">
+                                                                <i class='bx bxs-down-arrow'></i>
+                                                            </button>
+                                                        </span>
+                                                        <div class="bifield-input-container">
+                                                            <input data-bifieldid="@businessIntelligenceField.ID" class="bifield-property-field-control bifield-value-container option-control multi-line" type="text" value="@businessIntelligenceField.Name" placeholder="Escriba el texto de la respuesta">
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="td-forced-comment text-center">
+                                                    <div class="radio-control d-inline-block">
+                                                        <input name="forcedCommentRadio_@biFieldCounter" type="radio" value="false" label="NO" @(businessIntelligenceField.HasForcedComment ? string.Empty : "checked") />
+                                                        <input name="forcedCommentRadio_@biFieldCounter" type="radio" value="true" label="SI" class="has-forced-comment-yes" @(businessIntelligenceField.HasForcedComment ? "checked" : string.Empty) />
+                                                    </div>
+                                                </td>
+                                                <td class="td-actions text-center">
+                                                    @if (businessIntelligenceField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED && businessIntelligenceField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DISABLED)
+                                                    {
+                                                        <button class="btn-element-action btn-element-action-danger btn-biField-answer-delete" type="button" title="Eliminar">
+                                                            <i class='bx bxs-trash'></i>
+                                                        </button>
+                                                    }
+                                                    else
+                                                    if (businessIntelligenceField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)
+                                                    {
+                                                        <strong>Esta respuesta fue eliminada</strong>
+                                                    }
+                                                    else
+                                                    if (businessIntelligenceField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DISABLED)
+                                                    {
+                                                        <strong>Esta respuesta fue deshabilitada</strong>
+                                                    }
+                                                </td>
+                                            </tr>
+
+                                            {
+                                                biFieldCounter++;
+                                            }
+                                        }
+
+                                        @*@foreach (BusinessIntelligenceField businessIntelligenceField in Model.BusinessIntelligenceField.ChildList.OrderBy(e => e.Order))
+                                            {
+                                                <tr class="option-table-row" data-bifieldvalueorder="@businessIntelligenceField.Order" data-bifieldvalueid="@businessIntelligenceField.ID" data-bifieldvaluedeleted="@(businessIntelligenceField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD_VALUE_CATALOG.DELETED)">
+                                                    <td class="td-name text-center">
+                                                        <input data-bifieldvalueid="@value.ID" class="option-control" type="text" value="@value.Name">
+                                                    </td>
+                                                    <td class="tdValue text-center">
+                                                        <input class="option-control" type="text" value="@value.Value">
+                                                    </td>
+                                                    <td class="tdTriggersChildVisualization text-center">
+                                                        <input class="option-control option-control-triggers-children-visualization" type="checkbox" @(value.TriggersChildVisualization ? "checked" : string.Empty)>
+                                                    </td>
+                                                    <td class="td-actions text-center">
+                                                        @if (value.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD_VALUE_CATALOG.DELETED && value.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD_VALUE_CATALOG.DISABLED)
+                                                        {
+                                                            <button class="btn-element-action btn-element-action-secondary btn-biFieldValueCatalog-climb-up" type="button" title="Subir">
+                                                                <i class='bx bxs-up-arrow'></i>
+                                                            </button>
+                                                            <button class="btn-element-action btn-element-action-secondary btn-biFieldValueCatalog-go-down" type="button" title="Bajar">
+                                                                <i class='bx bxs-down-arrow'></i>
+                                                            </button>
+                                                            <button class="btn-element-action btn-element-action-danger btn-biFieldValueCatalog-delete" type="button" title="Eliminar">
+                                                                <i class='bx bxs-trash'></i>
+                                                            </button>
+                                                        }
+                                                        else
+                                                        if (value.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD_VALUE_CATALOG.DELETED)
+                                                        {
+                                                            <strong>Este valor fue eliminado</strong>
+                                                        }
+                                                        else
+                                                        if (value.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD_VALUE_CATALOG.DISABLED)
+                                                        {
+                                                            <strong>Este valor fue deshabilitado</strong>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }*@
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_BI_QUESTIONS))
+                            {
+                                <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+
+                                if (hasModel)
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                                }
+                                else
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                                }
+                            }
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tableContainer">
+    <table class="display cell-border" id="tbInfo">
+        <thead>
+            <tr>
+                <th>
+                    ID del sistema
+                </th>
+                <th>
+                    Nombre
+                </th>
+                <th>
+                    Descripción
+                </th>
+                <th>
+                    Respuestas
+                </th>
+                <th>
+                    Fuerza comentario
+                </th>
+                <th>
+                    Acciones
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (BusinessIntelligenceField biField in Model.BIFieldList.Where(e => e.ParentBIFieldID == null || e.ParentBIFieldID == 0))
+            {
+                string tableRowClass = string.Empty;
+                if (biField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)
+                {
+                    tableRowClass +=
+                        string.IsNullOrEmpty(tableRowClass) ?
+                            "strikethrough" :
+                            " strikethrough";
+                }
+
+                int spaceCounter = 0;
+
+                BusinessIntelligenceField auxBusinessIntelligenceField = biField;
+
+                while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
+                {
+                    auxBusinessIntelligenceField = new BusinessIntelligenceField(auxBusinessIntelligenceField.ParentBIFieldID.Value);
+                    auxBusinessIntelligenceField.SetDataByID();
+
+                    spaceCounter++;
+                }
+
+                bool hasChildren = Model.BIFieldList.Where(e => e.ParentBIFieldID == biField.ID).Count() > 0;
+
+                <tr class="@tableRowClass @(biField.ParentBIFieldID != null && biField.ParentBIFieldID > 0 ? "has-parent" : string.Empty)" data-bifieldorder="@biField.Order" data-bifieldid="@biField.ID" data-parentbifieldid="@biField.ParentBIFieldID">
+                    <td>
+                        @for (int i = 0; i < spaceCounter; i++)
+                        {
+                            <div class="bifield-marginator px-4 d-inline-block"></div>
+                        }
+                        @*@if (hasChildren)
+                            {
+                                <button class="btn-element-action btn-element-action-dark show-children" type="button" title="Mostrar hijos">
+                                    <i class='bx bxs-show'></i>
+                                </button>
+                            }*@
+                        <span class="float-end">
+                            @biField.ID
+                        </span>
+                    </td>
+                    <td>@biField.Name</td>
+                    <td>@biField.Description</td>
+                    <td>
+                        @foreach (BusinessIntelligenceField childBusinessIntelligenceField in biField.ChildList.Where(e => e.ParentBIFieldID == biField.ID))
+                        {
+                            @childBusinessIntelligenceField.Name<br>
+                        }
+                    </td>
+                    <td>@(biField.HasForcedComment ? "SI" : "NO")</td>
+                    <td>
+                        @if (biField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)
+                        {
+                            <button data-elementid="@biField.ID" class="btn-element-action btn-element-action-primary btn-biField-edit" title="Editar">
+                                <i class='bx bxs-pencil'></i>
+                            </button>
+                            @*<button data-elementid="@biField.ID" class="btn-element-action btn-element-action-success btn-biField-create-child" title="Crear hijo">
+                                    <i class='bx bxs-plus-circle'></i>
+                                </button>*@
+                            <form class="d-inline frm-delete" action="@Url.Action(nameof(BIFieldController.Delete), mainControllerName)" method="post">
+                                @Html.Hidden("biFieldID", biField.ID)
+                                <button class="btn-element-action btn-element-action-danger btn-biField-delete" type="submit" title="Eliminar">
+                                    <i class='bx bxs-trash'></i>
+                                </button>
+                            </form>
+                            <button data-elementid="@biField.ID" class="btn-element-action btn-element-action-warning btn-biField-logs" title="Ver logs">
+                                <i class='bx bx-book-reader'></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button data-elementid="@biField.ID" class="btn-element-action btn-element-action-warning btn-biField-logs" title="Ver logs">
+                                <i class='bx bx-book-reader'></i>
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    let biFieldCounter = 1000;
+
+    $(document).ready(function () {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de preguntas de IN' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    },
+                    "columns": [0, 1, 2, 3],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            //delete data.order;
+
+            data["order"] = [];
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+        });
+
+        //const { ID } = require("../../Content/DataTables/pdfmake-0.1.36/pdfmake");
+        var someTableDT =
+            $("#answerTable").on("draw.dt", function () {
+                $(this).find(".dataTables_empty").parents('tbody').empty();
+            }).DataTable({
+                "paging": false,
+                "ordering": false,
+                "info": false,
+                "searching": false,
+                "zeroRecords": " ",
+                "columnDefs": [
+                    {
+                        className: "",
+                        targets: [0, 1]
+                    }
+                ]
+            });
+
+        /*fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            startMultiSelect('#userList', data);
+            startMultiSelect('#moduleList', data);
+        });*/
+
+        initTableButtons();
+    });
+
+    $('.btn-biField-edit').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(BIFieldController.Manage), mainControllerName)?biFieldID=' + elementID, '_self');
+        }
+    });
+
+    $('.btn-biField-create-child').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(BIFieldController.Manage), mainControllerName)?parentID=' + elementID, '_self');
+        }
+    });
+
+    $('.btn-biField-logs').click((e) => {
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        window.open('@Url.Action(logsActionName, logsControllerName)?categoryID=' + @mainCategoryID + '&itemID=' + elementID, '_blank');
+    });
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(BIFieldController.Manage), mainControllerName)', '_self');
+    });
+
+    $('.frm-delete').submit((e) => {
+        let message = '¿Quieres eliminar este elemento del sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+
+    $('#btnSubmit').click(() => {
+        const requiredAdviseElement = $('.required-advise');
+
+        /*if (
+            ($('#userList').val() == '' || $('#userList').val() == null) ||
+            ($('#moduleList').val() == '' || $('#moduleList').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }*/
+
+        const message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+
+        getFormObject()
+            .then((response) => {
+                //console.log(response);
+                $.ajax({
+                    "url": '@formAction',
+                    "contentType": 'application/json',
+                    "data": JSON.stringify(response),
+                    "method": 'POST',
+                    "timeout": 0,
+                    "success": function (response) {
+                        window.open(response.url, '_self');
+                    },
+                    "error": function (response) {
+                        window.open(response.url, '_self');
+                    },
+                    "complete": function (response) {
+                        window.open(response.url, '_self');
+                    }
+                });
+            });
+
+        return false;
+    });
+
+    function initTableButtons() {
+        $('.btn-biField-answer-delete').off('click').on('click', function (e) {
+            $(e.currentTarget).parent().parent().remove();
+        });
+
+        $('.btn-biField-answer-climb-up').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent().parent();
+            let previousRow = $(actualRow).prev();
+
+            let orderActualRow = $(actualRow).attr('data-bifieldorder');
+            let orderPreviousRow = $(previousRow).attr('data-bifieldorder');
+
+            if (orderPreviousRow != null) {
+                $(actualRow).attr('data-bifieldorder', orderPreviousRow)
+                $(previousRow).attr('data-bifieldorder', orderActualRow)
+
+                $(previousRow).before($(actualRow));
+            }
+        });
+
+        $('.btn-biField-answer-go-down').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent().parent();
+            let nextRow = $(actualRow).next();
+
+            let orderActualRow = $(actualRow).attr('data-bifieldorder');
+            let orderNextRow = $(nextRow).attr('data-bifieldorder');
+
+            if (orderNextRow != null) {
+                $(actualRow).attr('data-bifieldorder', orderNextRow);
+                $(nextRow).attr('data-bifieldorder', orderActualRow);
+
+                $(nextRow).after($(actualRow));
+            }
+        });
+
+        $('.btn-biField-answer-taker-out').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent().parent();
+            let container = $(actualRow).find('td.td-name .bifield-container').first();
+
+            if ($(container).find('.bifield-marginator').length > 0) {
+                $(container).find('.bifield-marginator').first().remove();
+            }
+        });
+
+        $('.btn-biField-answer-tabber').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent().parent();
+            let container = $(actualRow).find('td.td-name .bifield-container').first();
+
+            if ($(actualRow)[0] != $(actualRow).parent().find('>:first-child')[0]) {
+                $(container).prepend('<div class="bifield-marginator px-4"></div>');
+            }
+        });
+
+        $('.option-control-triggers-children-visualization').off('change').on('change', function (e) {
+            if ($(e.currentTarget).prop('checked')) {
+                $('.option-control-triggers-children-visualization').prop('checked', false);
+                $('.option-control-triggers-children-visualization').removeAttr('checked');
+                $(e.currentTarget).prop('checked', true);
+                $(e.currentTarget).attr('checked', '');
+            } else {
+                $('.option-control-triggers-children-visualization').prop('checked', false);
+                $('.option-control-triggers-children-visualization').removeAttr('checked');
+                $(e.currentTarget).prop('checked', false);
+                $(e.currentTarget).removeAttr('checked');
+            }
+        });
+    }
+
+    function getFormObject() {
+        return new Promise((resolve, reject) => {
+            let formObject = {};
+
+            let businessIntelligenceField = {};
+            let childList = [];
+
+            businessIntelligenceField =
+            {
+                "ID": $('#hdID').val(),
+                "Name": $('#txtName').val(),
+                "Description": $('#txtDescription').val(),
+                "ParentBIFieldID": @(Model.BusinessIntelligenceField.ParentBIFieldID != null ? Model.BusinessIntelligenceField.ParentBIFieldID.ToString() : "null"),
+                "HasForcedComment": $('#HasForcedComment_Yes').is(':checked'),
+                "BasicInfoID": $('#hdBasicInfoID').val(),
+                "Order": $('#hdOrder').val(),
+            };
+
+            formObject['businessIntelligenceField'] = businessIntelligenceField;
+
+            getBIChildrenList()
+                .then((response) => {
+                    childList = response;
+                    formObject['childList'] = childList;
+
+                    resolve(formObject);
+                });
+        });
+    }
+
+    function getMaxOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('#tbInfo tbody tr').length > 0) {
+                let elements = $('#tbInfo tbody tr');
+
+                for (var i = 0; i < elements.length; i++) {
+                    let value = parseInt($(elements[i]).attr('data-bifieldorder'));
+                    max = (value > max) ? value : max;
+                }
+            }
+
+            if ($('.option-table-row').length > 0) {
+                $('.option-table-row').each(function () {
+                    let value = parseInt($(this).attr('data-bifieldorder'));
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    $('#btnAddNewOption').click(() => {
+        getMaxOrder()
+            .then((maxValue) => {
+                let newValue = maxValue + 1;
+
+                let tbody = document.getElementById('answerTableBody');
+
+                let newRow = document.createElement('tr');
+
+                let newColumnName = document.createElement('td');
+                let newColumnForcedComment = document.createElement('td');
+                /*let newColumnValue = document.createElement('td');
+                let newColumnDefault = document.createElement('td');*/
+                let newColumnActions = document.createElement('td');
+
+                let newBIFieldRadioContainer = document.createElement('div');
+
+                let newBIFieldInputContainer = document.createElement('div');
+
+                let newInputForcedCommentNo = document.createElement('input');
+                let newInputForcedCommentYes = document.createElement('input');
+
+                let newInputName = document.createElement('input');
+                let newInputValue = document.createElement('input');
+                let newInputDefault = document.createElement('input');
+
+                let newBIFieldContainer = document.createElement('div');
+
+                let newBIFieldTakerOutContainer = document.createElement('span');
+                let newBIFieldTabberContainer = document.createElement('span');
+                let newBIFieldClimbUpContainer = document.createElement('span');
+                let newBIFieldGoDownContainer = document.createElement('span');
+
+                let newBIFieldTakerOutButton = document.createElement('button');
+                let newBIFieldTabberButton = document.createElement('button');
+                let newBIFieldBtnClimbUp = document.createElement('button');
+                let newBIFieldBtnGoDown = document.createElement('button');
+
+                let newInputActionBtnDelete = document.createElement('button');
+
+                newRow.classList.add('option-table-row');
+                newRow.dataset.bifieldorder = newValue;
+                newRow.dataset.bifieldid = 0;
+                newRow.dataset.bifielddeleted = false;
+                newRow.dataset.bifieldghostid = biFieldCounter;
+
+                newColumnName.classList.add('td-name');
+                /*newColumnName.classList.add('text-center');*/
+
+                newColumnForcedComment.classList.add('td-forced-comment');
+                newColumnForcedComment.classList.add('text-center');
+
+                newBIFieldContainer.classList.add('bifield-container');
+
+                newBIFieldTakerOutContainer.classList.add('bifield-taker-out');
+                newBIFieldTabberContainer.classList.add('bifield-tabber');
+                newBIFieldClimbUpContainer.classList.add('bifield-climb-up');
+                newBIFieldGoDownContainer.classList.add('bifield-go-down');
+
+                newBIFieldRadioContainer.classList.add('radio-control');
+                newBIFieldRadioContainer.classList.add('d-inline-block');
+
+                newBIFieldInputContainer.classList.add('bifield-input-container');
+
+                newBIFieldTakerOutButton.classList.add('btn-element-action');
+                newBIFieldTakerOutButton.classList.add('btn-element-action-secondary');
+                newBIFieldTakerOutButton.classList.add('btn-biField-answer-taker-out');
+                newBIFieldTakerOutButton.type = 'button';
+                newBIFieldTakerOutButton.title = 'Sacar';
+                newBIFieldTakerOutButton.innerHTML = '<i class="bx bxs-left-arrow"></i>';
+
+                newBIFieldTabberButton.classList.add('btn-element-action');
+                newBIFieldTabberButton.classList.add('btn-element-action-secondary');
+                newBIFieldTabberButton.classList.add('btn-biField-answer-tabber');
+                newBIFieldTabberButton.type = 'button';
+                newBIFieldTabberButton.title = 'Anidar';
+                newBIFieldTabberButton.innerHTML = '<i class="bx bxs-right-arrow"></i>';
+
+                newBIFieldBtnClimbUp.classList.add('btn-element-action');
+                newBIFieldBtnClimbUp.classList.add('btn-element-action-secondary');
+                newBIFieldBtnClimbUp.classList.add('btn-biField-answer-climb-up');
+                newBIFieldBtnClimbUp.type = 'button';
+                newBIFieldBtnClimbUp.title = 'Subir';
+                newBIFieldBtnClimbUp.innerHTML = '<i class="bx bxs-up-arrow"></i>';
+
+                newBIFieldBtnGoDown.classList.add('btn-element-action');
+                newBIFieldBtnGoDown.classList.add('btn-element-action-secondary');
+                newBIFieldBtnGoDown.classList.add('btn-biField-answer-go-down');
+                newBIFieldBtnGoDown.type = 'button';
+                newBIFieldBtnGoDown.title = 'Bajar';
+                newBIFieldBtnGoDown.innerHTML = '<i class="bx bxs-down-arrow"></i>';
+
+                newInputForcedCommentNo.name = 'forcedCommentRadio_' + biFieldCounter;
+                newInputForcedCommentNo.type = 'radio';
+                newInputForcedCommentNo.value = false;
+                newInputForcedCommentNo.checked = true;
+                newInputForcedCommentNo.setAttribute('label', 'NO');
+
+                newInputForcedCommentYes.name = 'forcedCommentRadio_' + biFieldCounter;
+                newInputForcedCommentYes.type = 'radio';
+                newInputForcedCommentYes.value = true;
+                newInputForcedCommentYes.classList.add('has-forced-comment-yes');
+                newInputForcedCommentYes.setAttribute('label', 'SI');
+
+                newBIFieldRadioContainer.appendChild(newInputForcedCommentNo);
+                newBIFieldRadioContainer.appendChild(newInputForcedCommentYes);
+
+                newInputName.dataset.bifieldid = 0;
+                newInputName.classList.add('bifield-property-field-control');
+                newInputName.classList.add('bifield-value-container');
+                newInputName.classList.add('option-control');
+                newInputName.classList.add('multi-line');
+                newInputName.type = 'text';
+                newInputName.value = '';
+                newInputName.placeholder = 'Escriba el texto de la respuesta';
+
+
+                newBIFieldTakerOutContainer.appendChild(newBIFieldTakerOutButton);
+                newBIFieldTabberContainer.appendChild(newBIFieldTabberButton);
+                newBIFieldClimbUpContainer.appendChild(newBIFieldBtnClimbUp);
+                newBIFieldGoDownContainer.appendChild(newBIFieldBtnGoDown);
+                newBIFieldInputContainer.appendChild(newInputName);
+
+                newBIFieldContainer.appendChild(newBIFieldTakerOutContainer);
+                newBIFieldContainer.appendChild(newBIFieldTabberContainer);
+                newBIFieldContainer.appendChild(newBIFieldClimbUpContainer);
+                newBIFieldContainer.appendChild(newBIFieldGoDownContainer);
+                newBIFieldContainer.appendChild(newBIFieldInputContainer);
+
+                newColumnName.appendChild(newBIFieldContainer);
+
+                newColumnForcedComment.appendChild(newBIFieldRadioContainer);
+
+                /*newColumnValue.classList.add('tdValue');
+                newColumnValue.classList.add('text-center');
+
+                newInputValue.classList.add('option-control');
+                newInputValue.type = 'text';
+                newInputValue.placeholder = 'Escriba el valor de la opción';
+
+                newColumnDefault.classList.add('tdTriggersChildVisualization');
+                newColumnDefault.classList.add('text-center');
+
+                newInputDefault.classList.add('option-control');
+                newInputDefault.classList.add('option-control-triggers-children-visualization');
+                newInputDefault.type = 'checkbox';
+                newInputDefault.value = 'true';*/
+
+                newColumnActions.classList.add('td-actions');
+                newColumnActions.classList.add('text-center');
+
+                newInputActionBtnDelete.classList.add('btn-element-action');
+                newInputActionBtnDelete.classList.add('btn-element-action-danger');
+                newInputActionBtnDelete.classList.add('btn-biField-answer-delete');
+                newInputActionBtnDelete.type = 'button';
+                newInputActionBtnDelete.title = 'Eliminar';
+                newInputActionBtnDelete.innerHTML = '<i class="bx bxs-trash"></i>';
+
+                /*newColumnActions.appendChild(newBIFieldBtnClimbUp);
+                newColumnActions.innerHTML += '\n';
+                newColumnActions.appendChild(newBIFieldBtnGoDown);
+                newColumnActions.innerHTML += '\n';*/
+                newColumnActions.appendChild(newInputActionBtnDelete);
+
+                /*newColumnDefault.appendChild(newInputDefault);
+
+                newColumnValue.appendChild(newInputValue);*/
+
+                newRow.appendChild(newColumnName);
+                newRow.appendChild(newColumnForcedComment);
+                /*newRow.appendChild(newColumnValue);
+                newRow.appendChild(newColumnDefault);*/
+                newRow.appendChild(newColumnActions);
+
+                tbody.appendChild(newRow);
+
+                initTableButtons();
+
+                biFieldCounter++;
+            });
+    });
+
+    function getBIChildrenList() {
+        return new Promise((resolve, reject) => {
+            try {
+                let optionList = [];
+
+                $('.option-table-row').each((index, e) => {
+                    let biFieldID = parseInt($(e).attr('data-bifieldid'));
+                    let biFieldGhostID = parseInt($(e).attr('data-bifieldghostid'));
+                    let biFieldOrderNumber = parseInt($(e).attr('data-bifieldorder'));
+                    let biFieldDeleted = $(e).attr('data-bifielddeleted') == 'True';
+                    let parentBIFieldGhostID = null;
+                    let parentBIFieldID = @Model.BusinessIntelligenceField.ID;
+                    let hasForcedComment = $(e).find('.has-forced-comment-yes').is(':checked');
+
+                    if ($(e).find('td.td-name .bifield-container .bifield-marginator').length > 0) {
+                        let foundMarginatorCount = $(e).find('td.td-name .bifield-container .bifield-marginator').length;
+
+                        let auxControl = $(e);
+                        while ($(auxControl).find('td.td-name .bifield-container .bifield-marginator').length >= foundMarginatorCount) {
+                            auxControl = $(auxControl).prev();
+                        }
+
+                        parentBIFieldGhostID = parseInt($(auxControl).attr('data-bifieldghostid'));
+                        parentBIFieldID = parseInt($(auxControl).attr('data-bifieldid'));
+                    }
+
+                    let name = $(e).find('td.td-name').find('input.option-control').first().val();
+                    let description = $(e).find('td.td-name').find('input.option-control').first().val();
+
+                    if
+                    (
+                        (name != '' && name != null) &&
+                        (biFieldOrderNumber != '' && biFieldOrderNumber != null) &&
+                        biFieldDeleted != true
+                    )
+                    {
+                        let jsonOption =
+                        {
+                            "ID": biFieldID,
+                            "Name": name,
+                            "Description": description,
+                            "ParentBIFieldID": parentBIFieldID,
+                            "HasForcedComment": hasForcedComment,
+                            "BasicInfoID": 0,
+                            "Order": biFieldOrderNumber,
+                            "BasicInfo": null,
+                            "BIFieldGhostID": biFieldGhostID,
+                            "ParentBIFieldGhostID": parentBIFieldGhostID
+                        };
+
+                        optionList.push(jsonOption);
+                    }
+                });
+
+                resolve(optionList);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    $('.has-parent').addClass('d-none');
+    initShowButtons();
+
+    function initShowButtons() {
+        $('.show-children').off('click').on('click', function (e) {
+            let row = $(e.currentTarget).parent().parent();
+
+            let biFieldID = $(row).attr('data-bifieldid');
+            let parentBIFieldID = $(row).attr('data-parentbifieldid');
+
+            $('.has-parent[data-parentbifieldid="' + biFieldID + '"]').removeClass('d-none');
+
+            updateShowButton(e.currentTarget);
+        });
+
+        $('.hide-children').off('click').on('click', function (e) {
+            let row = $(e.currentTarget).parent().parent();
+            let biFieldID = $(row).attr('data-bifieldid');
+            let parentBIFieldID = $(row).attr('data-parentbifieldid');
+
+            let nextControl = $('.has-parent[data-parentbifieldid="' + biFieldID + '"]');
+
+            while ($(nextControl).attr('data-parentbifieldid') != null && $(nextControl).attr('data-parentbifieldid') > 0) {
+                $(nextControl).addClass('d-none');
+                nextControl = $(nextControl).next();
+                updateShowButton($(nextControl).find('button.hide-children'));
+            }
+
+            updateShowButton(e.currentTarget);
+        });
+    }
+
+    function updateShowButton(e) {
+        if ($(e).hasClass('show-children')) {
+            $(e).html('<i class="bx bxs-hide" ></i>');
+            $(e).removeClass('show-children')
+            $(e).addClass('hide-children')
+            initShowButtons();
+        } else {
+            $(e).html('<i class="bx bxs-show"></i>');
+            $(e).removeClass('hide-children')
+            $(e).addClass('show-children')
+            initShowButtons();
+        }
+    }
+</script>

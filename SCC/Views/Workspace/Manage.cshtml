@@ -1,0 +1,294 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.WorkspaceManagementViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_WORKSPACE;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(WorkspaceController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    bool hasModel = Model.Workspace.ID != null && Model.Workspace.ID > 0;
+
+    ViewBag.Title = "Administración de puestos";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Crear / Editar puesto</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                @{
+                    string formAction =
+                        !hasModel ?
+                            @Url.Action(nameof(WorkspaceController.Create), mainControllerName) :
+                            @Url.Action(nameof(WorkspaceController.Edit), mainControllerName);
+                }
+                <form id="frmManage" action="@formAction" method="post">
+                    @Html.HiddenFor(modelitem => Model.Workspace.ID)
+                    @Html.HiddenFor(modelitem => Model.Workspace.BasicInfo)
+                    @Html.HiddenFor(modelitem => Model.Workspace.BasicInfoID)
+
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        @if (hasModel)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    ID del sistema
+                                </div>
+                                <div class="col-7">
+                                    <strong>@Model.Workspace.ID</strong>
+                                </div>
+                            </div>
+                        }
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Identificador <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Workspace.Identifier, null, new { @class = "property-field-control", placeholder = "Identificador", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Nombre <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Workspace.Name, null, new { @class = "property-field-control", placeholder = "Nombre", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Monitoreable <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                <div class="radio-control d-inline-block">
+                                    @Html.RadioButtonFor(model =>
+                                        Model.Workspace.Monitorable,
+                                        false,
+                                        new
+                                        {
+                                            label = "NO"
+                                        }
+                                    )
+                                    @Html.RadioButtonFor(model =>
+                                        Model.Workspace.Monitorable,
+                                        true,
+                                        new
+                                        {
+                                            label = "SI"
+                                        }
+                                    )
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+
+                            @if (hasModel)
+                            {
+                                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_WORKSPACES))
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                                }
+                            }
+                            else
+                            {
+                                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_WORKSPACES))
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                                }
+                            }
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tableContainer">
+    <table class="display cell-border" id="tbInfo">
+        <thead>
+            <tr>
+                <th>
+                    Identificador
+                </th>
+                <th>
+                    Nombre
+                </th>
+                <th>
+                    Monitoreable
+                </th>
+                <th>
+                    Acciones
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Workspace workspace in Model.WorkspaceList)
+            {
+                string tableRowClass = string.Empty;
+                if (workspace.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED)
+                {
+                    tableRowClass +=
+                        string.IsNullOrEmpty(tableRowClass) ?
+                            "strikethrough" :
+                            " strikethrough";
+                }
+
+                <tr class="@tableRowClass">
+                    <td>@workspace.Identifier</td>
+                    <td>@workspace.Name</td>
+                    <td>@(workspace.Monitorable ? "SI" : "NO")</td>
+                    <td>
+                        @if (workspace.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED)
+                        {
+                            <button data-elementid="@workspace.ID" class="btn-element-action btn-element-action-primary btn-workspace-edit" title="Editar">
+                                <i class='bx bxs-pencil'></i>
+                            </button>
+                            if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_WORKSPACES))
+                            {
+                                <form class="d-inline frm-delete" action="@Url.Action(nameof(WorkspaceController.Delete), mainControllerName)" method="post">
+                                    @Html.Hidden("workspaceID", workspace.ID)
+                                    <button class="btn-element-action btn-element-action-danger btn-workspace-delete" type="submit" title="Eliminar">
+                                        <i class='bx bxs-trash'></i>
+                                    </button>
+                                </form>
+                            }
+                            <button data-elementid="@workspace.ID" class="btn-element-action btn-element-action-warning btn-workspace-logs" title="Ver logs">
+                                <i class='bx bx-book-reader'></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button data-elementid="@workspace.ID" class="btn-element-action btn-element-action-warning btn-workspace-logs" title="Ver logs">
+                                <i class='bx bx-book-reader'></i>
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        fetchDatatableBasicData().then(response => {
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            const excelButton =
+            {
+                "title": "Excel",
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            const pdfButton =
+            {
+                "title": "PDF",
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            const copyButton =
+            {
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    },
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+        });
+    });
+
+    $('.btn-workspace-edit').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(WorkspaceController.Manage), mainControllerName)?workspaceID=' + elementID, '_self');
+        }
+    });
+
+    $('.btn-workspace-logs').click((e) => {
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        window.open('@Url.Action(logsActionName, logsControllerName)?categoryID=' + @mainCategoryID + '&itemID=' + elementID, '_blank');
+    });
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(WorkspaceController.Manage), mainControllerName)', '_self');
+    });
+
+    $('.frm-delete').submit((e) => {
+        let message = '¿Quieres eliminar este elemento del sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+</script>

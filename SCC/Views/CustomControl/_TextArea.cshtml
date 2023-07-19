@@ -1,0 +1,215 @@
+﻿@using SCC_BL;
+@using SCC.Controllers;
+
+@model CustomControl
+
+@{
+    string mainControllerName = OverallController.GetControllerName(typeof(CustomControlController));
+
+    bool hasModel = Model.ID != null && Model.ID > 0;
+
+    string formAction =
+        !hasModel ?
+            @Url.Action(nameof(CustomControlController.Create), mainControllerName) :
+            @Url.Action(nameof(CustomControlController.Edit), mainControllerName);
+}
+
+<form id="frmCustomControlTextArea" class="custom-control-form" action="@formAction" method="post">
+    @Html.HiddenFor(model => Model.CssClass)
+    @Html.HiddenFor(model => Model.DefaultValue)
+    @Html.HiddenFor(model => Model.ControlTypeID)
+    @Html.HiddenFor(model => Model.Mask)
+    @Html.HiddenFor(model => Model.Pattern)
+    @Html.HiddenFor(model => Model.BasicInfo)
+    @Html.HiddenFor(model => Model.BasicInfoID)
+
+    <div class="row d-block text-center text-danger required-advise d-none m-5">
+        Por favor, ingrese todos los datos requeridos
+    </div>
+
+    @if (hasModel)
+    {
+        <div class="row property-field">
+            <div class="col-4 property-field-label">
+                ID del sistema
+            </div>
+            <div class="col-8">
+                <strong>@Model.ID</strong>
+            </div>
+        </div>
+    }
+    <div class="row property-field d-none">
+        <div class="col-4 property-field-label">
+            Módulo al que aplica <span class="required">*</span>
+        </div>
+        <div class="col-8">
+            @Html.DropDownListFor(modelitem =>
+                Model.ModuleID,
+                (ViewData[SCC_BL.Settings.AppValues.ViewData.CustomControl.CustomControlTypeView.Module.NAME] as SelectList),
+                new
+                {
+                    @class = "property-field-control",
+                    placeholder = "Módulo al que aplica",
+                    title = "Módulo al que aplica",
+                    id = "moduleList"
+                }
+            )
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-4 property-field-label">
+            Etiqueta <span class="required">*</span>
+        </div>
+        <div class="col-8">
+            @Html.TextBoxFor(modelitem => Model.Label, null, new { @class = "property-field-control", placeholder = "Etiqueta", autocomplete = "off", required = "", pattern = SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN, id = "txtCustomControlLabel" })
+        </div>
+    </div>
+    <div class="row property-field d-none">
+        <div class="col-4 property-field-label">
+            Descripción <span class="required">*</span>
+        </div>
+        <div class="col-8">
+            @Html.TextBoxFor(modelitem => Model.Description, null, new { @class = "property-field-control", placeholder = "Descripción", autocomplete = "off", required = "", pattern = SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN })
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-4 property-field-label">
+            Número de filas <span class="required">*</span>
+        </div>
+        <div class="col-8">
+            @Html.TextBoxFor(modelitem => Model.NumberOfRows, null, new { @class = "property-field-control", placeholder = "Número de filas", autocomplete = "off", type = "number", min = "2", value = "2" })
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-4 property-field-label">
+            Número de columnas <span class="required">*</span>
+        </div>
+        <div class="col-8">
+            @Html.TextBoxFor(modelitem => Model.NumberOfColumns, null, new { @class = "property-field-control", placeholder = "Número de columnas", autocomplete = "off", type = "number", min = "10", value = "10" })
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-4 property-field-label">
+            Campo obligatorio
+        </div>
+        <div class="col-8">
+            <div class="radio-control d-inline-block">
+                @Html.RadioButtonFor(model =>
+                    Model.IsRequired,
+                    false,
+                    new
+                    {
+                        label = "NO"
+                    }
+                )
+                @Html.RadioButtonFor(model =>
+                    Model.IsRequired,
+                    true,
+                    new
+                    {
+                        label = "SI",
+                        id = "IsRequired_Yes"
+                    }
+                )
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    $(document).ready(() => {
+        fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            startMultiSelect('#moduleList', data);
+        });
+    });
+
+    $('.custom-control-form').submit((e) => {
+        let requiredAdviseElement = $('.required-advise');
+
+        if (
+            ($('#moduleList').val() == '' || $('#moduleList').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }
+
+        if (
+            ($('#txtCustomControlLabel').val() == '' || $('#txtCustomControlLabel').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }
+
+        let message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+
+        getFormObject()
+            .then((response) => {
+                $.ajax({
+                    "url": '@formAction',
+                    "contentType": 'application/json',
+                    "data": JSON.stringify(response),
+                    "method": 'POST',
+                    "timeout": 0,
+                    "success": function(response) {
+                        window.open(response.url, '_self');
+                    },
+                    "error": function (response) {
+                        window.open(response.url, '_self');
+                    },
+                    "complete": function (response) {
+                        window.open(response.url, '_self');
+                    }
+                });
+            });
+
+        return false;
+    });
+
+    function getFormObject() {
+        return new Promise((resolve, reject) => {
+            let formObject = {};
+
+            let customControl = {};
+            let valueList = null;
+
+            let maskID = null;
+
+            customControl =
+            {
+                "ID": @Model.ID,
+                "Label": $('input[name="@nameof(CustomControl.Label)"]').val(),
+                "ModuleID": $('select[name="@nameof(CustomControl.ModuleID)"]').val(),
+                "IsRequired": $('#IsRequired_Yes').is(':checked'),
+                "Description":
+                    $('input[name="@nameof(CustomControl.Description)"]').val() != ''
+                        ? $('input[name="@nameof(CustomControl.Description)"]').val()
+                        : $('input[name="@nameof(CustomControl.Label)"]').val(),
+                "ControlTypeID": $('input[name="@nameof(CustomControl.ControlTypeID)"]').val(),
+                "CssClass": $('input[name="@nameof(CustomControl.CssClass)"]').val(),
+                "Mask": $('input[name="@nameof(CustomControl.Mask)"]').val(),
+                "Pattern": $('input[name="@nameof(CustomControl.Pattern)"]').val(),
+                "DefaultValue": $('input[name="@nameof(CustomControl.DefaultValue)"]').val(),
+                "NumberOfRows": $('input[name="@nameof(CustomControl.NumberOfRows)"]').val(),
+                "NumberOfColumns": $('input[name="@nameof(CustomControl.NumberOfColumns)"]').val(),
+                "BasicInfoID": $('input[name="@nameof(CustomControl.BasicInfoID)"]').val()
+            };
+
+            formObject['customControl'] = customControl;
+            formObject['valueList'] = valueList;
+            formObject['maskID'] = maskID;
+
+            resolve(formObject);
+        });
+    }
+</script>

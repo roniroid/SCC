@@ -1,0 +1,179 @@
+﻿@model SCC.ViewModels.FormUploadViewModel
+
+@using SCC.Controllers;
+@using SCC_BL;
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_FORM;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(FormController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    ViewBag.Title = "Carga de formulario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Cargar formulario</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                <form id="frmManage" action="@Url.Action(nameof(FormController.UploadForm), mainControllerName)" method="post" enctype="multipart/form-data">
+                    @Html.HiddenFor(modelitem => Model.Form.ID)
+                    @Html.HiddenFor(modelitem => Model.Form.BasicInfo)
+                    @Html.HiddenFor(modelitem => Model.Form.BasicInfoID)
+
+                    <div class="accordion-body">
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Nombre <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Form.Name, null, new { @class = "property-field-control", placeholder = "Nombre", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field d-none">
+                            <div class="col-5 property-field-label">
+                                Tipo <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                     Model.Form.TypeID,
+                                     (ViewData[SCC_BL.Settings.AppValues.ViewData.Form.UploadForm.TypeList.NAME] as SelectList),
+                                     new
+                                     {
+                                         @class = "property-field-control chosen-select",
+                                         placeholder = "Tipo de formulario",
+                                         title = "Tipo de formulario",
+                                         id = "typeList"
+                                     }
+                                 )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Comentarios <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextAreaFor(modelitem => Model.Form.Comment, new { @class = "property-field-control", placeholder = "Comentarios", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Archivo Excel <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                <input type="file" name="file" max-size="@(SCC_BL.Settings.Overall.MAX_FILE_SIZE_MB * 1000)" accept=".csv, .xls, xlsx, xlt, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Enviar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tableContainer">
+    <table class="display cell-border" id="tbInfo">
+        <thead>
+            <tr>
+                <th>
+                    ID
+                </th>
+                <th>
+                    Nombre del archivo
+                </th>
+                <th>
+                    Fecha de carga
+                </th>
+                <th>
+                    Acciones
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (UploadedFile uploadedFile in Model.UploadedFileList)
+            {
+                string tableRowClass = string.Empty;
+                if (uploadedFile.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_UPLOADED_FILE.DELETED)
+                {
+                    tableRowClass +=
+                        string.IsNullOrEmpty(tableRowClass) ?
+                            "strikethrough" :
+                            " strikethrough";
+                }
+
+                <tr class="@tableRowClass">
+                    <td>@uploadedFile.ID</td>
+                    <td>@uploadedFile.FileName</td>
+                    <td>@uploadedFile.BasicInfo.CreationDate.ToString("dd MMM yyyy hh:mm:ss")</td>
+                    <td>
+                        @if (uploadedFile.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_UPLOADED_FILE.LOADED_FILE_UPLOAD_FORM)
+                        {
+                            <button data-elementid="@uploadedFile.ID" class="btn-element-action btn-element-action-primary btn-uploadedFile-download" type="button" title="Descargar">
+                                <i class='bx bxs-download'></i>
+                            </button>
+                        }
+                        <button data-elementid="@uploadedFile.ID" class="btn-element-action btn-element-action-warning btn-uploadedFile-logs" title="Ver logs">
+                            <i class='bx bx-book-reader'></i>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        fetchDatatableBasicData().then(response => {
+            let data = response;
+
+            startDataTable('#tbInfo', data);
+        });
+    });
+
+    $('.btn-uploadedFile-logs').click((e) => {
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        window.open('@Url.Action(logsActionName, logsControllerName)?categoryID=' + @mainCategoryID + '&itemID=' + elementID, '_blank');
+    });
+
+    $('.btn-uploadedFile-download').click((e) => {
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        window.open('@Url.Action(nameof(FormController.DownLoadFileFromDatabase), mainControllerName)?uploadedFileID=' + elementID + '&contentType=@SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES', '_blank');
+    });
+</script>

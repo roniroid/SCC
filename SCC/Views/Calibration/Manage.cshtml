@@ -1,0 +1,391 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model List<Calibration>
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_CALIBRATION;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(CalibrationController));
+    string transactionControllerName = OverallController.GetControllerName(typeof(TransactionController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    ViewBag.Title = "Lista de sesiones de calibración";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="tableContainer">
+    <table class="display cell-border" id="tbInfo">
+        <thead>
+            <tr>
+                <th>
+                    ID
+                </th>
+                <th>
+                    Descripción
+                </th>
+                <th>
+                    Experto
+                </th>
+                <th>
+                    Calibradores
+                </th>
+                <th>
+                    Fecha de inicio
+                </th>
+                <th>
+                    Fecha de finalización
+                </th>
+                <th>
+                    Tipo
+                </th>
+                <th>
+                    Estado
+                </th>
+                <th>
+                    Acciones
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Calibration calibration in Model)
+            {
+                string tableRowClass = string.Empty;
+                if (calibration.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CALIBRATION.DELETED)
+                {
+                    tableRowClass +=
+                        string.IsNullOrEmpty(tableRowClass) ?
+                            "strikethrough" :
+                            " strikethrough";
+                }
+
+                <tr class="@tableRowClass">
+                    <td>@calibration.ID</td>
+                    <td>@calibration.Description</td>
+                    <td>@calibration.ExperiencedUser.Person.SurName @calibration.ExperiencedUser.Person.LastName, @calibration.ExperiencedUser.Person.FirstName (@calibration.ExperiencedUser.Person.Identification)</td>
+                    <td>
+                        <ol>
+                            @foreach (User calibratorUser in calibration.CalibratorUserList)
+                            {
+                                <li>
+                                    @calibratorUser.Person.SurName @calibratorUser.Person.LastName, @calibratorUser.Person.FirstName (@calibratorUser.Person.Identification)
+                                </li>
+                            }
+                        </ol>
+                    </td>
+                    <td>
+                        @calibration.StartDate.ToString("yyyy/MM/dd hh:mm:ss")
+                    </td>
+                    <td>
+                        @calibration.EndDate.ToString("yyyy/MM/dd hh:mm:ss")
+                    </td>
+                    <td>
+                        @calibration.TypeDescription
+                    </td>
+                    <td>
+                        @calibration.StatusDescription
+                    </td>
+                    <td class="text-center">
+                        <div class="col-12">
+                            @if (calibration.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CALIBRATION.DELETED)
+                            {
+                                if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_CALIBRATION_RESULTS))
+                                {
+                                    <div class="text-danger text-center">
+                                        <span>Usted no posee permiso para ver el resultado de las calibraciones</span>
+                                    </div>
+                                    <br />
+                                }
+                                else
+                                {
+                                    bool resultsReady = true;
+
+                                    foreach (int transactionID in calibration.TransactionList.Select(e => e.TransactionID))
+                                    {
+                                        if (!calibration.CalibrationList
+                                            .Where(e =>
+                                                e.EvaluatorUserID == calibration.ExperiencedUserID)
+                                            .Select(e => e.CalibratedTransactionID)
+                                            .ToList()
+                                            .Contains(transactionID))
+                                        {
+                                            resultsReady = false;
+                                            break;
+                                        }
+                                    }
+
+                                    if (resultsReady)
+                                    {
+                                        <button data-elementid="@calibration.ID" class="btn-element-action btn-element-action-primary btn-calibration-global-results" title="Resultados global por transacción">
+                                            <i class='bx bx-spreadsheet'></i>
+                                        </button>
+                                        <button data-elementid="@calibration.ID" class="btn-element-action btn-element-action-primary btn-calibration-calibrator-results" title="Resultados global por calibrador">
+                                            <i class='bx bxs-group'></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn-element-action btn-element-action-danger" title="El experto no ha evaluado todas las transacciones" onclick="alert(this.title);">
+                                            <i class='bx bx-spreadsheet'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-danger" title="El experto no ha evaluado todas las transacciones" onclick="alert(this.title);">
+                                            <i class='bx bxs-group'></i>
+                                        </button>
+                                    }
+                                }
+                                if (actualUser.RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.ADMINISTRATOR))
+                                {
+                                    <button data-elementid="@calibration.ID" class="btn-element-action btn-element-action-primary btn-calibration-edit" title="Editar">
+                                        <i class='bx bxs-pencil'></i>
+                                    </button>
+                                    @*
+                                    //PARA ELIMINAR CALIBRACIONES???
+                                    if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_CALIBRATIONS))
+                                    {
+
+                                    }*@
+                                    <form class="d-inline frm-delete" action="@Url.Action(nameof(CalibrationController.Delete), mainControllerName)" method="post">
+                                        @Html.Hidden("calibrationID", calibration.ID)
+                                        <button class="btn-element-action btn-element-action-danger btn-calibration-delete" type="submit" title="Eliminar">
+                                            <i class='bx bxs-trash'></i>
+                                        </button>
+                                    </form>
+                                }
+                                <button data-elementid="@calibration.ID" class="btn-element-action btn-element-action-warning btn-calibration-logs" title="Ver logs">
+                                    <i class='bx bx-book-reader'></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <button data-elementid="@calibration.ID" class="btn-element-action btn-element-action-warning btn-calibration-logs" title="Ver logs">
+                                    <i class='bx bx-book-reader'></i>
+                                </button>
+                            }
+                        </div>
+                        <div class="col-12 mt-2">
+                            @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
+                            {
+                                <div class="text-danger text-center">
+                                    <span>Usted no posee permiso para calibrar evaluaciones</span>
+                                </div>
+                            }
+                            else
+                            {
+                                bool isUserInvited = false;
+
+                                if (!isUserInvited)
+                                {
+                                    if (calibration.ExperiencedUserID == actualUser.ID)
+                                    {
+                                        isUserInvited = true;
+                                    }
+                                }
+
+                                if (!isUserInvited)
+                                {
+                                    if (calibration.CalibratorUserList.Select(e => e.ID).Contains(actualUser.ID))
+                                    {
+                                        isUserInvited = true;
+                                    }
+                                }
+
+                                int calibrationTransactionCount = 0;
+
+                                foreach (CalibrationTransactionCatalog calibrationTransaction in calibration.TransactionList)
+                                {
+                                    List<Transaction> calibrationList =
+                                        calibration.CalibrationList
+                                            .Where(e =>
+                                                e.CalibratedTransactionID == calibrationTransaction.TransactionID)
+                                            .ToList();
+
+                                    calibrationList = calibrationList.Where(e => e.EvaluatorUserID == actualUser.ID).ToList();
+
+                                    if (calibrationList.Select(e => e.CalibratedTransactionID).Contains(calibrationTransaction.TransactionID))
+                                    {
+                                        <button data-calibratedtransactionid="@calibrationTransaction.TransactionID" data-calibrationsessionid="@calibration.ID" class="border border-success text-success btn border-3 bg-light btn-check-calibration" title="Ver resultados">@calibrationTransactionCount</button>
+                                    }
+                                    else
+                                    {
+                                        if (isUserInvited)
+                                        {
+                                            <button data-transactiontocalibrateid="@calibrationTransaction.TransactionID" class="border border-secondary btn border-3 bg-light btn-create-calibration" title="Evaluar transacción">@calibrationTransactionCount</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="border border-danger text-danger btn border-3 bg-light" title="Usted no está invitado a esta calibración" onclick="alert(this.title);">@calibrationTransactionCount</button>
+                                        }
+                                    }
+
+                                    calibrationTransactionCount++;
+                                }
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de calibraciones' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [1, 2, 3, 4, 5, 6, 7, 8],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [1, 2, 3, 4, 5, 6, 7, 8],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    },
+                    "columns": [1, 2, 3, 4, 5, 6, 7, 8],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+        });
+    });
+
+    $('.btn-check-calibration').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para ver los resultados?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.calibratedtransactionid;
+
+        const calibrationSessionID = element.dataset.calibrationsessionid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(CalibrationController.CheckCalibration), mainControllerName)?calibratedTransactionID=' + elementID + '&calibrationSessionID=' + calibrationSessionID, 'Reporte de sesión', 'width=800,height=800');
+        }
+    });
+
+    $('.btn-create-calibration').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.transactiontocalibrateid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(TransactionController.Edit), transactionControllerName)?calibratedTransactionID=' + elementID + '&typeID=' + @((int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION), '_self');
+        }
+    });
+
+    let countGlobalResultByTransactionWindow = 0;
+
+    $('.btn-calibration-global-results').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para ver los resultados por transacción?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            countGlobalResultByTransactionWindow++;
+
+            window.open('@Url.Action(nameof(CalibrationController.CheckGlobalResultsByTransaction), mainControllerName)?calibrationSessionID=' + elementID, 'Resultado global por transacción ' + countGlobalResultByTransactionWindow.toString(), 'width=800,height=800');
+        }
+    });
+
+    let countGlobalResultByCalibratorWindow = 0;
+
+    $('.btn-calibration-calibrator-results').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para ver los resultados por calibrador?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            countGlobalResultByCalibratorWindow++;
+
+            window.open('@Url.Action(nameof(CalibrationController.CheckGlobalResultsByCalibrator), mainControllerName)?calibrationSessionID=' + elementID, 'Resultado global por calibrador ' + countGlobalResultByCalibratorWindow.toString(), 'width=800,height=800');
+        }
+    });
+
+    $('.btn-calibration-edit').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(CalibrationController.Edit), mainControllerName)?calibrationID=' + elementID, '_self');
+        }
+    });
+
+    $('.btn-calibration-logs').click((e) => {
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        window.open('@Url.Action(logsActionName, logsControllerName)?categoryID=' + @mainCategoryID + '&itemID=' + elementID, '_blank');
+    });
+
+    $('.frm-delete').submit((e) => {
+        let message = '¿Quieres eliminar este elemento del sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+</script>

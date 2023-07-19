@@ -1,0 +1,482 @@
+﻿@using SCC.ViewModels;
+@using SCC_BL;
+
+@model CalibrationCheckResultsViewModel
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Reporte de sesión</title>
+
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/navbar")
+    @Scripts.Render("~/bundles/jquery")
+    @Styles.Render("~/Content/bootstrap.css")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/modernizr")
+    <link href="~/Content/boxicons.min.css" rel='stylesheet'>
+
+    <script src="~/Scripts/Custom/custom-library-functions.js"></script>
+
+    @Styles.Render("~/Content/panel")
+    @Styles.Render("~/Content/radio")
+
+    @*@Styles.Render("~/Content/datatables")
+        @Scripts.Render("~/bundles/datatables")*@
+
+    <link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+    <script src="~/Content/DataTables/datatables.min.js"></script>
+
+    <link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+    <script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+    <link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+    <style>
+        .bg-custom-error-title {
+            background-color: #9783E2;
+        }
+
+        .bg-custom-bi-title {
+            background-color: #D5674E;
+        }
+
+        .bg-custom-attribute-value-catalog {
+            background-color: #F0866C;
+            color: #ffffff;
+            font-weight: bold;
+            border: 1px solid #c6c6c6;
+        }
+    </style>
+</head>
+<body>
+    @{
+        Form form = new Form(Model.SelectedCalibration.FormID);
+        form.SetDataByID();
+    }
+    <div class="panel d-block">
+        <div class="row d-block text-center m-5">
+            <h3>
+                Reporte de sesión
+            </h3>
+            <h6>
+                @{
+                    string experiencedUserName = string.Empty;
+
+                    using (SCC_BL.User user = new SCC_BL.User(Model.CalibrationSession.ExperiencedUserID))
+                    {
+                        user.SetDataByID();
+
+                        experiencedUserName = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.LastName}, {user.Person.FirstName}";
+                    }
+                }
+
+                Experto de la sesión: @experiencedUserName
+            </h6>
+        </div>
+        <div class="row">
+            <div class="col-8">
+                Atributo
+            </div>
+            <div class="col-3 text-center">
+                @{
+                    string evaluatorUserName = string.Empty;
+
+                    using (SCC_BL.User evaluatorUser = new SCC_BL.User(Model.SelectedCalibration.EvaluatorUserID))
+                    {
+                        evaluatorUser.SetDataByID();
+
+                        evaluatorUserName = $"{evaluatorUser.Person.SurName} {evaluatorUser.Person.LastName}, {evaluatorUser.Person.FirstName}";
+                    }
+                }
+
+                <p class="fw-bold">@evaluatorUserName</p>
+            </div>
+            <div class="col-1">
+                Precisión a nivel de atributo principal
+            </div>
+        </div>
+        @if (form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE).Count() > 0)
+        {
+            <div class="row bg-custom-error-title text-light my-2 p-3">
+                <span>
+                    Error Crítico Usuario Final
+                </span>
+            </div>
+            <div class="attribute-container">
+                @foreach (SCC_BL.Attribute attribute in form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
+                {
+                    TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.SelectedCalibration.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
+
+                    bool toShow =
+                        attribute.ParentAttributeID == null ||
+                        attribute.ParentAttributeID == 0 ||
+                        (currentTransactionAttributeCatalog != null
+                            ? currentTransactionAttributeCatalog.Checked
+                            : false);
+
+                    if (toShow)
+                    {
+                        int spaceCounter = 0;
+
+                        SCC_BL.Attribute auxAttribute = attribute;
+
+                        while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
+                        {
+                            auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
+
+                            auxAttribute.SetDataByID();
+
+                            spaceCounter++;
+                        }
+
+                        <div class="row bg-light text-dark border border-secondary mt-1 attribute-row @(attribute.ParentAttributeID != null && attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID">
+                            <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
+                                @for (int i = 0; i < spaceCounter; i++)
+                                {
+                                    <div class="attribute-marginator px-4 d-inline-block"></div>
+                                }
+                                @if (form.AttributeList
+                                        .Where(e =>
+                                            e.ParentAttributeID == attribute.ID)
+                                        .Count() > 0)
+                                {
+                                    <i class='bx bxs-plus-square btn-attribute-show m-1 display-6'></i>
+                                    <i class='bx bxs-minus-square btn-attribute-hide m-1 display-6 text-danger d-none'></i>
+                                    @*<i class="bx bxs-check-square text-success" title="Todo correcto"></i>*@
+                                }
+                                @if (attribute.ParentAttributeID > 0)
+                                {
+                                    <div class="d-flex justify-content-center align-content-center">
+                                        <input class="attribute-checked me-3" type="checkbox" value="true" @(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.Checked ? "checked" : string.Empty : string.Empty) disabled />
+                                    </div>
+                                }
+                                <span>@attribute.Name</span>
+                            </div>
+                            <div class="col-3 bg-custom-attribute-value-catalog text-center d-flex justify-content-center align-items-center">
+                                @if (attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0)
+                                {
+                                    AttributeValueCatalog attributeValueCatalog =
+                                        attribute.ValueList
+                                            .Where(e =>
+                                                Model.SelectedCalibration.AttributeList
+                                                    .Select(s => s.ValueID)
+                                                    .Contains(e.ID))
+                                            .FirstOrDefault();
+
+                                    @attributeValueCatalog.Name.ToUpper()
+                                }
+                            </div>
+                            <div class="col-1 d-flex align-items-center">
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+        @if (form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE).Count() > 0)
+        {
+            <div class="row bg-custom-error-title text-light my-2 p-3">
+                <span>
+                    Error Crítico de Negocios
+                </span>
+            </div>
+            <div class="attribute-container">
+                @foreach (SCC_BL.Attribute attribute in form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
+                {
+                    TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.SelectedCalibration.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
+
+                    bool toShow =
+                        attribute.ParentAttributeID == null ||
+                        attribute.ParentAttributeID == 0 ||
+                        (currentTransactionAttributeCatalog != null
+                            ? currentTransactionAttributeCatalog.Checked
+                            : false);
+
+                    if (toShow)
+                    {
+                        int spaceCounter = 0;
+
+                        SCC_BL.Attribute auxAttribute = attribute;
+
+                        while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
+                        {
+                            auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
+                            auxAttribute.SetDataByID();
+
+                            spaceCounter++;
+                        }
+
+                        <div class="row bg-light text-dark border border-secondary mt-1 attribute-row @(attribute.ParentAttributeID != null && attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID">
+                            <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
+                                @for (int i = 0; i < spaceCounter; i++)
+                                {
+                                    <div class="attribute-marginator px-4 d-inline-block"></div>
+                                }
+                                @if (form.AttributeList
+                                        .Where(e =>
+                                            e.ParentAttributeID == attribute.ID)
+                                        .Count() > 0)
+                                {
+                                    <i class='bx bxs-plus-square btn-attribute-show m-1 display-6'></i>
+                                    <i class='bx bxs-minus-square btn-attribute-hide m-1 display-6 text-danger d-none'></i>
+                                    @*<i class="bx bxs-check-square text-success" title="Todo correcto"></i>*@
+                                }
+                                @if (attribute.ParentAttributeID > 0)
+                                {
+                                    <div class="d-flex justify-content-center align-content-center">
+                                        <input class="attribute-checked me-3" type="checkbox" value="true" @(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.Checked ? "checked" : string.Empty : string.Empty) disabled />
+                                    </div>
+                                }
+                                <span>@attribute.Name</span>
+                            </div>
+                            <div class="col-3 bg-custom-attribute-value-catalog text-center d-flex justify-content-center align-items-center">
+                                @if (attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0)
+                                {
+                                    AttributeValueCatalog attributeValueCatalog =
+                                        attribute.ValueList
+                                            .Where(e =>
+                                                Model.SelectedCalibration.AttributeList
+                                                    .Select(s => s.ValueID)
+                                                    .Contains(e.ID))
+                                            .FirstOrDefault();
+
+                                    @attributeValueCatalog.Name.ToUpper()
+                                }
+                            </div>
+                            <div class="col-1 d-flex align-items-center">
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+        @if (form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE).Count() > 0)
+        {
+            <div class="row bg-custom-error-title text-light my-2 p-3">
+                <span>
+                    Error Crítico de Cumplimiento
+                </span>
+            </div>
+            <div class="attribute-container">
+                @foreach (SCC_BL.Attribute attribute in form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
+                {
+                    TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.SelectedCalibration.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
+
+                    bool toShow =
+                        attribute.ParentAttributeID == null ||
+                        attribute.ParentAttributeID == 0 ||
+                        (currentTransactionAttributeCatalog != null
+                            ? currentTransactionAttributeCatalog.Checked
+                            : false);
+
+                    if (toShow)
+                    {
+                        int spaceCounter = 0;
+
+                        SCC_BL.Attribute auxAttribute = attribute;
+
+                        while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
+                        {
+                            auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
+                            auxAttribute.SetDataByID();
+
+                            spaceCounter++;
+                        }
+
+                        <div class="row bg-light text-dark border border-secondary mt-1 attribute-row @(attribute.ParentAttributeID != null && attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID">
+                            <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
+                                @for (int i = 0; i < spaceCounter; i++)
+                                {
+                                    <div class="attribute-marginator px-4 d-inline-block"></div>
+                                }
+                                @if (form.AttributeList
+                                        .Where(e =>
+                                            e.ParentAttributeID == attribute.ID)
+                                        .Count() > 0)
+                                {
+                                    <i class='bx bxs-plus-square btn-attribute-show m-1 display-6'></i>
+                                    <i class='bx bxs-minus-square btn-attribute-hide m-1 display-6 text-danger d-none'></i>
+                                    @*<i class="bx bxs-check-square text-success" title="Todo correcto"></i>*@
+                                }
+                                @if (attribute.ParentAttributeID > 0)
+                                {
+                                    <div class="d-flex justify-content-center align-content-center">
+                                        <input class="attribute-checked me-3" type="checkbox" value="true" @(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.Checked ? "checked" : string.Empty : string.Empty) disabled />
+                                    </div>
+                                }
+                                <span>@attribute.Name</span>
+                            </div>
+                            <div class="col-3 bg-custom-attribute-value-catalog text-center d-flex justify-content-center align-items-center">
+                                @if (attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0)
+                                {
+                                    AttributeValueCatalog attributeValueCatalog =
+                                        attribute.ValueList
+                                            .Where(e =>
+                                                Model.SelectedCalibration.AttributeList
+                                                    .Select(s => s.ValueID)
+                                                    .Contains(e.ID))
+                                            .FirstOrDefault();
+
+                                    @attributeValueCatalog.Name.ToUpper()
+                                }
+                            </div>
+                            <div class="col-1 d-flex align-items-center">
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+    @if (form.FormBIFieldCatalogList.Count() > 0)
+    {
+        <div class="panel d-block">
+            <div class="row d-block text-center m-5">
+                <h3>
+                    Inteligencia de negocios
+                </h3>
+            </div>
+            <div class="bifield-container">
+                @foreach (FormBIFieldCatalog formBIField in form.FormBIFieldCatalogList)
+                {
+                    BusinessIntelligenceField currentBusinessIntelligenceField =
+                        form.BusinessIntelligenceFieldList
+                            .Where(e =>
+                                e.ID == formBIField.BIFieldID)
+                            .FirstOrDefault();
+
+                    TransactionBIFieldCatalog currentTransactionBIFieldCatalog =
+                        Model.SelectedCalibration.BIFieldList
+                            .Where(e =>
+                                e.BIFieldID == currentBusinessIntelligenceField.ID)
+                            .FirstOrDefault();
+
+                    bool toShow =
+                        currentBusinessIntelligenceField.ParentBIFieldID == null ||
+                        currentBusinessIntelligenceField.ParentBIFieldID == 0 ||
+                        (currentTransactionBIFieldCatalog != null
+                            ? currentTransactionBIFieldCatalog.Checked
+                            : false);
+
+                    if (toShow)
+                    {
+
+                        int spaceCounter = 0;
+
+                        SCC_BL.BusinessIntelligenceField auxBusinessIntelligenceField =
+                            form.BusinessIntelligenceFieldList
+                                .Where(e =>
+                                    e.ID == formBIField.BIFieldID)
+                                .FirstOrDefault();
+
+                        while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
+                        {
+                            auxBusinessIntelligenceField =
+                                form.BusinessIntelligenceFieldList
+                                    .Where(e =>
+                                        e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value)
+                                    .FirstOrDefault();
+
+                            spaceCounter++;
+                        }
+
+                        <div class="row bg-light text-dark border border-secondary mt-1 bifield-row @(form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == formBIField.BIFieldID).Count() == 0 ? "no-children" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID == null || currentBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)" data-hasforcedcomment="@currentBusinessIntelligenceField.HasForcedComment" data-basicinfoid="@currentBusinessIntelligenceField.BasicInfoID" data-bifieldid="@currentBusinessIntelligenceField.ID" data-parentbifieldid="@currentBusinessIntelligenceField.ParentBIFieldID" data-order="@formBIField.Order">
+                            <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(currentBusinessIntelligenceField.Description) ? currentBusinessIntelligenceField.Description : currentBusinessIntelligenceField.Name)">
+                                @for (int i = 0; i < spaceCounter; i++)
+                                {
+                                    <div class="bifield-marginator px-4 d-inline-block"></div>
+                                }
+                                @if (form.BusinessIntelligenceFieldList
+                                        .Where(e =>
+                                            e.ParentBIFieldID == currentBusinessIntelligenceField.ID)
+                                        .Count() > 0)
+                                {
+                                    <i class='bx bxs-plus-square btn-bifield-show m-1 display-6'></i>
+                                    <i class='bx bxs-minus-square btn-bifield-hide m-1 display-6 text-danger d-none'></i>
+                                    @*<i class="bx bxs-check-square text-success" title="Todo correcto"></i>*@
+                                }
+                                @*@if (currentBusinessIntelligenceField.ParentBIFieldID > 0)
+                                {
+                                }*@
+                                <div class="d-flex justify-content-center align-content-center">
+                                    <input class="bifield-checked me-3" type="checkbox" value="true" @(currentTransactionBIFieldCatalog != null ? currentTransactionBIFieldCatalog.Checked ? "checked" : string.Empty : string.Empty) disabled/>
+                                </div>
+                                <span>@currentBusinessIntelligenceField.Name</span>
+                            </div>
+                            <div class="col-4 bifield-comment-container">
+                                <div class="row property-field">
+                                    <textarea class="w-100 min-w-100" rows="4" disabled>@(currentTransactionBIFieldCatalog != null ? currentTransactionBIFieldCatalog.Comment : string.Empty)</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+    <script>
+        $('.btn-attribute-show').on('click', e => {
+            let currentControl = e.currentTarget;
+
+            let attributeContainer = $(currentControl).parent().parent();
+            let attributeID = $(attributeContainer).data('attributeid');
+
+            let buttonHide = $(attributeContainer).find('.btn-attribute-hide');
+
+            $(buttonHide).removeClass('d-none');
+            $(currentControl).addClass('d-none');
+
+            $('[data-parentattributeid=' + attributeID + ']').removeClass('d-none');
+        });
+
+        $('.btn-attribute-hide').on('click', e => {
+            let currentControl = e.currentTarget;
+
+            let attributeContainer = $(currentControl).parent().parent();
+            let attributeID = $(attributeContainer).data('attributeid');
+
+            let buttonShow = $(attributeContainer).find('.btn-attribute-show');
+
+            $(buttonShow).removeClass('d-none');
+            $(currentControl).addClass('d-none');
+
+            $('[data-parentattributeid=' + attributeID + ']').addClass('d-none');
+        });
+
+        $('.btn-bifield-show').on('click', e => {
+            let currentControl = e.currentTarget;
+
+            let biFieldContainer = $(currentControl).parent().parent();
+            let biFieldID = $(biFieldContainer).data('bifieldid');
+
+            let buttonHide = $(biFieldContainer).find('.btn-bifield-hide');
+
+            $(buttonHide).removeClass('d-none');
+            $(currentControl).addClass('d-none');
+
+            $('[data-parentbifieldid=' + biFieldID + ']').removeClass('d-none');
+        });
+
+        $('.btn-bifield-hide').on('click', e => {
+            let currentControl = e.currentTarget;
+
+            let biFieldContainer = $(currentControl).parent().parent();
+            let biFieldID = $(biFieldContainer).data('bifieldid');
+
+            let buttonShow = $(biFieldContainer).find('.btn-bifield-show');
+
+            $(buttonShow).removeClass('d-none');
+            $(currentControl).addClass('d-none');
+
+            $('[data-parentbifieldid=' + biFieldID + ']').addClass('d-none');
+        });
+    </script>
+</body>
+</html>

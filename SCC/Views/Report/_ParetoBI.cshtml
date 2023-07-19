@@ -1,0 +1,519 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.ReportParetoBIViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+
+    //bool hasModel = Model.ReportResultsParetoBIViewModel != null;
+    bool hasModel = false;
+
+    string reportTitle = "Reporte gráfico de pareto";
+
+    ViewBag.Title = reportTitle;
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> @reportTitle</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse @(!hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                <form id="frmManage" action="@Url.Action(nameof(ReportController.ParetoBI), mainControllerName)" method="post" target="_blank">
+                    @Html.Hidden("TransactionCustomFieldCatalog")
+
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de inicio de la transacción
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem =>
+                                    Model.TransactionStartDate,
+                                    null,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de inicio de la transacción",
+                                        autocomplete = "off",
+                                        type = "date",
+                                            @Value =
+                                                Model.TransactionStartDate != null
+                                                    ? (((DateTime)Model.TransactionStartDate).Year > 2000
+                                                        ? ((DateTime)Model.TransactionStartDate).ToString("yyyy-MM-dd")
+                                                        : /*DateTime.Now.AddMonths(-4).ToString("yyyy-MM-dd")*/ string.Empty)
+                                                    : /*DateTime.Now.AddMonths(-4).ToString("yyyy-MM-dd")*/ string.Empty
+                                    })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de finalización de la transacción
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem =>
+                                    Model.TransactionEndDate,
+                                    null,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de finalización de la transacción",
+                                        autocomplete = "off",
+                                        type = "date",
+                                            @Value =
+                                                Model.TransactionEndDate != null
+                                                    ? (((DateTime)Model.TransactionEndDate).Year > 2000
+                                                        ? ((DateTime)Model.TransactionEndDate).ToString("yyyy-MM-dd")
+                                                        : /*DateTime.Now.ToString("yyyy-MM-dd")*/ string.Empty)
+                                                    : /*DateTime.Now.ToString("yyyy-MM-dd")*/ string.Empty
+                                    })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de inicio de la evaluación
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem =>
+                                    Model.EvaluationStartDate,
+                                    null,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de inicio de la evaluación",
+                                        autocomplete = "off",
+                                        type = "date",
+                                            @Value =
+                                                Model.EvaluationStartDate != null
+                                                    ? (((DateTime)Model.EvaluationStartDate).Year > 2000
+                                                        ? ((DateTime)Model.EvaluationStartDate).ToString("yyyy-MM-dd")
+                                                        : /*DateTime.Now.ToString("yyyy-MM-dd")*/ string.Empty)
+                                                    : /*DateTime.Now.AddMonths(-4).ToString("yyyy-MM-dd")*/ string.Empty
+                                    })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de finalización de la evaluación
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem =>
+                                    Model.EvaluationEndDate,
+                                    null,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de finalización de la evaluación",
+                                        autocomplete = "off",
+                                        type = "date",
+                                            @Value =
+                                                Model.EvaluationEndDate != null
+                                                    ? (((DateTime)Model.EvaluationEndDate).Year > 2000
+                                                        ? ((DateTime)Model.EvaluationEndDate).ToString("yyyy-MM-dd")
+                                                        : /*DateTime.Now.ToString("yyyy-MM-dd")*/ string.Empty)
+                                                    : /*DateTime.Now.ToString("yyyy-MM-dd")*/ string.Empty
+                                    })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Programas
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.ProgramIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ParetoBI.ProgramList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Programas",
+                                        title = "Programas",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Usuarios
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.UserIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ParetoBI.UserList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Usuarios",
+                                        title = "Usuarios",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Supervisores
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.SupervisorUserIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ParetoBI.SupervisorList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Supervisores",
+                                        title = "Supervisores",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Evaluadores
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.EvaluatorUserIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ParetoBI.EvaluatorList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Evaluadores",
+                                        title = "Evaluadores",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Preguntas de IN <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.BIFieldIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ParetoBI.BusinessIntelligenceFieldList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Preguntas de IN",
+                                        title = "Preguntas de IN",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="panel">
+                            <div class="accordion accordion-flush w-100" id="customControlPanel">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingOne">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#customControlPanelCollapse" aria-expanded="true" aria-controls="customControlPanelCollapse">
+                                            <strong> Campos personalizados</strong>
+                                        </button>
+                                    </h2>
+                                    <div id="customControlPanelCollapse" class="accordion-collapse collapse" aria-labelledby="headingOne"
+                                         data-bs-parent="#customControlPanel">
+                                        @foreach (CustomControl customControl in Model.CustomControlList)
+                                        {
+                                            Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+                                            htmlAttributes.Add("autocomplete", "off");
+
+                                            if (!string.IsNullOrEmpty(customControl.Mask))
+                                            {
+                                                switch (customControl.Mask)
+                                                {
+                                                    case SCC_BL.Settings.AppValues.Masks.Date1.MASK:
+                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Date1.PATTERN);
+                                                        htmlAttributes.Add("type", "date");
+                                                        break;
+                                                    case SCC_BL.Settings.AppValues.Masks.Time1.MASK:
+                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Time1.PATTERN);
+                                                        htmlAttributes.Add("type", "time");
+                                                        break;
+                                                    case SCC_BL.Settings.AppValues.Masks.PhoneNumber1.MASK:
+                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber1.PATTERN);
+                                                        htmlAttributes.Add("type", "text");
+                                                        break;
+                                                    case SCC_BL.Settings.AppValues.Masks.PhoneNumber2.MASK:
+                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber2.PATTERN);
+                                                        htmlAttributes.Add("type", "text");
+                                                        break;
+                                                    case SCC_BL.Settings.AppValues.Masks.Alphanumeric1.MASK:
+                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN);
+                                                        htmlAttributes.Add("type", "text");
+                                                        break;
+                                                    case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
+                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Name1.PATTERN);
+                                                        htmlAttributes.Add("type", "text");
+                                                        break;
+                                                    case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
+                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.LastName1.PATTERN);
+                                                        htmlAttributes.Add("type", "text");
+                                                        break;
+                                                    case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
+                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Email1.PATTERN);
+                                                        htmlAttributes.Add("type", "text");
+                                                        break;
+                                                    default:
+                                                        break;
+                                                }
+                                            }
+
+                                            string currentControlClass = "property-field-control custom-control-value " + customControl.CssClass;
+
+                                            htmlAttributes.Add("placeholder", customControl.Label);
+                                            htmlAttributes.Add("title", customControl.Description);
+                                            htmlAttributes.Add("class", currentControlClass);
+
+                                            <div class="row property-field custom-control-field" data-customfieldid="@customControl.ID" data-customcontrolid="@customControl.ID">
+                                                <div class="col-5 property-field-label">
+                                                    @customControl.Label
+                                                </div>
+                                                <div class="col-7 value-container">
+                                                    @switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)customControl.ControlTypeID)
+                                                    {
+                                                        case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
+                                                            @Html.TextBox(
+                                                                "customControl_" + customControl.ID,
+                                                                null,
+                                                                htmlAttributes);
+                                                            break;
+                                                        case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
+                                                            htmlAttributes.Add(
+                                                                "rows",
+                                                                customControl.NumberOfRows.ToString());
+
+                                                            htmlAttributes.Add(
+                                                                "cols",
+                                                                customControl.NumberOfColumns.ToString());
+
+                                                            @Html.TextArea(
+                                                                "customControl_" + customControl.ID,
+                                                                null,
+                                                                htmlAttributes);
+                                                            break;
+                                                        case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
+                                                            htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
+
+                                                            <div class="radio-control d-inline-block">
+                                                                @foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
+                                                                {
+                                                                    htmlAttributes.Remove("label");
+                                                                    htmlAttributes.Add("label", customControlValueCatalog.Name);
+
+                                                                    <input id="customControl_@customControl.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" />
+                                                                }
+                                                            </div>
+                                                            break;
+                                                        case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.RADIO_BUTTON:
+                                                            htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
+
+                                                            <div class="radio-control d-inline-block">
+                                                                @foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
+                                                                {
+                                                                    htmlAttributes.Remove("label");
+                                                                    htmlAttributes.Add("label", customControlValueCatalog.Name);
+
+                                                                    @Html.RadioButton(
+                                                                        "customControl_" + customControl.ID,
+                                                                        customControlValueCatalog.ID,
+                                                                        htmlAttributes)
+                                                                }
+                                                            </div>
+                                                            break;
+                                                        case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
+                                                            <select class="custom-control-chosen-select" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description">
+                                                                <option value="">Seleccionar</option>
+                                                                @{
+                                                                    foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
+                                                                    {
+                                                                        <option value="@customControlValueCatalog.ID">
+                                                                            @customControlValueCatalog.Name
+                                                                        </option>
+                                                                    }
+                                                                }
+                                                            </select>
+                                                            break;
+                                                        default:
+                                                            break;
+                                                    }
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Enviar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@*@if (hasModel)
+    {
+        <div id="resultsContainer">
+            @{
+                string content = OverallController.Serialize(Model.ReportResultsOverallAccuracyViewModel);
+            }
+            @content
+        </div>
+    }*@
+<script>
+    $(document).ready(function () {
+        @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
+        {
+            @:window.open('@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))', '_self');
+        }
+
+        fetchMultiSelectBasicData('Content/files/multi-select-basic-data.json').then(response => {
+            let data = response;
+
+            startMultiSelect('#@nameof(Model.ProgramIDArray)', data);
+            startMultiSelect('#@nameof(Model.UserIDArray)', data);
+            startMultiSelect('#@nameof(Model.SupervisorUserIDArray)', data);
+            startMultiSelect('#@nameof(Model.EvaluatorUserIDArray)', data);
+            startMultiSelect('#@nameof(Model.BIFieldIDArray)', data);
+
+            startMultiSelect('.custom-control-chosen-select', data);
+        });
+    });
+
+    $('.report-no-constraint').click(() => {
+        $('.report-constraint').prop('checked', false);
+    });
+
+    $('.report-constraint').off('change').on('change', function (e) {
+        $('.report-constraint').prop('checked', false);
+        $('.report-no-constraint').prop('checked', false);
+
+        $('.report-no-constraint-no').prop('checked', true);
+
+        $(e.currentTarget).prop('checked', true);
+    });
+
+    $('#btnSubmit').click(async (e) => {
+        let requiredAdviseElement = $('.required-advise');
+
+        if (
+            ($('#BIFieldIDArray').val() == '' || $('#BIFieldIDArray').val() == null)
+        ) {
+            e.preventDefault();
+            $(requiredAdviseElement).removeClass('d-none');
+            window.scrollTo(0, 0);
+            alert('Por favor, ingrese todos los datos requeridos');
+            return false;
+        }
+
+        let message = '¿Quiere enviar los datos ingresados?';
+
+        if (confirm(message) != true) {
+            e.preventDefault();
+            return false;
+        }
+
+        let transactionCustomFieldList = [];
+        transactionCustomFieldList = await getTransactionCustomFieldCatalog();
+        $('#TransactionCustomFieldCatalog').val(JSON.stringify(transactionCustomFieldList));
+    });
+
+    function getTransactionCustomFieldCatalog() {
+        let transactionCustomFieldList = [];
+
+        $('.custom-control-field').each((index, e) => {
+            let currentRow = e;
+            let valueContainer = $(currentRow).find('.value-container');
+            let valueID = null;
+            let valueIDArray = [];
+            let comment = '';
+
+            if ($(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').length > 0) {
+                comment = $(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').val();
+            }
+            else
+                if ($(valueContainer).find('input[type="radio"]:checked').length > 0) {
+                    valueID = $(valueContainer).find('input[type="radio"]:checked').val();
+                }
+                else
+                    if ($(valueContainer).find('input[type="checkbox"]:checked').length > 0) {
+                        let elementList = $(valueContainer).find('input[type="checkbox"]:checked');
+                        if (elementList.length > 0) {
+                            for (let index = 0; index < elementList.length; index++) {
+                                valueIDArray.push(parseInt($(elementList[index]).val()));
+                                /*valueID =
+                                    valueID != null && valueID != ''
+                                        ? (valueID + ',' + $(elementList[index]).val())
+                                        : $(elementList[index]).val();*/
+                            }
+                        }
+                    }
+                    else
+                        if ($(valueContainer).find('select option:selected').length > 0) {
+                            valueID = $(valueContainer).find('select option:selected').val();
+                        }
+
+            let transactionCustomFieldID = 0;
+            let customFieldID = $(e).data('customfieldid');
+
+            let transactionCustomField = {};
+
+            if (valueIDArray.length > 0) {
+                for (var i = 0; i < valueIDArray.length; i++) {
+                    transactionCustomField =
+                    {
+                        "ID": transactionCustomFieldID ?? 0,
+                        "TransactionID": 0,
+                        "CustomFieldID": customFieldID,
+                        "Comment": valueIDArray[i] == null || valueIDArray[i] == 0 ? comment : null,
+                        "ValueID": valueIDArray[i],
+                        "BasicInfoID": 0
+                    };
+
+                    transactionCustomFieldList.push(transactionCustomField);
+                }
+            }
+            else {
+                transactionCustomField =
+                {
+                    "ID": transactionCustomFieldID ?? 0,
+                    "TransactionID": 0,
+                    "CustomFieldID": customFieldID,
+                    "Comment": valueID == null || valueID == 0 ? comment : null,
+                    "ValueID": valueID,
+                    "BasicInfoID": 0
+                };
+
+                transactionCustomFieldList.push(transactionCustomField);
+            }
+        });
+
+        return transactionCustomFieldList;
+    }
+</script>

@@ -1,0 +1,25 @@
+.bifield-property-field-control {
+    min-width: 100%;
+    color: #626262;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 5px;
+    font-size: 1rem;
+}
+
+.bifield-container {
+    display: flex;
+    align-items: center;
+}
+
+table#answerTable tbody tr td.td-name .bifield-container .bifield-input-container {
+    min-width: 90%;
+}
+
+table#answerTable tbody tr td.td-name .bifield-container span:is(.bifield-taker-out, .bifield-tabber, .bifield-climb-up, .bifield-go-down) {
+    display: none;
+}
+
+table#answerTable tbody tr:hover > td.td-name .bifield-container span:is(.bifield-taker-out, .bifield-tabber, .bifield-climb-up, .bifield-go-down) {
+    display: inline-block;
+}

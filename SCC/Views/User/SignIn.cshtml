@@ -1,0 +1,66 @@
+﻿@using SCC.Controllers;
+
+@model SCC.ViewModels.UserPersonViewModel
+
+@{
+    Layout = null;
+    ViewBag.Title = "Registro";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/Content/Custom/User/signin.css">
+    @Styles.Render("~/Content/bootstrap")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+</head>
+<body>
+    @if (Session[SCC_BL.Settings.AppValues.Session.GLOBAL_TEMP_MESSAGE] != null)
+    {
+        @Html.Raw(Session[SCC_BL.Settings.AppValues.Session.GLOBAL_TEMP_MESSAGE]);
+        Session[SCC_BL.Settings.AppValues.Session.GLOBAL_TEMP_MESSAGE] = null;
+    }
+    <div class="login-content">
+        <div class="login-window admin-form">
+            <div class="panel-heading">
+                <figure>
+                    <img class="logo" src="~/Content/img/logo.png" alt="">
+                </figure>
+            </div>
+            <div class="panel-body">
+                <form action="@Url.Action(nameof(UserController.SignIn), OverallController.GetControllerName(typeof(UserController)))" method="post">
+                    <div class="section login-input-block">
+                        @Html.TextBoxFor(modelitem => Model.Person.Identification, null, new { placeholder = "Cédula", pattern = "^[0-9]+$", autocomplete = "off", required = "" })
+                        @Html.TextBoxFor(modelitem => Model.Person.FirstName, null, new { placeholder = "Nombre", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", autocomplete = "off", required = "" })
+                        @Html.TextBoxFor(modelitem => Model.Person.SurName, null, new { placeholder = "Primer apellido", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", autocomplete = "off", required = "" })
+                        @Html.TextBoxFor(modelitem => Model.Person.LastName, null, new { placeholder = "Segundo apellido", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", autocomplete = "off", required = "" })
+                        @Html.TextBoxFor(modelitem => Model.User.Email, null, new { placeholder = "Correo electrónico", pattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$", type = "email", autocomplete = "off", required = "" })
+                        @Html.DropDownListFor(modelitem => Model.Person.CountryID, (ViewData[SCC_BL.Settings.AppValues.ViewData.User.SignIn.Catalog.CountryCatalog.NAME] as SelectList))
+                        @Html.DropDownListFor(modelitem => Model.User.LanguageID, (ViewData[SCC_BL.Settings.AppValues.ViewData.User.SignIn.Catalog.LanguageCatalog.NAME] as SelectList))
+                        @*@Html.TextBoxFor(modelitem => Model.User.Username, null, new { placeholder = "Nombre de usuario", autocomplete = "off" })*@
+                        @Html.TextBox("password", null, new { placeholder = "Contraseña", type = "password", autocomplete = "off", required = "" })
+                        @Html.TextBox("passwordConfirmation", null, new { placeholder = "Confirmar contraseña", type = "password", autocomplete = "off", required = "" })
+                    </div>
+                    <div class="section login-buttons">
+                        <div class="login-button-container">
+                            <button class="btn-login">Crear</button>
+                        </div>
+                        <div class="login-link-container">
+                            <a class="btn-create-user" href="@Url.Action(nameof(UserController.LogIn), OverallController.GetControllerName(typeof(UserController)))">
+                                Volver al Login
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        window.open('@Url.Action(nameof(UserController.LogIn), OverallController.GetControllerName(typeof(UserController)))', '_self');
+    </script>
+</body>
+</html>

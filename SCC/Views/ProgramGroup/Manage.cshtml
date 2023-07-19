@@ -1,0 +1,333 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.ProgramGroupManagementViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_PROGRAMGROUP;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(ProgramGroupController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    bool hasModel = Model.ProgramGroup.ID != null && Model.ProgramGroup.ID > 0;
+
+    ViewBag.Title = "Administración de grupos de programas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Crear / Editar grupo de programas</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                @{
+                    string formAction =
+                        !hasModel ?
+                            @Url.Action(nameof(ProgramGroupController.Create), mainControllerName) :
+                            @Url.Action(nameof(ProgramGroupController.Edit), mainControllerName);
+                }
+                <form id="frmManage" action="@formAction" method="post">
+                    @Html.HiddenFor(modelitem => Model.ProgramGroup.ID)
+                    @Html.HiddenFor(modelitem => Model.ProgramGroup.BasicInfo)
+                    @Html.HiddenFor(modelitem => Model.ProgramGroup.BasicInfoID)
+
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        @if (hasModel)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    ID del sistema
+                                </div>
+                                <div class="col-7">
+                                    <strong>@Model.ProgramGroup.ID</strong>
+                                </div>
+                            </div>
+                        }
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Identificador <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.ProgramGroup.Identifier, null, new { @class = "property-field-control", placeholder = "Identificador", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Nombre <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.ProgramGroup.Name, null, new { @class = "property-field-control", placeholder = "Nombre", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Programas disponibles <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "programList",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.ProgramGroup.Manage.ProgramList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Programas disponibles para el grupo",
+                                        title = "Programas disponibles para el grupo",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+
+                            @if (hasModel)
+                            {
+                                <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                            }
+                            else
+                            {
+                                <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                            }
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tableContainer">
+    <table class="display cell-border" id="tbInfo">
+        <thead>
+            <tr>
+                <th>
+                    Nombre
+                </th>
+                <th>
+                    Identificador
+                </th>
+                <th>
+                    Programas
+                </th>
+                <th>
+                    Acciones
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (ProgramGroup programGroup in Model.ProgramGroupList)
+            {
+                string tableRowClass = string.Empty;
+                if (programGroup.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.DELETED)
+                {
+                    tableRowClass +=
+                        string.IsNullOrEmpty(tableRowClass) ?
+                            "strikethrough" :
+                            " strikethrough";
+                }
+
+                <tr class="@tableRowClass">
+                    <td>@programGroup.Name</td>
+                    <td>@programGroup.Identifier</td>
+                    <td>
+                        <ol>
+                            @foreach (ProgramGroupProgramCatalog program in programGroup.ProgramList)
+                            {
+                                {
+                                    Program tempProgram = new Program(program.ProgramID);
+                                    tempProgram.SetDataByID();
+
+                                    if (
+                                        tempProgram.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED ||
+                                        tempProgram.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED)
+                                    {
+                                        <li class="strikethrough">
+                                            @tempProgram.Name (eliminado)
+                                        </li>
+                                    }
+                                    else
+                                    {
+                                        <li>
+                                            @tempProgram.Name @(tempProgram.EndDate != null && tempProgram.EndDate <= DateTime.Now ? "(finalizado)" : string.Empty)
+                                        </li>
+                                    }
+                                }
+                            }
+                        </ol>
+                    </td>
+                    <td>
+                        @if (programGroup.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.DELETED)
+                        {
+                            <button data-elementid="@programGroup.ID" class="btn-element-action btn-element-action-primary btn-programGroup-edit" title="Editar">
+                                <i class='bx bxs-pencil'></i>
+                            </button>
+                            <form class="d-inline frm-delete" action="@Url.Action(nameof(ProgramGroupController.Delete), mainControllerName)" method="post">
+                                @Html.Hidden("programGroupID", programGroup.ID)
+                                <button class="btn-element-action btn-element-action-danger btn-programGroup-delete" type="submit" title="Eliminar">
+                                    <i class='bx bxs-trash'></i>
+                                </button>
+                            </form>
+                            <button data-elementid="@programGroup.ID" class="btn-element-action btn-element-action-warning btn-programGroup-logs" title="Ver logs">
+                                <i class='bx bx-book-reader'></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button data-elementid="@programGroup.ID" class="btn-element-action btn-element-action-warning btn-programGroup-logs" title="Ver logs">
+                                <i class='bx bx-book-reader'></i>
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de grupos de programas' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    },
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+        });
+
+        fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            startMultiSelect('#programList', data);
+        });
+    });
+
+    $('.btn-programGroup-edit').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(ProgramGroupController.Manage), mainControllerName)?programGroupID=' + elementID, '_self');
+        }
+    });
+
+    $('.btn-programGroup-logs').click((e) => {
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        window.open('@Url.Action(logsActionName, logsControllerName)?categoryID=' + @mainCategoryID + '&itemID=' + elementID, '_blank');
+    });
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(ProgramGroupController.Manage), mainControllerName)', '_self');
+    });
+
+    $('.frm-delete').submit((e) => {
+        let message = '¿Quieres eliminar este elemento del sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+
+    $('#btnSubmit').click(() => {
+        const requiredAdviseElement = $('.required-advise');
+
+        if (
+            ($('#programList').val() == '' || $('#programList').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }
+
+        const message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+</script>

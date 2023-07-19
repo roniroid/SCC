@@ -1,0 +1,22 @@
+{
+  "allow_single_deselect": true,
+  "disable_search": false,
+  "disable_search_threshold": 0,
+  "enable_split_word_search": true,
+  "inherit_select_classes": false,
+  "max_selected_options": 0,
+  "no_results_text": "Sin resultados",
+  "placeholder_text_multiple": "Seleccione los elementos deseados",
+  "placeholder_text_single": "Seleccione un elemento",
+  "search_contains": false,
+  "group_search": true,
+  "single_backstroke_delete": true,
+  "width": "100%",
+  "display_disabled_options": false,
+  "display_selected_options": false,
+  "include_group_label_in_selected": false,
+  "max_shown_results": 0,
+  "case_sensitive_search": false,
+  "hide_results_on_select": true,
+  "rtl": false
+}

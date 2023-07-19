@@ -1,0 +1,298 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>@ViewBag.Title - SCC</title>
+    @Styles.Render("~/Content/css")
+    @Styles.Render("~/Content/navbar")
+    @Scripts.Render("~/bundles/jquery")
+    @Styles.Render("~/Content/bootstrap.css")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/modernizr")
+    <link href="~/Content/boxicons.min.css" rel='stylesheet'>
+
+    <script src="~/Scripts/Custom/custom-library-functions.js"></script>
+
+    <style>
+        .bd-example-modal-lg .modal-dialog {
+            display: table;
+            position: relative;
+            margin: 0 auto;
+            top: calc(50% - 24px);
+        }
+
+            .bd-example-modal-lg .modal-dialog .modal-content {
+                background-color: transparent;
+                border: none;
+            }
+    </style>
+</head>
+<body>
+    @{ 
+        User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+    }
+    <div class="sidebar close">
+        <div class="logo-details">
+            <!--<i class='bx bxl-c-plus-plus'></i>-->
+            <img src="~/Content/img/simple-logo.png" alt="">
+            <span class="logo_name"></span>
+        </div>
+        <ul class="nav-links">
+            <li>
+                <a>
+                    <i class='bx bxs-home'></i>
+                    <span class="link_name">Inicio</span>
+                </a>
+                <ul class="sub-menu blank">
+                    <li><a class="link_name" href="@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))">Página principal</a></li>
+                </ul>
+            </li>
+            @if (
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MASSIVELY_IMPORT_USERS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CHANGE_NOTIFICATION_ALARMS)
+            )
+            {
+                <li>
+                    <div class="iocn-link">
+                        <a href="#">
+                            <i class='bx bxs-user'></i>
+                            <span class="link_name">Usuarios</span>
+                        </a>
+                        <i class='bx bxs-chevron-down arrow'></i>
+                    </div>
+                    <ul class="sub-menu">
+                        <li><a class="link_name">Usuarios</a></li>
+
+                        @if ((actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS)) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
+                        {
+                            <li><a href="@Url.Action(nameof(UserController.Manage), OverallController.GetControllerName(typeof(UserController)))">Administración de usuarios</a></li>
+                        }
+                        @*<li><a href="#">Solicitudes pendientes</a></li>*@
+
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MASSIVELY_IMPORT_USERS))
+                        {
+                            <li><a href="@Url.Action(nameof(UserController.MassiveImport), OverallController.GetControllerName(typeof(UserController)))">Importar usuarios</a></li>
+                        }
+                        <li class="with-separator"></li>
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
+                        {
+                            <li><a href="@Url.Action(nameof(UserController.MassivePasswordChange), OverallController.GetControllerName(typeof(UserController)))">Cambio masivo de contraseña</a></li>
+                        }
+
+                        @*<li><a href="#">Mi cuenta</a></li>*@
+                        @*<li><a href="#">Cambiar contraseña</a></li>*@
+                        @*<li><a href="#">Cambiar contraseña de otro usuario</a></li>*@
+                        @*<li><a href="#">Restablecer contraseña</a></li>*@
+
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CHANGE_NOTIFICATION_ALARMS))
+                        {
+                            <li><a href="@Url.Action(nameof(UserController.NotificationMatrix), OverallController.GetControllerName(typeof(UserController)))">Matriz de notificación</a></li>
+                        }
+                    </ul>
+                </li>
+            }
+            <li>
+                <div class="iocn-link">
+                    <a href="#">
+                        <i class='bx bxs-group'></i>
+                        <span class="link_name">Roles y Grupos</span>
+                    </a>
+                    <i class='bx bxs-chevron-down arrow'></i>
+                </div>
+                <ul class="sub-menu">
+                    <li><a class="link_name">Roles y Grupos</a></li>
+                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ROLES) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_ROLES))
+                    {
+                        <li><a href="@Url.Action(nameof(RoleController.Manage), OverallController.GetControllerName(typeof(RoleController)), new { filterActiveElements = "true" })">Roles</a></li>
+                    }
+                    <li class="with-separator"></li>
+                    <li><a href="@Url.Action(nameof(UserController.AsignRolesAndPermissions), OverallController.GetControllerName(typeof(UserController)))">Agregar rol a usuarios</a></li>
+                    <li class="with-separator"></li>
+                    <li><a href="@Url.Action(nameof(WorkspaceController.Manage), OverallController.GetControllerName(typeof(WorkspaceController)))">Puestos de trabajo</a></li>
+                    <li><a href="@Url.Action(nameof(GroupController.Manage), OverallController.GetControllerName(typeof(GroupController)))">Grupos</a></li>
+                </ul>
+            </li>
+            <li>
+                <div class="iocn-link">
+                    <a href="#">
+                        <i class='bx bxs-vector'></i>
+                        <span class="link_name">Programas</span>
+                    </a>
+                    <i class='bx bxs-chevron-down arrow'></i>
+                </div>
+                <ul class="sub-menu">
+                    <li><a class="link_name">Programas</a></li>
+                    <li><a href="@Url.Action(nameof(ProgramController.Manage), OverallController.GetControllerName(typeof(ProgramController)))">Programas</a></li>
+                    <li><a href="@Url.Action(nameof(ProgramGroupController.Manage), OverallController.GetControllerName(typeof(ProgramGroupController)))">Grupos de programas</a></li>
+                    <li><a href="@Url.Action(nameof(UserController.AsignProgramsAndProgramGroups), OverallController.GetControllerName(typeof(UserController)))">Agregar grupos a usuarios</a></li>
+                </ul>
+            </li>
+            <li>
+                <div class="iocn-link">
+                    <a href="#">
+                        <i class='bx bxs-check-square'></i>
+                        <span class="link_name">Monitoreo de transacción</span>
+                    </a>
+                    <i class='bx bxs-chevron-down arrow'></i>
+                </div>
+                <ul class="sub-menu">
+                    <li><a class="link_name">Monitoreo de transacción</a></li>
+                    <li><a class="link_name">Administración de formularios</a></li>
+                    <li><a href="@Url.Action(nameof(CustomControlController.Manage), OverallController.GetControllerName(typeof(CustomControlController)))">Campos personalizados</a></li>
+                    <li class="with-separator"></li>
+                    <li><a href="@Url.Action(nameof(BIFieldController.Manage), OverallController.GetControllerName(typeof(BIFieldController)))">Preguntas IN</a></li>
+                    @*<li><a href="#">Opciones de devolución</a></li>*@
+                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))
+                    {
+                        <li><a href="@Url.Action(nameof(FormController.Edit), OverallController.GetControllerName(typeof(FormController)))">Crear formulario</a></li>
+                    }
+                    <li><a href="@Url.Action(nameof(FormController.UploadForm), OverallController.GetControllerName(typeof(FormController)))">Subir formulario</a></li>
+                    <li class="with-separator"></li>
+                    <li><a href="@Url.Action(nameof(FormController.FormBinding), OverallController.GetControllerName(typeof(FormController)))">Asignar formulario</a></li>
+                    <li><a href="@Url.Action(nameof(FormController.Manage), OverallController.GetControllerName(typeof(FormController)), new { filterActiveElements = "true" })">Listar formularios</a></li>
+                    <li><a class="link_name">Monitoreo</a></li>
+                    <li class="with-separator"></li>
+                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_TRANSACTIONS))
+                    {
+                        <li><a href="@Url.Action(nameof(TransactionController.Search), OverallController.GetControllerName(typeof(TransactionController)))">Buscar transacciones</a></li>
+                    }
+                    <!--<li><a href="#">Recolección</a></li>-->
+                    <li><a href="@Url.Action(nameof(TransactionController.Edit), OverallController.GetControllerName(typeof(TransactionController)))">Evaluación</a></li>
+                    <li><a class="link_name">Calibración</a></li>
+                    <li class="with-separator"></li>
+                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS))
+                    {
+                        <li><a href="@Url.Action(nameof(CalibrationController.CalibrationTypes), OverallController.GetControllerName(typeof(CalibrationController)))">Tipos de calibración</a></li>
+                    }
+                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_SESSIONS))
+                    {
+                        <li><a href="@Url.Action(nameof(CalibrationController.Search), OverallController.GetControllerName(typeof(CalibrationController)))">Crear sesión</a></li>
+                    }
+                    <li><a href="@Url.Action(nameof(CalibrationController.Manage), OverallController.GetControllerName(typeof(CalibrationController)))">Sesiones de calibración</a></li>
+                </ul>
+            </li>
+            @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
+            {
+                <li>
+                    <a href="#">
+                        <i class='bx bxs-report'></i>
+                        <span class="link_name">Reportes</span>
+                    </a>
+                    <ul class="sub-menu blank">
+                        <li><a class="link_name" href="@Url.Action(nameof(ReportController.Index), OverallController.GetControllerName(typeof(ReportController)))">Reportes</a></li>
+                    </ul>
+                </li>
+            }
+            @if (actualUser.HasRole(SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER) || actualUser.HasRole(SCC_BL.DBValues.Catalog.USER_ROLE.ADMINISTRATOR))
+            {
+                <li>
+                    <a href="#">
+                        <i class='bx bx-search-alt'></i>
+                        <span class="link_name">Bitácoras</span>
+                    </a>
+                    <ul class="sub-menu blank">
+                        <li><a class="link_name" href="@Url.Action(nameof(LogController.LogFiles), OverallController.GetControllerName(typeof(LogController)))">Archivos de bitácora</a></li>
+                    </ul>
+                </li>
+            }
+            <li title="Salir">
+                <a class="cursor-pointer" id="logOut">
+                    <i class='bx bxs-log-out'></i>
+                    <span class="link_name">Salir</span>
+                </a>
+            </li>
+            <!--<li>
+    <div class="profile-details">
+        <div class="profile-content">-->
+            <!--<img src="image/profile.jpg" alt="profileImg">-->
+            <!--</div>
+    <div class="name-job">
+        <div class="profile_name">Salir</div>-->
+            <!--<div class="job">Web Desginer</div>-->
+            <!--</div>
+            <i class='bx bx-log-out'></i>
+        </div>
+    </li>-->
+        </ul>
+    </div>
+    <section class="home-section">
+        <div class="home-content">
+            <div class="d-inline-block">
+                <i class='bx bx-menu'></i>
+                <span class="text">SCC</span>
+            </div>
+            <span class="name-label">
+                @actualUser.Person.FirstName @actualUser.Person.SurName @actualUser.Person.LastName
+            </span>
+        </div>
+        <main>
+            <div id="waitingModal" class="modal fade bd-example-modal-lg" data-backdrop="static" data-keyboard="false" tabindex="-1">
+                <div class="modal-dialog modal-sm">
+                    <div class="modal-content" style="width: 48px">
+                        <div class="d-flex justify-content-center">
+                            <div class="d-flex align-items-center text-light">
+                                <strong>Cargando...</strong>
+                                <div class="spinner-border ml-auto" role="status" aria-hidden="true">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container body-content">
+                @if (Session[SCC_BL.Settings.AppValues.Session.GLOBAL_TEMP_MESSAGE] != null)
+                {
+                    @Html.Raw(Session[SCC_BL.Settings.AppValues.Session.GLOBAL_TEMP_MESSAGE]);
+                    Session[SCC_BL.Settings.AppValues.Session.GLOBAL_TEMP_MESSAGE] = null;
+                }
+                @RenderBody()
+                @*<footer>
+                <p>&copy; @DateTime.Now.Year - Mi aplicación ASP.NET</p>
+            </footer>*@
+            </div>
+        </main>
+    </section>
+    <script>
+        let arrow = document.querySelectorAll(".arrow");
+        for (var i = 0; i < arrow.length; i++) {
+            arrow[i].addEventListener("click", (e) => {
+                let arrowParent = e.target.parentElement.parentElement;
+                arrowParent.classList.toggle("showMenu");
+            });
+        }
+        let sidebar = document.querySelector(".sidebar");
+        let sidebarBtn = document.querySelector(".bx-menu");
+        sidebarBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("close");
+        });
+    </script>
+    <script>
+        $('#logOut').click(() => {
+            let message = '¿Quieres salir del sistema?';
+
+            if (confirm(message) == true) {
+                window.open('@Url.Action(nameof(UserController.LogOut), OverallController.GetControllerName(typeof(UserController)))', '_self');
+            }
+        });
+
+        function showWaitingModal() {
+            $('#waitingModal').modal('show');
+        }
+
+        function hideWaitingModal() {
+            $('#waitingModal').modal('hide');
+        }
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

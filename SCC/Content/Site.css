@@ -1,0 +1,236 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+html {
+    font-size: 12px;
+}
+
+body {
+    font-family: "Open Sans", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    line-height: 1.49;
+    color: #666666;
+    background-color: #ffffff;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+.d-none {
+    display: none;
+}
+
+.container.body-content {
+    padding-left: 10px;
+    padding-top: 10px;
+    max-width: 95%;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+}
+
+.btn-custom-system {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 2px;
+    padding: 10px 30px;
+    text-shadow: 0 1px rgb(0 0 0 / 8%);
+    cursor: pointer;
+    margin: 5px;
+}
+
+.btn-custom-system-primary {
+    --element-font-color: #ffffff;
+    --element-border-color: #000;
+    --element-bg-color: #3763AD;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    background-color: var(--element-bg-color);
+}
+
+.btn-custom-system-success {
+    --element-font-color: #ffffff;
+    --element-border-color: #000;
+    --element-bg-color: #28a745;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    background-color: var(--element-bg-color);
+}
+
+.btn-custom-system-secondary {
+    --element-font-color: #ffffff;
+    --element-border-color: #000;
+    --element-bg-color: #aeaeae;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    background-color: var(--element-bg-color);
+}
+
+.strikethrough {
+    text-decoration: line-through;
+}
+
+.btn-element-action {
+    font-size: 15px;
+    border-radius: 5px;
+    border-width: 3px;
+    border-style: solid;
+    min-width: 30px;
+    min-height: 30px;
+}
+
+.btn-element-action-dark {
+    --element-font-color: #000000;
+    --element-border-color: #000000;
+    --element-bg-color: #ffffff;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    background-color: var(--element-bg-color);
+}
+
+.btn-element-action-success {
+    --element-font-color: #28a745;
+    --element-border-color: #28a745;
+    --element-bg-color: #ffffff;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    background-color: var(--element-bg-color);
+}
+
+.btn-element-action-primary {
+    --element-font-color: #3d60d3;
+    --element-border-color: #3d60d3;
+    --element-bg-color: #ffffff;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    background-color: var(--element-bg-color);
+}}
+
+.btn-element-action-secondary {
+    --element-font-color: #666666;
+    --element-border-color: #666666;
+    --element-bg-color: #ffffff;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    background-color: var(--element-bg-color);
+}
+
+.btn-element-action-warning {
+    --element-font-color: #c8ca2f;
+    --element-border-color: #c8ca2f;
+    --element-bg-color: #ffffff;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    background-color: var(--element-bg-color);
+}
+
+.btn-element-action-danger {
+    --element-font-color: #ffffff;
+    --element-border-color: #d43220;
+    --element-bg-color: #d43220;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    background-color: var(--element-bg-color);
+}
+
+.btn-element-action-primary-light {
+    --element-font-color: #3ca1c0;
+    --element-border-color: #3ca1c0;
+    --element-bg-color: #ffffff;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    /*background-color: var(--element-bg-color);*/
+    background-color: transparent;
+}
+
+    .btn-element-action-primary-light:hover {
+        --element-font-color: #ffffff;
+        --element-border-color: #3ca1c0;
+        --element-bg-color: #3ca1c0;
+        color: var(--element-font-color);
+        border-color: var(--element-border-color);
+        background-color: var(--element-bg-color);
+    }
+
+.btn-element-action-success-light {
+    --element-font-color: #3ca1c0;
+    --element-border-color: #3ca1c0;
+    --element-bg-color: #ffffff;
+    color: var(--element-font-color);
+    border-color: var(--element-border-color);
+    /*background-color: var(--element-bg-color);*/
+    background-color: transparent;
+}
+
+    .btn-element-action-success-light:hover {
+        --element-font-color: #ffffff;
+        --element-border-color: #3ca1c0;
+        --element-bg-color: #3ca1c0;
+        color: var(--element-font-color);
+        border-color: var(--element-border-color);
+        background-color: var(--element-bg-color);
+    }
+
+main, .home-section {
+    background-color: #E4E9F7;
+}
+
+.control-type-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+    .control-type-container button {
+        font-size: 25px;
+        min-width: 50px;
+        min-height: 50px;
+        margin: 10px;
+    }
+
+.option-container .option-control {
+    width: 30%;
+    color: #626262;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 5px;
+    font-size: 1rem;
+}
+
+input[type="text"].multi-line {
+    word-break: break-word;
+}
+
+table {
+    overflow-wrap: anywhere;
+}
+
+.w-20 {
+    width: 19.5%;
+}
+
+.bg-secondary-light {
+    background-color: #d5d5d5;
+}
+
+.min-w-100 {
+    min-width: 100%;
+}

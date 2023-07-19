@@ -1,0 +1,165 @@
+﻿@using SCC_BL;
+
+@model List<UserNotification>
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    ViewBag.Title = "Inicio";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="text-center m-4">
+    <h4>Notificaciones</h4>
+</div>
+
+<div class="tableContainer">
+    <table class="display cell-border" id="tbInfo">
+        <thead>
+            <tr>
+                <th>
+                    Mensaje
+                </th>
+                <th>
+                    Tipo de notificación
+                </th>
+                <th>
+                    Fecha
+                </th>
+                <th>
+                    Enlaces
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (UserNotification userNotification in Model)
+            {
+                <tr>
+                    <td>@userNotification.Message</td>
+                    <td>
+                        @switch ((SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE)userNotification.TypeID)
+                        {
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.DISPUTE_AGENT:
+                                @:Disputa
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.DISPUTE_OTHERS:
+                                @:Disputa
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.DEVOLUTION_AGENT:
+                                @:Devolución
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.DEVOLUTION_OTHERS:
+                                @:Devolución
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.INVALIDATION_AGENT:
+                                @:Invalidación
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.INVALIDATION_OTHERS:
+                                @:Invalidación
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.TRANSACTION_ACCORDANCE_AGENT:
+                                @:Conformidad de transacción
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.TRANSACTION_ACCORDANCE_OTHERS:
+                                @:Conformidad de transacción
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.MONITORED_TEAM_WITH_NOTE_ZERO_AGENT:
+                                @:Monitoreo de equipo con nota cero
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.MONITORED_TEAM_WITH_NOTE_ZERO_OTHERS:
+                                @:Monitoreo de equipo con nota cero
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.CALIBRATION_AGENT:
+                                @:Calibración
+                                break;
+                            case SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.CALIBRATION_OTHERS:
+                                @:Calibración
+                                break;
+                            default:
+                                break;
+                        }
+                    </td>
+                    <td data-order="@userNotification.BasicInfo.CreationDate.ToString("yyyyMMddHHmmss")">@userNotification.BasicInfo.CreationDate.ToString("dd MMM yyyy hh:mm:ss tt")</td>
+                    <td>
+                        @foreach (UserNotificationUrl userNotificationUrl in userNotification.UserNotificationUrlList)
+                        {
+                            <a href="@userNotificationUrl.Content" target="_blank">@userNotificationUrl.Description</a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        fetchDatatableBasicData('Content/files/datatables-basic-data.json').then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de notificaciones' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            /*let customData;
+
+            customData = {
+            };
+            data.push(customButton);
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions": {
+                    "modifier": {
+                        page: 'current'
+                    },
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);*/
+
+            data['order'] = [[2, 'desc']];
+
+            startDataTable('#tbInfo', data);
+        });
+    });
+</script>

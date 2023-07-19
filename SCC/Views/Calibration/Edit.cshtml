@@ -1,0 +1,360 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.CalibrationEditViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_CALIBRATION;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(CalibrationController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    bool hasModel = Model.Calibration.ID != null && Model.Calibration.ID > 0;
+
+    ViewBag.Title = "Edición de calibración";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="panel panel-program-list">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Crear sesión de calibración</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                <form id="frmEdit" action="@Url.Action(nameof(CalibrationController.Edit), mainControllerName)" method="post">
+                    @Html.HiddenFor(modelitem => Model.Calibration.ID)
+                    @Html.HiddenFor(modelitem => Model.Calibration.BasicInfo)
+                    @Html.HiddenFor(modelitem => Model.Calibration.BasicInfoID)
+
+                    @Html.Hidden("transactionList")
+
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de inicio <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem =>
+                                    Model.Calibration.StartDate,
+                                    null,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de inicio",
+                                        title = "Fecha de inicio",
+                                        autocomplete = "off",
+                                        type = "datetime-local",
+                                        @Value =
+                                            Model.Calibration.StartDate != null
+                                                ? (Model.Calibration.StartDate.Year > 2000
+                                                    ? Model.Calibration.StartDate.ToString("yyyy-MM-ddThh:mm")
+                                                    : DateTime.Now.ToString("yyyy-MM-ddThh:mm"))
+                                                : DateTime.Now.ToString("yyyy-MM-ddThh:mm"),
+                                             required = ""
+                                         })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de finalización <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem =>
+                                    Model.Calibration.EndDate,
+                                    null,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de finalización",
+                                        title = "Fecha de finalización",
+                                        autocomplete = "off",
+                                        type = "datetime-local",
+                                        @Value =
+                                            Model.Calibration.EndDate != null
+                                                ? (Model.Calibration.EndDate.Year > 2000
+                                                    ? Model.Calibration.EndDate.ToString("yyyy-MM-ddThh:mm")
+                                                    : DateTime.Now.ToString("yyyy-MM-ddThh:mm"))
+                                                : DateTime.Now.ToString("yyyy-MM-ddThh:mm"),
+                                             required = ""
+                                         })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Descripción <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextAreaFor(modelitem =>
+                                    Model.Calibration.Description,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Ingrese una descripción para la sesión de calibración",
+                                        title = "Ingrese una descripción para la sesión de calibración",
+                                        autocomplete = "off",
+                                        required = "",
+                                        rows = 4
+                                    })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Tipo de calibración <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.Calibration.TypeID,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.CalibrationTypeList.NAME] as SelectList),
+                                    "Seleccione una opción",
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Tipo de calibración",
+                                        title = "Tipo de calibración",
+                                        id = "ddlCalibrationTypeID"
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Experto para la sesión <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.Calibration.ExperiencedUserID,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.ExpertUserList.NAME] as SelectList),
+                                    "Seleccione un usuario",
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Usuarios disponibles",
+                                        title = "Usuarios disponibles",
+                                        id = "ddlExperiencedUserID"
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Calibradores
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "calibratorUserList",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.CalibratorUserList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        data_placeholder = "Calibradores disponibles",
+                                        placeholder = "Calibradores disponibles",
+                                        title = "Calibradores disponibles",
+                                        multiple = "",
+                                        id = "ddlCalibratorUserIDList"
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Grupos de calibradores
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "calibratorUserGroupList",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.CalibratorUserGroupList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        data_placeholder = "Grupos de calibradores disponibles",
+                                        placeholder = "Grupos de calibradores disponibles",
+                                        title = "Grupos de calibradores disponibles",
+                                        multiple = "",
+                                        id = "ddlCalibratorUserGroupIDList"
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                ¿Enviar notificación? <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                <div class="radio-control d-inline-block">
+                                    @Html.RadioButtonFor(model =>
+                                        Model.Calibration.HasNotificationToBeSent,
+                                        false,
+                                        new
+                                        {
+                                            label = "NO"
+                                        })
+                                    @Html.RadioButtonFor(model =>
+                                        Model.Calibration.HasNotificationToBeSent,
+                                        true,
+                                        new
+                                        {
+                                            label = "SI",
+                                            @checked = ""
+                                        })
+                                </div>
+                            </div>
+                        </div>
+                        @if (Model.TransactionList.Count() > 0)
+                        {
+                            <hr />
+                            <div class="row m-4 text-center">
+                                <h5>Transacciones seleccionadas para calibrar</h5>
+                            </div>
+                            int transactionCount = 1;
+
+                            foreach (Transaction transaction in Model.TransactionList)
+                            {
+                                <div class="row transaction-row px-4 py-2 text-center" data-transactionid="@transaction.ID">
+                                    <div class="col-1">
+                                        <button class="btn-element-action btn-element-action-danger btn-transaction-remove" title="Quitar transacción">
+                                            <i class='bx bxs-x-circle'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-3">
+                                        <label>
+                                            Transacción #@transactionCount
+                                        </label>
+                                    </div>
+                                    <div class="col-8">
+                                        Indentificador de la transacción: <a href="@Url.Action(nameof(TransactionController.Edit), OverallController.GetControllerName(typeof(TransactionController)), new { transactionID = transaction.ID })" target="_blank">@transaction.Identifier</a>
+                                    </div>
+                                </div>
+
+                                transactionCount++;
+                            }
+                        }
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_SESSIONS))
+                            {
+                                <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+
+                                if (hasModel)
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                                }
+                                else
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                                }
+                            }
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(() => {
+        fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            startMultiSelect('#ddlCalibrationTypeID', data);
+            startMultiSelect('#ddlExperiencedUserID', data);
+            startMultiSelect('#ddlCalibratorUserIDList', data);
+            startMultiSelect('#ddlCalibratorUserGroupIDList', data);
+        });
+    });
+
+    $('#ddlExperiencedUserID').change((e) => {
+        let value = $(e.currentTarget).val();
+
+        $('#ddlCalibratorUserIDList option').prop('disabled', false);
+        $('#ddlCalibratorUserIDList option[value="' + value + '"]').prop('selected', false);
+        $('#ddlCalibratorUserIDList option[value="' + value + '"]').prop('disabled', true);
+        $("#ddlCalibratorUserIDList").trigger("chosen:updated");
+    });
+
+    $('#ddlCalibratorUserIDList').change((e) => {
+        let value = $(e.currentTarget).val();
+        let selectedExperiencedUser = $('#ddlExperiencedUserID').val();
+
+        console.log(value);
+        console.log(value.includes(selectedExperiencedUser));
+
+        if (value.includes(selectedExperiencedUser)) {
+            $('#ddlExperiencedUserID option[value="' + selectedExperiencedUser + '"]').prop('selected', false);
+            $("#ddlExperiencedUserID").trigger("chosen:updated");
+        }
+    });
+
+    $('#btnSubmit').click(() => {
+        const requiredAdviseElement = $('.required-advise');
+
+        if (
+            ($('#ddlCalibrationTypeID').val() == '' || $('#ddlCalibrationTypeID').val() == null) ||
+            ($('#ddlExperiencedUserID').val() == '' || $('#ddlExperiencedUserID').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }
+
+        if (($('#ddlCalibratorUserIDList').val() == '' || $('#ddlCalibratorUserIDList').val() == null) &&
+            ($('#ddlCalibratorUserGroupIDList').val() == '' || $('#ddlCalibratorUserGroupIDList').val() == null)
+        ) {
+            alert('Debe de seleccionar a los calibradores o grupos de calibradores');
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }
+
+        let transactionIDArray = [];
+
+        $('.transaction-row').each((index, e) => {
+            let currentTransactionID = parseInt($(e).data('transactionid'));
+
+            transactionIDArray.push(currentTransactionID);
+        });
+
+        $('#transactionList').val(transactionIDArray);
+
+        const message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+
+    $('.btn-transaction-remove').off('click').on('click', function (e) {
+        $(e.currentTarget).parent().parent().remove();
+    });
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(CalibrationController.Manage), mainControllerName)', '_self');
+    });
+</script>

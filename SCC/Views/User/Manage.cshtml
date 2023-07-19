@@ -1,0 +1,1087 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.UserManagementViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_USER;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(UserController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    bool hasModel = Model.User.ID != null && Model.User.ID > 0;
+
+    ViewBag.Title = "Administración de usuarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+@*<script src="~/Scripts/moment.min.js"></script>
+    <script src="~/Scripts/datetime-moment.js"></script>*@
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Crear / Editar usuario</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                @{
+                    string formAction =
+                        !hasModel ?
+                            @Url.Action(nameof(UserController.Create), mainControllerName) :
+                            @Url.Action(nameof(UserController.Edit), mainControllerName);
+                }
+                <form id="frmManage" action="@formAction" method="post">
+                    @Html.HiddenFor(modelitem => Model.Person.ID)
+                    @Html.HiddenFor(modelitem => Model.Person.BasicInfo)
+                    @Html.HiddenFor(modelitem => Model.Person.BasicInfoID)
+
+                    @Html.HiddenFor(modelitem => Model.User.ID)
+                    @Html.HiddenFor(modelitem => Model.User.PersonID)
+                    @Html.HiddenFor(modelitem => Model.User.Username)
+                    @Html.HiddenFor(modelitem => Model.User.Password)
+                    @Html.HiddenFor(modelitem => Model.User.Salt)
+                    @Html.HiddenFor(modelitem => Model.User.LastLoginDate)
+                    @Html.HiddenFor(modelitem => Model.User.BasicInfo)
+                    @Html.HiddenFor(modelitem => Model.User.BasicInfoID)
+
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        @if (hasModel)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    ID del sistema
+                                </div>
+                                <div class="col-7">
+                                    <strong>@Model.User.ID</strong>
+                                </div>
+                            </div>
+                        }
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Identificación de acceso <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Person.Identification, null, new { @class = "property-field-control", pattern = "^[0-9]+$", placeholder = "Identificación", autocomplete = "off", id = "identification", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Nombre <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Person.FirstName, null, new { @class = "property-field-control", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", placeholder = "Primer nombre", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Primer apellido <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Person.SurName, null, new { @class = "property-field-control", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", placeholder = "Primer apellido", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Segundo apellido <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Person.LastName, null, new { @class = "property-field-control", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", placeholder = "Segundo apellido", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Correo electrónico <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.User.Email, null, new { @class = "property-field-control", pattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$", placeholder = "Email", autocomplete = "off", type = "email", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de inicio <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.User.StartDate, null, new { @class = "property-field-control", placeholder = "Fecha de inicio", autocomplete = "off", type = "date", @Value = Model.User.StartDate != null ? (Model.User.StartDate.Year > 2000 ? Model.User.StartDate.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd")) : DateTime.Now.ToString("yyyy-MM-dd"), required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                País <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.Person.CountryID,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.CountryCatalog.NAME] as SelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "País",
+                                        title = "País",
+                                        id = "countryList"
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Lenguaje <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.User.LanguageID,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.LanguageCatalog.NAME] as SelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Lenguaje",
+                                        title = "Lenguaje",
+                                        id = "languageList"
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Supervisor
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "supervisorList",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Supervisor.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Supervisor",
+                                        title = "Supervisor",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de inicio con el supervisor
+                            </div>
+                            <div class="col-7">
+                                @{
+                                    DateTime supervisorStartDate = DateTime.Now;
+
+                                    if (Model.User.SupervisorList.Count > 0)
+                                    {
+                                        supervisorStartDate =
+                                            Model.User.SupervisorList
+                                                .FirstOrDefault()
+                                                    .StartDate;
+                                    }
+                                }
+
+                                @Html.TextBox(
+                                    "supervisorStartDate",
+                                    "",
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de inicio con el supervisor",
+                                        title = "Fecha de inicio con el supervisor",
+                                        autocomplete = "off",
+                                        type = "date",
+                                        @Value = supervisorStartDate.ToString("yyyy-MM-dd")
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <br>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Puesto de trabajo <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "workspaceList",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Workspace.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Puesto de trabajo",
+                                        title = "Puesto de trabajo",
+                                        multiple = "",
+                                        required = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de inicio del puesto de trabajo
+                            </div>
+                            <div class="col-7">
+                                @{
+                                    DateTime workspaceStartDate = DateTime.Now;
+
+                                    if (Model.User.UserWorkspaceCatalogList.Count > 0)
+                                    {
+                                        workspaceStartDate =
+                                            Model.User.UserWorkspaceCatalogList
+                                                .FirstOrDefault()
+                                                    .StartDate;
+                                    }
+                                }
+
+                                @Html.TextBox(
+                                    "workspaceStartDate",
+                                    "",
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de inicio en el puesto de trabajo",
+                                        title = "Fecha de inicio en el puesto de trabajo",
+                                        autocomplete = "off",
+                                        type = "date",
+                                        @Value = workspaceStartDate.ToString("yyyy-MM-dd")
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Rol inicial <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.ListBox(
+                                    "roleList",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.RoleCatalog.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Rol inicial",
+                                        title = "Rol inicial",
+                                        multiple = "",
+                                        required = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Grupos iniciales
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "groupList",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Group.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Grupos iniciales",
+                                        title = "Grupos iniciales",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Programas
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "programList",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Program.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Programas iniciales",
+                                        title = "Programas iniciales",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                ¿Puede este usuario ingresar al sistema?
+                            </div>
+                            <div class="col-7">
+                                <div class="radio-control d-inline-block">
+                                    @Html.RadioButtonFor(model =>
+                                        Model.User.HasPassPermission,
+                                        false,
+                                        new
+                                             {
+                                            label = "NO"
+                                        }
+                                    )
+                                    @Html.RadioButtonFor(model =>
+                                        Model.User.HasPassPermission,
+                                        true,
+                                        new
+                                             {
+                                            label = "SI"
+                                        }
+                                    )
+                                </div>
+                            </div>
+                        </div>
+                        @if (hasModel)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    Fecha de último ingreso
+                                </div>
+                                <div class="col-7">
+                                    <p>@Model.User.LastLoginDate.ToString("dd-MM-yyyy hh:mm:ss tt")</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+
+                            @if (hasModel)
+                            {
+                                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                                }
+                            }
+                            else
+                            {
+                                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS))
+                                {
+                                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                                }
+                            }
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS))
+{
+    <div class="d-none">
+        <table class="display cell-border d-none" id="tbExport">
+            <thead>
+                <tr>
+                    <th>
+                        Id
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Last Name
+                    </th>
+                    <th>
+                        E-mail
+                    </th>
+                    <th>
+                        Start
+                    </th>
+                    <th>
+                        End
+                    </th>
+                    <th>
+                        Language
+                    </th>
+                    <th>
+                        Job
+                    </th>
+                    <th>
+                        Parent
+                    </th>
+                    <th>
+                        Parent start date
+                    </th>
+                    <th>
+                        Role
+                    </th>
+                    <th>
+                        Group
+                    </th>
+                    <th>
+                        Programs
+                    </th>
+                    <th>
+                        Can Login?
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (User user in Model.UserList)
+                {
+                    string tableRowClass = string.Empty;
+                    if (user.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED)
+                    {
+                        tableRowClass +=
+                            string.IsNullOrEmpty(tableRowClass) ?
+                                "strikethrough" :
+                                " strikethrough";
+                    }
+
+                    <tr class="@tableRowClass">
+                        <td>
+                            @user.Person.Identification
+                        </td>
+                        <td>
+                            @user.Person.FirstName
+                        </td>
+                        <td>
+                            @user.Person.SurName @user.Person.LastName
+                        </td>
+                        <td>
+                            @user.Email
+                        </td>
+                        <td>
+                            @user.StartDate.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                            @{
+                                string languageName = string.Empty;
+
+                                using (Catalog catalog = new Catalog(user.LanguageID))
+                                {
+                                    catalog.SetDataByID();
+                                    languageName = catalog.Description;
+                                }
+                            }
+
+                            @languageName
+                        </td>
+                        <td>
+                            @{
+                                string workspaceNameList = string.Empty;
+
+                                foreach (UserWorkspaceCatalog userWorkspaceCatalog in user.UserWorkspaceCatalogList)
+                                {
+                                    using (Workspace workspace = new Workspace(userWorkspaceCatalog.WorkspaceID))
+                                    {
+                                        workspace.SetDataByID();
+                                        workspaceNameList += string.IsNullOrEmpty(workspaceNameList)
+                                            ? workspace.Name
+                                            : $",{workspace.Identifier}";
+                                    }
+                                }
+                            }
+
+                            @workspaceNameList
+                        </td>
+                        <td>
+                            @{
+                                string supervisorList = string.Empty;
+
+                                foreach (UserSupervisorCatalog userSupervisorCatalog in user.SupervisorList)
+                                {
+                                    using (User supervisor = new User(userSupervisorCatalog.SupervisorID))
+                                    {
+                                        supervisor.SetDataByID();
+                                        supervisorList += string.IsNullOrEmpty(supervisorList)
+                                            ? supervisor.Person.Identification
+                                            : $",{supervisor.Person.Identification}";
+                                    }
+                                }
+                            }
+
+                            @supervisorList
+                        </td>
+                        <td>
+                            @{
+                                string supervisorStartDateList = string.Empty;
+
+                                foreach (UserSupervisorCatalog userSupervisorCatalog in user.SupervisorList)
+                                {
+                                    supervisorStartDateList += string.IsNullOrEmpty(supervisorStartDateList)
+                                        ? userSupervisorCatalog.StartDate.ToString("dd/MM/yyyy")
+                                        : $",{userSupervisorCatalog.StartDate.ToString("dd/MM/yyyy")}";
+                                }
+                            }
+
+                            @supervisorStartDateList
+                        </td>
+                        <td>
+                            @{
+                                string roleNameList = string.Empty;
+
+                                foreach (UserRoleCatalog userRoleCatalog in user.RoleList)
+                                {
+                                    using (Role role = new Role(userRoleCatalog.RoleID))
+                                    {
+                                        role.SetDataByID();
+                                        roleNameList += string.IsNullOrEmpty(roleNameList)
+                                            ? role.Identifier
+                                            : $",{role.Identifier}";
+                                    }
+                                }
+                            }
+
+                            @roleNameList
+                        </td>
+                        <td>
+                            @{
+                                string groupNameList = string.Empty;
+
+                                foreach (UserGroupCatalog userGroupCatalog in user.GroupList)
+                                {
+                                    using (Group group = new Group(userGroupCatalog.GroupID))
+                                    {
+                                        group.SetDataByID();
+                                        groupNameList += string.IsNullOrEmpty(groupNameList)
+                                            ? group.Name
+                                            : $",{group.Name}";
+                                    }
+                                }
+                            }
+
+                            @groupNameList
+                        </td>
+                        <td>
+                            @{
+                                string programNameList = string.Empty;
+
+                                foreach (UserProgramCatalog userProgramCatalog in user.ProgramList)
+                                {
+                                    using (Program program = new Program(userProgramCatalog.ProgramID))
+                                    {
+                                        program.SetDataByID();
+                                        programNameList += string.IsNullOrEmpty(programNameList)
+                                            ? program.Name
+                                            : $",{program.Name}";
+                                    }
+                                }
+                            }
+
+                            @programNameList
+                        </td>
+                        <td>
+                            @(user.HasPassPermission
+                                ? "Yes"
+                                : "No")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="tableContainer">
+        <table class="display cell-border" id="tbInfo">
+            <thead>
+                <tr>
+                    <th>
+                        Identificación
+                    </th>
+                    <th>
+                        Nombre completo
+                    </th>
+                    <th>
+                        Correo electrónico
+                    </th>
+                    <th>
+                        Fecha de inicio
+                    </th>
+                    <th>
+                        Puesto de trabajo
+                    </th>
+                    <th>
+                        Fecha de inicio en puesto de trabajo
+                    </th>
+                    <th>
+                        Supervisor
+                    </th>
+                    <th>
+                        Fecha de inicio con el supervisor
+                    </th>
+                    <th>
+                        Roles
+                    </th>
+                    <th>
+                        Grupos
+                    </th>
+                    <th>
+                        Programas
+                    </th>
+                    <th>
+                        País
+                    </th>
+                    <th>
+                        Lenguaje
+                    </th>
+                    <th>
+                        Estado
+                    </th>
+                    <th>
+                        Puede ingresar
+                    </th>
+                    <th>
+                        Último ingreso
+                    </th>
+                    <th>
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (User user in Model.UserList)
+                {
+                    string tableRowClass = string.Empty;
+                    if (user.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED)
+                    {
+                        tableRowClass +=
+                            string.IsNullOrEmpty(tableRowClass) ?
+                                "strikethrough" :
+                                " strikethrough";
+                    }
+
+                    <tr class="@tableRowClass">
+                        <td>@user.Person.Identification</td>
+                        <td>@user.Person.SurName @user.Person.LastName @user.Person.FirstName</td>
+                        <td>@user.Email</td>
+                        <td data-order="@user.StartDate.ToString("yyyy/MM/dd")">
+                            @user.StartDate.ToString("dd MMM yyyy")
+                        </td>
+                        <td>
+                            <ol>
+                                @foreach (UserWorkspaceCatalog userWorkspace in user.UserWorkspaceCatalogList)
+                                {
+                                    Workspace tempWorkspace = new Workspace(userWorkspace.WorkspaceID);
+                                    tempWorkspace.SetDataByID();
+
+                                    <li>
+                                        @tempWorkspace.Name
+                                    </li>
+                                }
+                            </ol>
+                        </td>
+                        <td>
+                            <ol>
+                                @foreach (UserWorkspaceCatalog userWorkspace in user.UserWorkspaceCatalogList)
+                                {
+                                    <li>
+                                        @userWorkspace.StartDate.ToString("dd MMM yyyy")
+                                    </li>
+                                }
+                            </ol>
+                        </td>
+                        <td>
+                            <ol>
+                                @foreach (UserSupervisorCatalog userSupervisor in user.SupervisorList)
+                                {
+                                    User tempSupervisor = new User(userSupervisor.SupervisorID);
+                                    tempSupervisor.SetDataByID();
+
+                                    <li>
+                                        @tempSupervisor.Person.Identification
+                                    </li>
+                                }
+                            </ol>
+                        </td>
+                        <td>
+                            <ol>
+                                @foreach (UserSupervisorCatalog userSupervisor in user.SupervisorList)
+                                {
+                                    <li>
+                                        @userSupervisor.StartDate.ToString("dd MMM yyyy")
+                                    </li>
+                                }
+                            </ol>
+                        </td>
+                        <td>
+                            <ol>
+                                @foreach (UserRoleCatalog userRole in user.RoleList)
+                                {
+                                    Role tempRole = new Role(userRole.RoleID);
+                                    tempRole.SetDataByID();
+
+                                    <li>
+                                        @tempRole.Name
+                                    </li>
+                                }
+                            </ol>
+                        </td>
+                        <td>
+                            <ol>
+                                @foreach (UserGroupCatalog userGroup in user.GroupList)
+                                {
+                                    Group tempGroup = new Group(userGroup.GroupID);
+                                    tempGroup.SetDataByID();
+
+                                    <li>
+                                        @tempGroup.Name
+                                    </li>
+                                }
+                            </ol>
+                        </td>
+                        <th>
+                            <ol>
+                                @foreach (Program program in user.CurrentProgramList)
+                                {
+                                    <li>
+                                        @program.Name
+                                    </li>
+                                }
+                            </ol>
+                        </th>
+                        <th>
+                            @{
+                                string countryName = string.Empty;
+
+                                using (Catalog countryCatalog = new Catalog(user.Person.CountryID))
+                                {
+                                    countryCatalog.SetDataByID();
+                                    countryName = countryCatalog.Description;
+                                }
+                            }
+
+                            @countryName
+                        </th>
+                        <th>
+                            @{
+                                string languageName = string.Empty;
+
+                                using (Catalog languageCatalog = new Catalog(user.LanguageID))
+                                {
+                                    languageCatalog.SetDataByID();
+                                    languageName = languageCatalog.Description;
+                                }
+                            }
+
+                            @languageName
+                        </th>
+                        <td>
+                            @switch ((SCC_BL.DBValues.Catalog.STATUS_USER)user.BasicInfo.StatusID)
+                            {
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.CREATED:
+                                    <p class="text-success fw-bold">Activo</p>
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.UPDATED:
+                                    <p class="text-success fw-bold">Activo</p>
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.DELETED:
+                                    <p class="text-danger fw-bold">Inactivo</p>
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.ENABLED:
+                                    <p class="text-success fw-bold">Activo</p>
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED:
+                                    <p class="text-danger fw-bold">Inactivo</p>
+                                    break;
+                                default:
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            @if (user.HasPassPermission)
+                            {
+                                <p class="text-success fw-bold">Sí</p>
+                            }
+                            else
+                            {
+                                <p class="text-danger fw-bold">No</p>
+                            }
+                        </td>
+                        <td data-order="@user.LastLoginDate.ToString("yyyy/MM/dd")">
+                            @user.LastLoginDate.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            @if (user.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED)
+                            {
+                                <button data-elementid="@user.ID" class="btn-element-action btn-element-action-primary btn-user-edit" title="Editar">
+                                    <i class='bx bxs-pencil'></i>
+                                </button>
+                                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_USERS))
+                                {
+                                    <form class="d-inline frm-activate" action="@Url.Action(nameof(UserController.Activate), mainControllerName)" method="post">
+                                        @{
+                                            bool activate = false;
+
+                                            if (user.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED || user.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
+                                            {
+                                                activate = true;
+                                            }
+                                        }
+
+                                        @Html.Hidden("userID", user.ID)
+                                        @Html.Hidden("activate", activate)
+                                        <button class="btn-element-action @(activate ? "btn-element-action-success" : "btn-element-action-danger")" type="submit" title="@(activate ? "Activar" : "Desactivar")">
+                                            @if (activate)
+                                            {
+                                                <i class='bx bxs-key'></i>
+                                            }
+                                            else
+                                            {
+                                                <i class='bx bxs-lock-alt'></i>
+                                            }
+                                        </button>
+                                    </form>
+                                }
+                                <button data-elementid="@user.ID" class="btn-element-action btn-element-action-warning btn-user-logs" title="Ver logs">
+                                    <i class='bx bx-book-reader'></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <button data-elementid="@user.ID" class="btn-element-action btn-element-action-warning btn-user-logs" title="Ver logs">
+                                    <i class='bx bx-book-reader'></i>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+<script>
+    $(document).ready(async function () {
+        @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS) && !actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) && !actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS))
+        {
+            @:window.open('@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))', '_self');
+        }
+
+        await startTableExport();
+        await startTableInfo();
+
+        fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            startMultiSelect('#countryList', data);
+            startMultiSelect('#languageList', data);
+            startMultiSelect('#supervisorList', data);
+            startMultiSelect('#workspaceList', data);
+            startMultiSelect('#roleList', data);
+            startMultiSelect('#groupList', data);
+            startMultiSelect('#programList', data);
+        });
+    });
+
+    function startTableInfo() {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de usuarios' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customButton;
+
+            /*customButton = {
+                "text": 'Exportar en formato de importación',
+                "className": "btn-sm border border-dark",
+                "action": function (e, dt, node, config) {
+                    alert('Button activated');
+                }
+            };*/
+
+            let excelButton =
+                {
+                    "title": null,
+                    "filename": fileName,
+                    "extend": "excel",
+                    "className": "btn-sm",
+                    "exportOptions": {
+                        "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+                        "rows": ":not('.strikethrough')"
+                    }
+                };
+
+            let pdfButton =
+                {
+                    "title": null,
+                    "filename": fileName,
+                    "extend": "pdfHtml5",
+                    "className": "btn-sm",
+                    "orientation": "landscape",
+                    "pageSize": "LEGAL",
+                    "exportOptions": {
+                        "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+                        "rows": ":not('.strikethrough')"
+                    }
+                };
+
+            let copyButton =
+                {
+                    "title": null,
+                    "filename": fileName,
+                    "extend": 'copy',
+                    "text": 'Copiar',
+                    "exportOptions":
+                    {
+                        "modifier": {
+                            page: 'current'
+                        },
+                        "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+                        "rows": ":not('.strikethrough')"
+                    }
+                };
+
+            customButton = {
+                "title": "",
+                "text": "Exportar en formato de importación",
+                "className": "btn-sm border border-dark",
+                "action": () => {
+                    $('.tb-export-btn-excel').click();
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+            data["buttons"].push(customButton);
+
+            startDataTable('#tbInfo', data);
+
+            let toolbarControls = '';
+
+            toolbarControls +=
+                getControlForToolbar(
+                    '<div class="radio-control d-inline-block"><input label="NO" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="false" @(Request["filterActiveElements"] == null || Request["filterActiveElements"] == "false" ? "checked" : string.Empty ) /><input label="SI" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="true" @(Request["filterActiveElements"] == "true" ? "checked" : string.Empty ) /></div>',
+                    'Mostrar sólo activos'
+                );
+
+            $('div.toolbar').html(toolbarControls);
+        });
+    }
+
+    function startTableExport() {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de usuarios en formato de exportación' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let excelButton =
+                {
+                    "title": null,
+                    "filename": fileName,
+                    "extend": "excel",
+                    "className": "btn-sm tb-export-btn-excel",
+                    "exportOptions": {
+                        "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+                        "rows": ":not('.strikethrough')"
+                    }
+                };
+
+            data["buttons"].push(excelButton);
+
+            startDataTable('#tbExport', data);
+        });
+    }
+
+    function getControlForToolbar(content, label) {
+        let result = '';
+
+        const divPropertyField = '<div class="row property-field m-3">%replaceContent%</div>';
+
+        const divPropertyFieldLabel = '<div class="col-5 property-field-label">' + label + '</div>';
+        const contentContainer = '<div class="col-7">' + content + '</div>';
+
+        result =
+            divPropertyField
+                .replace('%replaceContent%', divPropertyFieldLabel + contentContainer);
+
+        return result;
+    }
+
+    function onChangefilterActiveElementsEvent(element) {
+        let url = '@Url.Action(nameof(UserController.Manage), mainControllerName)';
+
+        if (element.value == 'true') {
+            url += '?filterActiveElements=' + element.value;
+        }
+
+        if ($('#identification').val()) {
+            let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+
+            if (confirm(message) == true) {
+                window.open(url, '_self');
+            }
+        } else {
+            window.open(url, '_self');
+        }
+    }
+
+    $('.btn-user-edit').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(UserController.Manage), mainControllerName)?userID=' + elementID, '_self');
+        }
+    });
+
+    $('.btn-user-logs').click((e) => {
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        window.open('@Url.Action(logsActionName, logsControllerName)?categoryID=' + @mainCategoryID + '&itemID=' + elementID, '_blank');
+    });
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(UserController.Manage), mainControllerName)', '_self');
+    });
+
+    $('.frm-activate').submit((e) => {
+        let message = '¿Quieres cambiar el estado de este elemento en el sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+
+    $('#btnSubmit').click(() => {
+        const requiredAdviseElement = $('.required-advise');
+
+        if (
+            ($('#workspaceList').val() == '' || $('#workspaceList').val() == null) ||
+            ($('#roleList').val() == '' || $('#roleList').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }
+
+        const message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+</script>

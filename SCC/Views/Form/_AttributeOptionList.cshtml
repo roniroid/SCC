@@ -1,0 +1,154 @@
+﻿@using SCC_BL;
+
+@model SCC_BL.Attribute
+
+@foreach (AttributeValueCatalog attributeValue in Model.ValueList.OrderBy(e => e.Order))
+{
+    <tr class="attribute-value-table-row" data-attributeid="@(Model.ID != null && Model.ID > 0 ? Model.ID : 0)" data-attributevaluecatalogorder="@attributeValue.Order" data-attributevaluecatalogid="@attributeValue.ID" data-attributevaluecatalogdeleted="@(attributeValue.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED)">
+        <td class="td-name text-center">
+            <input data-attributevaluecatalogid="@attributeValue.ID" class="attribute-value-control" placeholder="Escriba el texto de la opción" type="text" value="@attributeValue.Name">
+        </td>
+        <td class="td-value text-center">
+            <input class="attribute-value-control" placeholder="Escriba el valor de la opción" type="text" value="@attributeValue.Value">
+        </td>
+        <td class="td-triggers-child-visualization text-center">
+            <input class="attribute-value-control attribute-value-control-triggers-child-visualization" type="checkbox" @(attributeValue.TriggersChildVisualization ? "checked" : string.Empty)>
+        </td>
+        <td class="td-actions text-center">
+            @if (attributeValue.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED && attributeValue.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DISABLED)
+            {
+                <button class="btn-element-action btn-element-action-secondary btn-attribute-value-catalog-climb-up" type="button" title="Subir">
+                    <i class='bx bxs-up-arrow'></i>
+                </button>
+                <button class="btn-element-action btn-element-action-secondary btn-attribute-value-catalog-go-down" type="button" title="Bajar">
+                    <i class='bx bxs-down-arrow'></i>
+                </button>
+                <button class="btn-element-action btn-element-action-danger btn-attribute-value-catalog-delete" type="button" title="Eliminar">
+                    <i class='bx bxs-trash'></i>
+                </button>
+            }
+            else
+            if (attributeValue.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED)
+            {
+                <strong>Este valor fue eliminado</strong>
+            }
+            else
+            if (attributeValue.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DISABLED)
+            {
+                <strong>Este valor fue deshabilitado</strong>
+            }
+        </td>
+    </tr>
+}
+<script>
+    initAttributeValueCatalogTableButtons();
+
+    $('.btn-define-type-answer-add-new-option').click(() => {
+        getMaxAttributeValueOrder()
+            .then((maxValue) => {
+                let newValue = maxValue + 1;
+
+                let tbody = document.getElementById('attributeValueOptionTableBody');
+
+                let newRow = document.createElement('tr');
+
+                let newColumnName = document.createElement('td');
+                let newColumnValue = document.createElement('td');
+                let newColumnTriggersChildVisualization = document.createElement('td');
+                let newColumnActions = document.createElement('td');
+
+                let newInputName = document.createElement('input');
+                let newInputValue = document.createElement('input');
+                let newInputTriggersChildVisualization = document.createElement('input');
+
+                let newInputActionBtnClimbUp = document.createElement('button');
+                let newInputActionBtnGoDown = document.createElement('button');
+                let newInputActionBtnDelete = document.createElement('button');
+
+                newRow.classList.add('option-table-row');
+                newRow.dataset.customcontrolvalueorder = newValue;
+                newRow.dataset.customcontrolvalueid = 0;
+                newRow.dataset.customcontrolvaluedeleted = false;
+
+                newColumnName.classList.add('tdName');
+                newColumnName.classList.add('text-center');
+
+                newInputName.classList.add('option-control');
+                newInputName.type = 'text';
+                newInputName.placeholder = 'Escriba el texto de la opción';
+
+                newColumnValue.classList.add('tdValue');
+                newColumnValue.classList.add('text-center');
+
+                newInputValue.classList.add('option-control');
+                newInputValue.type = 'text';
+                newInputValue.placeholder = 'Escriba el valor de la opción';
+
+                newColumnTriggersChildVisualization.classList.add('td-triggers-child-visualization');
+                newColumnTriggersChildVisualization.classList.add('text-center');
+
+                newInputTriggersChildVisualization.classList.add('attribute-value-control');
+                newInputTriggersChildVisualization.classList.add('attribute-value-control-triggers-child-visualization');
+                newInputTriggersChildVisualization.type = 'checkbox';
+                newInputTriggersChildVisualization.value = 'true';
+
+                newColumnActions.classList.add('tdActions');
+                newColumnActions.classList.add('text-center');
+
+                newInputActionBtnClimbUp.classList.add('btn-element-action');
+                newInputActionBtnClimbUp.classList.add('btn-element-action-secondary');
+                newInputActionBtnClimbUp.classList.add('btn-customControlValueCatalog-climb-up');
+                newInputActionBtnClimbUp.type = 'button';
+                newInputActionBtnClimbUp.title = 'Subir';
+                newInputActionBtnClimbUp.innerHTML = '<i class="bx bxs-up-arrow"></i>';
+
+                newInputActionBtnGoDown.classList.add('btn-element-action');
+                newInputActionBtnGoDown.classList.add('btn-element-action-secondary');
+                newInputActionBtnGoDown.classList.add('btn-customControlValueCatalog-go-down');
+                newInputActionBtnGoDown.type = 'button';
+                newInputActionBtnGoDown.title = 'Bajar';
+                newInputActionBtnGoDown.innerHTML = '<i class="bx bxs-down-arrow"></i>';
+
+                newInputActionBtnDelete.classList.add('btn-element-action');
+                newInputActionBtnDelete.classList.add('btn-element-action-danger');
+                newInputActionBtnDelete.classList.add('btn-customControlValueCatalog-delete');
+                newInputActionBtnDelete.type = 'button';
+                newInputActionBtnDelete.title = 'Eliminar';
+                newInputActionBtnDelete.innerHTML = '<i class="bx bxs-trash"></i>';
+
+                newColumnActions.appendChild(newInputActionBtnClimbUp);
+                newColumnActions.innerHTML += '\n';
+                newColumnActions.appendChild(newInputActionBtnGoDown);
+                newColumnActions.innerHTML += '\n';
+                newColumnActions.appendChild(newInputActionBtnDelete);
+
+                newColumnTriggersChildVisualization.appendChild(newInputTriggersChildVisualization);
+
+                newColumnValue.appendChild(newInputValue);
+
+                newColumnName.appendChild(newInputName);
+
+                newRow.appendChild(newColumnName);
+                newRow.appendChild(newColumnValue);
+                newRow.appendChild(newColumnTriggersChildVisualization);
+                newRow.appendChild(newColumnActions);
+
+                tbody.appendChild(newRow);
+            });
+    });
+
+    function getMaxAttributeValueOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('.attribute-value-table-row').length > 0) {
+                $('.attribute-value-table-row').each(function () {
+                    let value = parseInt($(this).data('attributevaluecatalogorder'));
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+</script>

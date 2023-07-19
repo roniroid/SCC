@@ -1,0 +1,101 @@
+﻿*:focus {
+    outline: none;
+}
+
+body {
+    padding: 5px;
+    font-family: "Open Sans", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.49;
+    color: #666666;
+    background-color: #ffffff;
+}
+
+.login-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 5%;
+}
+
+.login-window {
+    border-style: solid;
+    border-width: 0;
+    box-shadow: 0px 2px 6px #b5b5b5;
+    padding: 50px;
+}
+
+.logo {
+    font-size: 14px;
+    max-width: 15em;
+}
+
+.panel-heading figure {
+    display: flex;
+    justify-content: center;
+}
+
+.login-input-block {
+    text-align: center;
+}
+
+    .login-input-block input[type="text"],
+    .login-input-block input[type="password"],
+    .login-input-block input[type="email"],
+    .login-input-block select {
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 4px;
+        border-color: #888;
+        padding: 10px;
+        min-width: 80%;
+        margin: 5px auto;
+        color: #3C3C3C;
+    }
+
+        .login-input-block input[type="text"]:focus,
+        .login-input-block input[type="password"]:focus,
+        .login-input-block input[type="email"]:focus,
+        .login-input-block select:focus {
+            border-color: #4fc1e9;
+        }
+
+.login-buttons {
+    text-align: center;
+    margin: 50px 0 0 0;
+}
+
+    .login-buttons .btn-login {
+        border-style: solid;
+        border-width: 1px;
+        border-radius: 2px;
+        border-color: #000;
+        padding: 10px 30px;
+        color: #ffffff;
+        text-shadow: 0 1px rgb(0 0 0 / 8%);
+        background-color: #3763AD;
+        cursor: pointer;
+    }
+
+.login-button-container {
+    width: 100%;
+}
+
+.login-link-container {
+    margin: 20px 0 0 0;
+    width: 100%;
+}
+
+.login-buttons .btn-login:hover {
+    border-color: #4ea5e0;
+}
+
+.login-buttons a {
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    .login-buttons a:hover {
+        text-decoration: underline;
+    }

@@ -1,0 +1,1974 @@
+﻿@using SCC_BL;
+@using SCC.Controllers;
+
+@model Form
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_FORM;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(FormController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    bool hasModel = Model.ID != null && Model.ID > 0;
+
+    ViewBag.Title = "Administración de formularios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<link href="~/Content/Custom/Attribute/Edit.css" rel="stylesheet" />
+
+<link href="~/Content/dragula.min.css" rel="stylesheet" />
+<script src="~/Scripts/dragula.min.js"></script>
+
+<div class="modal fade" id="modalCustomControl" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalCustomControl" aria-hidden="true">
+    <div class="modal-xl modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Seleccionar campos personalizados</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="panel">
+                <div class="modal-body">
+                    @{
+                        List<CustomControl> customControlList = (List<CustomControl>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Edit.CustomControlList.NAME];
+                    }
+
+                    <table class="display cell-border" id="tbCustomControlList">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Acciones
+                                </th>
+                                <th>
+                                    ID del sistema
+                                </th>
+                                <th>
+                                    Nombre
+                                </th>
+                                <th>
+                                    Tipo
+                                </th>
+                                <th>
+                                    Máscara
+                                </th>
+                                <th>
+                                    Detalles
+                                </th>
+                                <th>
+                                    Módulo al que aplica
+                                </th>
+                                <th>
+                                    Obligatorio
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (CustomControl customControl in customControlList)
+                            {
+                                string tableRowClass = string.Empty;
+                                if (customControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED)
+                                {
+                                    tableRowClass +=
+                                        string.IsNullOrEmpty(tableRowClass) ?
+                                            "strikethrough" :
+                                            " strikethrough";
+                                }
+
+                                <tr class="@tableRowClass" data-customcontrolid="@customControl.ID" data-selected="@(Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID).Count() > 0 ? "true" : "false")">
+                                    <td class="text-center td-buttons">
+                                        @if (Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID).Count() > 0)
+                                        {
+                                            <button class="btn-element-action btn-element-action-danger btn-custom-control-deselect" title="Deseleccionar">
+                                                <i class="bx bxs-x-circle"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn-element-action btn-element-action-success btn-custom-control-select" title="Seleccionar">
+                                                <i class="bx bxs-check-circle"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                    <td>@customControl.ID</td>
+                                    <td>@customControl.Label</td>
+                                    <td>@customControl.ControlTypeName</td>
+                                    <td>@customControl.Mask</td>
+                                    <td>
+                                        <ol>
+                                            @foreach (CustomControlValueCatalog value in customControl.ValueList.OrderBy(e => e.Order))
+                                            {
+                                                <li>
+                                                    @value.Name
+                                                </li>
+                                            }
+                                        </ol>
+                                    </td>
+                                    <td>@customControl.ModuleName</td>
+                                    <td>
+                                        @if (customControl.IsRequired)
+                                        {
+                                            @:SI
+                                        }
+                                        else
+                                        {
+                                            @:NO
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                @*<button type="button" class="btn btn-primary">Guardar</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalBIField" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalBIField" aria-hidden="true">
+    <div class="modal-xl modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Seleccionar campos de inteligencia de negocios</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="panel">
+                <div class="modal-body">
+                    @{
+                        List<BusinessIntelligenceField> biFieldList = (List<BusinessIntelligenceField>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Edit.BIFieldList.NAME];
+                    }
+
+                    <table class="display cell-border" id="tbBIFieldList">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Acciones
+                                </th>
+                                <th>
+                                    ID del sistema
+                                </th>
+                                <th>
+                                    Nombre
+                                </th>
+                                <th>
+                                    Comentario forzado
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (BusinessIntelligenceField biField in biFieldList)
+                            {
+                                string tableRowClass = string.Empty;
+                                if (biField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)
+                                {
+                                    tableRowClass +=
+                                        string.IsNullOrEmpty(tableRowClass) ?
+                                            "strikethrough" :
+                                            " strikethrough";
+                                }
+
+                                <tr class="@tableRowClass" data-bifieldid="@biField.ID" data-selected="@(Model.FormBIFieldCatalogList.Where(e => e.BIFieldID == biField.ID).Count() > 0 ? "true" : "false")">
+                                    <td class="text-center td-buttons">
+                                        @if (Model.FormBIFieldCatalogList.Where(e => e.BIFieldID == biField.ID).Count() > 0)
+                                        {
+                                            <button class="btn-element-action btn-element-action-danger btn-bifield-deselect" title="Deseleccionar">
+                                                <i class="bx bxs-x-circle"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn-element-action btn-element-action-success btn-bifield-select" title="Seleccionar">
+                                                <i class="bx bxs-check-circle"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                    <td>@biField.ID</td>
+                                    <td>@biField.Name</td>
+                                    <td>@(biField.HasForcedComment ? "SI" : "NO")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                @*<button type="button" class="btn btn-primary">Guardar</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalDefineAnswerType" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="modalDefineAnswerType" aria-hidden="true">
+    <div class="modal-xl modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Definir tipos de respuesta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="panel">
+                <div class="modal-body">
+                    <div class="text-end text-secondary">
+                        <div class="row text-center my-2">
+                            <div class="col-12">
+                                <button id="btnDefineTypeAnswerAddNewOption" class="btn-element-action btn-element-action-secondary btn-define-type-answer-add-new-option p-2" type="button" title="Agregar ">
+                                    <i class='bx bx-plus-medical'></i> Agregar
+                                </button>
+                            </div>
+                        </div>
+                        <table id="tbAttributeValueOption">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Texto
+                                    </th>
+                                    <th>
+                                        Valor
+                                    </th>
+                                    <th>
+                                        ¿Muestra subcausales?
+                                    </th>
+                                    <th>
+                                        Acciones
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="attributeValueOptionTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="btnCancelSavingAttributeValueCatalog" type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button id="btnSaveAttributeValueCatalog" type="button" class="btn btn-primary">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel">
+    <div class="accordion accordion-flush border-top-thick" id="accordionFormInfo">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#formInfoContainer" aria-expanded="true" aria-controls="formInfoContainer">
+                    <strong> @(hasModel ? "Editar" : "Crear") formulario</strong>
+                </button>
+            </h2>
+            <div id="formInfoContainer" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionFormInfo">
+                @{
+                    string formAction =
+                        !hasModel ?
+                            @Url.Action(nameof(FormController.Create), mainControllerName) :
+                            @Url.Action(nameof(FormController.Edit), mainControllerName);
+                }
+
+                <form id="frmForm" action="@formAction" method="post">
+                    @Html.HiddenFor(modelitem => Model.ID)
+                    @Html.HiddenFor(modelitem => Model.BasicInfo)
+                    @Html.HiddenFor(modelitem => Model.BasicInfoID)
+
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        @if (hasModel)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    ID del sistema
+                                </div>
+                                <div class="col-7">
+                                    <strong>@Model.ID</strong>
+                                </div>
+                            </div>
+                        }
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Nombre <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Name, null, new { @class = "property-field-control", pattern = SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN, placeholder = "Nombre", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field d-none">
+                            <div class="col-5 property-field-label">
+                                Tipo <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                     Model.TypeID,
+                                     (ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Edit.TypeList.NAME] as SelectList),
+                                     new
+                                     {
+                                         @class = "property-field-control chosen-select",
+                                         placeholder = "Tipo de formulario",
+                                         title = "Tipo de formulario",
+                                         id = "typeList"
+                                     }
+                                 )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Comentarios <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextAreaFor(modelitem => Model.Comment, new { @class = "property-field-control", pattern = SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN, placeholder = "Comentarios", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel">
+    <div class="accordion accordion-flush border-top-thick" id="accordionCustomControl">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#customFieldInfoContainer" aria-expanded="true" aria-controls="customFieldInfoContainer">
+                    <strong><i class='bx bx-question-mark'></i> Campos personalizados</strong>
+                </button>
+            </h2>
+            <div id="customFieldInfoContainer" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionCustomControl">
+                <div class="accordion-body">
+                    <div class="row text-end m-3">
+                        <div class="col-12">
+                            <button class="btn-element-action btn-element-action-secondary p-2" id="btnAddNewCustomControls" type="button" data-bs-toggle="modal" data-bs-target="#modalCustomControl" title="Agregar">
+                                <i class='bx bx-plus-medical'></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+                    <table class="display cell-border" id="tbSelectedCustomControlList">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Acciones
+                                </th>
+                                <th>
+                                    ID del sistema
+                                </th>
+                                <th>
+                                    Nombre
+                                </th>
+                                <th>
+                                    Tipo
+                                </th>
+                                <th>
+                                    Máscara
+                                </th>
+                                <th>
+                                    Detalles
+                                </th>
+                                <th>
+                                    Módulo al que aplica
+                                </th>
+                                <th>
+                                    Obligatorio
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (CustomControl customControl in customControlList)
+                            {
+                                string tableRowClass = string.Empty;
+                                if (customControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED)
+                                {
+                                    tableRowClass +=
+                                        string.IsNullOrEmpty(tableRowClass) ?
+                                            "strikethrough" :
+                                            " strikethrough";
+                                }
+
+                                <tr class="@tableRowClass" data-customcontrolid="@customControl.ID" data-selected="@(Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID).Count() > 0 ? "true" : "false")">
+                                    <td class="text-center td-buttons">
+                                        @if (Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID).Count() > 0)
+                                        {
+                                            <button class="btn-element-action btn-element-action-danger btn-custom-control-deselect" title="Deseleccionar">
+                                                <i class="bx bxs-x-circle"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn-element-action btn-element-action-success btn-custom-control-select" title="Seleccionar">
+                                                <i class="bx bxs-check-circle"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                    <td>@customControl.ID</td>
+                                    <td>@customControl.Label</td>
+                                    <td>@customControl.ControlTypeName</td>
+                                    <td>@customControl.Mask</td>
+                                    <td>
+                                        <ol>
+                                            @foreach (CustomControlValueCatalog value in customControl.ValueList.OrderBy(e => e.Order))
+                                            {
+                                                <li>
+                                                    @value.Name
+                                                </li>
+                                            }
+                                        </ol>
+                                    </td>
+                                    <td>@customControl.ModuleName</td>
+                                    <td>
+                                        @if (customControl.IsRequired)
+                                        {
+                                            @:SI
+                                        }
+                                        else
+                                        {
+                                            @:NO
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel">
+    <div class="accordion accordion-flush border-top-thick" id="accordionBIField">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#biFieldInfoContainer" aria-expanded="true" aria-controls="biFieldInfoContainer">
+                    <strong><i class='bx bx-question-mark'></i> Inteligencia de negocios</strong>
+                </button>
+            </h2>
+            <div id="biFieldInfoContainer" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionBIField">
+                <div class="accordion-body">
+                    <div class="row text-end m-3">
+                        <div class="col-12">
+                            <button class="btn-element-action btn-element-action-secondary p-2" id="btnAddNewBIFields" type="button" data-bs-toggle="modal" data-bs-target="#modalBIField" title="Agregar">
+                                <i class='bx bx-plus-medical'></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+                    <table class="display cell-border" id="tbSelectedBIFieldList">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Acciones
+                                </th>
+                                <th>
+                                    ID del sistema
+                                </th>
+                                <th>
+                                    Nombre
+                                </th>
+                                <th>
+                                    Comentario forzado
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (BusinessIntelligenceField biField in biFieldList)
+                            {
+                                string tableRowClass = string.Empty;
+                                if (biField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)
+                                {
+                                    tableRowClass +=
+                                        string.IsNullOrEmpty(tableRowClass) ?
+                                            "strikethrough" :
+                                            " strikethrough";
+                                }
+
+                                <tr class="@tableRowClass" data-bifieldid="@biField.ID" data-selected="@(Model.FormBIFieldCatalogList.Where(e => e.BIFieldID == biField.ID).Count() > 0 ? "true" : "false")">
+                                    <td class="text-center td-buttons">
+                                        @if (Model.FormBIFieldCatalogList.Where(e => e.BIFieldID == biField.ID).Count() > 0)
+                                        {
+                                            <button class="btn-element-action btn-element-action-danger btn-bifield-deselect" title="Deseleccionar">
+                                                <i class="bx bxs-x-circle"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn-element-action btn-element-action-success btn-bifield-select" title="Seleccionar">
+                                                <i class="bx bxs-check-circle"></i>
+                                            </button>
+                                        }
+                                    </td>
+                                    <td>@biField.ID</td>
+                                    <td>@biField.Name</td>
+                                    <td>@(biField.HasForcedComment ? "SI" : "NO")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="panel d-block">
+    <div class="accordion accordion-flush border-top-thick" id="accordionAttribute">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#attributeContainer" aria-expanded="true" aria-controls="attributeContainer">
+                    <strong><i class='bx bx-detail'></i> Atributos</strong>
+                </button>
+            </h2>
+            <div id="attributeContainer" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionAttribute">
+                <div class="accordion-body">
+                    <div class="row text-end m-3">
+                        <div class="col-12">
+                            <button class="btn-element-action btn-element-action-secondary p-2" id="btnAddNewAttribute" type="button" title="Agregar ">
+                                <i class='bx bx-plus-medical'></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+                    <table class="display cell-border" id="tbAttributeList">
+                        <thead>
+                            <tr>
+                                <th title="Texto descriptivo">
+                                    Nombre
+                                </th>
+                                <th title="Tipo de error">
+                                    Tipo de error
+                                </th>
+                                <th title="Máxima puntuación">
+                                    MP
+                                </th>
+                                <th title="Puntuación de arriba hacia abajo">
+                                    PAA
+                                </th>
+                                <th title="Forzar comentario">
+                                    FC
+                                </th>
+                                <th title="Definir tipo de respuesta">
+                                    DTR
+                                </th>
+                                <th title="Conocido">
+                                    Conocido
+                                </th>
+                                <th title="Controlable">
+                                    Controlable
+                                </th>
+                                <th title="Calificable">
+                                    Calificable
+                                </th>
+                                <th title="Acciones">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="attributeTableBody">
+                            @{
+                                int attributeCounter = 4000;
+                                List<Catalog> errotTypeCatalogListTemp = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE).SelectByCategoryID();
+                            }
+
+                            @foreach (SCC_BL.Attribute attribute in Model.AttributeList.OrderBy(e => e.Order))
+                            {
+                                List<int> checkedAttributes = new List<int>();
+
+                                int spaceCounter = 0;
+
+                                SCC_BL.Attribute auxAttribute = attribute;
+
+                                while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
+                                {
+                                    auxAttribute = Model.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
+                                    /*auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
+                                    auxAttribute.SetDataByID();*/
+
+                                    spaceCounter++;
+                                }
+
+                                <tr class="attribute-table-row" data-attributeorder="@attribute.Order" data-attributeid="@attribute.ID" data-attributedeleted="@(attribute.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL_VALUE_CATALOG.DELETED)" data-attributeghostid="@attributeCounter">
+                                    <td class="td-name">
+                                        <div class="attribute-container">
+                                            @for (int i = 0; i < spaceCounter; i++)
+                                            {
+                                                <div class="attribute-marginator px-4"></div>
+                                            }
+                                            @*<span class="attribute-dragger">
+                                                    <button class="btn-element-action btn-element-action-secondary btn-attribute-dragger" title="Mover">
+                                                        <i class='bx bx-move'></i>
+                                                    </button>
+                                                </span>*@
+                                            @if (attribute.ErrorTypeID != (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
+                                            {
+                                                <span class="attribute-taker-out">
+                                                    <button class="btn-element-action btn-element-action-secondary btn-attribute-taker-out" title="Sacar">
+                                                        <i class='bx bxs-left-arrow'></i>
+                                                    </button>
+                                                </span>
+                                                <span class="attribute-tabber">
+                                                    <button class="btn-element-action btn-element-action-secondary btn-attribute-tabber" title="Anidar">
+                                                        <i class='bx bxs-right-arrow'></i>
+                                                    </button>
+                                                </span>
+                                            }
+                                            <span class="attribute-climb-up">
+                                                <button class="btn-element-action btn-element-action-secondary btn-attribute-climb-up" title="Subir">
+                                                    <i class='bx bxs-up-arrow'></i>
+                                                </button>
+                                            </span>
+                                            <span class="attribute-go-down">
+                                                <button class="btn-element-action btn-element-action-secondary btn-attribute-go-down" title="Bajar">
+                                                    <i class='bx bxs-down-arrow'></i>
+                                                </button>
+                                            </span>
+                                            <div class="attribute-input-container">
+                                                <input autocomplete="off" class="attribute-property-field-control attribute-value-container attribute-control multi-line" pattern="@SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN" placeholder="Nombre" required type="text" value="@attribute.Name" />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="td-error-type">
+                                        <select class="attribute-property-field-control attribute-error-type chosen-select attribute-control select-error-type-select" id="@("ddlAttributeErrorType_" + attribute.ID)" name="@("ddlAttributeErrorType_" + attribute.ID)" placeholder="Tipo de error" title="Tipo de error">
+                                            <option>Seleccionar</option>
+                                            @{
+                                                foreach (Catalog errorType in errotTypeCatalogListTemp)
+                                                {
+                                                    <option value="@errorType.ID" @(attribute.ErrorTypeID > 0 ? errorType.ID == attribute.ErrorTypeID ? "selected" : string.Empty : string.Empty)>@errorType.Description</option>
+                                                }
+                                            }
+                                        </select>
+                                    </td>
+                                    <td class="td-max-score text-center">
+                                        <input class="attribute-check-box attribute-max-score attribute-control" type="number" min="0" max="100" name="name" value="@(attribute.MaxScore != null ? attribute.MaxScore : 0)" />
+                                    </td>
+                                    <td class="td-top-down-score text-center">
+                                        <input class="attribute-check-box attribute-top-down-score attribute-control" type="checkbox" name="name" value="true" @(attribute.TopDownScore ? "checked" : string.Empty) />
+                                    </td>
+                                    <td class="td-force-comment text-center">
+                                        <input class="attribute-check-box attribute-force-comment attribute-control" type="checkbox" name="name" value="true" @(attribute.HasForcedComment ? "checked" : string.Empty) />
+                                    </td>
+                                    <td class="td-define-answer-type text-center">
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-define-answer-type attribute-control" type="button" data-bs-toggle="modal" data-bs-target="#modalDefineAnswerType" title="Definir tipo de respuesta">
+                                            <i class='bx bxs-edit'></i>
+                                        </button>
+                                    </td>
+                                    <td class="td-is-known text-center">
+                                        <input class="attribute-check-box attribute-is-known attribute-control" type="checkbox" name="name" value="true" @(attribute.IsKnown ? "checked" : string.Empty) />
+                                    </td>
+                                    <td class="td-is-controllable text-center">
+                                        <input class="attribute-check-box attribute-is-controllable attribute-control" type="checkbox" name="name" value="true" @(attribute.IsControllable ? "checked" : string.Empty) />
+                                    </td>
+                                    <td class="td-is-scorable text-center">
+                                        <input class="attribute-check-box attribute-is-scorable attribute-control" type="checkbox" name="name" value="true" @(attribute.IsScorable ? "checked" : string.Empty) />
+                                    </td>
+                                    <td class="td-actions text-center">
+                                        <button class="btn-element-action btn-element-action-danger btn-attribute-delete attribute-control" type="button" title="Eliminar">
+                                            <i class='bx bxs-trash'></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                {
+                                    attributeCounter++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="accordion-footer">
+                    <div class="accordion-footer-buttons">
+                        <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+
+                        @if (hasModel)
+                        {
+                            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="button">Actualizar</button>
+                        }
+                        else
+                        {
+                            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="button">Crear</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    @{
+        List<AttributeValueCatalog> defineAnswerTypeList = new List<AttributeValueCatalog>();
+
+        foreach (SCC_BL.Attribute attribute in Model.AttributeList)
+        {
+            defineAnswerTypeList.AddRange(Model.AttributeList.Where(e => e.ID == attribute.ID).FirstOrDefault().ValueList);
+
+            /*using (AttributeValueCatalog attributeValueCatalog = AttributeValueCatalog.AttributeValueCatalogWithAttributeID(attribute.ID))
+            {
+                defineAnswerTypeList.AddRange(attributeValueCatalog.SelectByAttributeID());
+            }*/
+        }
+
+        string jsonDefineAnswerTypeList = OverallController.Serialize(defineAnswerTypeList);
+    }
+
+    let attributeCounter = 1000;
+
+    let customFieldSelectedArray = [];
+    let biFieldSelectedArray = [];
+
+    let attributeList = [];
+    let attributeValueCatalogList = [];
+
+    let jsonDefineAnswerTypeList = [];
+
+    $('#btnSubmit').click(async () => {
+        await getAttributeList()
+            .then((response) => {
+                attributeList = response;
+                /*response.forEach(e => {
+                    attributeList.push(e);
+                });*/
+            });
+
+        await getCustomControlList()
+            .then((response) => {
+                customFieldSelectedArray = response;
+            });
+
+        await getBIFieldList()
+            .then((response) => {
+                biFieldSelectedArray = response;
+            });
+
+        $('#frmForm').submit();
+    });
+
+    $('#btnSaveAttributeValueCatalog').click(() => {
+        getAttributeOptionList()
+            .then((response) => {
+                attributeValueCatalogList =
+                    attributeValueCatalogList.filter(f =>
+                        f['AttributeGhostID'] != parseInt(sessionStorage.getItem('attributeghostid')) &&
+                        f['AttributeID'] != parseInt(sessionStorage.getItem('attributeid'))
+                    );
+
+                response.forEach(e => {
+                    attributeValueCatalogList.push(e);
+                });
+
+                $('#attributeValueOptionTableBody').html('');
+
+                $('#modalDefineAnswerType').modal('toggle');
+
+                sessionStorage.removeItem('attributeghostid');
+                sessionStorage.removeItem('attributeid');
+            });
+    });
+
+    $('#btnCancelSavingAttributeValueCatalog').click(() => {
+        $('#attributeValueOptionTableBody').html('');
+
+        sessionStorage.removeItem('attributeghostid');
+        sessionStorage.removeItem('attributeid');
+    });
+
+    function getAttributeValueCatalogMaxOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('.attribute-value-table-row').length > 0) {
+                $('.attribute-value-table-row').each(function () {
+                    let value = parseInt($(this).data('attributevaluecatalogorder'));
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    $('#btnDefineTypeAnswerAddNewOption').click(() => {
+        getAttributeValueCatalogMaxOrder()
+            .then((maxValue) => {
+                let newValue = maxValue + 1;
+
+                let tbody = document.getElementById('attributeValueOptionTableBody');
+
+                let newRow = document.createElement('tr');
+                newRow.classList.add('attribute-value-table-row');
+                newRow.dataset.attributevaluecatalogorder = newValue;
+                newRow.dataset.attributeid = 0;
+                newRow.dataset.attributevaluecatalogid = 0;
+                newRow.dataset.attributevaluecatalogdeleted = false;
+
+                let newColumnName = document.createElement('td');
+                newColumnName.classList.add('td-name');
+                newColumnName.classList.add('text-center');
+
+                let newInputName = document.createElement('input');
+                newInputName.dataset.attributevaluecatalogid = 0;
+                newInputName.classList.add('attribute-value-control');
+                newInputName.type = 'text';
+                newInputName.placeholder = 'Escriba el texto de la opción';
+
+                newColumnName.appendChild(newInputName);
+
+                let newColumnValue = document.createElement('td');
+                newColumnValue.classList.add('td-value');
+                newColumnValue.classList.add('text-center');
+
+                let newInputValue = document.createElement('input');
+                newInputValue.classList.add('attribute-value-control');
+                newInputValue.type = 'text';
+                newInputValue.placeholder = 'Escriba el valor de la opción';
+
+                newColumnValue.appendChild(newInputValue);
+
+                let newColumnTriggersChildVisualization = document.createElement('td');
+                newColumnTriggersChildVisualization.classList.add('td-triggers-child-visualization');
+                newColumnTriggersChildVisualization.classList.add('text-center');
+
+                let newInputTriggersChildVisualization = document.createElement('input');
+                newInputTriggersChildVisualization.classList.add('attribute-value-control');
+                newInputTriggersChildVisualization.classList.add('attribute-value-control-triggers-child-visualization');
+                newInputTriggersChildVisualization.type = 'checkbox';
+                newInputTriggersChildVisualization.value = 'true';
+
+                newColumnTriggersChildVisualization.appendChild(newInputTriggersChildVisualization);
+
+                let newColumnActions = document.createElement('td');
+
+                let newInputActionBtnClimbUp = document.createElement('button');
+                let newInputActionBtnGoDown = document.createElement('button');
+                let newInputActionBtnDelete = document.createElement('button');
+
+                newColumnActions.classList.add('td-actions');
+                newColumnActions.classList.add('text-center');
+
+                newInputActionBtnClimbUp.classList.add('btn-element-action');
+                newInputActionBtnClimbUp.classList.add('btn-element-action-secondary');
+                newInputActionBtnClimbUp.classList.add('btn-attribute-value-catalog-climb-up');
+                newInputActionBtnClimbUp.type = 'button';
+                newInputActionBtnClimbUp.title = 'Subir';
+                newInputActionBtnClimbUp.innerHTML = '<i class="bx bxs-up-arrow"></i>';
+
+                newInputActionBtnGoDown.classList.add('btn-element-action');
+                newInputActionBtnGoDown.classList.add('btn-element-action-secondary');
+                newInputActionBtnGoDown.classList.add('btn-attribute-value-catalog-go-down');
+                newInputActionBtnGoDown.type = 'button';
+                newInputActionBtnGoDown.title = 'Bajar';
+                newInputActionBtnGoDown.innerHTML = '<i class="bx bxs-down-arrow"></i>';
+
+                newInputActionBtnDelete.classList.add('btn-element-action');
+                newInputActionBtnDelete.classList.add('btn-element-action-danger');
+                newInputActionBtnDelete.classList.add('btn-attribute-value-catalog-delete');
+                newInputActionBtnDelete.type = 'button';
+                newInputActionBtnDelete.title = 'Eliminar';
+                newInputActionBtnDelete.innerHTML = '<i class="bx bxs-trash"></i>';
+
+                newColumnActions.appendChild(newInputActionBtnClimbUp);
+                newColumnActions.innerHTML += '\n';
+                newColumnActions.appendChild(newInputActionBtnGoDown);
+                newColumnActions.innerHTML += '\n';
+                newColumnActions.appendChild(newInputActionBtnDelete);
+
+                newRow.appendChild(newColumnName);
+                newRow.appendChild(newColumnValue);
+                newRow.appendChild(newColumnTriggersChildVisualization);
+                newRow.appendChild(newColumnActions);
+
+                tbody.appendChild(newRow);
+
+                initAttributeValueCatalogTableButtons();
+            });
+    });
+
+    function initAttributeValueCatalogTableButtons() {
+        $('.btn-attribute-value-catalog-delete').off('click').on('click', function (e) {
+            $(e.currentTarget).parent().parent().remove();
+        });
+
+        $('.btn-attribute-value-catalog-climb-up').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent();
+            let previousRow = $(actualRow).prev();
+
+            let orderActualRow = $(actualRow).data('attributevaluecatalogorder');
+            let orderPreviousRow = $(previousRow).data('attributevaluecatalogorder');
+
+            if (orderPreviousRow != null) {
+                $(actualRow).data('attributevaluecatalogorder', orderPreviousRow)
+                $(previousRow).data('attributevaluecatalogorder', orderActualRow)
+
+                $(previousRow).before($(actualRow));
+            }
+        });
+
+        $('.btn-attribute-value-catalog-go-down').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent();
+            let nextRow = $(actualRow).next();
+
+            let orderActualRow = $(actualRow).data('attributevaluecatalogorder');
+            let orderNextRow = $(nextRow).data('attributevaluecatalogorder');
+
+            if (orderNextRow != null) {
+                $(actualRow).data('attributevaluecatalogorder', orderNextRow)
+                $(nextRow).data('attributevaluecatalogorder', orderActualRow)
+
+                $(nextRow).after($(actualRow));
+            }
+        });
+
+        $('.attribute-value-control-triggers-child-visualization').off('change').on('change', function (e) {
+            if ($(e.currentTarget).prop('checked')) {
+                $('.attribute-value-control-triggers-child-visualization').prop('checked', false);
+                $('.attribute-value-control-triggers-child-visualization').removeAttr('checked');
+                $(e.currentTarget).prop('checked', true);
+                $(e.currentTarget).attr('checked', '');
+            } else {
+                $('.attribute-value-control-triggers-child-visualization').prop('checked', false);
+                $('.attribute-value-control-triggers-child-visualization').removeAttr('checked');
+                $(e.currentTarget).prop('checked', false);
+                $(e.currentTarget).removeAttr('checked');
+            }
+        });
+    }
+
+    $(document).ready(() => {
+        //const { ID } = require("../../Content/DataTables/pdfmake-0.1.36/pdfmake");
+        fetchDatatableBasicData().then(response => {
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            startDataTable('#tbCustomControlList', data);
+            startDataTable('#tbSelectedCustomControlList', data);
+
+            startDataTable('#tbBIFieldList', data);
+            startDataTable('#tbSelectedBIFieldList', data);
+
+            let dataTemp = data;
+
+            dataTemp["paging"] = false;
+            dataTemp["ordering"] = false;
+            dataTemp["info"] = false;
+            dataTemp["searching"] = false;
+            dataTemp["zeroRecords"] = " ";
+            dataTemp["scrollY"] = '500px';
+            dataTemp["scrollCollapse"] = true;
+
+            //const { ID } = require("../../Content/DataTables/pdfmake-0.1.36/pdfmake");
+            var attributeListDT =
+                $("#tbAttributeList").on("draw.dt", function () {
+                    $(this).find(".dataTables_empty").parents('tbody').empty();
+                }).DataTable(dataTemp);
+
+            dataTemp["columnDefs"] =
+                [
+                    {
+                        className: "text-center",
+                        targets: [0, 1, 2, 3]
+                    }
+                ];
+
+            //const { ID } = require("../../Content/DataTables/pdfmake-0.1.36/pdfmake");
+            var attributeValueOptionListDT =
+                $("#tbAttributeValueOption").on("draw.dt", function () {
+                    $(this).find(".dataTables_empty").parents('tbody').empty();
+                }).DataTable(dataTemp);
+
+            updateCustomFieldSelectedArray();
+            updateBIFieldSelectedArray();
+
+            @if (!string.IsNullOrEmpty(jsonDefineAnswerTypeList))
+            {
+                @:jsonDefineAnswerTypeList = JSON.parse(decode('@jsonDefineAnswerTypeList'));
+
+                @:getAttributeOptionListFromJson()
+                    @:.then((response) =>
+                    @:{
+                        @:attributeValueCatalogList = response;
+                    @:});
+            }
+        });
+
+        fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            startMultiSelect('.chosen-select', data);
+        });
+
+        initCustomControlButtons();
+        initBIFieldButtons();
+
+        initAttributeTableButtons();
+
+        getAttributeList()
+            .then((response) => {
+                attributeList = response;
+                /*response.forEach(e => {
+                    attributeList.push(e);
+                });*/
+            });
+
+
+        //initDragger();
+    });
+
+    function decode(str) {
+
+        let txt = document.createElement("textarea");
+
+        txt.innerHTML = str;
+
+        return txt.value;
+
+    }
+
+    function initDragger() {
+        dragula([document.getElementsByClassName('attribute-table-row')], {
+            moves: function (el, container, handle) {
+                return handle.classList.contains('attribute-dragger');
+            }
+        });
+    }
+
+    function initAttributeTableButtons() {
+        $('#tbAttributeList tbody tr td .btn-attribute-delete').off('click').on('click', function (e) {
+            $(e.currentTarget).parent().parent().remove();
+        });
+
+        $('#tbAttributeList tbody tr td .btn-attribute-define-answer-type').off('click').on('click', function (e) {
+            let currentControl = e.currentTarget;
+            let actualRow = $(currentControl).parent().parent();
+
+            let actualAttributeghostid = $(actualRow).data('attributeghostid');
+            sessionStorage.setItem('attributeghostid', actualAttributeghostid);
+
+            let currentAttributeID = $(actualRow).data('attributeid');
+            sessionStorage.setItem('attributeid', currentAttributeID);
+
+            loadAttributeValueCatalog();
+        });
+
+        $('.btn-attribute-climb-up').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent().parent();
+            let previousRow = $(actualRow).prev();
+
+            let orderActualRow = $(actualRow).data('attributeorder');
+            let orderPreviousRow = $(previousRow).data('attributeorder');
+
+            if (orderPreviousRow != null) {
+                $(actualRow).data('attributeorder', orderPreviousRow)
+                $(previousRow).data('attributeorder', orderActualRow)
+
+                $(previousRow).before($(actualRow));
+            }
+        });
+
+        $('.btn-attribute-go-down').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent().parent();
+            let nextRow = $(actualRow).next();
+
+            let orderActualRow = $(actualRow).data('attributeorder');
+            let orderNextRow = $(nextRow).data('attributeorder');
+
+            if (orderNextRow != null) {
+                $(actualRow).data('attributeorder', orderNextRow)
+                $(nextRow).data('attributeorder', orderActualRow)
+
+                $(nextRow).after($(actualRow));
+            }
+        });
+
+        $('.btn-attribute-taker-out').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent().parent();
+            let container = $(actualRow).find('td.td-name .attribute-container').first();
+
+            if ($(container).find('.attribute-marginator').length > 0) {
+                $(container).find('.attribute-marginator').first().remove();
+            }
+        });
+
+        $('.btn-attribute-tabber').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent().parent();
+            let container = $(actualRow).find('td.td-name .attribute-container').first();
+
+            if ($(actualRow)[0] != $(actualRow).parent().find('>:first-child')[0]) {
+                $(container).prepend('<div class="attribute-marginator px-4"></div>');
+            }
+        });
+    }
+
+    function loadAttributeValueCatalog() {
+        attributeValueCatalogList
+            .filter(f =>
+                f['AttributeGhostID'] == parseInt(sessionStorage.getItem('attributeghostid')) ||
+                f['AttributeID'] == parseInt(sessionStorage.getItem('attributeid')))
+            .forEach(e => {
+                let tbody = document.getElementById('attributeValueOptionTableBody');
+
+                let newRow = document.createElement('tr');
+                newRow.classList.add('attribute-value-table-row');
+                newRow.dataset.attributevaluecatalogorder = e['Order'];
+                newRow.dataset.attributeid = e['AttributeID'];
+                newRow.dataset.attributevaluecatalogid = e['ID'];
+                newRow.dataset.attributevaluecatalogdeleted = false;
+
+                let newColumnName = document.createElement('td');
+                newColumnName.classList.add('td-name');
+                newColumnName.classList.add('text-center');
+
+                let newInputName = document.createElement('input');
+                newInputName.dataset.attributevaluecatalogid = e['ID'];
+                newInputName.classList.add('attribute-value-control');
+                newInputName.type = 'text';
+                newInputName.placeholder = 'Escriba el texto de la opción';
+                newInputName.value = e['Name'];
+
+                newColumnName.appendChild(newInputName);
+
+                let newColumnValue = document.createElement('td');
+                newColumnValue.classList.add('td-value');
+                newColumnValue.classList.add('text-center');
+
+                let newInputValue = document.createElement('input');
+                newInputValue.classList.add('attribute-value-control');
+                newInputValue.type = 'text';
+                newInputValue.placeholder = 'Escriba el valor de la opción';
+                newInputValue.value = e['Value'];
+
+                newColumnValue.appendChild(newInputValue);
+
+                let newColumnTriggersChildVisualization = document.createElement('td');
+                newColumnTriggersChildVisualization.classList.add('td-triggers-child-visualization');
+                newColumnTriggersChildVisualization.classList.add('text-center');
+
+                let newInputTriggersChildVisualization = document.createElement('input');
+                newInputTriggersChildVisualization.classList.add('attribute-value-control');
+                newInputTriggersChildVisualization.classList.add('attribute-value-control-triggers-child-visualization');
+                newInputTriggersChildVisualization.type = 'checkbox';
+                newInputTriggersChildVisualization.value = 'true';
+
+                if (e['TriggersChildVisualization'] == true) {
+                    newInputTriggersChildVisualization.setAttribute('checked', '');
+                }
+
+                newColumnTriggersChildVisualization.appendChild(newInputTriggersChildVisualization);
+
+                let newColumnActions = document.createElement('td');
+
+                let newInputActionBtnClimbUp = document.createElement('button');
+                let newInputActionBtnGoDown = document.createElement('button');
+                let newInputActionBtnDelete = document.createElement('button');
+
+                newColumnActions.classList.add('td-actions');
+                newColumnActions.classList.add('text-center');
+
+                newInputActionBtnClimbUp.classList.add('btn-element-action');
+                newInputActionBtnClimbUp.classList.add('btn-element-action-secondary');
+                newInputActionBtnClimbUp.classList.add('btn-attribute-value-catalog-climb-up');
+                newInputActionBtnClimbUp.type = 'button';
+                newInputActionBtnClimbUp.title = 'Subir';
+                newInputActionBtnClimbUp.innerHTML = '<i class="bx bxs-up-arrow"></i>';
+
+                newInputActionBtnGoDown.classList.add('btn-element-action');
+                newInputActionBtnGoDown.classList.add('btn-element-action-secondary');
+                newInputActionBtnGoDown.classList.add('btn-attribute-value-catalog-go-down');
+                newInputActionBtnGoDown.type = 'button';
+                newInputActionBtnGoDown.title = 'Bajar';
+                newInputActionBtnGoDown.innerHTML = '<i class="bx bxs-down-arrow"></i>';
+
+                newInputActionBtnDelete.classList.add('btn-element-action');
+                newInputActionBtnDelete.classList.add('btn-element-action-danger');
+                newInputActionBtnDelete.classList.add('btn-attribute-value-catalog-delete');
+                newInputActionBtnDelete.type = 'button';
+                newInputActionBtnDelete.title = 'Eliminar';
+                newInputActionBtnDelete.innerHTML = '<i class="bx bxs-trash"></i>';
+
+                newColumnActions.appendChild(newInputActionBtnClimbUp);
+                newColumnActions.innerHTML += '\n';
+                newColumnActions.appendChild(newInputActionBtnGoDown);
+                newColumnActions.innerHTML += '\n';
+                newColumnActions.appendChild(newInputActionBtnDelete);
+
+                newRow.appendChild(newColumnName);
+                newRow.appendChild(newColumnValue);
+                newRow.appendChild(newColumnTriggersChildVisualization);
+                newRow.appendChild(newColumnActions);
+
+                tbody.appendChild(newRow);
+
+                initAttributeValueCatalogTableButtons();
+            });
+    }
+
+    function getAttributeMaxOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('.attribute-table-row').length > 0) {
+                $('.attribute-table-row').each(function () {
+                    let value = parseInt($(this).data('attributeorder'));
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    $('#btnAddNewAttribute').click(() => {
+        getAttributeMaxOrder()
+            .then((maxValue) => {
+                let newValue = maxValue + 1;
+
+                let tbody = document.getElementById('attributeTableBody');
+
+                let newRow = document.createElement('tr');
+                newRow.classList.add('attribute-table-row');
+                newRow.dataset.attributeorder = newValue;
+                newRow.dataset.attributeid = 0;
+                newRow.dataset.attributedeleted = 'False';
+                newRow.dataset.attributeghostid = attributeCounter;
+
+                let newColumnName = document.createElement('td');
+                newColumnName.classList.add('td-name');
+
+                let newAttributeContainer = document.createElement('div');
+                newAttributeContainer.classList.add('attribute-container');
+
+                @*let newAttributeDraggerContainer = document.createElement('span');
+                newAttributeDraggerContainer.classList.add('attribute-dragger');
+
+                let newAttributeDraggerButton = document.createElement('button');
+                newAttributeDraggerButton.classList.add('btn-element-action');
+                newAttributeDraggerButton.classList.add('btn-element-action-secondary');
+                newAttributeDraggerButton.classList.add('btn-attribute-dragger');
+                newAttributeDraggerButton.title = 'Mover';
+                newAttributeDraggerButton.innerHTML = '<i class="bx bx-move"></i>';*@
+
+                let newAttributeTakerOutContainer = document.createElement('span');
+                newAttributeTakerOutContainer.classList.add('attribute-taker-out');
+
+                let newAttributeTakerOutButton = document.createElement('button');
+                newAttributeTakerOutButton.classList.add('btn-element-action');
+                newAttributeTakerOutButton.classList.add('btn-element-action-secondary');
+                newAttributeTakerOutButton.classList.add('btn-attribute-taker-out');
+                newAttributeTakerOutButton.title = 'Sacar';
+                newAttributeTakerOutButton.innerHTML = '<i class="bx bxs-left-arrow"></i>';
+
+                let newAttributeTabberContainer = document.createElement('span');
+                newAttributeTabberContainer.classList.add('attribute-tabber');
+
+                let newAttributeTabberButton = document.createElement('button');
+                newAttributeTabberButton.classList.add('btn-element-action');
+                newAttributeTabberButton.classList.add('btn-element-action-secondary');
+                newAttributeTabberButton.classList.add('btn-attribute-tabber');
+                newAttributeTabberButton.title = 'Anidar';
+                newAttributeTabberButton.innerHTML = '<i class="bx bxs-right-arrow"></i>';
+
+                let newAttributeClimbUpContainer = document.createElement('span');
+                newAttributeClimbUpContainer.classList.add('attribute-climb-up');
+
+                let newAttributeClimbUpButton = document.createElement('button');
+                newAttributeClimbUpButton.classList.add('btn-element-action');
+                newAttributeClimbUpButton.classList.add('btn-element-action-secondary');
+                newAttributeClimbUpButton.classList.add('btn-attribute-climb-up');
+                newAttributeClimbUpButton.title = 'Subir';
+                newAttributeClimbUpButton.innerHTML = '<i class="bx bxs-up-arrow"></i>';
+
+                let newAttributeGoDownContainer = document.createElement('span');
+                newAttributeGoDownContainer.classList.add('attribute-go-down');
+
+                let newAttributeGoDownButton = document.createElement('button');
+                newAttributeGoDownButton.classList.add('btn-element-action');
+                newAttributeGoDownButton.classList.add('btn-element-action-secondary');
+                newAttributeGoDownButton.classList.add('btn-attribute-go-down');
+                newAttributeGoDownButton.title = 'Bajar';
+                newAttributeGoDownButton.innerHTML = '<i class="bx bxs-down-arrow"></i>';
+
+                newAttributeTakerOutContainer.appendChild(newAttributeTakerOutButton);
+                newAttributeTabberContainer.appendChild(newAttributeTabberButton);
+                newAttributeClimbUpContainer.appendChild(newAttributeClimbUpButton);
+                newAttributeGoDownContainer.appendChild(newAttributeGoDownButton);
+
+                let newAttributeInputContainer = document.createElement('div');
+                newAttributeInputContainer.classList.add('attribute-input-container');
+
+                let newAttributeInput = document.createElement('input');
+                newAttributeInput.classList.add('attribute-property-field-control');
+                newAttributeInput.classList.add('attribute-value-container');
+                newAttributeInput.classList.add('attribute-control');
+                newAttributeInput.classList.add('multi-line');
+                newAttributeInput.autocomplete = 'off';
+                newAttributeInput.pattern = '@SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN';
+                newAttributeInput.placeholder = 'Nombre';
+                newAttributeInput.required = '';
+                newAttributeInput.type = 'text';
+
+                newAttributeInputContainer.appendChild(newAttributeInput);
+
+                newAttributeContainer.appendChild(newAttributeTakerOutContainer);
+                newAttributeContainer.appendChild(newAttributeTabberContainer);
+                newAttributeContainer.appendChild(newAttributeClimbUpContainer);
+                newAttributeContainer.appendChild(newAttributeGoDownContainer);
+                newAttributeContainer.appendChild(newAttributeInputContainer);
+
+                newColumnName.appendChild(newAttributeContainer);
+
+                let newColumnErrorType = document.createElement('td');
+                newColumnErrorType.classList.add('td-error-type');
+
+                let newSelectErrorType = document.createElement('select');
+
+                newSelectErrorType.classList.add('attribute-control');
+                newSelectErrorType.classList.add('attribute-property-field-control');
+                newSelectErrorType.classList.add('attribute-error-type');
+                newSelectErrorType.classList.add('select-error-type-select');
+                newSelectErrorType.classList.add('chosen-select');
+                newSelectErrorType.placeholder = 'Tipo de error';
+                newSelectErrorType.title = 'Tipo de error';
+
+                let emptyOption = document.createElement('option');
+                emptyOption.classList.add('select-error-type-option');
+                emptyOption.text = 'Seleccionar';
+
+                newSelectErrorType.appendChild(emptyOption);
+
+                @foreach (SelectListItem item in (ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Edit.ErrorTypeList.NAME] as SelectList))
+                {
+                    string currentText = item.Text;
+                    string currentValue = item.Value;
+
+                    @:var newOption = document.createElement('option');
+                    @:newOption.classList.add('select-error-type-option');
+                    @:newOption.text = '@currentText';
+                    @:newOption.value = '@currentValue';
+
+                    @:newSelectErrorType.appendChild(newOption);
+                }
+
+                newColumnErrorType.appendChild(newSelectErrorType);
+
+                fetchMultiSelectBasicData().then(response => {
+                    startMultiSelect('.select-error-type-select', response);
+                });
+
+                let newColumnMaxScore = document.createElement('td');
+                newColumnMaxScore.classList.add('td-max-score');
+                newColumnMaxScore.classList.add('text-center');
+
+                let newInputMaxScore = document.createElement('input');
+                newInputMaxScore.classList.add('attribute-control');
+                newInputMaxScore.classList.add('attribute-check-box');
+                newInputMaxScore.classList.add('attribute-max-score');
+                newInputMaxScore.type = 'number';
+                newInputMaxScore.min = '0';
+                newInputMaxScore.max = '100';
+                newInputMaxScore.value = '0';
+
+                newColumnMaxScore.appendChild(newInputMaxScore);
+
+                let newColumnTopDownScore = document.createElement('td');
+                newColumnTopDownScore.classList.add('td-top-down-score');
+                newColumnTopDownScore.classList.add('text-center');
+
+                let newInputTopDownScore = document.createElement('input');
+                newInputTopDownScore.classList.add('attribute-control');
+                newInputTopDownScore.classList.add('attribute-check-box');
+                newInputTopDownScore.classList.add('attribute-top-down-score');
+                newInputTopDownScore.type = 'checkbox';
+                newInputTopDownScore.value = 'true';
+
+                newColumnTopDownScore.appendChild(newInputTopDownScore);
+
+                let newColumnForceComment = document.createElement('td');
+                newColumnForceComment.classList.add('td-force-comment');
+                newColumnForceComment.classList.add('text-center');
+
+                let newInputForceComment = document.createElement('input');
+                newInputForceComment.classList.add('attribute-control');
+                newInputForceComment.classList.add('attribute-check-box');
+                newInputForceComment.classList.add('attribute-force-comment');
+                newInputForceComment.type = 'checkbox';
+                newInputForceComment.value = 'true';
+
+                newColumnForceComment.appendChild(newInputForceComment);
+
+                let newColumnDefineAnswerType = document.createElement('td');
+                newColumnDefineAnswerType.classList.add('td-define-answer-type');
+                newColumnDefineAnswerType.classList.add('text-center');
+
+                let newInputDefineAnswerType = document.createElement('button');
+                newInputDefineAnswerType.classList.add('btn-element-action');
+                newInputDefineAnswerType.classList.add('btn-element-action-dark');
+                newInputDefineAnswerType.classList.add('btn-attribute-define-answer-type');
+                newInputDefineAnswerType.classList.add('attribute-control');
+                newInputDefineAnswerType.type = 'button';
+                newInputDefineAnswerType.title = 'Definir tipo de respuesta';
+                newInputDefineAnswerType.innerHTML = '<i class="bx bxs-edit"></i>';
+                newInputDefineAnswerType.dataset.bsToggle = 'modal';
+                newInputDefineAnswerType.dataset.bsTarget = '#modalDefineAnswerType';
+
+                newColumnDefineAnswerType.appendChild(newInputDefineAnswerType);
+
+                let newColumnIsKnown = document.createElement('td');
+                newColumnIsKnown.classList.add('td-is-known');
+                newColumnIsKnown.classList.add('text-center');
+
+                let newInputIsKnown = document.createElement('input');
+                newInputIsKnown.classList.add('attribute-control');
+                newInputIsKnown.classList.add('attribute-check-box');
+                newInputIsKnown.classList.add('attribute-is-known');
+                newInputIsKnown.type = 'checkbox';
+                newInputIsKnown.value = 'true';
+
+                newColumnIsKnown.appendChild(newInputIsKnown);
+
+                let newColumnIsControllable = document.createElement('td');
+                newColumnIsControllable.classList.add('td-is-controllable');
+                newColumnIsControllable.classList.add('text-center');
+
+                let newInputIsControllable = document.createElement('input');
+                newInputIsControllable.classList.add('attribute-control');
+                newInputIsControllable.classList.add('attribute-check-box');
+                newInputIsControllable.classList.add('attribute-is-controllable');
+                newInputIsControllable.type = 'checkbox';
+                newInputIsControllable.value = 'true';
+
+                newColumnIsControllable.appendChild(newInputIsControllable);
+
+                let newColumnIsScorable = document.createElement('td');
+                newColumnIsScorable.classList.add('td-is-scorable');
+                newColumnIsScorable.classList.add('text-center');
+
+                let newInputIsScorable = document.createElement('input');
+                newInputIsScorable.classList.add('attribute-control');
+                newInputIsScorable.classList.add('attribute-check-box');
+                newInputIsScorable.classList.add('attribute-is-scorable');
+                newInputIsScorable.type = 'checkbox';
+                newInputIsScorable.value = 'true';
+
+                newColumnIsScorable.appendChild(newInputIsScorable);
+
+                let newColumnActions = document.createElement('td');
+                newColumnActions.classList.add('td-actions');
+                newColumnActions.classList.add('text-center');
+
+                let newInputActionBtnDelete = document.createElement('button');
+                newInputActionBtnDelete.classList.add('btn-element-action');
+                newInputActionBtnDelete.classList.add('btn-element-action-danger');
+                newInputActionBtnDelete.classList.add('btn-attribute-delete');
+                newInputActionBtnDelete.classList.add('attribute-control');
+                newInputActionBtnDelete.type = 'button';
+                newInputActionBtnDelete.title = 'Eliminar';
+                newInputActionBtnDelete.innerHTML = '<i class="bx bxs-trash"></i>';
+
+                newColumnActions.appendChild(newInputActionBtnDelete);
+
+                newRow.appendChild(newColumnName);
+                newRow.appendChild(newColumnErrorType);
+                newRow.appendChild(newColumnMaxScore);
+                newRow.appendChild(newColumnTopDownScore);
+                newRow.appendChild(newColumnForceComment);
+                newRow.appendChild(newColumnDefineAnswerType);
+                newRow.appendChild(newColumnIsKnown);
+                newRow.appendChild(newColumnIsControllable);
+                newRow.appendChild(newColumnIsScorable);
+                newRow.appendChild(newColumnActions);
+
+                tbody.appendChild(newRow);
+
+                initAttributeTableButtons();
+
+                initDragger();
+
+                attributeCounter++;
+            });
+    });
+
+    //Custom control functions
+
+    function updateCustomFieldSelectedArray() {
+        $('#tbCustomControlList tbody tr').each((index, e) => {
+            if ($(e).data('selected') == true) {
+                let customControlID = parseInt($(e).data('customcontrolid'));
+
+                if (!customFieldSelectedArray.includes(customControlID)) {
+                    customFieldSelectedArray.push(customControlID);
+                }
+            }
+
+            updateSelectedCustomControlList();
+        });
+    }
+
+    function initCustomControlButtons() {
+        $('#tbCustomControlList tbody tr td .btn-custom-control-select').off('click').on('click', function (e) {
+            let currentControl = e.currentTarget;
+
+            let tableRow = $(currentControl).parent().parent();
+
+            let customControlID = parseInt($(tableRow).data('customcontrolid'));
+
+            if (!customFieldSelectedArray.includes(customControlID)) {
+                customFieldSelectedArray.push(customControlID);
+            }
+
+            updateSelectedCustomControlList();
+        });
+
+        $('#tbCustomControlList tbody tr td .btn-custom-control-deselect').off('click').on('click', function (e) {
+            let currentControl = e.currentTarget;
+
+            let tableRow = $(currentControl).parent().parent();
+
+            let customControlID = parseInt($(tableRow).data('customcontrolid'));
+
+            if (customFieldSelectedArray.includes(customControlID)) {
+                customFieldSelectedArray = customFieldSelectedArray.filter(f => f != customControlID);
+            }
+
+            updateSelectedCustomControlList();
+        });
+
+        $('#tbSelectedCustomControlList tbody tr td .btn-custom-control-deselect').off('click').on('click', function (e) {
+            let currentControl = e.currentTarget;
+
+            let tableRow = $(currentControl).parent().parent();
+
+            let customControlID = parseInt($(tableRow).data('customcontrolid'));
+
+            if (customFieldSelectedArray.includes(customControlID)) {
+                customFieldSelectedArray = customFieldSelectedArray.filter(f => f != customControlID);
+            }
+
+            updateSelectedCustomControlList();
+        });
+    }
+
+    function updateSelectedCustomControlList() {
+        let btnDeselect = '<button class="btn-element-action btn-element-action-danger btn-custom-control-deselect" title="Deseleccionar"><i class="bx bxs-x-circle"></i></button>';
+        let btnSelect = '<button class="btn-element-action btn-element-action-success btn-custom-control-select" title="Seleccionar"><i class="bx bxs-check-circle"></i></button>';
+
+        let currentPage = $('#tbCustomControlList').DataTable().page.info().page;
+
+        $('#tbCustomControlList').DataTable().page.len(-1).draw();
+
+        (async () => {
+            //Checking modal table
+            await $('#tbCustomControlList tbody tr').each((index, e) => {
+                let currentCustomControlID = parseInt($(e).data('customcontrolid'));
+
+                let currentTDButtons = $(e).find('.td-buttons');
+
+                $(currentTDButtons).html('');
+
+                if (customFieldSelectedArray.includes(currentCustomControlID)) {
+                    $(currentTDButtons).html(btnDeselect);
+                } else {
+                    $(currentTDButtons).html(btnSelect);
+                }
+            });
+
+            let tdSelectedCustomControlBody = $('#tbSelectedCustomControlList tbody');
+            $(tdSelectedCustomControlBody).html('');
+
+            //Update selected custom control list
+            $('#tbCustomControlList tbody tr').each((index, e) => {
+                let currentCustomControlID = parseInt($(e).data('customcontrolid'));
+
+                if (customFieldSelectedArray.includes(currentCustomControlID)) {
+                    let newRow = $(e).clone();
+
+                    $(newRow).appendTo($(tdSelectedCustomControlBody));
+                }
+            });
+
+            initCustomControlButtons();
+
+            $('#tbCustomControlList').DataTable().page.len(10).draw();
+
+            $('#tbCustomControlList').DataTable().page(currentPage).draw('page');
+        })();
+    }
+
+    //Business intelligence field functions
+
+    function updateBIFieldSelectedArray() {
+        $('#tbBIFieldList tbody tr').each((index, e) => {
+            if ($(e).data('selected') == true) {
+                let biFieldID = parseInt($(e).data('bifieldid'));
+
+                if (!biFieldSelectedArray.includes(biFieldID)) {
+                    biFieldSelectedArray.push(biFieldID);
+                }
+            }
+
+            updateSelectedBIFieldList();
+        });
+    }
+
+    function initBIFieldButtons() {
+        $('#tbBIFieldList tbody tr td .btn-bifield-select').off('click').on('click', function (e) {
+            let currentControl = e.currentTarget;
+
+            let tableRow = $(currentControl).parent().parent();
+
+            let biFieldID = parseInt($(tableRow).data('bifieldid'));
+
+            if (!biFieldSelectedArray.includes(biFieldID)) {
+                biFieldSelectedArray.push(biFieldID);
+            }
+
+            updateSelectedBIFieldList();
+        });
+
+        $('#tbBIFieldList tbody tr td .btn-bifield-deselect').off('click').on('click', function (e) {
+            let currentControl = e.currentTarget;
+
+            let tableRow = $(currentControl).parent().parent();
+
+            let biFieldID = parseInt($(tableRow).data('bifieldid'));
+
+            if (biFieldSelectedArray.includes(biFieldID)) {
+                biFieldSelectedArray = biFieldSelectedArray.filter(f => f != biFieldID);
+            }
+
+            updateSelectedBIFieldList();
+        });
+
+        $('#tbSelectedBIFieldList tbody tr td .btn-bifield-deselect').off('click').on('click', function (e) {
+            let currentControl = e.currentTarget;
+
+            let tableRow = $(currentControl).parent().parent();
+
+            let biFieldID = parseInt($(tableRow).data('bifieldid'));
+
+            if (biFieldSelectedArray.includes(biFieldID)) {
+                biFieldSelectedArray = biFieldSelectedArray.filter(f => f != biFieldID);
+            }
+
+            updateSelectedBIFieldList();
+        });
+    }
+
+    function updateSelectedBIFieldList() {
+        let btnDeselect = '<button class="btn-element-action btn-element-action-danger btn-bifield-deselect" title="Deseleccionar"><i class="bx bxs-x-circle"></i></button>';
+        let btnSelect = '<button class="btn-element-action btn-element-action-success btn-bifield-select" title="Seleccionar"><i class="bx bxs-check-circle"></i></button>';
+
+        let currentPage = $('#tbBIFieldList').DataTable().page.info().page;
+
+        $('#tbBIFieldList').DataTable().page.len(-1).draw();
+
+        (async () => {
+            //Checking modal table
+            await $('#tbBIFieldList tbody tr').each((index, e) => {
+                let currentBIFieldID = parseInt($(e).data('bifieldid'));
+
+                let currentTDButtons = $(e).find('.td-buttons');
+
+                $(currentTDButtons).html('');
+
+                if (biFieldSelectedArray.includes(currentBIFieldID)) {
+                    $(currentTDButtons).html(btnDeselect);
+                } else {
+                    $(currentTDButtons).html(btnSelect);
+                }
+            });
+
+            let tdSelectedBIFieldBody = $('#tbSelectedBIFieldList tbody');
+            $(tdSelectedBIFieldBody).html('');
+
+            //Update selected bi field list
+            $('#tbBIFieldList tbody tr').each((index, e) => {
+                let currentBIFieldID = parseInt($(e).data('bifieldid'));
+
+                if (biFieldSelectedArray.includes(currentBIFieldID)) {
+                    let newRow = $(e).clone();
+
+                    $(newRow).appendTo($(tdSelectedBIFieldBody));
+                }
+            });
+
+            initBIFieldButtons();
+
+            $('#tbBIFieldList').DataTable().page.len(10).draw();
+
+            $('#tbBIFieldList').DataTable().page(currentPage).draw('page');
+        })();
+    }
+
+    $('#frmForm').submit((e) => {
+        let requiredAdviseElement = $('.required-advise');
+
+        if (
+            ($('#typeList').val() == '' || $('#typeList').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }
+
+        let message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+
+        $('#btnSubmit').prop('disabled', true);
+
+        getFormObject()
+            .then((response) => {
+                @*console.log(response);*@
+                $.ajax({
+                    "url": '@formAction',
+                    "contentType": 'application/json',
+                    "data": JSON.stringify(response),
+                    "method": 'POST',
+                    "timeout": 0,
+                    "success": function(response) {
+                        window.open(response.url, '_self');
+                    },
+                    "error": function (response) {
+                        window.open(response.url, '_self');
+                    },
+                    "complete": function (response) {
+                        window.open(response.url, '_self');
+                    }
+                });
+            });
+
+        return false;
+    });
+
+    function getFormObject() {
+        return new Promise((resolve, reject) => {
+            let formObject = {};
+
+            let form = {};
+
+            form =
+            {
+                "ID": @Model.ID,
+                "Name": $('input[name="@nameof(Form.Name)"]').val(),
+                "TypeID": $('select[name="@nameof(Form.TypeID)"]').val(),
+                "Comment": $('textarea[name="@nameof(Form.Comment)"]').val(),
+                "BasicInfoID": $('input[name="@nameof(Form.BasicInfoID)"]').val()
+            };
+
+            formObject['form'] = form;
+            formObject['attributeList'] = attributeList;
+            formObject['attributeValueCatalogList'] = attributeValueCatalogList;
+            formObject['customFieldIDArray'] = customFieldSelectedArray;
+            formObject['biFieldArray'] = biFieldSelectedArray;
+
+            resolve(formObject);
+        });
+    }
+
+    function getAttributeOptionList() {
+        return new Promise((resolve, reject) => {
+            try {
+                let optionList = [];
+
+                $('.attribute-value-table-row').each((index, e) => {
+                    //let attributeID = parseInt($(e).data('attributeid'));
+                    let attributeID = parseInt(sessionStorage.getItem('attributeid'));
+                    let attributeGhostID = parseInt(sessionStorage.getItem('attributeghostid'));
+                    let attributeValueCatalogID = parseInt($(e).data('attributevaluecatalogid'));
+                    let orderNumber = parseInt($(e).data('attributevaluecatalogorder'));
+                    let valueDeleted = $(e).data('attributevaluecatalogdeleted') == 'True';
+
+                    let name = $(e).find('td.td-name').find('input.attribute-value-control').first().val();
+                    let value = $(e).find('td.td-value').find('input.attribute-value-control').first().val();
+                    let triggersChildVisualization = $(e).find('td.td-triggers-child-visualization').find('input.attribute-value-control').first().is(':checked');
+
+                    if
+                    (
+                        (name != '' && name != null) &&
+                        (value != '' && value != null) &&
+                        (orderNumber != '' && orderNumber != null) &&
+                        valueDeleted != true
+                    )
+                    {
+                        let jsonOption =
+                        {
+                            "ID": attributeValueCatalogID,
+                            "AttributeID": attributeID,
+                            "AttributeGhostID": attributeGhostID,
+                            "Name": name,
+                            "Value": value,
+                            "TriggersChildVisualization": triggersChildVisualization,
+                            "Order": orderNumber,
+                            "BasicInfoID": 0,
+                            "BasicInfoID": null
+                        };
+
+                        optionList.push(jsonOption);
+                    }
+                });
+
+                resolve(optionList);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    function getAttributeOptionListFromJson() {
+        return new Promise((resolve, reject) => {
+            try {
+                let optionList = [];
+
+                $(jsonDefineAnswerTypeList).each((index, e) => {
+                    let attributeID = e['AttributeID'];
+                    let attributeGhostID = e['AttributeGhostID'];
+                    let attributeValueCatalogID = e['ID'];
+                    let orderNumber = e['Order'];
+                    let valueDeleted = e['BasicInfo']['StatusID'] == @((int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED);
+
+                    let name = e['Name'];
+                    let value = e['Value'];
+                    let triggersChildVisualization = e['TriggersChildVisualization'];
+
+                    if
+                    (
+                        (name != '' && name != null) &&
+                        (value != '' && value != null) &&
+                        (orderNumber != '' && orderNumber != null) &&
+                        valueDeleted != true
+                    )
+                    {
+                        let jsonOption =
+                        {
+                            "ID": attributeValueCatalogID,
+                            "AttributeID": attributeID,
+                            "AttributeGhostID": attributeGhostID,
+                            "Name": name,
+                            "Value": value,
+                            "TriggersChildVisualization": triggersChildVisualization,
+                            "Order": orderNumber,
+                            "BasicInfoID": 0,
+                            "BasicInfoID": null
+                        };
+
+                        optionList.push(jsonOption);
+                    }
+                });
+
+                resolve(optionList);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    function getCustomControlList() {
+        return new Promise((resolve, reject) => {
+            resolve($('#tbSelectedCustomControlList').find('tbody tr').map((index, e) => $(e).data('customcontrolid')).get());
+        });
+    }
+
+    function getBIFieldList() {
+        return new Promise((resolve, reject) => {
+            resolve($('#tbSelectedBIFieldList').find('tbody tr').map((index, e) => $(e).data('bifieldid')).get());
+        });
+    }
+
+    function getAttributeList() {
+        return new Promise((resolve, reject) => {
+            try {
+                let optionList = [];
+
+                $('.attribute-table-row').each((index, e) => {
+                    let attributeID = parseInt($(e).data('attributeid'));
+                    let attributeGhostID = parseInt($(e).data('attributeghostid'));
+                    let orderNumber = parseInt($(e).data('attributeorder'));
+                    let valueDeleted = $(e).data('attributedeleted') == 'True';
+                    let parentAttributeGhostID = 0;//Procesar
+                    let parentAttributeID = 0;//Procesar
+
+                    if ($(e).find('td.td-name .attribute-container .attribute-marginator').length > 0) {
+                        let foundMarginatorCount = $(e).find('td.td-name .attribute-container .attribute-marginator').length;
+
+                        let auxControl = $(e);
+                        while ($(auxControl).find('td.td-name .attribute-container .attribute-marginator').length >= foundMarginatorCount) {
+                            auxControl = $(auxControl).prev();
+                        }
+
+                        parentAttributeGhostID = parseInt($(auxControl).data('attributeghostid'));
+                        parentAttributeID = parseInt($(auxControl).data('attributeid'));
+                    }
+
+                    let name = $(e).find('td.td-name').find('input.attribute-control').first().val();
+                    let description = $(e).find('td.td-name').find('input.attribute-control').first().val();
+                    let errorType = $(e).find('td.td-error-type').find('select.attribute-control').first().val();
+                    let maxScore = $(e).find('td.td-max-score').find('input.attribute-control').first().val();
+                    let topDownScore = $(e).find('td.td-top-down-score').find('input.attribute-control').first().is(':checked');
+                    let forceComment = $(e).find('td.td-force-comment').find('input.attribute-control').first().is(':checked');
+                    let isKnown = $(e).find('td.td-is-known').find('input.attribute-control').first().is(':checked');
+                    let isControllable = $(e).find('td.td-is-controllable').find('input.attribute-control').first().is(':checked');
+                    let isScorable = $(e).find('td.td-is-scorable').find('input.attribute-control').first().is(':checked');
+
+                    if
+                    (
+                        (name != '' && name != null) &&
+                        (errorType != '' && errorType != null) &&
+                        (orderNumber != '' && orderNumber != null) &&
+                        valueDeleted != true
+                    )
+                    {
+                        let jsonOption =
+                        {
+                            "ID": attributeID,
+                            "FormID": @Model.ID,
+                            "Name": name,
+                            "Description": description,
+                            "ErrorTypeID": errorType,
+                            "ParentAttributeGhostID": parentAttributeGhostID,
+                            "MaxScore": maxScore,
+                            "TopDownScore": topDownScore,
+                            "HasForcedComment": forceComment,
+                            "IsKnown": isKnown,
+                            "IsControllable": isControllable,
+                            "IsScorable": isScorable,
+                            "Order": orderNumber,
+                            "BasicInfoID": 0,
+                            "BasicInfoID": null,
+                            "AttributeGhostID": attributeGhostID,
+                            "ParentAttributeID": parentAttributeID
+                        };
+
+                        optionList.push(jsonOption);
+                    }
+                });
+
+                resolve(optionList);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(FormController.Edit), mainControllerName)', '_self');
+    });
+</script>

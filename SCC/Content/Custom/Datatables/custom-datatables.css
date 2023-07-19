@@ -1,0 +1,36 @@
+﻿#tbInfo_wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+.dataTables_length {
+    grid-column: 1 / span 1;
+}
+
+.dt-buttons {
+    display: flex;
+    justify-content: center;
+    grid-column: 2 / span 3;
+}
+
+#tbInfo_filter {
+    grid-column: 5 / span 1;
+}
+
+.dataTable {
+    grid-column: 1 / span 5;
+}
+
+.dataTables_info {
+    grid-column: 1 / span 1;
+}
+
+.dataTables_paginate {
+    grid-column: 5 / span 5;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: center;
+    grid-column: 2 / span 3;
+}

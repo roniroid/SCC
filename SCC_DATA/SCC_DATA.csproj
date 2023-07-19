@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D8A815D3-9E7C-4E56-9E45-1BB4B7FD3E22}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SCC_DATA</RootNamespace>
+    <AssemblyName>SCC_DATA</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DBDriver.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Queries\Attribute.cs" />
+    <Compile Include="Queries\AttributeValueCatalog.cs" />
+    <Compile Include="Queries\BasicInfo.cs" />
+    <Compile Include="Queries\BusinessIntelligenceField.cs" />
+    <Compile Include="Queries\BusinessIntelligenceValueCatalog.cs" />
+    <Compile Include="Queries\Calibration.cs" />
+    <Compile Include="Queries\CalibrationGroupCatalog.cs" />
+    <Compile Include="Queries\CalibrationTransactionCatalog.cs" />
+    <Compile Include="Queries\CalibrationUserCatalog.cs" />
+    <Compile Include="Queries\Catalog.cs" />
+    <Compile Include="Queries\CustomControl.cs" />
+    <Compile Include="Queries\CustomControlValueCatalog.cs" />
+    <Compile Include="Queries\CustomField.cs" />
+    <Compile Include="Queries\Form.cs" />
+    <Compile Include="Queries\FormBIFieldCatalog.cs" />
+    <Compile Include="Queries\FormImportHistory.cs" />
+    <Compile Include="Queries\Group.cs" />
+    <Compile Include="Queries\Log.cs" />
+    <Compile Include="Queries\UserNotification.cs" />
+    <Compile Include="Queries\NotificationMatrix.cs" />
+    <Compile Include="Queries\UserNotificationUrl.cs" />
+    <Compile Include="Queries\UserNotificationUrlCatalog.cs" />
+    <Compile Include="Queries\Permission.cs" />
+    <Compile Include="Queries\Person.cs" />
+    <Compile Include="Queries\Program.cs" />
+    <Compile Include="Queries\ProgramFormCatalog.cs" />
+    <Compile Include="Queries\ProgramGroup.cs" />
+    <Compile Include="Queries\ProgramGroupProgramCatalog.cs" />
+    <Compile Include="Queries\Report.cs" />
+    <Compile Include="Queries\Role.cs" />
+    <Compile Include="Queries\RolPermissionCatalog.cs" />
+    <Compile Include="Queries\Transaction.cs" />
+    <Compile Include="Queries\TransactionAttributeCatalog.cs" />
+    <Compile Include="Queries\TransactionBIFieldCatalog.cs" />
+    <Compile Include="Queries\TransactionCommentary.cs" />
+    <Compile Include="Queries\TransactionCustomFieldCatalog.cs" />
+    <Compile Include="Queries\TransactionFileCatalog.cs" />
+    <Compile Include="Queries\TransactionLabel.cs" />
+    <Compile Include="Queries\TransactionLabelCatalog.cs" />
+    <Compile Include="Queries\UploadedFile.cs" />
+    <Compile Include="Queries\User.cs" />
+    <Compile Include="Queries\UserGroupCatalog.cs" />
+    <Compile Include="Queries\UserPermissionCatalog.cs" />
+    <Compile Include="Queries\UserProgramCatalog.cs" />
+    <Compile Include="Queries\UserProgramGroupCatalog.cs" />
+    <Compile Include="Queries\UserRoleCatalog.cs" />
+    <Compile Include="Queries\UserSupervisorCatalog.cs" />
+    <Compile Include="Queries\UserWorkspaceCatalog.cs" />
+    <Compile Include="Queries\Workspace.cs" />
+    <Compile Include="Repositories\Attribute.cs" />
+    <Compile Include="Repositories\AttributeValueCatalog.cs" />
+    <Compile Include="Repositories\BasicInfo.cs" />
+    <Compile Include="Repositories\BusinessIntelligenceField.cs" />
+    <Compile Include="Repositories\BusinessIntelligenceValueCatalog.cs" />
+    <Compile Include="Repositories\Calibration.cs" />
+    <Compile Include="Repositories\CalibrationGroupCatalog.cs" />
+    <Compile Include="Repositories\CalibrationTransactionCatalog.cs" />
+    <Compile Include="Repositories\CalibrationUserCatalog.cs" />
+    <Compile Include="Repositories\Catalog.cs" />
+    <Compile Include="Repositories\CustomControl.cs" />
+    <Compile Include="Repositories\CustomControlValueCatalog.cs" />
+    <Compile Include="Repositories\CustomField.cs" />
+    <Compile Include="Repositories\Form.cs" />
+    <Compile Include="Repositories\FormBIFieldCatalog.cs" />
+    <Compile Include="Repositories\FormImportHistory.cs" />
+    <Compile Include="Repositories\Group.cs" />
+    <Compile Include="Repositories\Log.cs" />
+    <Compile Include="Repositories\UserNotification.cs" />
+    <Compile Include="Repositories\NotificationMatrix.cs" />
+    <Compile Include="Repositories\UserNotificationUrl.cs" />
+    <Compile Include="Repositories\UserNotificationUrlCatalog.cs" />
+    <Compile Include="Repositories\Permission.cs" />
+    <Compile Include="Repositories\Person.cs" />
+    <Compile Include="Repositories\Program.cs" />
+    <Compile Include="Repositories\ProgramFormCatalog.cs" />
+    <Compile Include="Repositories\ProgramGroup.cs" />
+    <Compile Include="Repositories\ProgramGroupProgramCatalog.cs" />
+    <Compile Include="Repositories\Report.cs" />
+    <Compile Include="Repositories\Role.cs" />
+    <Compile Include="Repositories\RolPermissionCatalog.cs" />
+    <Compile Include="Repositories\Transaction.cs" />
+    <Compile Include="Repositories\TransactionAttributeCatalog.cs" />
+    <Compile Include="Repositories\TransactionBIFieldCatalog.cs" />
+    <Compile Include="Repositories\TransactionCommentary.cs" />
+    <Compile Include="Repositories\TransactionCustomFieldCatalog.cs" />
+    <Compile Include="Repositories\TransactionFileCatalog.cs" />
+    <Compile Include="Repositories\TransactionLabel.cs" />
+    <Compile Include="Repositories\TransactionLabelCatalog.cs" />
+    <Compile Include="Repositories\UploadedFile.cs" />
+    <Compile Include="Repositories\User.cs" />
+    <Compile Include="Repositories\UserGroupCatalog.cs" />
+    <Compile Include="Repositories\UserPermissionCatalog.cs" />
+    <Compile Include="Repositories\UserProgramCatalog.cs" />
+    <Compile Include="Repositories\UserProgramGroupCatalog.cs" />
+    <Compile Include="Repositories\UserRoleCatalog.cs" />
+    <Compile Include="Repositories\UserSupervisorCatalog.cs" />
+    <Compile Include="Repositories\UserWorkspaceCatalog.cs" />
+    <Compile Include="Repositories\Workspace.cs" />
+    <Compile Include="Settings\Constants.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

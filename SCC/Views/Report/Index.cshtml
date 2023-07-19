@@ -1,0 +1,94 @@
+﻿@using SCC.Controllers;
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+}
+
+<link href="~/Content/horizontal-menu.css" rel="stylesheet" />
+
+<div class="horizontal-menu-container">
+    <ul class="horizontal-menu">
+        <li>
+            <span>Reportes de precisión</span>
+            <ul>
+                <li><span class="btn-report-type-selector" data-reporttypeid="@((int)SCC_BL.DBValues.Catalog.REPORT_TYPE.ACCURACY_TREND)">Tendencia de precisión</span></li>
+                @*<li><span data-reporttypeid="">Tendencia de precisión (no agregado)</span></li>*@
+                <li><span class="btn-report-type-selector" data-reporttypeid="@((int)SCC_BL.DBValues.Catalog.REPORT_TYPE.OVERALL_ACCURACY)">Precisión general</span></li>
+                @*<li><span data-reporttypeid="">Precisión general (no agregado)</span></li>*@
+            </ul>
+        </li>
+        <li>
+            <span>Reportes de atributo</span>
+            <ul>
+                <li><span class="btn-report-type-selector" data-reporttypeid="@((int)SCC_BL.DBValues.Catalog.REPORT_TYPE.ACCURACY_BY_ATTRIBUTE)">Precisión por atributo</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="@((int)SCC_BL.DBValues.Catalog.REPORT_TYPE.ACCURACY_TREND_BY_ATTRIBUTE)">Tendencia de precisión por atributo</span></li>
+            </ul>
+        </li>
+        <li>
+            <span>Precisión de calibración</span>
+            <ul>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">IN General</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">Por atributo</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">Por pregunta de IN</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="@((int)SCC_BL.DBValues.Catalog.REPORT_TYPE.CALIBRATOR_COMPARISON)">Comparación de calibradores</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">Comparación de programas</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">General</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">Tendencia</span></li>
+            </ul>
+        </li>
+        <li>
+            <span>Reportes comparativos</span>
+            <ul>
+                <li><span class="btn-report-type-selector" data-reporttypeid="@((int)SCC_BL.DBValues.Catalog.REPORT_TYPE.COMPARATIVE_BY_PROGRAM)">Por programa</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="@((int)SCC_BL.DBValues.Catalog.REPORT_TYPE.COMPARATIVE_BY_USER)">Por usuario</span></li>
+            </ul>
+        </li>
+        <li>
+            <span>Reportes de pareto</span>
+            <ul>
+                <li><span class="btn-report-type-selector" data-reporttypeid="@((int)SCC_BL.DBValues.Catalog.REPORT_TYPE.PARETO_BI)">Inteligencia de negocios</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">Calibración</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">Error crítico</span></li>
+            </ul>
+        </li>
+        <li>
+            <span>Misceláneos</span>
+            <ul>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">Evaluaciones por monitor</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">Cantidad de evaluaciones (no agregado)</span></li>
+                <li><span class="btn-report-type-selector" data-reporttypeid="">Ranking de racs</span></li>
+            </ul>
+        </li>
+        <li><span class="btn-report-type-selector" data-reporttypeid="">Nube de palabras</span></li>
+    </ul>
+</div>
+<div id="reportConfigurationContainer" class="mt-4">
+</div>
+<script>
+    $(document).ready(() => {
+        if (sessionStorage.getItem('CURRENT_REPORT_TYPE_ID') != null) {
+            loadReportConfiguration(sessionStorage.getItem('CURRENT_REPORT_TYPE_ID'));
+            sessionStorage.removeItem('CURRENT_REPORT_TYPE_ID');
+        }
+    });
+
+    $('.btn-report-type-selector').click((e) => {
+        const element = e.currentTarget;
+        const reportTypeID = element.dataset.reporttypeid;
+
+        loadReportConfiguration(reportTypeID);
+    });
+
+    function loadReportConfiguration(reportTypeID) {
+        const containerID = 'reportConfigurationContainer';
+
+        $('#' + containerID).html('');
+
+        let url = '@Url.Action(nameof(ReportController.ReportTypeView), mainControllerName)?reportTypeID=' + reportTypeID;
+
+        loadHtmlToControl(url, containerID);
+    }
+</script>

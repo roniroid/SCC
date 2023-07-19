@@ -1,0 +1,128 @@
+﻿@using SCC.Controllers;
+
+@model SCC_BL.User
+
+@{
+    Layout = null;
+    ViewBag.Title = "Ingreso";
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/Content/Custom/User/login.css">
+    <link href="~/Content/boxicons.min.css" rel='stylesheet'>
+    @Styles.Render("~/Content/bootstrap")
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+</head>
+<body>
+    @if (Session[SCC_BL.Settings.AppValues.Session.GLOBAL_TEMP_MESSAGE] != null)
+    {
+        @Html.Raw(Session[SCC_BL.Settings.AppValues.Session.GLOBAL_TEMP_MESSAGE]);
+        Session[SCC_BL.Settings.AppValues.Session.GLOBAL_TEMP_MESSAGE] = null;
+    }
+    <div class="login-content">
+        <div class="login-window admin-form">
+            <div class="panel-heading">
+                <figure>
+                    <img class="logo" src="~/Content/img/logo.png" alt="">
+                </figure>
+            </div>
+            <div class="panel-body">
+                <form action="@Url.Action(nameof(UserController.LogIn), OverallController.GetControllerName(typeof(UserController)))" method="post">
+                    <div class="section login-input-block">
+                        <div class="row">
+                            <div class="col-12">
+                                @Html.TextBoxFor(modelitem => Model.Username, null, new { placeholder = "Nombre de usuario", autocomplete = "off", @Value = "", @class = "w-100" })
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                @Html.TextBox("password", null, new { placeholder = "Contraseña", type = "password", autocomplete = "off", @Value = "" })
+                                <i class="bx bx-hide" id="togglePassword"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="section login-buttons">
+                        <div class="login-button-container">
+                            <button class="btn-login" type="submit">Acceso</button>
+                        </div>
+                        <div class="login-link-container">
+                            <a class="btn-forgot-password" id="lnkForgotPassword">
+                                ¿Olvidó su contraseña?
+                            </a>
+                            @*<br />
+                            <a class="btn-create-user" href="@Url.Action(nameof(UserController.SignIn), OverallController.GetControllerName(typeof(UserController)))">
+                                Crear usuario
+                            </a>*@
+                        </div>
+                    </div>
+                </form>
+                <form class="d-none" id="frmForgottenPassword" action="@Url.Action(nameof(UserController.ForgottenPassword), OverallController.GetControllerName(typeof(UserController)))" method="post">
+                    <input id="hiddenUsername" type="hidden" name="username" value="" />
+                </form>
+            </div>
+        </div>
+    </div>
+    <script>
+        $('#frmForgottenPassword').submit(() => {
+            $('#hiddenUsername').val($('#@nameof(Model.Username)').val());
+        });
+
+        $('#lnkForgotPassword').click(() => {
+            $('#frmForgottenPassword').submit();
+
+            @*let username = $('#@nameof(Model.Username)').val();
+
+            if (username == '') {
+                alert('Por favor, antes escriba su nombre de usuario');
+                return;
+            }
+
+            const url = '@Url.Action(nameof(UserController.ForgottenPassword), OverallController.GetControllerName(typeof(UserController)))';
+            const httpMethod = 'POST';
+            const data = {
+                'username': username
+            };
+
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: data,
+                cache: false,
+                success: function (result) {
+                    //$(this).html(result);
+                    alert('Se ha enviado un correo a su cuenta');
+                },
+                error: function (error) {
+                    console.error(error);
+                },
+                timeout: 0
+            });
+        *@});
+
+        const togglePassword = document.querySelector("#togglePassword");
+        const password = document.querySelector("#password");
+
+        togglePassword.addEventListener("click", function () {
+            // toggle the type attribute
+            const type = password.getAttribute("type") === "password" ? "text" : "password";
+            password.setAttribute("type", type);
+
+            // toggle the icon
+            this.classList.toggle("bx-show");
+            this.classList.toggle("bx-hide");
+        });
+
+        // prevent form submit
+        /*const form = document.querySelector("form");
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+        });*/
+    </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+﻿.attribute-property-field-control {
+    min-width: 100%;
+    color: #626262;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 5px;
+    font-size: 1rem;
+}
+
+.attribute-container {
+    display: flex;
+    align-items: center;
+}
+
+table#tbAttributeList tbody tr td.td-name .attribute-container .attribute-input-container {
+    min-width: 300px;
+}
+
+table#tbAttributeList tbody tr td.td-name button:is(.btn-attribute-taker-out, .btn-attribute-tabber, .btn-attribute-climb-up, .btn-attribute-go-down) {
+    display: none;
+}
+
+table#tbAttributeList tbody tr:hover > td.td-name button:is(.btn-attribute-taker-out, .btn-attribute-tabber, .btn-attribute-climb-up, .btn-attribute-go-down) {
+    display: inline-block;
+}

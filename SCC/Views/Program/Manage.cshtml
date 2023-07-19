@@ -1,0 +1,440 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.ProgramManagementViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_PROGRAM;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(ProgramController));
+    string transactionControllerName = OverallController.GetControllerName(typeof(TransactionController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    bool hasModel = Model.Program.ID != null && Model.Program.ID > 0;
+
+    ViewBag.Title = "Administración de programas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Crear / Editar programa</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                @{
+                    string formAction =
+                        !hasModel ?
+                            @Url.Action(nameof(ProgramController.Create), mainControllerName) :
+                            @Url.Action(nameof(ProgramController.Edit), mainControllerName);
+                }
+                <form id="frmManage" action="@formAction" method="post">
+                    @Html.HiddenFor(modelitem => Model.Program.ID)
+                    @Html.HiddenFor(modelitem => Model.Program.BasicInfo)
+                    @Html.HiddenFor(modelitem => Model.Program.BasicInfoID)
+
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        @if (hasModel)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    ID del sistema
+                                </div>
+                                <div class="col-7">
+                                    <strong>@Model.Program.ID</strong>
+                                </div>
+                            </div>
+                        }
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Nombre <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem => Model.Program.Name, null, new { @class = "property-field-control", placeholder = "Nombre", autocomplete = "off", required = "" })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de inicio <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @{
+                                    DateTime programStartDate =
+                                        Model.Program.StartDate != null
+                                            ? (Model.Program.StartDate.Year > 2000
+                                                ? Model.Program.StartDate
+                                                : DateTime.Now)
+                                            : DateTime.Now;
+                                }
+
+                                @Html.TextBoxFor(model => 
+                                    Model.Program.StartDate,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de inicio",
+                                        title = "Fecha de inicio",
+                                        autocomplete = "off",
+                                        type = "date",
+                                        @Value = programStartDate.ToString("yyyy-MM-dd"),
+                                        required = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        @if (hasModel)
+                        {
+                            <div class="row property-field">
+                                <div class="col-5 property-field-label">
+                                    Fecha de finalización <span class="required">*</span>
+                                </div>
+                                <div class="col-7">
+                                    @{
+                                        DateTime? programEndDate = Model.Program.EndDate != null ? Model.Program.EndDate.Value : new DateTime?();
+                                    }
+
+                                    @Html.TextBoxFor(model =>
+                                        Model.Program.EndDate,
+                                        new
+                                        {
+                                            @class = "property-field-control",
+                                            placeholder = "Fecha de finalización",
+                                            title = "Fecha de finalización",
+                                            autocomplete = "off",
+                                            type = "date",
+                                            @Value = programEndDate != null ? programEndDate.Value.ToString("yyyy-MM-dd") : ""
+                                        }
+                                    )
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+
+                            @if (hasModel)
+                            {
+                                <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                            }
+                            else
+                            {
+                                <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                            }
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_PROGRAMS))
+{
+    <div class="tableContainer">
+        <table class="display cell-border" id="tbInfo">
+            <thead>
+                <tr>
+                    <th>
+                        Nombre
+                    </th>
+                    <th>
+                        Fecha de inicio
+                    </th>
+                    <th>
+                        Fecha de finalización
+                    </th>
+                    <th>
+                        Estado
+                    </th>
+                    <th>
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Program program in Model.ProgramList)
+                {
+                    string tableRowClass = string.Empty;
+                    if (program.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED)
+                    {
+                        tableRowClass +=
+                            string.IsNullOrEmpty(tableRowClass) ?
+                                "strikethrough" :
+                                " strikethrough";
+                    }
+
+                    <tr class="@tableRowClass">
+                        <td>@program.Name</td>
+                        <td>@program.StartDate.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @(
+                                program.EndDate != null 
+                                    ? ((DateTime)program.EndDate).ToString("dd/MM/yyyy")
+                                    : string.Empty
+                            )
+                        </td>
+                        <td>
+                            @switch ((SCC_BL.DBValues.Catalog.STATUS_PROGRAM)program.BasicInfo.StatusID)
+                            {
+                                case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.CREATED:
+                                    @:Activo
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.UPDATED:
+                                    @:Activo
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED:
+                                    @:Inactivo
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.ENABLED:
+                                    @:Activo
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED:
+                                    @:Inactivo
+                                    break;
+                                default:
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            @if (program.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED && program.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                            {
+                                <button data-elementid="@program.ID" class="btn-element-action btn-element-action-primary btn-program-edit" title="Editar">
+                                    <i class='bx bxs-pencil'></i>
+                                </button>
+                                if (program.EndDate == null || DateTime.Now < program.EndDate)
+                                {
+                                    <form class="d-inline frm-delete" action="@Url.Action(nameof(ProgramController.Delete), mainControllerName)" method="post">
+                                        @Html.Hidden("programID", program.ID)
+                                        <button class="btn-element-action btn-element-action-danger btn-program-delete" type="submit" title="Eliminar">
+                                            <i class='bx bxs-trash'></i>
+                                        </button>
+                                    </form>
+                                }
+                                using (ProgramFormCatalog programFormCatalog = ProgramFormCatalog.ProgramFormCatalogWithProgramID(program.ID))
+                                {
+                                    List<ProgramFormCatalog> programFormCatalogList = programFormCatalog.SelectByProgramID();
+
+                                    if (programFormCatalogList.Count() > 0)
+                                    {
+                                        <form class="d-inline frm-import-data" action="@Url.Action(nameof(TransactionController.ImportData), transactionControllerName)" method="get" target="_blank">
+                                            @Html.Hidden("programID", program.ID)
+                                            <button class="btn-element-action btn-element-action-secondary btn-program-import-transactions" type="submit" title="Importar transacciones">
+                                                <i class='bx bx-import'></i>
+                                            </button>
+                                        </form>
+                                    }
+                                }
+                                <button data-elementid="@program.ID" class="btn-element-action btn-element-action-warning btn-program-logs" title="Ver logs">
+                                    <i class='bx bx-book-reader'></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <form class="d-inline frm-reactivate" action="@Url.Action(nameof(ProgramController.Reactivate), mainControllerName)" method="post">
+                                    @Html.Hidden("programID", program.ID)
+                                    <button class="btn-element-action btn-element-action-success" type="submit" title="Reactivar">
+                                        <i class='bx bxs-check-square'></i>
+                                    </button>
+                                </form>
+                                <button data-elementid="@program.ID" class="btn-element-action btn-element-action-warning btn-program-logs" title="Ver logs">
+                                    <i class='bx bx-book-reader'></i>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+<script>
+    $(document).ready(function () {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de programas' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    },
+                    "columns": [0, 1, 2, 3],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+
+            let toolbarControls = '';
+
+            toolbarControls +=
+                getControlForToolbar(
+                    '<div class="radio-control d-inline-block"><input label="NO" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="false" @(Request["filterActiveElements"] == null || Request["filterActiveElements"] == "false" ? "checked" : string.Empty ) /><input label="SI" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="true" @(Request["filterActiveElements"] == "true" ? "checked" : string.Empty ) /></div>',
+                    'Mostrar sólo activos'
+                );
+
+            $('div.toolbar').html(toolbarControls);
+        });
+    });
+
+    function getControlForToolbar(content, label) {
+        let result = '';
+
+        const divPropertyField = '<div class="row property-field m-3">%replaceContent%</div>';
+
+        const divPropertyFieldLabel = '<div class="col-5 property-field-label">' + label + '</div>';
+        const contentContainer = '<div class="col-7">' + content + '</div>';
+
+        result =
+            divPropertyField
+                .replace('%replaceContent%', divPropertyFieldLabel + contentContainer);
+
+        return result;
+    }
+
+    function onChangefilterActiveElementsEvent(element) {
+        let url = '@Url.Action(nameof(ProgramController.Manage), mainControllerName)';
+
+        if (element.value == 'true') {
+            url += '?filterActiveElements=' + element.value;
+        }
+
+        if ($('#identification').val()) {
+            let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+
+            if (confirm(message) == true) {
+                window.open(url, '_self');
+            }
+        } else {
+            window.open(url, '_self');
+        }
+    }
+
+    $('.btn-program-edit').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(ProgramController.Manage), mainControllerName)?programID=' + elementID, '_self');
+        }
+    });
+
+    $('.btn-program-logs').click((e) => {
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        window.open('@Url.Action(logsActionName, logsControllerName)?categoryID=' + @mainCategoryID + '&itemID=' + elementID, '_blank');
+    });
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(ProgramController.Manage), mainControllerName)', '_self');
+    });
+
+    $('.frm-delete').submit((e) => {
+        let message = '¿Quieres eliminar este elemento del sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+
+    $('.frm-reactivate').submit((e) => {
+        let message = '¿Quieres reactivar este elemento del sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+
+    $('#btnSubmit').click(() => {
+        const requiredAdviseElement = $('.required-advise');
+
+        /*if (
+            ($('#permissionList').val() == '' || $('#permissionList').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }*/
+
+        const message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+</script>

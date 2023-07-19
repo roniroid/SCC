@@ -1,0 +1,174 @@
+﻿@using SCC.ViewModels;
+@using SCC.Controllers;
+@using SCC_BL;
+
+@model TransactionImportResults
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    string mainControllerName = OverallController.GetControllerName(typeof(TransactionController));
+
+    ViewBag.Title = "Resultados de la importación";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/css")
+@Scripts.Render("~/bundles/bootstrap")
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<h4 class="m-5">Resultados exitosos</h4>
+<div class="tableContainer">
+    <table class="display" id="tbSuccess">
+        <thead>
+            <tr>
+                <th>
+                    Fila
+                </th>
+                <th>
+                    Viejo identificador
+                </th>
+                <th>
+                    Nuevo identificador
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (SCC_BL.Helpers.Transaction.Import.Success success in Model.TransactionImportSuccessList)
+            {
+                <tr>
+                    <td>@success.RowIndex</td>
+                    <td>@success.OldIdentifier</td>
+                    <td>@success.NewIdentifier</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="m-5">
+    <h4>Resultados erróneos</h4>
+    <a class="download-missing-ones" title="Descargar faltantes">Descargar nueva plantilla</a>
+</div>
+<div class="tableContainer">
+    <table class="display" id="tbError">
+        <thead>
+            <tr>
+                <th>
+                    Nombre del elemento
+                </th>
+                <th>
+                    Referencia de celda
+                </th>
+                <th>
+                    Fila
+                </th>
+                <th>
+                    Columna
+                </th>
+                <th>
+                    Tipo
+                </th>
+                <th>
+                    Contenido
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (SCC_BL.Helpers.Transaction.Import.Error error in Model.TransactionImportErrorList)
+            {
+                <tr>
+                    <td>@error.ElementName</td>
+                    <td>@error.CellReference</td>
+                    <td>@error.RowNumber</td>
+                    <td>@error.ColumnNumber</td>
+                    <td>@error.Type</td>
+                    <td>@error.Content</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(() => {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de errores' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customButton;
+
+            /*customButton = {
+                "text": 'Exportar en formato de importación',
+                "className": "btn-sm border border-dark",
+                "action": function (e, dt, node, config) {
+                    alert('Button activated');
+                }
+            };*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                /*"exportOptions": {
+                    "columns": [0, 1, 2, 3, 4, 5]
+                }*/
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                /*"exportOptions": {
+                    "columns": [0, 1, 2, 3, 4]
+                }*/
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                /*"exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    },
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }*/
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            data["order"] = [];
+
+            startDataTable('#tbSuccess', data);
+            startDataTable('#tbError', data);
+        });
+    });
+
+    $('.download-missing-ones').click((e) => {
+        window.location.assign('@Url.Action(nameof(TransactionController.DownLoadTransactionImportResultsFile), mainControllerName)');
+        @*window.open('@Url.Action(nameof(TransactionController.DownLoadFileFromServer), mainControllerName)?filePath=@Model.FilePath&contentType=@SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES', '_blank');*@
+    });
+</script>

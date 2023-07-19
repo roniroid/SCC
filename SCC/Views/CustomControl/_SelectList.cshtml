@@ -1,0 +1,506 @@
+﻿@using SCC_BL;
+@using SCC.Controllers;
+
+@model CustomControl
+
+@{
+    string mainControllerName = OverallController.GetControllerName(typeof(CustomControlController));
+
+    bool hasModel = Model.ID != null && Model.ID > 0;
+
+    string formAction =
+        !hasModel ?
+            @Url.Action(nameof(CustomControlController.Create), mainControllerName) :
+            @Url.Action(nameof(CustomControlController.Edit), mainControllerName);
+}
+
+<form id="frmCustomControlSelectList" class="custom-control-form" action="@formAction" method="post">
+    @Html.HiddenFor(model => Model.CssClass)
+    @Html.HiddenFor(model => Model.NumberOfRows)
+    @Html.HiddenFor(model => Model.NumberOfColumns)
+    @Html.HiddenFor(model => Model.DefaultValue)
+    @Html.HiddenFor(model => Model.ControlTypeID)
+    @Html.HiddenFor(model => Model.Mask)
+    @Html.HiddenFor(model => Model.Pattern)
+    @Html.HiddenFor(model => Model.BasicInfo)
+    @Html.HiddenFor(model => Model.BasicInfoID)
+
+    @Html.Hidden("valueList")
+
+    <div class="row d-block text-center text-danger required-advise d-none m-5">
+        Por favor, ingrese todos los datos requeridos
+    </div>
+
+    @if (hasModel)
+    {
+        <div class="row property-field">
+            <div class="col-4 property-field-label">
+                ID del sistema
+            </div>
+            <div class="col-8">
+                <strong>@Model.ID</strong>
+            </div>
+        </div>
+    }
+    <div class="row property-field d-none">
+        <div class="col-4 property-field-label">
+            Módulo al que aplica <span class="required">*</span>
+        </div>
+        <div class="col-8">
+            @Html.DropDownListFor(modelitem =>
+                Model.ModuleID,
+                (ViewData[SCC_BL.Settings.AppValues.ViewData.CustomControl.CustomControlTypeView.Module.NAME] as SelectList),
+                new
+                {
+                    @class = "property-field-control",
+                    placeholder = "Módulo al que aplica",
+                    title = "Módulo al que aplica",
+                    id = "moduleList"
+                }
+            )
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-4 property-field-label">
+            Etiqueta <span class="required">*</span>
+        </div>
+        <div class="col-8">
+            @Html.TextBoxFor(modelitem => Model.Label, null, new { @class = "property-field-control", placeholder = "Etiqueta", autocomplete = "off", required = "", pattern = SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN, id = "txtCustomControlLabel" })
+        </div>
+    </div>
+    <div class="row property-field d-none">
+        <div class="col-4 property-field-label">
+            Descripción <span class="required">*</span>
+        </div>
+        <div class="col-8">
+            @Html.TextBoxFor(modelitem => Model.Description, null, new { @class = "property-field-control", placeholder = "Descripción", autocomplete = "off", required = "", pattern = SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN })
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-4 property-field-label">
+            Campo obligatorio
+        </div>
+        <div class="col-8">
+            <div class="radio-control d-inline-block">
+                @Html.RadioButtonFor(model =>
+                    Model.IsRequired,
+                    false,
+                    new
+                    {
+                        label = "NO"
+                    }
+                )
+                @Html.RadioButtonFor(model =>
+                    Model.IsRequired,
+                    true,
+                    new
+                    {
+                        label = "SI",
+                        id = "IsRequired_Yes"
+                    }
+                )
+            </div>
+        </div>
+    </div>
+    <div class="text-center m-5 text-secondary">
+        <hr>
+        <h6>Opciones</h6>
+        <button class="btn-element-action btn-element-action-secondary" id="btnAddNewOption" type="button" title="Agregar nueva">
+            <i class='bx bx-plus-medical'></i>
+        </button>
+        <table id="optionTable" class="m-">
+            <thead>
+                <tr>
+                    <th>
+                        Texto
+                    </th>
+                    @*<th>
+                        Valor
+                    </th>
+                    <th>
+                        ¿Es valor por defecto?
+                    </th>*@
+                    <th>
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="optionTableBody">
+                @foreach (CustomControlValueCatalog value in Model.ValueList.OrderBy(e => e.Order))
+                {
+                    <tr class="option-table-row" data-customcontrolvalueorder="@value.Order" data-customcontrolvalueid="@value.ID" data-customcontrolvaluedeleted="@(value.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL_VALUE_CATALOG.DELETED)">
+                        <td class="tdName text-center">
+                            <input data-customcontrolvalueid="@value.ID" class="option-control" type="text" value="@value.Name">
+                        </td>
+                        @*<td class="tdValue text-center">
+                            <input class="option-control" type="text" value="@value.Value">
+                        </td>
+                        <td class="tdDefault text-center">
+                            <input class="option-control option-control-is-default" type="checkbox" @(value.IsDefaultValue ? "checked" : string.Empty)>
+                        </td>*@
+                        <td class="tdActions text-center">
+                            @if (value.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL_VALUE_CATALOG.DELETED && value.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL_VALUE_CATALOG.DISABLED)
+                            {
+                                <button class="btn-element-action btn-element-action-secondary btn-customControlValueCatalog-climb-up" type="button" title="Subir">
+                                    <i class='bx bxs-up-arrow'></i>
+                                </button>
+                                <button class="btn-element-action btn-element-action-secondary btn-customControlValueCatalog-go-down" type="button" title="Bajar">
+                                    <i class='bx bxs-down-arrow'></i>
+                                </button>
+                                <button class="btn-element-action btn-element-action-danger btn-customControlValueCatalog-delete" type="button" title="Eliminar">
+                                    <i class='bx bxs-trash'></i>
+                                </button>
+                            }
+                            else
+                            if (value.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL_VALUE_CATALOG.DELETED)
+                            {
+                                <strong>Este valor fue eliminado</strong>
+                            }
+                            else
+                            if (value.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL_VALUE_CATALOG.DISABLED)
+                            {
+                                <strong>Este valor fue deshabilitado</strong>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</form>
+<script>
+    $(document).ready(() => {
+        //const { ID } = require("../../Content/DataTables/pdfmake-0.1.36/pdfmake");
+        var someTableDT =
+            $("#optionTable").on("draw.dt", function () {
+                $(this).find(".dataTables_empty").parents('tbody').empty();
+            }).DataTable({
+                "paging": false,
+                "ordering": false,
+                "info": false,
+                "searching": false,
+                "zeroRecords": " ",
+                "columnDefs": [
+                    {
+                        className: "text-center",
+                        targets: [0, 1/*, 2, 3*/]
+                    }
+                ]
+            });
+
+        fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            startMultiSelect('#moduleList', data);
+        });
+
+        initTableButtons();
+    });
+
+    $('.custom-control-form').submit((e) => {
+        let requiredAdviseElement = $('.required-advise');
+
+        if (
+            ($('#moduleList').val() == '' || $('#moduleList').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }
+
+        if (
+            ($('#txtCustomControlLabel').val() == '' || $('#txtCustomControlLabel').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }
+
+        let message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+
+        getFormObject()
+            .then((response) => {
+                $.ajax({
+                    "url": '@formAction',
+                    "contentType": 'application/json',
+                    "data": JSON.stringify(response),
+                    "method": 'POST',
+                    "timeout": 0,
+                    "success": function(response) {
+                        window.open(response.url, '_self');
+                    },
+                    "error": function (response) {
+                        window.open(response.url, '_self');
+                    },
+                    "complete": function (response) {
+                        window.open(response.url, '_self');
+                    }
+                });
+            });
+
+        return false;
+    });
+
+    function initTableButtons() {
+        $('.btn-customControlValueCatalog-delete').off('click').on('click', function (e) {
+            $(e.currentTarget).parent().parent().remove();
+        });
+
+        $('.btn-customControlValueCatalog-climb-up').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent();
+            let previousRow = $(actualRow).prev();
+
+            let orderActualRow = $(actualRow).data('customcontrolvalueorder');
+            let orderPreviousRow = $(previousRow).data('customcontrolvalueorder');
+
+            if (orderPreviousRow != null) {
+                $(actualRow).data('customcontrolvalueorder', orderPreviousRow)
+                $(previousRow).data('customcontrolvalueorder', orderActualRow)
+
+                $(previousRow).before($(actualRow));
+            }
+        });
+
+        $('.btn-customControlValueCatalog-go-down').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent();
+            let nextRow = $(actualRow).next();
+
+            let orderActualRow = $(actualRow).data('customcontrolvalueorder');
+            let orderNextRow = $(nextRow).data('customcontrolvalueorder');
+
+            if (orderNextRow != null) {
+                $(actualRow).data('customcontrolvalueorder', orderNextRow)
+                $(nextRow).data('customcontrolvalueorder', orderActualRow)
+
+                $(nextRow).after($(actualRow));
+            }
+        });
+
+        $('.option-control-is-default').off('change').on('change', function (e) {
+            if ($(e.currentTarget).prop('checked')) {
+                $('.option-control-is-default').prop('checked', false);
+                $('.option-control-is-default').removeAttr('checked');
+                $(e.currentTarget).prop('checked', true);
+                $(e.currentTarget).attr('checked', '');
+            } else {
+                $('.option-control-is-default').prop('checked', false);
+                $('.option-control-is-default').removeAttr('checked');
+                $(e.currentTarget).prop('checked', false);
+                $(e.currentTarget).removeAttr('checked');
+            }
+        });
+    }
+
+    function getFormObject() {
+        return new Promise((resolve, reject) => {
+            let formObject = {};
+
+            let customControl = {};
+            let valueList = {};
+
+            let maskID = null;
+
+            customControl =
+            {
+                "ID": @Model.ID,
+                "Label": $('input[name="@nameof(CustomControl.Label)"]').val(),
+                "ModuleID": $('select[name="@nameof(CustomControl.ModuleID)"]').val(),
+                "IsRequired": $('#IsRequired_Yes').is(':checked'),
+                "Description":
+                    $('input[name="@nameof(CustomControl.Description)"]').val() != ''
+                        ? $('input[name="@nameof(CustomControl.Description)"]').val()
+                        : $('input[name="@nameof(CustomControl.Label)"]').val(),
+                "ControlTypeID": $('input[name="@nameof(CustomControl.ControlTypeID)"]').val(),
+                "CssClass": $('input[name="@nameof(CustomControl.CssClass)"]').val(),
+                "Mask": $('input[name="@nameof(CustomControl.Mask)"]').val(),
+                "Pattern": $('input[name="@nameof(CustomControl.Pattern)"]').val(),
+                "DefaultValue": $('input[name="@nameof(CustomControl.DefaultValue)"]').val(),
+                "NumberOfRows": $('input[name="@nameof(CustomControl.NumberOfRows)"]').val(),
+                "NumberOfColumns": $('input[name="@nameof(CustomControl.NumberOfColumns)"]').val(),
+                "BasicInfoID": $('input[name="@nameof(CustomControl.BasicInfoID)"]').val()
+            };
+
+            getOptionList()
+                .then((response) => {
+                    console.table(response);
+                    valueList = response;
+
+                    formObject['customControl'] = customControl;
+                    formObject['valueList'] = valueList;
+                    formObject['maskID'] = maskID;
+
+                    resolve(formObject);
+                });
+        });
+    }
+
+    function getMaxOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('.option-table-row').length > 0) {
+                $('.option-table-row').each(function () {
+                    let value = parseInt($(this).data('customcontrolvalueorder'));
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    $('#btnAddNewOption').click(() => {
+        getMaxOrder()
+            .then((maxValue) => {
+                let newValue = maxValue + 1;
+
+                let tbody = document.getElementById('optionTableBody');
+
+                let newRow = document.createElement('tr');
+
+                let newColumnName = document.createElement('td');
+                /*let newColumnValue = document.createElement('td');
+                let newColumnDefault = document.createElement('td');*/
+                let newColumnActions = document.createElement('td');
+
+                let newInputName = document.createElement('input');
+                /*let newInputValue = document.createElement('input');
+                let newInputDefault = document.createElement('input');*/
+
+                let newInputActionBtnClimbUp = document.createElement('button');
+                let newInputActionBtnGoDown = document.createElement('button');
+                let newInputActionBtnDelete = document.createElement('button');
+
+                newRow.classList.add('option-table-row');
+                newRow.dataset.customcontrolvalueorder = newValue;
+                newRow.dataset.customcontrolvalueid = 0;
+                newRow.dataset.customcontrolvaluedeleted = false;
+
+                newColumnName.classList.add('tdName');
+                newColumnName.classList.add('text-center');
+
+                newInputName.classList.add('option-control');
+                newInputName.type = 'text';
+                newInputName.placeholder = 'Escriba el texto de la opción';
+
+                /*newColumnValue.classList.add('tdValue');
+                newColumnValue.classList.add('text-center');
+
+                newInputValue.classList.add('option-control');
+                newInputValue.type = 'text';
+                newInputValue.placeholder = 'Escriba el valor de la opción';
+
+                newColumnDefault.classList.add('tdDefault');
+                newColumnDefault.classList.add('text-center');
+
+                newInputDefault.classList.add('option-control');
+                newInputDefault.classList.add('option-control-is-default');
+                newInputDefault.type = 'checkbox';
+                newInputDefault.value = 'true';*/
+
+                newColumnActions.classList.add('tdActions');
+                newColumnActions.classList.add('text-center');
+
+                newInputActionBtnClimbUp.classList.add('btn-element-action');
+                newInputActionBtnClimbUp.classList.add('btn-element-action-secondary');
+                newInputActionBtnClimbUp.classList.add('btn-customControlValueCatalog-climb-up');
+                newInputActionBtnClimbUp.type = 'button';
+                newInputActionBtnClimbUp.title = 'Subir';
+                newInputActionBtnClimbUp.innerHTML = '<i class="bx bxs-up-arrow"></i>';
+
+                newInputActionBtnGoDown.classList.add('btn-element-action');
+                newInputActionBtnGoDown.classList.add('btn-element-action-secondary');
+                newInputActionBtnGoDown.classList.add('btn-customControlValueCatalog-go-down');
+                newInputActionBtnGoDown.type = 'button';
+                newInputActionBtnGoDown.title = 'Bajar';
+                newInputActionBtnGoDown.innerHTML = '<i class="bx bxs-down-arrow"></i>';
+
+                newInputActionBtnDelete.classList.add('btn-element-action');
+                newInputActionBtnDelete.classList.add('btn-element-action-danger');
+                newInputActionBtnDelete.classList.add('btn-customControlValueCatalog-delete');
+                newInputActionBtnDelete.type = 'button';
+                newInputActionBtnDelete.title = 'Eliminar';
+                newInputActionBtnDelete.innerHTML = '<i class="bx bxs-trash"></i>';
+
+                newColumnActions.appendChild(newInputActionBtnClimbUp);
+                newColumnActions.innerHTML += '\n';
+                newColumnActions.appendChild(newInputActionBtnGoDown);
+                newColumnActions.innerHTML += '\n';
+                newColumnActions.appendChild(newInputActionBtnDelete);
+
+                /*newColumnDefault.appendChild(newInputDefault);
+
+                newColumnValue.appendChild(newInputValue);*/
+
+                newColumnName.appendChild(newInputName);
+
+                newRow.appendChild(newColumnName);
+                /*newRow.appendChild(newColumnValue);
+                newRow.appendChild(newColumnDefault);*/
+                newRow.appendChild(newColumnActions);
+
+                tbody.appendChild(newRow);
+
+                initTableButtons();
+            });
+    });
+
+    function getOptionList() {
+        return new Promise((resolve, reject) => {
+            try {
+                let optionList = [];
+
+                $('.option-table-row').each((index, e) => {
+                    let valueID = parseInt($(e).data('customcontrolvalueid'));
+                    let orderNumber = parseInt($(e).data('customcontrolvalueorder'));
+                    let valueDeleted = $(e).data('customcontrolvaluedeleted') == 'True';
+
+                    let name = $(e).find('td.tdName').find('input.option-control').first().val();
+
+                    let value = name;
+                    let isDefault = false;
+
+                    /*let value = $(e).find('td.tdValue').find('input.option-control').first().val();
+                    let isDefault = $(e).find('td.tdDefault').find('input.option-control').first().is(':checked');*/
+
+                    if
+                    (
+                        (name != '' && name != null) &&
+                        (value != '' && value != null) &&
+                        (orderNumber != '' && orderNumber != null) &&
+                        valueDeleted != true
+                    )
+                    {
+                        let jsonOption =
+                        {
+                            "ID": valueID,
+                            "CustomControlID": @Model.ID,
+                            "Order": orderNumber,
+                            "Name": name,
+                            "Value": value,
+                            "IsDefaultValue": isDefault,
+                            "BasicInfoID": 0,
+                            "BasicInfoID": null
+                        };
+
+                        optionList.push(jsonOption);
+                    }
+                });
+
+                console.log(optionList);
+
+                resolve(optionList);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }
+</script>

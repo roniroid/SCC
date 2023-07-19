@@ -1,0 +1,282 @@
+﻿@model List<User>
+
+@using SCC.Controllers;
+@using SCC_BL;
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_USER;
+
+    string mainControllerName = OverallController.GetControllerName(typeof(UserController));
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    ViewBag.Title = "Asignación de programas y grupos de programas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> Asignar programas y grupos de programas</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                <form id="frmManage" action="@Url.Action(nameof(UserController.AsignProgramsAndProgramGroups), mainControllerName)" method="post">
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Usuarios disponibles <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "userArray",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.UserList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Usuarios disponibles",
+                                        title = "Usuarios disponibles",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Grupos disponibles
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "programGroupArray",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.ProgramGroupList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Grupos disponibles",
+                                        title = "Grupos disponibles",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Programas disponibles
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownList(
+                                    "programArray",
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.ProgramList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Programas disponibles",
+                                        title = "Programas disponibles",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+                            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="tableContainer">
+    <table class="display cell-border" id="tbInfo">
+        <thead>
+            <tr>
+                <th>
+                    Usuario
+                </th>
+                <th>
+                    Grupos de programas
+                </th>
+                <th>
+                    Programas
+                </th>
+                @*<th>
+                    Acciones
+                </th>*@
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (User user in Model)
+            {
+                string tableRowClass = string.Empty;
+                if (user.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED)
+                {
+                    tableRowClass +=
+                        string.IsNullOrEmpty(tableRowClass) ?
+                            "strikethrough" :
+                            " strikethrough";
+                }
+
+                <tr class="@tableRowClass">
+                    <td>@user.Person.SurName @user.Person.LastName @user.Person.FirstName (@user.Person.Identification)</td>
+                    <td>
+                        <ol>
+                            @foreach (UserProgramGroupCatalog userProgramGroupCatalog in user.ProgramGroupList)
+                            {
+                                <li>
+                                    @{
+                                        ProgramGroup tempProgramGroup = new ProgramGroup(userProgramGroupCatalog.ProgramGroupID);
+                                        tempProgramGroup.SetDataByID();
+                                    }
+
+                                    @tempProgramGroup.Name
+                                </li>
+                            }
+                        </ol>
+                    </td>
+                    <td>
+                        <ol>
+                            @foreach (UserProgramCatalog userProgramCatalog in user.ProgramList)
+                            {
+                                <li>
+                                    @{
+                                        Program tempProgram = new Program(userProgramCatalog.ProgramID);
+                                        tempProgram.SetDataByID();
+                                    }
+
+                                    @tempProgram.Name
+                                </li>
+                            }
+                        </ol>
+                    </td>
+                    @*<td>
+                    </td>*@
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+    $(document).ready(function () {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de asignaciones de programas' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    },
+                    "columns": [0, 1, 2],
+                    "rows": ":not('.strikethrough')"
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+        });
+
+        fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            startMultiSelect('#userArray', data);
+            startMultiSelect('#programGroupArray', data);
+            startMultiSelect('#programArray', data);
+        });
+    });
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(UserController.AsignProgramsAndProgramGroups), mainControllerName)', '_self');
+    });
+
+    $('#btnSubmit').click(() => {
+        const requiredAdviseElement = $('.required-advise');
+
+        /*if (
+            ($('#userArray').val() == '' || $('#userArray').val() == null) ||
+            ($('#programGroupArray').val() == '' || $('#programGroupArray').val() == null) ||
+            ($('#programArray').val() == '' || $('#programArray').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }*/
+
+        const message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+</script>

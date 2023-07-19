@@ -1,0 +1,776 @@
+﻿@using SCC.Controllers;
+@using System.Globalization;
+
+@model SCC.ViewModels.ReportResultsAccuracyByAttributeViewModel
+
+@{
+    ViewBag.Title = "Restultados por atributo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+}
+
+<link href="~/Content/Custom/radio.css" rel="stylesheet" />
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<style>
+    .chart-container {
+    }
+
+        .chart-container #myChart {
+            background-color: #fff;
+            border: 1px solid #000;
+        }
+</style>
+
+<script src="~/Scripts/chart.js"></script>
+<script src="~/Scripts/chartjs-plugin-datalabels@2.0.0.js"></script>
+
+<div class="chart-container row">
+    <div class="col-9">
+        <canvas class="p-5 m-5" id="myChart"></canvas>
+    </div>
+    <div class="col-3 border border-secondary m-0 p-0 bg-light">
+        <div class="bg-secondary text-light text-center p-4">
+            <span>
+                Personalización
+            </span>
+        </div>
+        <div class="text-secondary text-center p-2">
+            <span>
+                Etiquetas
+            </span>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtChartTitle" type="text" value="Resultados de calidad mensual por atributo" placeholder="Título" autocomplete="off" />
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtChartSubtitle" type="text" value="Resultados por atributo" placeholder="Subtítulo" autocomplete="off" />
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtAxisX" type="text" value="" placeholder="Eje X" autocomplete="off" />
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtAxisY" type="text" value="Porcentaje" placeholder="Eje Y" autocomplete="off" />
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtAxisY2" type="text" value="" placeholder="Eje Y 2" autocomplete="off" />
+        </div>
+        <hr />
+        <div class="bg-light d-flex justify-content-center text-center p-1 align-items-center">
+            <div class="col-6 text-end p-2">
+                Fondo
+            </div>
+            <div class="col-6 text-start p-2">
+                <input class="form-control text-center w-25" id="txtBackgroundColor" type="color" value="#ffffff" placeholder="Título" autocomplete="off" />
+            </div>
+        </div>
+        <hr />
+        <div class="text-secondary text-center p-2">
+            <span>
+                Líneas
+            </span>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1 align-items-center">
+            <div class="col-6 text-end p-2">
+                Verticales
+            </div>
+            <div class="col-6 text-start p-2">
+                <div class="radio-control d-inline-block">
+                    <input name="rdVertical" type="radio" value="false" label="NO" />
+                    <input checked name="rdVertical" type="radio" value="true" label="SI" />
+                </div>
+            </div>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1 align-items-center">
+            <div class="col-6 text-end p-2">
+                Horizontales
+            </div>
+            <div class="col-6 text-start p-2">
+                <div class="radio-control d-inline-block">
+                    <input name="rdHorizontal" type="radio" value="false" label="NO" />
+                    <input checked name="rdHorizontal" type="radio" value="true" label="SI" />
+                </div>
+            </div>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1 align-items-center">
+            <div class="col-6 text-end p-2">
+                Bordes
+            </div>
+            <div class="col-6 text-start p-2">
+                <div class="radio-control d-inline-block">
+                    <input name="rdBorder" type="radio" value="false" label="NO" />
+                    <input checked name="rdBorder" type="radio" value="true" label="SI" />
+                </div>
+            </div>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-3">
+            <button class="btn btn-secondary w-75" id="btnUpdateChart">Actualizar</button>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-3">
+            <button class="btn btn-primary w-75" id="btnExportRequest">Descargar datos de solicitud</button>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-3">
+            <button class="btn btn-primary w-75" id="btnExportXLS">Exportar a PNG</button>
+        </div>
+    </div>
+</div>
+
+<div class="tableContainer mt-4">
+    <table class="display cell-border text-center" id="tbInfo">
+        <thead>
+            <tr>
+                <th class="text-center">
+                    Atributo
+                </th>
+                <th class="text-center">
+                    Cantidad
+                </th>
+                <th class="text-center">
+                    Total
+                </th>
+                <th class="text-center">
+                    Porcentaje
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                List<int> processedID = new List<int>();
+            }
+
+            @foreach (SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult in Model.AccuracyByAttributeResultList.OrderBy(e => e.AttributeID))
+            {
+                if (processedID.Where(e => e == accuracyByAttributeResult.AttributeID).Count() <= 0)
+                {
+                    int successfulResultCount = Model.AccuracyByAttributeResultList.Where(e => e.AttributeID == accuracyByAttributeResult.AttributeID && e.SuccessFulResult).Count();
+
+                    <tr>
+                        <td class="text-start">
+                            @accuracyByAttributeResult.AttributeName
+                        </td>
+                        <td>
+                            @successfulResultCount
+                        </td>
+                        <td>
+                            @Model.TotalTransactions
+                        </td>
+                        <td>
+                            @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(successfulResultCount) / Model.TotalTransactions) * 100)).Replace('.', ',')%
+                        </td>
+                    </tr>
+                }
+
+                processedID.Add(accuracyByAttributeResult.AttributeID);
+            }
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Resultados de precisión por atributo' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3, 4]
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3, 4]
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    }
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+        });
+    });
+
+    const ctx = document.getElementById('myChart');
+
+    const DEFAULT_DATA = {
+        labels: [@Html.Raw(String.Join(",", Model.ResultByAttributeList.Select(e => $"\"{ e.AttributeName }\"")))],
+        datasets: [
+            {
+                data: [@String.Join(",", Model.ResultByAttributeList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100))))],
+                borderColor: [
+                    'rgba(117, 178, 239)',
+                    'rgba(67, 66, 71)',
+                    'rgba(137, 222, 122)',
+                    'rgba(255, 190, 113)'
+                ],
+                backgroundColor: [
+                    'rgba(117, 178, 239, 0.8)',
+                    'rgb(67, 66, 71, 0.8)',
+                    'rgb(137, 222, 122, 0.8)',
+                    'rgb(255, 190, 113, 0.8)'
+                ],
+                borderWidth: 1,
+                successCount: [@String.Join(",", Model.ResultByAttributeList.Select(e => e.Quantity))],
+                transactionAttributeIDList: [@String.Join(",", Model.ResultByAttributeList.Select(e => e.TransactionAttributeID))],
+                totalCount: @Model.TotalTransactions,
+            }
+        ]
+    };
+
+    const chartAreaBorder = {
+        id: 'chartAreaBorder',
+        beforeDraw(chart, args, options) {
+            const { ctx, chartArea: { left, top, width, height } } = chart;
+            ctx.save();
+            ctx.strokeStyle = options.borderColor;
+            ctx.lineWidth = options.borderWidth;
+            ctx.setLineDash(options.borderDash || []);
+            ctx.lineDashOffset = options.borderDashOffset;
+            ctx.strokeRect(left, top, width, height);
+            ctx.restore();
+        }
+    };
+
+    const backgroundColorPlugin = {
+        id: 'customCanvasBackgroundColor',
+        beforeDraw: (chart, args, options) => {
+            const { ctx } = chart;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = options.color || '#99ffff';
+            ctx.fillRect(0, 0, chart.width, chart.height);
+            ctx.restore();
+        }
+    };
+
+    Chart.register([ChartDataLabels, chartAreaBorder, backgroundColorPlugin]);
+
+    let myChart = new Chart(ctx, {
+        type: 'bar',
+        data: DEFAULT_DATA,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: $('#txtAxisY').val(),
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        display: $('input[name="rdVertical"]:checked').val()
+                    },
+                    beginAtZero: true,
+                    max: 100
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: '',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        display: $('input[name="rdHorizontal"]:checked').val()
+                    }
+                }
+            },
+            plugins:
+            {
+                title: {
+                    display: true,
+                    text: $('#txtChartTitle').val(),
+                    padding: {
+                        top: 10,
+                        bottom: 20
+                    },
+                    font: {
+                        size: 20,
+                        weight: 'bold'
+                    }
+                },
+                subtitle: {
+                    display: true,
+                    text: $('#txtChartSubtitle').val(),
+                    padding: {
+                        top: 5,
+                        bottom: 20
+                    },
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                },
+                legend: {
+                    display: false,
+                    position: 'bottom'
+                },
+                datalabels: {
+                    backgroundColor: 'rgb(238, 244, 204)',
+                    borderColor: 'rgb(238, 244, 204)',
+                    borderRadius: 5,
+                    borderWidth: 1,
+                    display: true,
+                    anchor: 'end',
+                    align: 'start',
+                    offset: 20,
+                    color: '#000000',
+                    labels: {
+                        title: {
+                            font: {
+                                weight: 'bold',
+                                size: '14',
+                            }
+                        }
+                    },
+                    formatter: function (value, context) {
+                        return value + '%';
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `${context.formattedValue.replace(',', '.')}% (${context.dataset.successCount[context.dataIndex]}/${context.dataset.totalCount})`
+                    }
+                },
+                chartAreaBorder: {
+                    borderColor: '#000000',
+                    borderWidth: 2,
+                    borderDash: [0, 0],
+                    borderDashOffset: 2,
+                },
+                customCanvasBackgroundColor: {
+                    color: $('#txtBackgroundColor').val(),
+                }
+            },
+            layout: {
+                padding: {
+                    top: 10,
+                    right: 50,
+                    bottom: 10,
+                    left: 10
+                }
+            },
+            onClick: clickHandler,
+            onHover: (event, chartElement) => {
+                event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+            }
+        }
+    });
+
+    function clickHandler(evt) {
+        const points = myChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+
+        if (points.length) {
+            const firstPoint = points[0];
+            /*const label = myChart.data.labels[firstPoint.index];
+            const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
+
+            const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
+
+            const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');//AQUI
+
+            $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyByAttributeResultList.Select(e => e.TransactionAttributeID))" /> ');
+            $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+
+            $(document.body).append($form);
+
+            $form.submit();
+        }
+    }
+
+    $('#btnUpdateChart').click(() => {
+        const chartTitle = $('#txtChartTitle').val();
+        const chartSubtitle = $('#txtChartSubtitle').val();
+        const chartXTitle = $('#txtAxisX').val();
+        const chartYTitle = $('#txtAxisY').val();
+        const chartY2Title = $('#txtAxisY2').val();
+        const chartBackgroundColor = $('#txtBackgroundColor').val();
+
+        const showVerticalLines = $('input[name="rdVertical"]:checked').val() == 'true';
+        const showHorizontalLines = $('input[name="rdHorizontal"]:checked').val() == 'true';
+        const showBorderLines = $('input[name="rdBorder"]:checked').val() == 'true';
+
+        myChart.options.plugins.title.text = chartTitle;
+        myChart.options.plugins.subtitle.text = chartSubtitle;
+        myChart.options.scales.x.title.text = chartXTitle;
+        myChart.options.scales.y.title.text = chartYTitle;
+        //myChart.options.scales.y1.title.text = chartY2Title;
+        myChart.options.plugins.customCanvasBackgroundColor.color = chartBackgroundColor;
+
+        myChart.options.scales.y.grid.display = showVerticalLines;
+        //myChart.options.scales.y1.grid.display = showVerticalLines;
+        myChart.options.scales.x.grid.display = showHorizontalLines;
+
+        myChart.options.plugins.chartAreaBorder.borderColor =
+            showBorderLines
+                ? '#000000'
+                : chartBackgroundColor;
+
+        if (chartY2Title == '' || chartY2Title == null) {
+            delete myChart.options.scales.y1;
+            //myChart.options.scales.y1 = null;
+            myChart.update();
+        } else {
+            getY2Axis(chartY2Title)
+                .then((result) => {
+                    myChart.options.scales.y1 = result;
+                    myChart.update();
+                });
+        }
+    });
+
+    async function getY2Axis(titleText) {
+        return await {
+            title: {
+                display: true,
+                text: titleText,
+                font: {
+                    size: 14,
+                    weight: 'bold'
+                }
+            },
+            ticks: {
+                display: false,
+                drawTicks: false
+            },
+            border: {
+                display: false,
+                color: '#ffffff'
+            },
+            scaleShowLabels: false,
+            backdropColor: '#ffffff',
+            grid: {
+                display: $('input[name="rdVertical"]:checked').val()
+            }
+        };
+    }
+
+    $('#btnExportXLS').click(() => {
+        downloadChartPNG();
+    });
+
+    $('#btnExportRequest').click(() => {
+        exportToExcel(viewModel, myChart.toBase64Image());
+    });
+
+    function downloadChartPNG() {
+        var a = document.createElement('a');
+        a.href = myChart.toBase64Image();
+        console.log(myChart.toBase64Image());
+        a.download = 'Reporte de precisión general.png';
+
+        a.click();
+    }
+
+    async function downloadExcel() {
+        let data;
+        await getTableData()
+            .then((result) => {
+                data = result;
+                let workbook = XLSX.utils.book_new();
+                worksheet = XLSX.utils.aoa_to_sheet(data);
+                workbook.SheetNames.push("Datos");
+                workbook.Sheets["Datos"] = worksheet;
+                XLSX.writeFile(workbook, "Reporte de precisión general.xlsx");
+            });
+    }
+
+    function getTableData() {
+        return new Promise((resolve, reject) => {
+            let data = [];
+
+            let headers = [];
+
+            $('#tbInfo thead tr th').each((index, e) => {
+                headers.push($(e).html().replace('\n', '').trim());
+            });
+
+            data.push(headers);
+
+            $('#tbInfo tbody tr').each((index, e) => {
+                let columns = [];
+
+                $(e).find('td').each((index, f) => {
+                    columns.push($(f).html().replace('\n', '').trim());
+                });
+
+                data.push(columns);
+            });
+
+            resolve(data);
+        });
+    }
+
+    function exportToExcel(data, base64Image) {
+        var workbook = XLSX.utils.book_new();
+
+        var propertyKeyNames = {
+            TransactionStartDate: "Fecha de inicio de la transacción",
+            TransactionEndDate: "Fecha de finalización de la transacción",
+            EvaluationStartDate: "Fecha de inicio de la evaluación",
+            EvaluationEndDate: "Fecha de finalización de la evaluación",
+            ProgramIDArray: "Programas",
+            UserIDArray: "Usuarios",
+            SupervisorUserIDArray: "Supervisores",
+            EvaluatorUserIDArray: "Evaluadores",
+            ErrorTypeIDArray: "Tipos de error",
+            AttributeControllable: "Restricción - Controlable",
+            AttributeKnown: "Restricción - Conocido",
+            AttributeNoConstraint: "Restricción - Sin restricción",
+            ProgramNamesArray: "Programas",
+            UserNamesArray: "Usuarios",
+            SupervisorNamesArray: "Supervisores",
+            EvaluatorUserNamesArray: "Evaluadores",
+            ErrorTypeNamesArray: "Tipos de error",
+            AttributeNamesArray: "Atributos",
+            TransactionCustomFieldCatalogNamesAndValues: "Campos personalizados"
+        };
+
+        /*var processedData = {
+            ...data,
+            ProgramIDArray: JSON.stringify(data.ProgramIDArray),
+            UserIDArray: JSON.stringify(data.UserIDArray),
+            SupervisorUserIDArray: JSON.stringify(data.SupervisorUserIDArray),
+            EvaluatorUserIDArray: JSON.stringify(data.EvaluatorUserIDArray),
+            ErrorTypeIDArray: JSON.stringify(data.ErrorTypeIDArray),
+            CustomControlHelperList: JSON.stringify(data.CustomControlHelperList),
+            ProgramNamesArray: JSON.stringify(data.ProgramNamesArray),
+            UserNamesArray: JSON.stringify(data.UserNamesArray),
+            SupervisorNamesArray: JSON.stringify(data.SupervisorNamesArray),
+            EvaluatorUserNamesArray: JSON.stringify(data.EvaluatorUserNamesArray),
+            ErrorTypeNamesArray: JSON.stringify(data.ErrorTypeNamesArray)
+        };*/
+
+        const separator = '\n';
+
+        var processedData = {
+            ...data,
+            /*ProgramIDArray: data.ProgramIDArray ? data.ProgramIDArray.join(separator) : "",
+            UserIDArray: data.UserIDArray ? data.UserIDArray.join(separator) : "",
+            SupervisorUserIDArray: data.SupervisorUserIDArray ? data.SupervisorUserIDArray.join(separator) : "",
+            EvaluatorUserIDArray: data.EvaluatorUserIDArray ? data.EvaluatorUserIDArray.join(separator) : "",
+            ErrorTypeIDArray: data.ErrorTypeIDArray ? data.ErrorTypeIDArray.join(separator) : "",*/
+            ProgramNamesArray: data.ProgramNamesArray ? data.ProgramNamesArray.join(separator) : "",
+            UserNamesArray: data.UserNamesArray ? data.UserNamesArray.join(separator) : "",
+            SupervisorNamesArray: data.SupervisorNamesArray ? data.SupervisorNamesArray.join(separator) : "",
+            EvaluatorUserNamesArray: data.EvaluatorUserNamesArray ? data.EvaluatorUserNamesArray.join(separator) : "",
+            ErrorTypeNamesArray: data.ErrorTypeNamesArray ? data.ErrorTypeNamesArray.join(separator) : "",
+            AttributeNamesArray: data.AttributeNamesArray ? data.AttributeNamesArray.join(separator) : "",
+            TransactionCustomFieldCatalogNamesAndValues: data.TransactionCustomFieldCatalogNamesAndValues ? data.TransactionCustomFieldCatalogNamesAndValues.join(separator) : ""
+        };
+
+        var properties = Object.entries(processedData).map(([key, value]) => ({
+            Dato: propertyKeyNames[key] || key,
+            Valor: (function () {
+                try {
+                    return value.replace(/\n/g, "\n");
+                } catch (e) {
+                    return value;
+                }
+            })()
+        }));
+
+        var worksheet = XLSX.utils.json_to_sheet(properties);
+
+        // Set column widths
+        var columnWidths = [
+            { wch: 50 }, // Property column width
+            { wch: 100 }  // Value column width
+        ];
+        worksheet['!cols'] = columnWidths;
+
+        if (base64Image) {
+            var img = new Image();
+            img.src = base64Image;
+            var imageWidth = img.width;
+            var imageHeight = img.height;
+
+            var cellRef = 'A22'; // Change the cell reference as per your requirement
+            var cell = worksheet[cellRef];
+            if (!cell) {
+                cell = { t: 's', v: '' };
+                worksheet[cellRef] = cell;
+            }
+
+            // Set the background image to the cell
+            cell.s = { patternType: 'solid', fgColor: { rgb: 'FFFFFF' } };
+            cell.s.bgImg = { url: base64Image, ext: 'png', width: imageWidth, height: imageHeight };
+        }
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+        var excelFile = XLSX.write(workbook, { bookType: "xlsx", type: "binary" });
+        var blob = new Blob([s2ab(excelFile)], { type: "application/octet-stream" });
+        var link = document.createElement("a");
+        link.href = window.URL.createObjectURL(blob);
+        link.download = "Datos de la solicitud.xlsx";
+        link.click();
+    }
+
+    function s2ab(s) {
+        var buf = new ArrayBuffer(s.length);
+        var view = new Uint8Array(buf);
+        for (var i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xff;
+        return buf;
+    }
+
+    var viewModel = {
+        TransactionStartDate:
+            @(Model.RequestObject.TransactionStartDate != null
+                ? Html.Raw("new Date('" + Model.RequestObject.TransactionStartDate.Value + "')")
+                : Html.Raw("''")),
+        TransactionEndDate:
+            @(Model.RequestObject.TransactionEndDate != null
+                ? Html.Raw("new Date('" + Model.RequestObject.TransactionEndDate.Value + "')")
+                : Html.Raw("''")),
+        EvaluationStartDate:
+            @(Model.RequestObject.EvaluationStartDate != null
+                ? Html.Raw("new Date('" + Model.RequestObject.EvaluationStartDate.Value + "')")
+                : Html.Raw("''")),
+        EvaluationEndDate:
+            @(Model.RequestObject.EvaluationEndDate != null
+                ? Html.Raw("new Date('" + Model.RequestObject.EvaluationEndDate.Value + "')")
+                : Html.Raw("''")),
+        @*ProgramIDArray:
+            @(Model.RequestObject.ProgramIDArray != null
+                ? Model.RequestObject.ProgramIDArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.ProgramIDArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        UserIDArray:
+            @(Model.RequestObject.UserIDArray != null
+                ? Model.RequestObject.UserIDArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.UserIDArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        SupervisorUserIDArray:
+            @(Model.RequestObject.SupervisorUserIDArray != null
+                ? Model.RequestObject.SupervisorUserIDArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.SupervisorUserIDArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        EvaluatorUserIDArray:
+            @(Model.RequestObject.EvaluatorUserIDArray != null
+                ? Model.RequestObject.EvaluatorUserIDArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.EvaluatorUserIDArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        ErrorTypeIDArray:
+            @(Model.RequestObject.ErrorTypeIDArray != null
+                ? Model.RequestObject.ErrorTypeIDArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.ErrorTypeIDArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        AttributeIDArray:
+            @(Model.RequestObject.AttributeIDArray != null
+                ? Model.RequestObject.AttributeIDArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.AttributeIDArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),*@
+        AttributeControllable:
+            @(Model.RequestObject.AttributeControllable != null
+                ? Model.RequestObject.AttributeControllable.Value
+                    ? Html.Raw("'Seleccionado'")
+                    : Html.Raw("\'\'")
+                : Html.Raw("\'\'")),
+        AttributeKnown:
+            @(Model.RequestObject.AttributeKnown != null
+                ? Model.RequestObject.AttributeKnown.Value
+                    ? Html.Raw("'Seleccionado'")
+                    : Html.Raw("\'\'")
+                : Html.Raw("\'\'")),
+        AttributeNoConstraint:
+            @(Model.RequestObject.AttributeNoConstraint != null
+                ? Model.RequestObject.AttributeNoConstraint.Value
+                    ? Html.Raw("'Seleccionado'")
+                    : Html.Raw("\'\'")
+                : Html.Raw("\'\'")),
+        ProgramNamesArray:
+            @(Model.RequestObject.ProgramNamesArray != null
+                ? Model.RequestObject.ProgramNamesArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.ProgramNamesArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        UserNamesArray:
+            @(Model.RequestObject.UserNamesArray != null
+                ? Model.RequestObject.UserNamesArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.UserNamesArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        SupervisorNamesArray:
+            @(Model.RequestObject.SupervisorNamesArray != null
+                ? Model.RequestObject.SupervisorNamesArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.SupervisorNamesArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        EvaluatorUserNamesArray:
+            @(Model.RequestObject.EvaluatorUserNamesArray != null
+                ? Model.RequestObject.EvaluatorUserNamesArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.EvaluatorUserNamesArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        ErrorTypeNamesArray:
+            @(Model.RequestObject.ErrorTypeNamesArray != null
+                ? Model.RequestObject.ErrorTypeNamesArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.ErrorTypeNamesArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        AttributeNamesArray:
+            @(Model.RequestObject.AttributeNamesArray != null
+                ? Model.RequestObject.AttributeNamesArray.Length > 0
+                    ? Html.Raw(OverallController.Serialize(Model.RequestObject.AttributeNamesArray))
+                    : Html.Raw("null")
+                : Html.Raw("null")),
+        TransactionCustomFieldCatalogNamesAndValues: [
+            @for (int i = 0; i < Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.Count; i++)
+            {
+                @:"@Html.Raw(Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.ElementAt(i).Key.Substring(Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.ElementAt(i).Key.IndexOf('-') + 2)): @Html.Raw(Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.ElementAt(i).Value)",
+            }
+        ],
+    };
+</script>
