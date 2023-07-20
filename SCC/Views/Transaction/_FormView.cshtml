@@ -1492,7 +1492,7 @@
         <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
     }
 </div>
-<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center d-none">
+<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center">
     <div class="border border-secondary shadow-lg p-3 mb-5 bg-white rounded w-100 border-bottom border-primary">
         <div class="d-inline-block w-20">
             <div class="d-block text-center">
@@ -1548,7 +1548,7 @@
         </div>
     </div>
 </div>
-<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center">
+<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center d-none">
     <div class="border border-secondary shadow-lg p-3 mb-5 bg-white rounded w-100 border-bottom border-primary">
         <div class="d-inline-block w-20">
             <div class="d-block text-center">
@@ -1970,18 +1970,39 @@
         }
     }
 
+    const attributeLevelZeroIDList = $('.attribute-row.level-zero-attribute').map((index, e) => $(e).data('attributeid')).get();
+    const controllableAttributeLevelOneList = $('.attribute-row[data-iscontrollable="True"]').filter((e) => attributeLevelZeroIDList.includes($(e).data('parentattributeid')));
+    const controllableAttributeLevelOneIDList = $(controllableAttributeLevelOneList).map((index, e) => $(e).data('attributeid')).get();
+
+    function isAttributeControllable(attributeID) {
+        let auxCurrentAttributeID = attributeID;
+        let auxCurrentAttributeRow = $('.attribute-row[data-attributeid="' + auxCurrentAttributeID.toString() + '"]');
+        let auxCurrentParentAttributeID = $(auxCurrentAttributeRow).data("parentattributeid");
+
+        let isControllable = false;
+
+        while ((auxCurrentParentAttributeID != null && auxCurrentParentAttributeID > 0) && !controllableAttributeLevelOneIDList.includes(auxCurrentAttributeID)) {
+            auxCurrentAttributeID = auxCurrentParentAttributeID;
+            auxCurrentAttributeRow = $('.attribute-row[data-attributeid="' + auxCurrentAttributeID.toString() + '"]');
+            auxCurrentParentAttributeID = $(auxCurrentAttributeRow).data("parentattributeid");
+
+            isControllable = auxCurrentAttributeRow.data('iscontrollable') == 'True';
+        }
+
+        return isControllable;
+    }
+
     async function hasCheckedChildren(parentAttributeID, ignoreNonControllableCE = false) {
         let result = false;
         let childrenAttributeIDList = [];
 
         childrenAttributeIDList = await getChildrenAttributeIDList(parentAttributeID);
 
-        let parentAttributeRow = $('.attribute-row[data-attributeid="' + parentAttributeID + '"]');
-
         let isControllable = false;
-        isControllable = $(parentAttributeRow).data('iscontrollable') == 'True';
 
         $(childrenAttributeIDList).each((index, e) => {
+            isControllable = isAttributeControllable(e);
+
             if ($('[data-attributeid=' + e + '].no-children').find('.attribute-checked:checked').length > 0) {
                 if (ignoreNonControllableCE && !isControllable) return true;
 
@@ -2230,7 +2251,6 @@
         if (accurateFuceFailAttributeCount > 0) {
             $('.result-accurate-fuce-fail').removeClass('d-none');
             $('.result-accurate-fuce-success').addClass('d-none');
-            debugger;
             result = false;
             //return false;
         } else {

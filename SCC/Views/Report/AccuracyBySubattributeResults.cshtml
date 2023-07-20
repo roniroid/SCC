@@ -547,7 +547,7 @@
             if (hasChildren) {
                 const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
 
-                const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');//AQUI
+                const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
 
                 $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyBySubattributeResultList.Select(e => e.TransactionAttributeID))" /> ');
                 $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
