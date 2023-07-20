@@ -619,8 +619,6 @@ namespace SCC.ViewModels
                             .Where(e => e.BIFieldID == biFieldID)
                             .FirstOrDefault();
 
-                    //AQUI
-
                     /*if (transactionBIFieldCatalog != null)
                     {
                         if (transactionBIFieldCatalog.va != null)
