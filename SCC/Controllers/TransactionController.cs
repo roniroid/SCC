@@ -112,7 +112,10 @@ namespace SCC.Controllers
                         user.SelectAll()
                             .Where(e =>
                                 e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
+                                e.WorkspaceList
+                                    .Where(w => w.Monitorable)
+                                    .Count() > 0)
                             .OrderBy(o => o.Person.SurName)
                             .ThenBy(o => o.Person.LastName)
                             .ThenBy(o => o.Person.FirstName)
