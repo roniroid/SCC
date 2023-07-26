@@ -41,7 +41,15 @@ namespace SCC.Controllers
             Program oldProgram = new Program(programManagementViewModel.Program.ID);
             oldProgram.SetDataByID();
 
-            Program newProgram = new Program(programManagementViewModel.Program.ID, programManagementViewModel.Program.Name, programManagementViewModel.Program.StartDate, programManagementViewModel.Program.EndDate, programManagementViewModel.Program.BasicInfoID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.UPDATED);
+            Program newProgram = new Program(
+                programManagementViewModel.Program.ID, 
+                programManagementViewModel.Program.Name, 
+                programManagementViewModel.Program.StartDate, 
+                programManagementViewModel.Program.EndDate, 
+                programManagementViewModel.Program.BasicInfoID, 
+                GetActualUser().ID, 
+                (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.UPDATED);
+
             try
             {
                 int result = newProgram.Update();
@@ -73,7 +81,12 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(ProgramManagementViewModel programManagementViewModel)
         {
-            Program newProgram = new Program(programManagementViewModel.Program.Name, programManagementViewModel.Program.StartDate, programManagementViewModel.Program.EndDate, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.CREATED);
+            Program newProgram = new Program(
+                programManagementViewModel.Program.Name, 
+                programManagementViewModel.Program.StartDate, 
+                programManagementViewModel.Program.EndDate, 
+                GetActualUser().ID, 
+                (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.CREATED);
 
             try
             {
@@ -134,7 +147,7 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult Reactivate(int programID)
+        public ActionResult Activate(int programID)
         {
             Program program = new Program(programID);
             program.SetDataByID();
@@ -144,9 +157,31 @@ namespace SCC.Controllers
                 //program.Delete();
 
                 program.BasicInfo.ModificationUserID = GetActualUser().ID;
-                program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.ENABLED;
 
-                int result = program.BasicInfo.Update();
+                switch ((SCC_BL.DBValues.Catalog.STATUS_PROGRAM)program.BasicInfo.StatusID)
+                {
+                    case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.CREATED:
+                        program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED;
+                        break;
+                    case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.UPDATED:
+                        program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED;
+                        break;
+                    case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED:
+                        program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.ENABLED;
+                        program.EndDate = null;
+                        break;
+                    case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.ENABLED:
+                        program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED;
+                        break;
+                    case SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED:
+                        program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.ENABLED;
+                        program.EndDate = null;
+                        break;
+                    default:
+                        break;
+                }
+
+                int result = program.Update();
 
                 if (result > 0)
                 {

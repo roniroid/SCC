@@ -116,7 +116,8 @@
                 transactionEvaluationDateAttributes.Add("Value", evaluationDate.ToString("yyyy-MM-dd"));
                 transactionEvaluationDateAttributes.Add("required", "");
 
-                if (hasModel)
+                @*if (hasModel)*@
+                if (true)
                 {
                     transactionEvaluationDateAttributes.Add("class", "property-field-control d-none");
                     transactionEvaluationDateAttributes.Add("disabled", "");
@@ -127,7 +128,8 @@
                 }
             }
 
-            @if (hasModel)
+            @*if (hasModel)*@
+            @if (true)
             {
                 <span>@evaluationDate.ToString("dd MMM yyyy")</span>
             }
@@ -782,6 +784,11 @@
             Comentarios
         </div>
     </div>
+
+    @{ 
+        int[] levelZeroAttributeIDArray = Model.Form.AttributeList.Where(e => e.ParentAttributeID == null || e.ParentAttributeID <= 0).Select(e => e.ID).ToArray();
+    }
+
     @if (Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE).Count() > 0)
     {
         <div class="row bg-primary text-light my-2 p-3">
@@ -796,8 +803,15 @@
 
                 SCC_BL.Attribute auxAttribute = attribute;
 
+                bool isControllable = auxAttribute.IsControllable;
+
                 while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                 {
+                    if (!levelZeroAttributeIDArray.Contains(auxAttribute.ID))
+                    {
+                        isControllable = auxAttribute.IsControllable;
+                    }
+
                     auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                     spaceCounter++;
@@ -805,7 +819,7 @@
 
                 TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
 
-                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@attribute.IsControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
                     <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
                         @for (int i = 0; i < spaceCounter; i++)
                         {
@@ -933,8 +947,15 @@
 
                 SCC_BL.Attribute auxAttribute = attribute;
 
+                bool isControllable = auxAttribute.IsControllable;
+
                 while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                 {
+                    if (!levelZeroAttributeIDArray.Contains(auxAttribute.ID))
+                    {
+                        isControllable = auxAttribute.IsControllable;
+                    }
+
                     auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                     spaceCounter++;
@@ -942,7 +963,7 @@
 
                 TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
 
-                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@attribute.IsControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
                     <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
                         @for (int i = 0; i < spaceCounter; i++)
                         {
@@ -1070,8 +1091,15 @@
 
                 SCC_BL.Attribute auxAttribute = attribute;
 
+                bool isControllable = auxAttribute.IsControllable;
+
                 while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                 {
+                    if (!levelZeroAttributeIDArray.Contains(auxAttribute.ID))
+                    {
+                        isControllable = auxAttribute.IsControllable;
+                    }
+
                     auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                     spaceCounter++;
@@ -1079,7 +1107,7 @@
 
                 TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
 
-                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@attribute.IsControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
                     <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
                         @for (int i = 0; i < spaceCounter; i++)
                         {
@@ -1207,8 +1235,15 @@
 
                 SCC_BL.Attribute auxAttribute = attribute;
 
+                bool isControllable = auxAttribute.IsControllable;
+
                 while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                 {
+                    if (!levelZeroAttributeIDArray.Contains(auxAttribute.ID))
+                    {
+                        isControllable = auxAttribute.IsControllable;
+                    }
+
                     auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                     spaceCounter++;
@@ -1216,7 +1251,7 @@
 
                 TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
 
-                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@attribute.IsControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
                     <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
                         @for (int i = 0; i < spaceCounter; i++)
                         {
@@ -1492,7 +1527,7 @@
         <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
     }
 </div>
-<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center">
+<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center d-none">
     <div class="border border-secondary shadow-lg p-3 mb-5 bg-white rounded w-100 border-bottom border-primary">
         <div class="d-inline-block w-20">
             <div class="d-block text-center">
@@ -1548,7 +1583,7 @@
         </div>
     </div>
 </div>
-<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center d-none">
+<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center">
     <div class="border border-secondary shadow-lg p-3 mb-5 bg-white rounded w-100 border-bottom border-primary">
         <div class="d-inline-block w-20">
             <div class="d-block text-center">
@@ -1901,7 +1936,7 @@
         }
 
         if (loadedData && data.eventTriggered) {
-            if ($(attributeContainer).hasClass('no-children'))
+            //if ($(attributeContainer).hasClass('no-children'))
                 updateResults();
         }
     });
@@ -1979,7 +2014,12 @@
         let auxCurrentAttributeRow = $('.attribute-row[data-attributeid="' + auxCurrentAttributeID.toString() + '"]');
         let auxCurrentParentAttributeID = $(auxCurrentAttributeRow).data("parentattributeid");
 
-        let isControllable = false;
+        let isControllable = $(auxCurrentAttributeRow).data('iscontrollable') == 'True';
+
+        /*
+        COMPLEX METHOD:
+
+        let isControllable = auxCurrentAttributeRow.data('iscontrollable') == 'True';
 
         while ((auxCurrentParentAttributeID != null && auxCurrentParentAttributeID > 0) && !controllableAttributeLevelOneIDList.includes(auxCurrentAttributeID)) {
             auxCurrentAttributeID = auxCurrentParentAttributeID;
@@ -1987,7 +2027,7 @@
             auxCurrentParentAttributeID = $(auxCurrentAttributeRow).data("parentattributeid");
 
             isControllable = auxCurrentAttributeRow.data('iscontrollable') == 'True';
-        }
+        }*/
 
         return isControllable;
     }
@@ -1997,8 +2037,6 @@
         let childrenAttributeIDList = [];
 
         childrenAttributeIDList = await getChildrenAttributeIDList(parentAttributeID);
-
-        let isControllable = false;
 
         $(childrenAttributeIDList).each((index, e) => {
             isControllable = isAttributeControllable(e);
@@ -2249,6 +2287,16 @@
         }
 
         if (accurateFuceFailAttributeCount > 0) {
+            $('.result-general-fuce-fail').removeClass('d-none');
+            $('.result-general-fuce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-general-fuce-fail').addClass('d-none');
+            $('.result-general-fuce-success').removeClass('d-none');
+        }
+
+        if (accurateFuceFailAttributeCount > 0) {
             $('.result-accurate-fuce-fail').removeClass('d-none');
             $('.result-accurate-fuce-success').addClass('d-none');
             result = false;
@@ -2287,6 +2335,16 @@
         };
 
         if (accurateBceFailAttributeCount > 0) {
+            $('.result-general-bce-fail').removeClass('d-none');
+            $('.result-general-bce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-general-bce-fail').addClass('d-none');
+            $('.result-general-bce-success').removeClass('d-none');
+        }
+
+        if (accurateBceFailAttributeCount > 0) {
             $('.result-accurate-bce-fail').removeClass('d-none');
             $('.result-accurate-bce-success').addClass('d-none');
             result = false;
@@ -2323,6 +2381,16 @@
                 }
             }
         };
+
+        if (accurateFceFailAttributeCount > 0) {
+            $('.result-general-fce-fail').removeClass('d-none');
+            $('.result-general-fce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-general-fce-fail').addClass('d-none');
+            $('.result-general-fce-success').removeClass('d-none');
+        }
 
         if (accurateFceFailAttributeCount > 0) {
             $('.result-accurate-fce-fail').removeClass('d-none');
