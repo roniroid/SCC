@@ -743,7 +743,8 @@ namespace SCC_BL.DBValues
 
         public enum FORM_TYPE
         {
-            EVALUATION = 1342,
+            TEMPLATE = 1342,
+            ASIGNED = 3414,
         }
 
         public enum NOTIFICATION_TYPE

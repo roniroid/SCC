@@ -91,11 +91,11 @@
                             }
                         </ol>
                     </td>
-                    <td>
-                        @calibration.StartDate.ToString("yyyy/MM/dd hh:mm:ss")
+                    <td data-order="@calibration.StartDate.ToString("yyyy/MM/dd hh:mm:ss")">
+                        @calibration.StartDate.ToString("dd/MM/yyyy hh:mm tt")
                     </td>
-                    <td>
-                        @calibration.EndDate.ToString("yyyy/MM/dd hh:mm:ss")
+                    <td data-order="@calibration.EndDate.ToString("yyyy/MM/dd hh:mm:ss")">
+                        @calibration.EndDate.ToString("dd/MM/yyyy hh:mm tt")
                     </td>
                     <td>
                         @calibration.TypeDescription

@@ -127,7 +127,23 @@
                                 Fecha de inicio <span class="required">*</span>
                             </div>
                             <div class="col-7">
-                                @Html.TextBoxFor(modelitem => Model.User.StartDate, null, new { @class = "property-field-control", placeholder = "Fecha de inicio", autocomplete = "off", type = "date", @Value = Model.User.StartDate != null ? (Model.User.StartDate.Year > 2000 ? Model.User.StartDate.ToString("yyyy-MM-dd") : DateTime.Now.ToString("yyyy-MM-dd")) : DateTime.Now.ToString("yyyy-MM-dd"), required = "" })
+                                @Html.TextBoxFor(modelitem => 
+                                    Model.User.StartDate, 
+                                    null, 
+                                    new 
+                                    { 
+                                        @class = "property-field-control", 
+                                        placeholder = "Fecha de inicio", 
+                                        autocomplete = "off", 
+                                        type = "date",
+                                        @*@Value = string.Empty,
+                                            Model.User.StartDate != null 
+                                                ? (Model.User.StartDate.Year > 2000 
+                                                    ? Model.User.StartDate.ToString("yyyy-MM-dd") 
+                                                    : DateTime.Now.ToString("yyyy-MM-dd")) 
+                                                : string.Empty, 
+                                                : DateTime.Now.ToString("yyyy-MM-dd"),*@
+                                        required = "" })
                             </div>
                         </div>
                         <div class="row property-field">
@@ -203,7 +219,7 @@
 
                                 @Html.TextBox(
                                     "supervisorStartDate",
-                                    "",
+                                    null,
                                     new
                                     {
                                         @class = "property-field-control",
@@ -211,7 +227,7 @@
                                         title = "Fecha de inicio con el supervisor",
                                         autocomplete = "off",
                                         type = "date",
-                                        @Value = supervisorStartDate.ToString("yyyy-MM-dd")
+                                        //@Value = supervisorStartDate.ToString("yyyy-MM-dd")
                                     }
                                 )
                             </div>
@@ -255,7 +271,7 @@
 
                                 @Html.TextBox(
                                     "workspaceStartDate",
-                                    "",
+                                    null,
                                     new
                                     {
                                         @class = "property-field-control",
@@ -263,7 +279,7 @@
                                         title = "Fecha de inicio en el puesto de trabajo",
                                         autocomplete = "off",
                                         type = "date",
-                                        @Value = workspaceStartDate.ToString("yyyy-MM-dd")
+                                        //@Value = workspaceStartDate.ToString("yyyy-MM-dd")
                                     }
                                 )
                             </div>
@@ -672,86 +688,79 @@
                             @user.StartDate.ToString("dd MMM yyyy")
                         </td>
                         <td>
-                            <ol>
-                                @foreach (UserWorkspaceCatalog userWorkspace in user.UserWorkspaceCatalogList)
-                                {
-                                    Workspace tempWorkspace = new Workspace(userWorkspace.WorkspaceID);
-                                    tempWorkspace.SetDataByID();
+                            @foreach (UserWorkspaceCatalog userWorkspace in user.UserWorkspaceCatalogList)
+                            {
+                                Workspace tempWorkspace = new Workspace(userWorkspace.WorkspaceID);
+                                tempWorkspace.SetDataByID();
 
-                                    <li>
-                                        @tempWorkspace.Name
-                                    </li>
-                                }
-                            </ol>
+                                <span>
+                                    @tempWorkspace.Name
+                                </span>
+                                <br />
+                            }
                         </td>
                         <td>
-                            <ol>
-                                @foreach (UserWorkspaceCatalog userWorkspace in user.UserWorkspaceCatalogList)
-                                {
-                                    <li>
-                                        @userWorkspace.StartDate.ToString("dd MMM yyyy")
-                                    </li>
-                                }
-                            </ol>
+                            @foreach (UserWorkspaceCatalog userWorkspace in user.UserWorkspaceCatalogList)
+                            {
+                                <span>
+                                    @userWorkspace.StartDate.ToString("dd MMM yyyy")
+                                </span>
+                                <br />
+                            }
                         </td>
                         <td>
-                            <ol>
-                                @foreach (UserSupervisorCatalog userSupervisor in user.SupervisorList)
-                                {
-                                    User tempSupervisor = new User(userSupervisor.SupervisorID);
-                                    tempSupervisor.SetDataByID();
+                            @foreach (UserSupervisorCatalog userSupervisor in user.SupervisorList)
+                            {
+                                User tempSupervisor = new User(userSupervisor.SupervisorID);
+                                tempSupervisor.SetDataByID();
 
-                                    <li>
-                                        @tempSupervisor.Person.Identification
-                                    </li>
-                                }
-                            </ol>
+                                <span>
+                                    @tempSupervisor.Person.Identification
+                                </span>
+                                <br />
+                            }
                         </td>
                         <td>
-                            <ol>
-                                @foreach (UserSupervisorCatalog userSupervisor in user.SupervisorList)
-                                {
-                                    <li>
-                                        @userSupervisor.StartDate.ToString("dd MMM yyyy")
-                                    </li>
-                                }
-                            </ol>
+                            @foreach (UserSupervisorCatalog userSupervisor in user.SupervisorList)
+                            {
+                                <span>
+                                    @userSupervisor.StartDate.ToString("dd MMM yyyy")
+                                </span>
+                                <br />
+                            }
                         </td>
                         <td>
-                            <ol>
-                                @foreach (UserRoleCatalog userRole in user.RoleList)
-                                {
-                                    Role tempRole = new Role(userRole.RoleID);
-                                    tempRole.SetDataByID();
+                            @foreach (UserRoleCatalog userRole in user.RoleList)
+                            {
+                                Role tempRole = new Role(userRole.RoleID);
+                                tempRole.SetDataByID();
 
-                                    <li>
-                                        @tempRole.Name
-                                    </li>
-                                }
-                            </ol>
+                                <span>
+                                    @tempRole.Name
+                                </span>
+                                <br />
+                            }
                         </td>
                         <td>
-                            <ol>
-                                @foreach (UserGroupCatalog userGroup in user.GroupList)
-                                {
-                                    Group tempGroup = new Group(userGroup.GroupID);
-                                    tempGroup.SetDataByID();
+                            @foreach (UserGroupCatalog userGroup in user.GroupList)
+                            {
+                                Group tempGroup = new Group(userGroup.GroupID);
+                                tempGroup.SetDataByID();
 
-                                    <li>
-                                        @tempGroup.Name
-                                    </li>
-                                }
-                            </ol>
+                                <span>
+                                    @tempGroup.Name
+                                </span>
+                                <br />
+                            }
                         </td>
                         <th>
-                            <ol>
-                                @foreach (Program program in user.CurrentProgramList)
-                                {
-                                    <li>
-                                        @program.Name
-                                    </li>
-                                }
-                            </ol>
+                            @foreach (Program program in user.CurrentProgramList)
+                            {
+                                <span>
+                                    @program.Name
+                                </span>
+                                <br />
+                            }
                         </th>
                         <th>
                             @{

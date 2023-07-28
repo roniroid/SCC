@@ -187,6 +187,7 @@
     <Compile Include="ViewModels\TransactionSearchViewModel.cs" />
     <Compile Include="ViewModels\UserManagementViewModel.cs" />
     <Compile Include="ViewModels\UserPersonViewModel.cs" />
+    <Compile Include="ViewModels\UserProgramAndProgramGroupManagementViewModel.cs" />
     <Compile Include="ViewModels\UserRoleAndPermissionManagementViewModel.cs" />
     <Compile Include="ViewModels\WorkspaceManagementViewModel.cs" />
   </ItemGroup>

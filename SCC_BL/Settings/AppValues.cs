@@ -28,6 +28,9 @@ namespace SCC_BL.Settings
             }
         }
 
+        public const string DELETED_SUFIX_COUNT = "%count%";
+        public const string DELETED_SUFIX = " (eliminado " + DELETED_SUFIX_COUNT + ")";
+
         public enum MailTopic
         {
             FORGOTTEN_PASSWORD,
@@ -128,7 +131,7 @@ namespace SCC_BL.Settings
 
                     public struct Form
                     {
-                        public const int TYPE_ID = (int)SCC_BL.DBValues.Catalog.FORM_TYPE.EVALUATION;
+                        public const int TYPE_ID = (int)SCC_BL.DBValues.Catalog.FORM_TYPE.TEMPLATE;
                         public const string COMMENT_PREFIX = "Importación de transacción - Identificador viejo de la transacción: ";
 
                         public enum ExcelFields

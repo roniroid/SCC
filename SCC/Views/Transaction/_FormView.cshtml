@@ -1507,18 +1507,21 @@
 
     @if (hasModel)
     {
-        if (actualUser.ID == Model.Transaction.EvaluatorUserID)
+        if (Model.Transaction.TypeID != (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION)
         {
-            if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_TRANSACTIONS))
+            if (actualUser.ID == Model.Transaction.EvaluatorUserID)
             {
-                <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_TRANSACTIONS))
+                {
+                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                }
             }
-        }
-        else
-        {
-            if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USER_TRANSACTION))
+            else
             {
-                <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USER_TRANSACTION))
+                {
+                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                }
             }
         }
     }
