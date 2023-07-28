@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace SCC_BL
@@ -46,7 +47,9 @@ namespace SCC_BL
 			this.CountryID = countryID;
 
 			this.BasicInfo = new BasicInfo(creationUserID, statusID);
-		}
+
+			this.FixIdentification();
+        }
 
 		//For Update
 		public Person(int id, string identification, string firstName, string surName, string lastName, int countryID, int basicInfoID, int modificationUserID, int statusID)
@@ -59,7 +62,9 @@ namespace SCC_BL
             this.CountryID = countryID;
 
             this.BasicInfo = new BasicInfo(basicInfoID, modificationUserID, statusID);
-		}
+
+            this.FixIdentification();
+        }
 
 		//For SelectByID (RESULT)
 		public Person(int id, string identification, string firstName, string surName, string lastName, int basicInfoID, int countryID)
@@ -72,6 +77,11 @@ namespace SCC_BL
 			this.CountryID = countryID;
 			this.BasicInfoID = basicInfoID;
 		}
+
+		void FixIdentification()
+        {
+            this.Identification = this.FilterNumbers(this.Identification);
+        }
 
 		public int CheckExistence()
 		{
@@ -156,6 +166,20 @@ namespace SCC_BL
 
 		public void Dispose()
 		{
-		}
-	}
+        }
+
+        string FilterNumbers(string input)
+        {
+            string pattern = @"\d";
+            MatchCollection matches = Regex.Matches(input, pattern);
+
+            string result = "";
+            foreach (Match match in matches)
+            {
+                result += match.Value;
+            }
+
+            return result;
+        }
+    }
 }

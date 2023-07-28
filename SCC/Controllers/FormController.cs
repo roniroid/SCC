@@ -104,6 +104,8 @@ namespace SCC.Controllers
 
             Form form = new Form();
 
+            form.TypeID = (int)SCC_BL.DBValues.Catalog.FORM_TYPE.TEMPLATE;
+
             if (formID != null && formID > 0)
             {
                 form = new Form(formID.Value);
@@ -148,7 +150,8 @@ namespace SCC.Controllers
                 new SelectList(
                     formTypeList,
                     nameof(Catalog.ID),
-                    nameof(Catalog.Description));
+                    nameof(Catalog.Description),
+                    form.TypeID);
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Edit.CustomControlList.NAME] = customControlList;
 

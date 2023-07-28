@@ -4,7 +4,10 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using static SCC_BL.Settings.AppValues.ViewData.Role.Manage;
+using static SCC_BL.Settings.AppValues.ViewData.User.AsignRolesAndPermissions;
 
 namespace SCC_BL
 {
@@ -629,7 +632,7 @@ namespace SCC_BL
 					Catalog languageCatalog = new Catalog(excelFieldLanguage);
 					languageCatalog.SetDataByDescription();
 
-					this.Username = excelFieldIdentification;
+					this.Username = newPerson.Identification;
 					this.Password = hashedPassword;
 					this.Salt = salt;
 					this.Email = excelFieldEmail;
@@ -1059,19 +1062,22 @@ namespace SCC_BL
 			}
         }
 
-		public Results.User.UpdateProgramList.CODE UpdateProgramList(int[] programIDList, int creationUserID)
+        public Results.User.UpdateProgramList.CODE UpdateProgramList(int[] programIDList, int creationUserID, bool keepOldOnes = false)
         {
             try
 			{
 				if (programIDList == null) programIDList = new int[0];
 
-				//Delete old ones
-				//Disabled by request
-				/*this.ProgramList
-					.ForEach(e => {
-                        if (!programIDList.Contains(e.ProgramID))
-							e.DeleteByID();
-					});*/
+                //Delete old ones
+                //Disabled by request
+                if (!keepOldOnes)
+                {
+                    this.ProgramList
+                        .ForEach(e => {
+                            if (!programIDList.Contains(e.ProgramID))
+                                e.DeleteByID();
+                        });
+                }
 
                 //Create new ones
                 foreach (int programID in programIDList)
@@ -1091,7 +1097,7 @@ namespace SCC_BL
 			}
         }
 
-		public Results.UserProgramGroupCatalog.UpdateProgramGroupList.CODE UpdateProgramGroupList(int[] programGroupIDList, int creationUserID)
+        public Results.UserProgramGroupCatalog.UpdateProgramGroupList.CODE UpdateProgramGroupList(int[] programGroupIDList, int creationUserID, bool keepOldOnes = false)
         {
             try
 			{
@@ -1099,11 +1105,14 @@ namespace SCC_BL
 
                 //Delete old ones
                 //Disabled by request
-                /*this.ProgramGroupList
-					.ForEach(e => {
-                        if (!programGroupIDList.Contains(e.ProgramGroupID))
-							e.DeleteByID();
-					});*/
+                if (!keepOldOnes)
+                {
+                    this.ProgramGroupList
+                        .ForEach(e => {
+                            if (!programGroupIDList.Contains(e.ProgramGroupID))
+                                e.DeleteByID();
+                        });
+                }
 
                 //Create new ones
                 foreach (int programGroupID in programGroupIDList)
@@ -1126,5 +1135,19 @@ namespace SCC_BL
 		public void Dispose()
 		{
 		}
-	}
+
+        string FilterNumbers(string input)
+        {
+            string pattern = @"\d";
+            MatchCollection matches = Regex.Matches(input, pattern);
+
+            string result = "";
+            foreach (Match match in matches)
+            {
+                result += match.Value;
+            }
+
+            return result;
+        }
+    }
 }
