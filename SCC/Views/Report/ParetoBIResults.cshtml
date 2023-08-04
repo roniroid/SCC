@@ -373,7 +373,14 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
-                    max: @maxYScore
+                    max: @maxYScore,
+                    ticks: {
+                        stepSize: 25,
+                        callback: function (value) {
+                            return value;
+                        }
+                    },
+                    offset: true,
                 },
                 y1: {
                     title: {
@@ -403,7 +410,8 @@
                     },
                     min: 0,
                     max: 100,
-                    position: 'right'
+                    position: 'right',
+                    offset: true,
                 },
                 x: {
                     title: {
@@ -416,13 +424,10 @@
                     },
                     grid: {
                         display: $('input[name="rdHorizontal"]:checked').val()
-                    }
+                    },
+                    offset: true,
+                    position: 20,
                 },
-                xAxes: [{
-                    afterFit: function (scaleInstance) {
-                        scaleInstance.width = 20;
-                    }
-                }]
             },
             plugins:
             {

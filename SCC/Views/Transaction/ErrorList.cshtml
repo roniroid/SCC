@@ -169,6 +169,6 @@
 
     $('.download-missing-ones').click((e) => {
         window.location.assign('@Url.Action(nameof(TransactionController.DownLoadTransactionImportResultsFile), mainControllerName)');
-        @*window.open('@Url.Action(nameof(TransactionController.DownLoadFileFromServer), mainControllerName)?filePath=@Model.FilePath&contentType=@SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES', '_blank');*@
+        @*window.open('@Url.Action(nameof(TransactionController.DownLoadFileFromServer), mainControllerName)?filePath=@Model.FilePath&contentType=@SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX', '_blank');*@
     });
 </script>

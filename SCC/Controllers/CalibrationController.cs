@@ -735,7 +735,15 @@ namespace SCC.Controllers
 
             using (Program program = new Program())
                 programList =
-                    program.SelectAll();
+                    program.SelectWithForm()
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                        .GroupBy(e =>
+                            e.ID)
+                        .Select(e =>
+                            e.First())
+                        .ToList();
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Search.StringTypeID.NAME] =
                 new SelectList(

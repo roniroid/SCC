@@ -280,11 +280,19 @@ namespace SCC.Controllers
             return RedirectToAction(nameof(UserController.AsignRolesAndPermissions), _mainControllerName);
         }
 
-        public ActionResult AsignProgramsAndProgramGroups()
+        public ActionResult AsignProgramsAndProgramGroups(int? userID = null)
         {
+            UserProgramAndProgramGroupManagementViewModel userProgramAndProgramGroupManagementViewModel = new UserProgramAndProgramGroupManagementViewModel();
+
             List<Program> programList = new List<Program>();
             List<ProgramGroup> programGroupList = new List<ProgramGroup>();
             List<User> userList = new List<User>();
+
+            if (userID != null)
+            {
+                userProgramAndProgramGroupManagementViewModel.User = new User(userID.Value);
+                userProgramAndProgramGroupManagementViewModel.User.SetDataByID();
+            }
 
             using (Program program = new Program())
                 programList =
@@ -319,31 +327,34 @@ namespace SCC.Controllers
                 new MultiSelectList(
                     programList,
                     nameof(Program.ID),
-                    nameof(Program.Name));
+                    nameof(Program.Name),
+                    userProgramAndProgramGroupManagementViewModel.User.ProgramList.Select(s => s.ProgramID));
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.ProgramGroupList.NAME] =
                 new MultiSelectList(
                     programGroupList,
                     nameof(ProgramGroup.ID),
-                    nameof(ProgramGroup.Name));
+                    nameof(ProgramGroup.Name),
+                    userProgramAndProgramGroupManagementViewModel.User.ProgramGroupList.Select(s => s.ProgramGroupID));
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.UserList.NAME] =
                 new MultiSelectList(
                     userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
                     "Key",
-                    "Value");
-
-            List<User> userListView = new List<User>();
+                    "Value",
+                    userID != null
+                        ? userList.Where(e => e.ID == userID.Value).Select(e => e.ID)
+                        : null);
 
             using (User user = new SCC_BL.User())
             {
-                userListView =
+                userProgramAndProgramGroupManagementViewModel.UserList =
                     user.SelectAll()
                         .Where(e => e.ProgramList.Count > 0 || e.ProgramGroupList.Count > 0)
                         .ToList();
             }
 
-            return View(userListView);
+            return View(userProgramAndProgramGroupManagementViewModel);
         }
 
         [HttpPost]
@@ -363,8 +374,18 @@ namespace SCC.Controllers
                         tempUser = new User(userArray[i]);
                         tempUser.SetDataByID();
 
-                        tempUser.UpdateProgramList(programArray != null ? programArray : new int[0], GetActualUser().ID);
-                        tempUser.UpdateProgramGroupList(programGroupArray != null ? programGroupArray : new int[0], GetActualUser().ID);
+                        programArray =
+                            programArray == null
+                                ? new int[0]
+                                : programArray;
+
+                        programGroupArray =
+                            programGroupArray == null
+                                ? new int[0]
+                                : programGroupArray;
+
+                        tempUser.UpdateProgramList(programArray, GetActualUser().ID);
+                        tempUser.UpdateProgramGroupList(programGroupArray, GetActualUser().ID);
 
                         SaveProcessingInformation<SCC_BL.Results.User.AsignProgramsAndProgramGroups.Success>(null, null, tempUser);
                     }
@@ -718,7 +739,7 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult Edit(UserPersonViewModel userPerson, int? userStatus, int[] supervisorList, DateTime supervisorStartDate, int[] workspaceList, DateTime? workspaceStartDate, int[] roleList, int[] groupList, int[] programList)
+        public ActionResult Edit(UserPersonViewModel userPerson, int? userStatus, int[] supervisorList, DateTime? supervisorStartDate, int[] workspaceList, DateTime? workspaceStartDate, int[] roleList, int[] groupList, int[] programList)
         {
             if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
             {
@@ -726,6 +747,8 @@ namespace SCC.Controllers
                 return RedirectToAction(nameof(UserController.Manage), GetControllerName(typeof(UserController)));
             }
 
+            if (userPerson.User.StartDate == null) userPerson.User.StartDate = DateTime.Now;
+            if (supervisorStartDate == null) supervisorStartDate = DateTime.Now;
             if (workspaceStartDate == null) workspaceStartDate = DateTime.Now;
 
             Person oldPerson = new Person(userPerson.Person.ID);
@@ -779,7 +802,7 @@ namespace SCC.Controllers
 
                         if (result > 0)
                         {
-                            UpdateSupervisorList(oldUser, supervisorList != null ? supervisorList : new int[0], supervisorStartDate);
+                            UpdateSupervisorList(oldUser, supervisorList != null ? supervisorList : new int[0], supervisorStartDate.Value);
                             
                             UpdateWorkspaceList(oldUser, workspaceList != null ? workspaceList : new int[0], workspaceStartDate.Value);
 
@@ -900,7 +923,7 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult Create(UserPersonViewModel userPerson, int[] supervisorList, DateTime supervisorStartDate, int[] workspaceList, DateTime? workspaceStartDate, int[] roleList, int[] groupList, int[] programList)
+        public ActionResult Create(UserPersonViewModel userPerson, int[] supervisorList, DateTime? supervisorStartDate, int[] workspaceList, DateTime? workspaceStartDate, int[] roleList, int[] groupList, int[] programList)
         {
             if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS))
             {
@@ -908,6 +931,7 @@ namespace SCC.Controllers
                 return RedirectToAction(nameof(UserController.Manage), GetControllerName(typeof(UserController)));
             }
 
+            if (userPerson.User.StartDate == null) userPerson.User.StartDate = DateTime.Now;
             if (supervisorStartDate == null) supervisorStartDate = DateTime.Now;
             if (workspaceStartDate == null) workspaceStartDate = DateTime.Now;
 
@@ -961,7 +985,7 @@ namespace SCC.Controllers
 
                         if (result > 0)
                         {
-                            UpdateSupervisorList(newUser, supervisorList != null ? supervisorList : new int[0], supervisorStartDate);
+                            UpdateSupervisorList(newUser, supervisorList != null ? supervisorList : new int[0], supervisorStartDate.Value);
 
                             UpdateWorkspaceList(newUser, workspaceList != null ? workspaceList : new int[0], workspaceStartDate.Value);
 
@@ -1045,6 +1069,8 @@ namespace SCC.Controllers
 
                     SaveCatalogList();
                     SaveTableCategoryList();
+
+                    ExecuteInitialActions();
 
                     return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
                 }
@@ -1137,26 +1163,20 @@ namespace SCC.Controllers
                 }
                 else
                 {
-                    /*switch ((SCC_BL.Results.Person.Insert.CODE)result)
+                    switch ((SCC_BL.Results.Person.Insert.CODE)result)
                     {
                         case SCC_BL.Results.Person.Insert.CODE.ALREADY_EXISTS:
-                            SaveApplicationLog(
-                                SCC_BL.Results.Person.Insert.ALREADY_EXISTS.LocalLog.Content
-                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_USERNAME, userPerson.User.Username)
-                                    .Replace(CommonElements.REPLACE_PERSON_IDENTIFICATION, userPerson.Person.Identification)
-                                    .Replace(CommonElements.REPLACE_PERSON_FULL_NAME, $"{ userPerson.Person.FirstName } { userPerson.Person.SurName } { userPerson.Person.LastName }"));
+                            Person foundPerson = new Person(person.Identification);
+                            foundPerson.SetDataByIdentification();
 
-                            SetTempMessage(
-                                Notification.Type.ERROR,
-                                SCC_BL.Results.User.SignIn.ALREADY_EXISTS.Message.Content
-                            );
+                            SaveProcessingInformation<SCC_BL.Results.Person.Insert.AlreadyExists>(foundPerson.ID, foundPerson.BasicInfo.StatusID, person);
+
+                            person.BasicInfo.DeleteByID();
 
                             return RedirectToAction("SignIn", "User");
                         default:
                             break;
                     }
-
-                    person.BasicInfo.Delete();*/
                 }
 
                 byte[] salt = Cryptographic.GenerateSalt();
@@ -1488,7 +1508,18 @@ namespace SCC.Controllers
                                         }
                                         else
                                         {
-                                            SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(null, null, user.Person, new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_PERSON_NOT_INSERTED));
+                                            switch ((SCC_BL.Results.Person.Insert.CODE)result)
+                                            {
+                                                case SCC_BL.Results.Person.Insert.CODE.ALREADY_EXISTS:
+                                                    Person foundPerson = new Person(user.Person.Identification);
+                                                    foundPerson.SetDataByIdentification();
+
+                                                    SaveProcessingInformation<SCC_BL.Results.Person.Insert.AlreadyExists>(foundPerson.ID, foundPerson.BasicInfo.StatusID, user.Person);
+                                                    break;
+                                                default:
+                                                    SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(null, null, user.Person, new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_PERSON_NOT_INSERTED));
+                                                    break;
+                                            }
                                         }
                                     }
                                 }

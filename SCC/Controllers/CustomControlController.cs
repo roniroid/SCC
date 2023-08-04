@@ -390,7 +390,25 @@ namespace SCC.Controllers
                 customControl.BasicInfo.ModificationUserID = GetActualUser().ID;
                 customControl.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED;
 
-                int result = customControl.BasicInfo.Update();
+                //int result = customControl.BasicInfo.Update();
+
+                List<CustomControl> customControlList = new List<CustomControl>();
+
+                using (CustomControl auxCustomControl = new CustomControl())
+                    customControlList = auxCustomControl.SelectAll();
+
+                int count = 
+                    customControlList
+                        .Where(e =>
+                            (e.Label.Length >= customControl.Label.Length ? e.Label.Substring(0, customControl.Label.Length).Equals(customControl.Label) : false) &&
+                            e.ID != customControl.ID)
+                        .Count() + 1;
+
+                customControl.Label += 
+                    SCC_BL.Settings.AppValues.DELETED_SUFIX
+                        .Replace(SCC_BL.Settings.AppValues.DELETED_SUFIX_COUNT, count.ToString());
+
+                int result = customControl.Update();
 
                 if (result > 0)
                 {

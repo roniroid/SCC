@@ -267,7 +267,7 @@
                     @:data: [@Html.Raw(dataText)],
                     @:borderColor: '@colorList[currentColor]',
                     @:backgroundColor: '@colorList[currentColor]',
-                    @:borderWidth: 1,
+                    @:borderWidth: 3,
                     @*successCount: [@Model.GeneralFinalUserCriticalErrorCountSuccess, @Model.GeneralBusinessCriticalErrorCountSuccess, @Model.GeneralFulfillmentCriticalErrorCountSuccess, @Model.GeneralResultCountSuccess],
                     errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
                     totalCount: @Model.TotalTransactions,*@
@@ -338,6 +338,13 @@
                     },
                     beginAtZero: true,
                     max: 100,
+                    ticks: {
+                        stepSize: 25,
+                        callback: function (value) {
+                            return value + '%';
+                        }
+                    },
+                    offset: true,
                 },
                 x: {
                     title: {
@@ -351,6 +358,8 @@
                     grid: {
                         display: $('input[name="rdHorizontal"]:checked').val()
                     },
+                    offset: true,
+                    position: 20,
                 },
             },
             plugins:

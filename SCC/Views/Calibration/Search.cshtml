@@ -39,7 +39,7 @@
 
     <form id="frmManage" action="@Url.Action(nameof(CalibrationController.Search), CalibrationController.GetControllerName(typeof(CalibrationController)))" method="post">
         <div class="panel">
-            <div class="accordion accordion-flush w-100" id="accordionExample">
+            <div class="accordion accordion-flush w-100" id="accordionUserData">
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -47,7 +47,7 @@
                             <strong> Datos relacionados con el usuario</strong>
                         </button>
                     </h2>
-                    <div id="collapseUserData" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                    <div id="collapseUserData" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne" data-bs-parent="#accordionUserData">
                         <div class="accordion-body">
                             <div class="row property-field">
                                 <div class="col-3 property-field-label">
@@ -126,7 +126,7 @@
             </div>
         </div>
         <div class="panel">
-            <div class="accordion accordion-flush w-100" id="accordionExample">
+            <div class="accordion accordion-flush w-100" id="accordionProgramData">
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -134,7 +134,7 @@
                             <strong> Datos relacionados con el programa</strong>
                         </button>
                     </h2>
-                    <div id="collapseProgramData" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                    <div id="collapseProgramData" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne" data-bs-parent="#accordionProgramData">
                         <div class="accordion-body">
                             <div class="row property-field">
                                 <div class="col-3 property-field-label">
@@ -162,7 +162,7 @@
             </div>
         </div>
         <div class="panel">
-            <div class="accordion accordion-flush w-100" id="accordionExample">
+            <div class="accordion accordion-flush w-100" id="accordionTransactionData">
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -170,7 +170,7 @@
                             <strong> Datos relacionados con la transacción</strong>
                         </button>
                     </h2>
-                    <div id="collapseTransactionData" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                    <div id="collapseTransactionData" class="accordion-collapse collapse @(hasModel ? "show" : string.Empty)" aria-labelledby="headingOne" data-bs-parent="#accordionTransactionData">
                         <div class="accordion-body">
                             <div class="row property-field">
                                 <div class="col-5 property-field-label">

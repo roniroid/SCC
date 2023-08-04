@@ -155,26 +155,68 @@
         <tbody>
             @foreach (ReportResultsAccuracyTrendViewModel.AccuracyTrendByPeriod accuracyTrendResult in Model.AccuracyTrendByPeriodList)
             {
-                string percentageFUCE =
-                    String.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.FinalUserCriticalErrorPercentage : 0);
-                string percentageBCE =
-                    String.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.BusinessCriticalErrorPercentage : 0);
-                string percentageFCE =
-                    String.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.FulfillmentCriticalErrorPercentage : 0);
-                string percentageGCE =
+                string percentageGlobalGCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
                         accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.GeneralCriticalErrorPercentage : 0);
+                string percentageGlobalFUCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.GeneralFinalUserCriticalErrorPercentage : 0);
+                string percentageGlobalBCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.GeneralBusinessCriticalErrorPercentage : 0);
+                string percentageGlobalFCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.GeneralFulfillmentCriticalErrorPercentage : 0);
+
+                string percentageAccurateGCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.AccurateCriticalErrorPercentage : 0);
+                string percentageAccurateFUCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.AccurateFinalUserCriticalErrorPercentage : 0);
+                string percentageAccurateBCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.AccurateBusinessCriticalErrorPercentage : 0);
+                string percentageAccurateFCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.AccurateFulfillmentCriticalErrorPercentage : 0);
+
+                string percentageControllableGCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.ControllableCriticalErrorPercentage : 0);
+                string percentageControllableFUCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.ControllableFinalUserCriticalErrorPercentage : 0);
+                string percentageControllableBCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.ControllableBusinessCriticalErrorPercentage : 0);
+                string percentageControllableFCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.ControllableFulfillmentCriticalErrorPercentage : 0);
 
                 <tr>
                     <td>
@@ -183,23 +225,23 @@
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                     {
                         <td>
-                            @percentageFUCE%
+                            @percentageControllableFUCE%
                         </td>
                     }
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
                     {
                         <td>
-                            @percentageBCE%
+                            @percentageControllableBCE%
                         </td>
                     }
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
                     {
                         <td>
-                            @percentageFCE%
+                            @percentageControllableFCE%
                         </td>
                     }
                     <td>
-                        @percentageGCE%
+                        @percentageControllableGCE%
                     </td>
                     <td>
                         @accuracyTrendResult.TransactionCount
@@ -281,11 +323,11 @@
             {
                 @:{
                     @:label: 'Error Crítico de Usuario Final',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.FinalUserCriticalErrorPercentage : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableFinalUserCriticalErrorPercentage : 0))))],
                     @:borderColor: 'rgba(117, 178, 239)',
                     @:backgroundColor: 'rgba(117, 178, 239, 0.8)',
-                    @:borderWidth: 1,
-                    @*successCount: [@Model.GeneralFinalUserCriticalErrorCountSuccess, @Model.GeneralBusinessCriticalErrorCountSuccess, @Model.GeneralFulfillmentCriticalErrorCountSuccess, @Model.GeneralResultCountSuccess],
+                    @:borderWidth: 3,
+                    @*successCount: [@Model.ControllableFinalUserCriticalErrorCountSuccess, @Model.ControllableBusinessCriticalErrorCountSuccess, @Model.ControllableFulfillmentCriticalErrorCountSuccess, @Model.ControllableResultCountSuccess],
                     errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
                     totalCount: @Model.TotalTransactions,*@
                 @:},
@@ -294,11 +336,11 @@
             {
                 @:{
                     @:label: 'Error Crítico de Negocio',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.BusinessCriticalErrorPercentage : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableBusinessCriticalErrorPercentage : 0))))],
                     @:borderColor: 'rgba(67, 66, 71)',
                     @:backgroundColor: 'rgb(67, 66, 71, 0.8)',
-                    @:borderWidth: 1,
-                    @*successCount: [@Model.GeneralFinalUserCriticalErrorCountSuccess, @Model.GeneralBusinessCriticalErrorCountSuccess, @Model.GeneralFulfillmentCriticalErrorCountSuccess, @Model.GeneralResultCountSuccess],
+                    @:borderWidth: 3,
+                    @*successCount: [@Model.ControllableFinalUserCriticalErrorCountSuccess, @Model.ControllableBusinessCriticalErrorCountSuccess, @Model.ControllableFulfillmentCriticalErrorCountSuccess, @Model.ControllableResultCountSuccess],
                     errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
                     totalCount: @Model.TotalTransactions,*@
                 @:},
@@ -307,22 +349,22 @@
             {
                 @:{
                     @:label: 'Error Crítico de Cumplimiento',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.FulfillmentCriticalErrorPercentage : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableFulfillmentCriticalErrorPercentage : 0))))],
                     @:borderColor: 'rgba(137, 222, 122)',
                     @:backgroundColor: 'rgb(137, 222, 122, 0.8)',
-                    @:borderWidth: 1,
-                    @*successCount: [@Model.GeneralFinalUserCriticalErrorCountSuccess, @Model.GeneralBusinessCriticalErrorCountSuccess, @Model.GeneralFulfillmentCriticalErrorCountSuccess, @Model.GeneralResultCountSuccess],
+                    @:borderWidth: 3,
+                    @*successCount: [@Model.ControllableGeneralFinalUserCriticalErrorCountSuccess, @Model.ControllableGeneralBusinessCriticalErrorCountSuccess, @Model.ControllableGeneralFulfillmentCriticalErrorCountSuccess, @Model.ControllableGeneralResultCountSuccess],
                     errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
                     totalCount: @Model.TotalTransactions,*@
                 @:},
             }
             {
                 label: 'Error Crítico Global',
-                data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.GeneralCriticalErrorPercentage : 0))))],
+                data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableCriticalErrorPercentage : 0))))],
                 borderColor: 'rgba(255, 190, 113)',
                 backgroundColor: 'rgb(255, 190, 113, 0.8)',
-                borderWidth: 1,
-                @*successCount: [@Model.GeneralFinalUserCriticalErrorCountSuccess, @Model.GeneralBusinessCriticalErrorCountSuccess, @Model.GeneralFulfillmentCriticalErrorCountSuccess, @Model.GeneralResultCountSuccess],
+                borderWidth: 3,
+                @*successCount: [@Model.ControllableFinalUserCriticalErrorCountSuccess, @Model.ControllableBusinessCriticalErrorCountSuccess, @Model.ControllableFulfillmentCriticalErrorCountSuccess, @Model.ControllableResultCountSuccess],
                 errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
                 totalCount: @Model.TotalTransactions,*@
             },
@@ -361,11 +403,6 @@
         type: 'line',
         data: DEFAULT_DATA,
         options: {
-            elements: {
-                line: {
-                    tension: 0.4
-                }
-            },
             responsive: true,
             scales: {
                 y: {
@@ -382,6 +419,13 @@
                     },
                     beginAtZero: true,
                     max: 100,
+                    ticks: {
+                        stepSize: 25,
+                        callback: function (value) {
+                            return value + '%';
+                        }
+                    },
+                    offset: true,
                 },
                 x: {
                     title: {
@@ -395,7 +439,14 @@
                     grid: {
                         display: $('input[name="rdHorizontal"]:checked').val()
                     },
+                    offset: true,
+                    position: 20,
                 },
+            },
+            elements: {
+                line: {
+                    tension: 0.4,
+                }
             },
             plugins:
             {
@@ -468,10 +519,10 @@
             },
             layout: {
                 padding: {
-                    top: 10,
+                    top: 20,
                     right: 50,
-                    bottom: 10,
-                    left: 10
+                    bottom: 20,
+                    left: 20
                 }
             },
             onClick: clickHandler,
