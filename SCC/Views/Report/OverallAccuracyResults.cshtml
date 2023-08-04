@@ -465,7 +465,13 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
-                    max: 100
+                    max: 100,
+                    ticks: {
+                        stepSize: 25,
+                        callback: function (value) {
+                            return value + '%';
+                        }
+                    }
                 },
                 x: {
                     title: {

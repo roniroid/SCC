@@ -1258,7 +1258,7 @@
                             <div class="attribute-marginator px-4 d-inline-block"></div>
                         }
                         <div class="d-flex justify-content-center align-content-center">
-                            <input class="attribute-checked me-3" type="checkbox" value="true" @(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.Checked ? "checked" : string.Empty : string.Empty) />
+                            <input class="attribute-checked me-3" type="checkbox" value="true" @(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.Checked ? "checked" : string.Empty : "checked") />
                         </div>
                         <span>@attribute.Name</span>
                     </div>
@@ -2176,8 +2176,8 @@
         if (
             !checkFUCEAccurateAttributesResult ||
             !checkBCEAccurateAttributesResult ||
-            !checkFCEAccurateAttributesResult ||
-            !checkNCEAccurateAttributesResult) {
+            !checkFCEAccurateAttributesResult /*||
+            !checkNCEAccurateAttributesResult*/) {
             $('.result-general-fail').removeClass('d-none');
             $('.result-general-success').addClass('d-none');
         } else {
@@ -2188,8 +2188,8 @@
         if (
             !checkFUCEControllableAttributesResult ||
             !checkBCEControllableAttributesResult ||
-            !checkFCEControllableAttributesResult ||
-            !checkNCEControllableAttributesResult) {
+            !checkFCEControllableAttributesResult /*||
+            !checkNCEControllableAttributesResult*/) {
             $('.result-controllable-fail').removeClass('d-none');
             $('.result-controllable-success').addClass('d-none');
         } else {
@@ -2200,8 +2200,8 @@
         if (
             !checkFUCEAccurateAttributesResult ||
             !checkBCEAccurateAttributesResult ||
-            !checkFCEAccurateAttributesResult ||
-            !checkNCEAccurateAttributesResult) {
+            !checkFCEAccurateAttributesResult /*||
+            !checkNCEAccurateAttributesResult*/) {
             $('.result-accurate-fail').removeClass('d-none');
             $('.result-accurate-success').addClass('d-none');
         } else {

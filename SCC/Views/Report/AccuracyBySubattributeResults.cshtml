@@ -195,10 +195,10 @@
                         @successfulResultCount
                     </td>
                     <td>
-                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(successfulResultCount) / totalCumulativeSum) * 100)).Replace('.', ',')%
+                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(successfulResultCount) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
                     </td>
                     <td>
-                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(cumulativeSum) / totalCumulativeSum) * 100)).Replace('.', ',')%
+                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(cumulativeSum) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
                     </td>
                 </tr>
 
@@ -288,6 +288,7 @@
 
     const REDUCE_ARRAY = ((sum, dataPoint) => sum + dataPoint);
     const TOTAL_SUM = DATA_POINTS.reduce(REDUCE_ARRAY);
+    console.log(TOTAL_SUM);
 
     const CUMULATIVE_SUM = (sum => dataPoint => sum += ((dataPoint / TOTAL_SUM) * 100))(0);
     const CUMULATIVE_DATA_POINTS = DATA_POINTS.map(CUMULATIVE_SUM);
@@ -387,7 +388,8 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
-                    max: @maxYScore
+                    max: @maxYScore,
+                    offset: true,
                 },
                 y1: {
                     title: {
@@ -417,7 +419,9 @@
                     },
                     min: 0,
                     max: 100,
-                    position: 'right'
+                    position: 'right',
+                    offset: true,
+                    position: 20,
                 },
                 x: {
                     title: {
@@ -432,11 +436,11 @@
                         display: $('input[name="rdHorizontal"]:checked').val()
                     }
                 },
-                xAxes: [{
+                /*xAxes: [{
                     afterFit: function (scaleInstance) {
                         scaleInstance.width = 20;
                     }
-                }]
+                }]*/
             },
             plugins:
             {

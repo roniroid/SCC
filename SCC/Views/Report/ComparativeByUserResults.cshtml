@@ -150,40 +150,71 @@
             </tr>
         </thead>
         <tbody>
+            @{
+                bool isControllable =
+                    Model.RequestObject.AttributeControllable != null
+                        ? Model.RequestObject.AttributeControllable.Value
+                        : false;
+            }
+
             @foreach (SCC.ViewModels.ReportResultsComparativeByUserViewModel.ResultsByUser resultsByUser in Model.ResultsByUserList)
             {
                 string percentageFUCE =
                     String.Format(
                     CultureInfo.InvariantCulture,
-                        /*Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                        Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                            ? "{0:0.0#}"
-                            : */"{0:0.##}",
-                    resultsByUser.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByUser.GeneralFinalUserCriticalErrorCountSuccess) / resultsByUser.TotalTransactions) * 100) : 0);
+                    /*Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                    Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                        ? "{0:0.0#}"
+                        : */"{0:0.##}",
+                    resultsByUser.TotalTransactions > 0 
+                        ? ((Convert.ToDecimal(
+                            isControllable
+                                ? resultsByUser.ControllableFinalUserCriticalErrorCountSuccess 
+                                : resultsByUser.GeneralFinalUserCriticalErrorCountSuccess
+                            ) / resultsByUser.TotalTransactions) * 100) 
+                        : 0);
                 string percentageBCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                            /*Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                            Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                                ? "{0:0.0#}"
-                                : */"{0:0.##}",
-                    resultsByUser.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByUser.GeneralBusinessCriticalErrorCountSuccess) / resultsByUser.TotalTransactions) * 100) : 0);
+                        /*Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                        Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                            ? "{0:0.0#}"
+                            : */"{0:0.##}",
+                    resultsByUser.TotalTransactions > 0 
+                        ? ((Convert.ToDecimal(
+                            isControllable
+                                ? resultsByUser.ControllableBusinessCriticalErrorCountSuccess 
+                                : resultsByUser.GeneralBusinessCriticalErrorCountSuccess
+                            ) / resultsByUser.TotalTransactions) * 100) 
+                        : 0);
                 string percentageFCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                            /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                            Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                                ? "{0:0.0#}"
-                                : */"{0:0.##}",
-                    resultsByUser.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByUser.GeneralFulfillmentCriticalErrorCountSuccess) / resultsByUser.TotalTransactions) * 100) : 0);
+                        /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                        Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                            ? "{0:0.0#}"
+                            : */"{0:0.##}",
+                    resultsByUser.TotalTransactions > 0 
+                        ? ((Convert.ToDecimal(
+                            isControllable
+                                ? resultsByUser.ControllableFulfillmentCriticalErrorCountSuccess 
+                                : resultsByUser.GeneralFulfillmentCriticalErrorCountSuccess
+                            ) / resultsByUser.TotalTransactions) * 100) 
+                        : 0);
                 string percentageGCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                            /*Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                            Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                                ? "{0:0.0#}"
-                                : */"{0:0.##}",
-                    resultsByUser.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByUser.GeneralResultCountSuccess) / resultsByUser.TotalTransactions) * 100) : 0);
+                        /*Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                        Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                            ? "{0:0.0#}"
+                            : */"{0:0.##}",
+                    resultsByUser.TotalTransactions > 0 
+                        ? ((Convert.ToDecimal(
+                            isControllable
+                                ? resultsByUser.ControllableResultCountSuccess 
+                                : resultsByUser.GeneralResultCountSuccess
+                            ) / resultsByUser.TotalTransactions) * 100) 
+                        : 0);
 
                 <tr>
                     <td>
@@ -326,39 +357,59 @@
                 string percentageFUCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                        /*Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                        Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                            ? "{0:0.0#}"
-                            : */"{0:0.##}",
-                        resultsByUser.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByUser.GeneralFinalUserCriticalErrorCountSuccess) / resultsByUser.TotalTransactions) * 100) : 0)
-                    .Replace(',', '.');
+                            /*Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                            Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                ? "{0:0.0#}"
+                                : */"{0:0.##}",
+                        resultsByUser.TotalTransactions > 0
+                            ? ((Convert.ToDecimal(
+                                isControllable
+                                    ? resultsByUser.ControllableFinalUserCriticalErrorCountSuccess
+                                    : resultsByUser.GeneralFinalUserCriticalErrorCountSuccess
+                                ) / resultsByUser.TotalTransactions) * 100)
+                            : 0).Replace(',', '.');
                 string percentageBCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                        /*Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                        Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                            ? "{0:0.0#}"
-                            : */"{0:0.##}",
-                        resultsByUser.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByUser.GeneralBusinessCriticalErrorCountSuccess) / resultsByUser.TotalTransactions) * 100) : 0)
-                    .Replace(',', '.');
+                            /*Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                            Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                ? "{0:0.0#}"
+                                : */"{0:0.##}",
+                        resultsByUser.TotalTransactions > 0
+                            ? ((Convert.ToDecimal(
+                                isControllable
+                                    ? resultsByUser.ControllableBusinessCriticalErrorCountSuccess
+                                    : resultsByUser.GeneralBusinessCriticalErrorCountSuccess
+                                ) / resultsByUser.TotalTransactions) * 100)
+                            : 0).Replace(',', '.');
                 string percentageFCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                        /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                        Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                            ? "{0:0.0#}"
-                            : */"{0:0.##}",
-                        resultsByUser.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByUser.GeneralFulfillmentCriticalErrorCountSuccess) / resultsByUser.TotalTransactions) * 100) : 0)
-                    .Replace(',', '.');
+                            /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                            Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                ? "{0:0.0#}"
+                                : */"{0:0.##}",
+                        resultsByUser.TotalTransactions > 0
+                            ? ((Convert.ToDecimal(
+                                isControllable
+                                    ? resultsByUser.ControllableFulfillmentCriticalErrorCountSuccess
+                                    : resultsByUser.GeneralFulfillmentCriticalErrorCountSuccess
+                                ) / resultsByUser.TotalTransactions) * 100)
+                            : 0).Replace(',', '.');
                 string percentageGCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                        /*Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                        Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                            ? "{0:0.0#}"
-                            : */"{0:0.##}",
-                        resultsByUser.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByUser.GeneralResultCountSuccess) / resultsByUser.TotalTransactions) * 100) : 0)
-                    .Replace(',', '.');
+                            /*Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                            Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                ? "{0:0.0#}"
+                                : */"{0:0.##}",
+                        resultsByUser.TotalTransactions > 0
+                            ? ((Convert.ToDecimal(
+                                isControllable
+                                    ? resultsByUser.ControllableResultCountSuccess
+                                    : resultsByUser.GeneralResultCountSuccess
+                                ) / resultsByUser.TotalTransactions) * 100)
+                            : 0).Replace(',', '.');
 
                 @:{
                     @:data: [
@@ -455,7 +506,13 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
-                    max: 100
+                    max: 100,
+                    ticks: {
+                        stepSize: 25,
+                        callback: function (value) {
+                            return value + '%';
+                        }
+                    }
                 },
                 x: {
                     title: {

@@ -26,18 +26,18 @@ namespace SCC.ViewModels
 
             this.ResultByBIFieldList = new List<ResultByBIField>();
 
-            foreach (SCC_BL.Reports.Results.ParetoBI paretoBIResult in this.ParetoBIResultList.OrderBy(e => e.BusinessIntelligenceFieldID))
+            foreach (SCC_BL.Reports.Results.ParetoBI paretoBIResult in this.ParetoBIResultList.Where(e => !e.SuccessfulResult).OrderBy(e => e.BusinessIntelligenceFieldID))
             {
                 if (this.ResultByBIFieldList.Select(e => e.BusinessIntelligenceFieldID).Where(e => e == paretoBIResult.BusinessIntelligenceFieldID).Count() <= 0)
                 {
-                    int successfulResultCount = this.ParetoBIResultList.Where(e => e.BusinessIntelligenceFieldID == paretoBIResult.BusinessIntelligenceFieldID && e.SuccessfulResult).Count();
+                    int failedResultCount = this.ParetoBIResultList.Where(e => e.BusinessIntelligenceFieldID == paretoBIResult.BusinessIntelligenceFieldID && !e.SuccessfulResult).Count();
 
                     ResultByBIField resultByBIField = new ResultByBIField();
 
                     resultByBIField.TransactionBIFieldID = paretoBIResult.TransactionBIFieldID;
                     resultByBIField.BusinessIntelligenceFieldID = paretoBIResult.BusinessIntelligenceFieldID;
                     resultByBIField.BusinessIntelligenceFieldName = paretoBIResult.BusinessIntelligenceFieldName;
-                    resultByBIField.Quantity = successfulResultCount;
+                    resultByBIField.Quantity = failedResultCount;
                     resultByBIField.HasChildren = paretoBIResult.HasChildren;
 
                     this.ResultByBIFieldList.Add(resultByBIField);

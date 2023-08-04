@@ -29,15 +29,39 @@ namespace SCC.ViewModels
 
             public int TotalTransactions { get; set; } = 0;
 
-            public int GeneralFinalUserCriticalErrorCountSuccess { get; set; } = 0;
-            public int GeneralBusinessCriticalErrorCountSuccess { get; set; } = 0;
-            public int GeneralFulfillmentCriticalErrorCountSuccess { get; set; } = 0;
-            public int GeneralResultCountSuccess { get; set; } = 0;
+            public int GlobalGeneralFinalUserCriticalErrorCountSuccess { get; set; } = 0;
+            public int GlobalGeneralBusinessCriticalErrorCountSuccess { get; set; } = 0;
+            public int GlobalGeneralFulfillmentCriticalErrorCountSuccess { get; set; } = 0;
+            public int GlobalGeneralResultCountSuccess { get; set; } = 0;
 
-            public int GeneralFinalUserCriticalErrorCountFail { get; set; } = 0;
-            public int GeneralBusinessCriticalErrorCountFail { get; set; } = 0;
-            public int GeneralFulfillmentCriticalErrorCountFail { get; set; } = 0;
-            public int GeneralResultCountFail { get; set; } = 0;
+            public int GlobalGeneralFinalUserCriticalErrorCountFail { get; set; } = 0;
+            public int GlobalGeneralBusinessCriticalErrorCountFail { get; set; } = 0;
+            public int GlobalGeneralFulfillmentCriticalErrorCountFail { get; set; } = 0;
+            public int GlobalGeneralResultCountFail { get; set; } = 0;
+
+            //----------------------------------------------------------------------------------
+
+            public int GlobalAccurateFinalUserCriticalErrorCountSuccess { get; set; } = 0;
+            public int GlobalAccurateBusinessCriticalErrorCountSuccess { get; set; } = 0;
+            public int GlobalAccurateFulfillmentCriticalErrorCountSuccess { get; set; } = 0;
+            public int GlobalAccurateResultCountSuccess { get; set; } = 0;
+
+            public int GlobalAccurateFinalUserCriticalErrorCountFail { get; set; } = 0;
+            public int GlobalAccurateBusinessCriticalErrorCountFail { get; set; } = 0;
+            public int GlobalAccurateFulfillmentCriticalErrorCountFail { get; set; } = 0;
+            public int GlobalAccurateResultCountFail { get; set; } = 0;
+
+            //----------------------------------------------------------------------------------
+
+            public int GlobalControllableFinalUserCriticalErrorCountSuccess { get; set; } = 0;
+            public int GlobalControllableBusinessCriticalErrorCountSuccess { get; set; } = 0;
+            public int GlobalControllableFulfillmentCriticalErrorCountSuccess { get; set; } = 0;
+            public int GlobalControllableResultCountSuccess { get; set; } = 0;
+
+            public int GlobalControllableFinalUserCriticalErrorCountFail { get; set; } = 0;
+            public int GlobalControllableBusinessCriticalErrorCountFail { get; set; } = 0;
+            public int GlobalControllableFulfillmentCriticalErrorCountFail { get; set; } = 0;
+            public int GlobalControllableResultCountFail { get; set; } = 0;
         }
 
         public void ProcessData()
@@ -58,46 +82,134 @@ namespace SCC.ViewModels
 
                     resultsByCalibrator.TotalTransactions = listByCalibratorUserID.Count();
 
-                    resultsByCalibrator.GeneralFinalUserCriticalErrorCountSuccess =
+                    resultsByCalibrator.GlobalGeneralResultCountSuccess =
                         listByCalibratorUserID
                             .Where(e =>
-                                e.GeneralFinalUserCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS)
+                                e.GlobalGeneralResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL.SUCCESS)
                             .Count();
-                    resultsByCalibrator.GeneralBusinessCriticalErrorCountSuccess =
+                    resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountSuccess =
                         listByCalibratorUserID
                             .Where(e =>
-                                e.GeneralBusinessCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS)
+                                e.GlobalGeneralFinalUserCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS)
                             .Count();
-                    resultsByCalibrator.GeneralFulfillmentCriticalErrorCountSuccess =
+                    resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountSuccess =
                         listByCalibratorUserID
                             .Where(e =>
-                                e.GeneralFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS)
+                                e.GlobalGeneralBusinessCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS)
                             .Count();
-                    resultsByCalibrator.GeneralResultCountSuccess =
+                    resultsByCalibrator.GlobalGeneralFulfillmentCriticalErrorCountSuccess =
                         listByCalibratorUserID
                             .Where(e =>
-                                e.GeneralResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL.SUCCESS)
+                                e.GlobalGeneralFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS)
                             .Count();
 
-                    resultsByCalibrator.GeneralFinalUserCriticalErrorCountFail =
+                    resultsByCalibrator.GlobalGeneralResultCountFail =
                         listByCalibratorUserID
                             .Where(e =>
-                                e.GeneralFinalUserCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL_USER_CRITICAL_ERROR.FAIL)
+                                e.GlobalGeneralResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL.FAIL)
                             .Count();
-                    resultsByCalibrator.GeneralBusinessCriticalErrorCountFail =
+                    resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountFail =
                         listByCalibratorUserID
                             .Where(e =>
-                                e.GeneralBusinessCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_BUSINESS_CRITICAL_ERROR.FAIL)
+                                e.GlobalGeneralFinalUserCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL_USER_CRITICAL_ERROR.FAIL)
                             .Count();
-                    resultsByCalibrator.GeneralFulfillmentCriticalErrorCountFail =
+                    resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountFail =
                         listByCalibratorUserID
                             .Where(e =>
-                                e.GeneralFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
+                                e.GlobalGeneralBusinessCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_BUSINESS_CRITICAL_ERROR.FAIL)
                             .Count();
-                    resultsByCalibrator.GeneralResultCountFail =
+                    resultsByCalibrator.GlobalGeneralFulfillmentCriticalErrorCountFail =
                         listByCalibratorUserID
                             .Where(e =>
-                                e.GeneralResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL.FAIL)
+                                e.GlobalGeneralFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
+                            .Count();
+
+                    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+                    resultsByCalibrator.GlobalAccurateResultCountSuccess =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalAccurateResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL.SUCCESS)
+                            .Count();
+                    resultsByCalibrator.GlobalAccurateFinalUserCriticalErrorCountSuccess =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalAccurateFinalUserCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS)
+                            .Count();
+                    resultsByCalibrator.GlobalAccurateBusinessCriticalErrorCountSuccess =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalAccurateBusinessCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS)
+                            .Count();
+                    resultsByCalibrator.GlobalAccurateFulfillmentCriticalErrorCountSuccess =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalAccurateFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS)
+                            .Count();
+
+                    resultsByCalibrator.GlobalAccurateResultCountFail =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalAccurateResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL.FAIL)
+                            .Count();
+                    resultsByCalibrator.GlobalAccurateFinalUserCriticalErrorCountFail =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalAccurateFinalUserCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL_USER_CRITICAL_ERROR.FAIL)
+                            .Count();
+                    resultsByCalibrator.GlobalAccurateBusinessCriticalErrorCountFail =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalAccurateBusinessCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_BUSINESS_CRITICAL_ERROR.FAIL)
+                            .Count();
+                    resultsByCalibrator.GlobalAccurateFulfillmentCriticalErrorCountFail =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalAccurateFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
+                            .Count();
+
+                    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+                    resultsByCalibrator.GlobalControllableResultCountSuccess =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalControllableResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL.SUCCESS)
+                            .Count();
+                    resultsByCalibrator.GlobalControllableFinalUserCriticalErrorCountSuccess =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalControllableFinalUserCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS)
+                            .Count();
+                    resultsByCalibrator.GlobalControllableBusinessCriticalErrorCountSuccess =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalControllableBusinessCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS)
+                            .Count();
+                    resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountSuccess =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalControllableFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS)
+                            .Count();
+
+                    resultsByCalibrator.GlobalControllableResultCountFail =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalControllableResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL.FAIL)
+                            .Count();
+                    resultsByCalibrator.GlobalControllableFinalUserCriticalErrorCountFail =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalControllableFinalUserCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR.FAIL)
+                            .Count();
+                    resultsByCalibrator.GlobalControllableBusinessCriticalErrorCountFail =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalControllableBusinessCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR.FAIL)
+                            .Count();
+                    resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountFail =
+                        listByCalibratorUserID
+                            .Where(e =>
+                                e.GlobalControllableFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
                             .Count();
 
                     ResultsByCalibratortList.Add(resultsByCalibrator);

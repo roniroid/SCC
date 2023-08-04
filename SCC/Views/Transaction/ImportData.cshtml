@@ -140,7 +140,7 @@
         const element = e.currentTarget;
         const elementID = element.dataset.elementid;
 
-        window.open('@Url.Action(nameof(TransactionController.DownLoadFileFromDatabase), mainControllerName)?uploadedFileID=' + elementID + '&contentType=@SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES', '_blank');
+        window.open('@Url.Action(nameof(TransactionController.DownLoadFileFromDatabase), mainControllerName)?uploadedFileID=' + elementID + '&contentType=@SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX', '_blank');
     });
 
     $('#frmManage').submit(() => {

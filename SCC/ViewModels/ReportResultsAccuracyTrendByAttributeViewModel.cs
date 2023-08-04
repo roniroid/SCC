@@ -44,6 +44,34 @@ namespace SCC.ViewModels
             DateTime minDate = this.AccuracyTrendByAttributeResultList.Min(e => e.TransactionDate);
             DateTime maxDate = this.AccuracyTrendByAttributeResultList.Max(e => e.TransactionDate);
 
+            switch (this.IntervalTypeID)
+            {
+                case SCC_BL.DBValues.Catalog.TIME_INTERVAL.DAY:
+                    int dayOfWeek = (int)maxDate.DayOfWeek;
+                    maxDate = maxDate.AddDays(7 - dayOfWeek);
+                    break;
+                case SCC_BL.DBValues.Catalog.TIME_INTERVAL.WEEK:
+                    //Set maxDate to the end of month
+                    maxDate = new DateTime(maxDate.Year, maxDate.Month + 1, 1, 23, 59, 59, 999);
+                    maxDate = maxDate.AddDays(-1);
+                    break;
+                case SCC_BL.DBValues.Catalog.TIME_INTERVAL.MONTH:
+                    //Set maxDate to the end of year
+                    maxDate = new DateTime(maxDate.Year + 1, 1, 1, 23, 59, 59, 999);
+                    maxDate = maxDate.AddDays(-1);
+                    break;
+                case SCC_BL.DBValues.Catalog.TIME_INTERVAL.QUARTER:
+                    //Set maxDate to the end of month
+                    maxDate = new DateTime(maxDate.Year, maxDate.Month + 1, 1, 23, 59, 59, 999);
+                    maxDate = maxDate.AddDays(-1);
+                    break;
+                case SCC_BL.DBValues.Catalog.TIME_INTERVAL.YEAR:
+                    maxDate = new DateTime(maxDate.Year, 12, 31, 23, 59, 59, 999);
+                    break;
+                default:
+                    break;
+            }
+
             minDate = minDate.AddDays((minDate.Day - 1) * -1);
 
             while (minDate < maxDate)
