@@ -121,6 +121,11 @@ namespace SCC.Controllers
                             .ThenBy(o => o.Person.FirstName)
                             .ToList();
 
+                userList =
+                    userList
+                        .Where(e => e.ID != GetActualUser().ID)
+                        .ToList();
+
                 TransactionFormViewModel transactionFormViewModel = new TransactionFormViewModel();
                 transactionFormViewModel.Transaction.SetIdentifier();
                 transactionFormViewModel.Transaction.EvaluatorUserID = GetActualUser().ID;
@@ -1544,7 +1549,7 @@ namespace SCC.Controllers
 
             return DownLoadFileFromServer(
                 currentFileName, 
-                SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES);
+                SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX);
         }
 
         public SCC_BL.Results.UploadedFile.TransactionImport.CODE ProcessImportExcel(System.Data.DataTable dt, int programID)
@@ -4067,7 +4072,7 @@ namespace SCC.Controllers
                 excelParser.ExportTransactionListToExcel(transactionList, filePath);
             }
 
-            return DownLoadFileFromServer(filePath, SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES);
+            return DownLoadFileFromServer(filePath, SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX);
         }
     }
 }

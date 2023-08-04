@@ -136,13 +136,12 @@
                                         placeholder = "Fecha de inicio", 
                                         autocomplete = "off", 
                                         type = "date",
-                                        @*@Value = string.Empty,
+                                        @Value = 
                                             Model.User.StartDate != null 
                                                 ? (Model.User.StartDate.Year > 2000 
                                                     ? Model.User.StartDate.ToString("yyyy-MM-dd") 
                                                     : DateTime.Now.ToString("yyyy-MM-dd")) 
-                                                : string.Empty, 
-                                                : DateTime.Now.ToString("yyyy-MM-dd"),*@
+                                                : DateTime.Now.ToString("yyyy-MM-dd"),
                                         required = "" })
                             </div>
                         </div>
