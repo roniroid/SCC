@@ -251,6 +251,7 @@ namespace SCC_DATA.Queries
 				{
 					public const string TRANSACTION_ID_LIST = "@transactionIDList";
 					public const string ERROR_TYPE_ID_LIST = "@errorTypeIDList";
+					public const string CONSTRAINT_TYPE_ID = "@constraintTypeID";
 					public const string ATTRIBUTE_ID_LIST = "@attributeIDList";
 				}
 

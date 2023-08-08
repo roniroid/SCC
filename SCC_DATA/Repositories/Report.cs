@@ -175,7 +175,7 @@ namespace SCC_DATA.Repositories
 			}
 		}
 		
-		public System.Data.DataTable AccuracyByAttribute(string transactionIDArray, string errorTypeIDList, string attributeIDArray = null)
+		public System.Data.DataTable AccuracyByAttribute(string transactionIDArray, string errorTypeIDList, int constraintTypeID, string attributeIDArray = null)
 		{
 			try
 			{
@@ -184,6 +184,7 @@ namespace SCC_DATA.Repositories
 					SqlParameter[] parameters = new SqlParameter[] {
 						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyByAttribute.Parameters.TRANSACTION_ID_LIST, transactionIDArray, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyByAttribute.Parameters.ERROR_TYPE_ID_LIST, errorTypeIDList, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyByAttribute.Parameters.CONSTRAINT_TYPE_ID, constraintTypeID, System.Data.SqlDbType.Int),
 						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyByAttribute.Parameters.ATTRIBUTE_ID_LIST, attributeIDArray, System.Data.SqlDbType.VarChar)
 					};
 

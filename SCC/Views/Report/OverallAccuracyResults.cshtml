@@ -413,6 +413,21 @@
                     }
                     @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
                 ],
+                constraintTypeID:
+                    @if (Model.RequestObject.AttributeNoConstraint == true)
+                    {
+                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_CONSTRAINT.NONE)
+                    }
+                    else
+                    if (Model.RequestObject.AttributeControllable == true)
+                    {
+                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_CONSTRAINT.CONTROLLABLE)
+                    }
+                    else
+                    if (Model.RequestObject.AttributeKnown == true)
+                    {
+                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_CONSTRAINT.KNOWN)
+                    },
                 totalCount: @Model.TotalTransactions,
             }
         ]
@@ -577,6 +592,7 @@
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
             let errorTypeID = myChart.data.datasets[firstPoint.datasetIndex].errorTypeIDs[firstPoint.index];
+            let constraintTypeID = myChart.data.datasets[firstPoint.datasetIndex].constraintTypeID;
 
             const url = '@Url.Action(nameof(ReportController.AccuracyByAttributeWithOverallAcurracy), mainControllerName)';
 
@@ -584,6 +600,7 @@
 
             $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.OverallAccuracyResultList.Select(e => e.TransactionID))" /> ');
             $($form).append('<input type="hidden" name="errorTypeID" value="' + errorTypeID + '" /> ');
+            $($form).append('<input type="hidden" name="constraintTypeID" value="' + constraintTypeID + '" /> ');
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
 
             $(document.body).append($form);

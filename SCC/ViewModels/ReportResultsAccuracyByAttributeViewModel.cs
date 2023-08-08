@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SCC_BL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -25,7 +26,7 @@ namespace SCC.ViewModels
 
             this.ResultByAttributeList = new List<ResultByAttribute>();
 
-            foreach(SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult in AccuracyByAttributeResultList.OrderBy(e => e.AttributeID))
+            foreach(SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult in this.AccuracyByAttributeResultList.OrderBy(e => e.AttributeID))
             {
                 if (this.ResultByAttributeList.Select(e => e.AttributeID).Where(e => e == accuracyByAttributeResult.AttributeID).Count() <= 0)
                 {
@@ -38,7 +39,7 @@ namespace SCC.ViewModels
                     resultByAttribute.AttributeName = accuracyByAttributeResult.AttributeName;
                     resultByAttribute.Quantity = successfulResultCount;
 
-                    ResultByAttributeList.Add(resultByAttribute);
+                    this.ResultByAttributeList.Add(resultByAttribute);
                 }
             }
         }
@@ -49,6 +50,30 @@ namespace SCC.ViewModels
             public int AttributeID { get; set;}
             public string AttributeName { get; set;}
             public int Quantity { get; set;}
+            public bool IsControllable { get; set;}
+
+            public void SetIsControllable()
+            {
+                List<SCC_BL.Attribute> levelOneAttributeList = new List<SCC_BL.Attribute>();
+                int[] parentIDArray = new int[0];
+
+                using (SCC_BL.Attribute attribute = new SCC_BL.Attribute(this.AttributeID))
+                {
+                    levelOneAttributeList = attribute.SelectByLevel(1);
+                    parentIDArray = attribute.SelectParentIDArrayByID();
+                }
+
+                levelOneAttributeList = levelOneAttributeList.Where(e => e.IsControllable).ToList();
+
+                for (int i = 0; i < parentIDArray.Length; i++)
+                {
+                    if (levelOneAttributeList.Select(s => s.ID).Contains(parentIDArray[i]))
+                    {
+                        this.IsControllable = true;
+                        break;
+                    }
+                }
+            }
         }
     }
 }

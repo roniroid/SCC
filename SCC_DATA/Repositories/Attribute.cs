@@ -160,6 +160,53 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
+		public System.Data.DataTable SelectByLevel(int formID, int level)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					SqlParameter[] parameters = new SqlParameter[] {
+						db.CreateParameter(Queries.Attribute.StoredProcedures.SelectByLevel.Parameters.FORM_ID, formID, System.Data.SqlDbType.Int),
+						db.CreateParameter(Queries.Attribute.StoredProcedures.SelectByLevel.Parameters.LEVEL, level, System.Data.SqlDbType.Int),
+					};
+
+					return
+						db.Select(
+							Queries.Attribute.StoredProcedures.SelectByLevel.NAME,
+							parameters
+						);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
+		public System.Data.DataTable SelectParentIDListByID(int attributeID)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					SqlParameter[] parameters = new SqlParameter[] {
+						db.CreateParameter(Queries.Attribute.StoredProcedures.SelectParentIDListByID.Parameters.ATTRIBUTE_ID, attributeID, System.Data.SqlDbType.Int),
+					};
+
+					return
+						db.Select(
+							Queries.Attribute.StoredProcedures.SelectParentIDListByID.NAME,
+							parameters
+						);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
 		public System.Data.DataRow SelectByID(int id)
 		{
 			try
