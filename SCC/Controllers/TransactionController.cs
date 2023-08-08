@@ -3406,13 +3406,33 @@ namespace SCC.Controllers
                     }
                     else
                     {
-                        customControl =
-                            form.CustomControlList
-                                .Where(e =>
-                                    e.Label.Trim().ToUpper().Equals(customControlName.Trim().ToUpper()))
-                                .FirstOrDefault();
+                        try
+                        {
+                            customControl =
+                                form.CustomControlList
+                                    .Where(e =>
+                                        e.Label.Trim().ToUpper().Equals(customControlName.Trim().ToUpper()))
+                                    .FirstOrDefault();
+                        }
+                        catch (Exception)
+                        {
+                        }
                     }
 
+                    if (customControl == null)
+                    {
+                        _transactionImportErrorList.Add(
+                            new SCC_BL.Helpers.Transaction.Import.Error(
+                                transactionImportErrorElementName,
+                                SCC_BL.Results.Transaction.ImportData.ErrorList.CustomControl.NO_NAME_FOUND
+                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, customControlName),
+                                currentRowCount,
+                                currentCellIndex));
+
+                        _setNextCustomControlIndex();
+                        continue;
+                    }
+                    else
                     if (customControl.ID <= 0)
                     {
                         _transactionImportErrorList.Add(
@@ -3469,6 +3489,21 @@ namespace SCC.Controllers
                                     e.Value.Trim().ToUpper().Equals(customControlValue.Trim().ToUpper()))
                                 .FirstOrDefault();
 
+
+                        if (customControlValueCatalog == null)
+                        {
+                            _transactionImportErrorList.Add(
+                                new SCC_BL.Helpers.Transaction.Import.Error(
+                                    transactionImportErrorElementName,
+                                    SCC_BL.Results.Transaction.ImportData.ErrorList.CustomControl.NO_VALUE_FOUND
+                                        .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, customControlValue),
+                                    currentRowCount,
+                                    currentCellIndex));
+
+                            _setNextCustomControlIndex();
+                            continue;
+                        }
+                        else
                         if (customControlValueCatalog.ID <= 0)
                         {
                             _transactionImportErrorList.Add(

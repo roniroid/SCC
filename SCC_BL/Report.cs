@@ -194,7 +194,7 @@ namespace SCC_BL
 			return accuracyTrendResultList;
 		}
 		
-		public List<SCC_BL.Reports.Results.AccuracyByAttribute> AccuracyByAttribute(string transactionIDArray, string errorTypeIDList, string attributeIDArray = null)
+		public List<SCC_BL.Reports.Results.AccuracyByAttribute> AccuracyByAttribute(string transactionIDArray, string errorTypeIDList, int constraintTypeID, string attributeIDArray = null)
 		{
 			List<SCC_BL.Reports.Results.AccuracyByAttribute> accuracyByAttributeResultList = new List<SCC_BL.Reports.Results.AccuracyByAttribute>();
 
@@ -203,6 +203,7 @@ namespace SCC_BL
 				DataTable dt = report.AccuracyByAttribute(
 					transactionIDArray, 
 					errorTypeIDList,
+                    constraintTypeID,
 					attributeIDArray);
 
 				foreach (DataRow dr in dt.Rows)

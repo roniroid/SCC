@@ -85,6 +85,7 @@ namespace SCC_BL.DBValues
             STATUS_NOTIFICATION_URL = 1429,
             STATUS_NOTIFICATION_URL_CATALOG = 1435,
             PERSON_COUNTRY = 2410,
+            ATTRIBUTE_CONSTRAINT = 3415,
         }
 
         public enum ELEMENT
@@ -800,6 +801,13 @@ namespace SCC_BL.DBValues
             COSTA_RICA = 2411,
             PANAMA = 2412,
             COLOMBIA = 2413,
+        }
+
+        public enum ATTRIBUTE_CONSTRAINT
+        {
+            NONE = 3416,
+            CONTROLLABLE = 3417,
+            KNOWN = 3418
         }
     }
 }
