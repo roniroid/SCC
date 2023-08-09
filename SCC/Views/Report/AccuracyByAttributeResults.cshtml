@@ -118,6 +118,13 @@
     </div>
 </div>
 
+@{
+    bool isControllable =
+        Model.RequestObject.AttributeControllable != null
+            ? Model.RequestObject.AttributeControllable.Value
+            : false;
+}
+
 <div class="tableContainer mt-4">
     <table class="display cell-border text-center" id="tbInfo">
         <thead>
@@ -237,7 +244,18 @@
         labels: [@Html.Raw(String.Join(",", Model.ResultByAttributeList.Select(e => $"\"{ e.AttributeName }\"")))],
         datasets: [
             {
-                data: [@String.Join(",", Model.ResultByAttributeList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100))))],
+                data: [
+                    @String.Join(",",
+                        Model.ResultByAttributeList
+                            .Where(e =>
+                                isControllable
+                                    ? e.IsControllable
+                                    : true)
+                            .Select(e =>
+                                String.Format(
+                                    CultureInfo.InvariantCulture,
+                                    "{0:0.##}",
+                                    ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100))))],
                 borderColor: [
                     'rgba(117, 178, 239)',
                     'rgba(67, 66, 71)',
@@ -252,7 +270,6 @@
                 ],
                 borderWidth: 1,
                 successCount: [@String.Join(",", Model.ResultByAttributeList.Select(e => e.Quantity))],
-                transactionAttributeIDList: [@String.Join(",", Model.ResultByAttributeList.Select(e => e.TransactionAttributeID))],
                 totalCount: @Model.TotalTransactions,
             }
         ]
@@ -305,7 +322,13 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
-                    max: 100
+                    max: 100,
+                    ticks: {
+                        stepSize: 25,
+                        callback: function (value) {
+                            return value + '%';
+                        }
+                    }
                 },
                 x: {
                     title: {

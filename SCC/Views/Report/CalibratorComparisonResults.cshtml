@@ -159,7 +159,7 @@
                     Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                         ? "{0:0.0#}"
                         : */"{0:0.##}",
-                    resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GeneralFinalUserCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0);
+                    resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GlobalControllableFinalUserCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0);
                 string percentageBCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
@@ -167,7 +167,7 @@
                         Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                             ? "{0:0.0#}"
                             : */"{0:0.##}",
-                    resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GeneralBusinessCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0);
+                    resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GlobalControllableBusinessCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0);
                 string percentageFCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
@@ -175,7 +175,7 @@
                         Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                             ? "{0:0.0#}"
                             : */"{0:0.##}",
-                    resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GeneralFulfillmentCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0);
+                    resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0);
                 string percentageGCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
@@ -183,7 +183,7 @@
                         Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                             ? "{0:0.0#}"
                             : */"{0:0.##}",
-                    resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GeneralResultCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0);
+                    resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GlobalControllableResultCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0);
 
                 <tr>
                     <td>
@@ -310,7 +310,7 @@
                         Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                             ? "{0:0.0#}"
                             : */"{0:0.##}",
-                        resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GeneralFinalUserCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0)
+                        resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GlobalControllableFinalUserCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0)
                     .Replace(',', '.');
                 string percentageBCE =
                     String.Format(
@@ -319,7 +319,7 @@
                         Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                             ? "{0:0.0#}"
                             : */"{0:0.##}",
-                        resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GeneralBusinessCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0)
+                        resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GlobalControllableBusinessCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0)
                     .Replace(',', '.');
                 string percentageFCE =
                     String.Format(
@@ -328,7 +328,7 @@
                         Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                             ? "{0:0.0#}"
                             : */"{0:0.##}",
-                        resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GeneralFulfillmentCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0)
+                        resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0)
                     .Replace(',', '.');
                 string percentageGCE =
                     String.Format(
@@ -337,7 +337,7 @@
                         Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                             ? "{0:0.0#}"
                             : */"{0:0.##}",
-                        resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GeneralResultCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0)
+                        resultsByCalibrator.TotalTransactions > 0 ? ((Convert.ToDecimal(resultsByCalibrator.GlobalControllableResultCountSuccess) / resultsByCalibrator.TotalTransactions) * 100) : 0)
                     .Replace(',', '.');
 
                 @:{
@@ -390,17 +390,17 @@
                     @:successCount: [
                         if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                         {
-                            @resultsByCalibrator.GeneralFinalUserCriticalErrorCountSuccess@:,
+                            @resultsByCalibrator.GlobalControllableFinalUserCriticalErrorCountSuccess@:,
                         }
                         if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
                         {
-                            @resultsByCalibrator.GeneralFulfillmentCriticalErrorCountSuccess@:,
+                            @resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountSuccess@:,
                         }
                         if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
                         {
-                            @resultsByCalibrator.GeneralFulfillmentCriticalErrorCountSuccess@:,
+                            @resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountSuccess@:,
                         }
-                        @resultsByCalibrator.GeneralResultCountSuccess
+                        @resultsByCalibrator.GlobalControllableResultCountSuccess
                     @:],
                     @:errorTypeIDs: [
                         if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
@@ -470,7 +470,13 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
-                    max: 100
+                    max: 100,
+                    ticks: {
+                        stepSize: 25,
+                        callback: function (value) {
+                            return value + '%';
+                        }
+                    }
                 },
                 x: {
                     title: {

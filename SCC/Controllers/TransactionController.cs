@@ -112,11 +112,19 @@ namespace SCC.Controllers
                         user.SelectAll()
                             .Where(e =>
                                 e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
+                                e.WorkspaceList
+                                    .Where(w => w.Monitorable)
+                                    .Count() > 0)
                             .OrderBy(o => o.Person.SurName)
                             .ThenBy(o => o.Person.LastName)
                             .ThenBy(o => o.Person.FirstName)
                             .ToList();
+
+                userList =
+                    userList
+                        .Where(e => e.ID != GetActualUser().ID)
+                        .ToList();
 
                 TransactionFormViewModel transactionFormViewModel = new TransactionFormViewModel();
                 transactionFormViewModel.Transaction.SetIdentifier();
@@ -1183,7 +1191,15 @@ namespace SCC.Controllers
 
             using (Program program = new Program())
                 programList =
-                    program.SelectAll();
+                    program.SelectWithForm()
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                        .GroupBy(e =>
+                            e.ID)
+                        .Select(e =>
+                            e.First())
+                        .ToList();
 
             using (User user = new User())
                 userList =
@@ -1533,7 +1549,7 @@ namespace SCC.Controllers
 
             return DownLoadFileFromServer(
                 currentFileName, 
-                SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES);
+                SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX);
         }
 
         public SCC_BL.Results.UploadedFile.TransactionImport.CODE ProcessImportExcel(System.Data.DataTable dt, int programID)
@@ -3390,13 +3406,33 @@ namespace SCC.Controllers
                     }
                     else
                     {
-                        customControl =
-                            form.CustomControlList
-                                .Where(e =>
-                                    e.Label.Trim().ToUpper().Equals(customControlName.Trim().ToUpper()))
-                                .FirstOrDefault();
+                        try
+                        {
+                            customControl =
+                                form.CustomControlList
+                                    .Where(e =>
+                                        e.Label.Trim().ToUpper().Equals(customControlName.Trim().ToUpper()))
+                                    .FirstOrDefault();
+                        }
+                        catch (Exception)
+                        {
+                        }
                     }
 
+                    if (customControl == null)
+                    {
+                        _transactionImportErrorList.Add(
+                            new SCC_BL.Helpers.Transaction.Import.Error(
+                                transactionImportErrorElementName,
+                                SCC_BL.Results.Transaction.ImportData.ErrorList.CustomControl.NO_NAME_FOUND
+                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, customControlName),
+                                currentRowCount,
+                                currentCellIndex));
+
+                        _setNextCustomControlIndex();
+                        continue;
+                    }
+                    else
                     if (customControl.ID <= 0)
                     {
                         _transactionImportErrorList.Add(
@@ -3453,6 +3489,21 @@ namespace SCC.Controllers
                                     e.Value.Trim().ToUpper().Equals(customControlValue.Trim().ToUpper()))
                                 .FirstOrDefault();
 
+
+                        if (customControlValueCatalog == null)
+                        {
+                            _transactionImportErrorList.Add(
+                                new SCC_BL.Helpers.Transaction.Import.Error(
+                                    transactionImportErrorElementName,
+                                    SCC_BL.Results.Transaction.ImportData.ErrorList.CustomControl.NO_VALUE_FOUND
+                                        .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, customControlValue),
+                                    currentRowCount,
+                                    currentCellIndex));
+
+                            _setNextCustomControlIndex();
+                            continue;
+                        }
+                        else
                         if (customControlValueCatalog.ID <= 0)
                         {
                             _transactionImportErrorList.Add(
@@ -4056,7 +4107,7 @@ namespace SCC.Controllers
                 excelParser.ExportTransactionListToExcel(transactionList, filePath);
             }
 
-            return DownLoadFileFromServer(filePath, SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES);
+            return DownLoadFileFromServer(filePath, SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX);
         }
     }
 }

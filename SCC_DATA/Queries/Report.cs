@@ -77,11 +77,23 @@ namespace SCC_DATA.Queries
 				public struct ResultFields
 				{
 					public const string TRANSACTION_ID = "TransactionID";
-					public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
-					public const string GENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
-					public const string GENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
-					public const string GENERALRESULTID = "GeneralResultID";
-					public const string USER_ID = "UserID";
+
+                    public const string GENERALRESULTID = "GeneralResultID";
+                    public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
+                    public const string GENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
+                    public const string GENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
+
+                    public const string ACCURATERESULTID = "AccurateResultID";
+                    public const string ACCURATEFINALUSERCRITICALERRORRESULTID = "AccurateFinalUserCriticalErrorResultID";
+                    public const string ACCURATEBUSINESSCRITICALERRORRESULTID = "AccurateBusinessCriticalErrorResultID";
+                    public const string ACCURATEFULFILLMENTCRITICALERRORRESULTID = "AccurateFulfillmentCriticalErrorResultID";
+
+                    public const string CONTROLLABLERESULTID = "ControllableResultID";
+                    public const string CONTROLLABLEFINALUSERCRITICALERRORRESULTID = "ControllableFinalUserCriticalErrorResultID";
+                    public const string CONTROLLABLEBUSINESSCRITICALERRORRESULTID = "ControllableBusinessCriticalErrorResultID";
+                    public const string CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID = "ControllableFulfillmentCriticalErrorResultID";
+
+                    public const string USER_ID = "UserID";
 				}
 			}
 			
@@ -108,11 +120,23 @@ namespace SCC_DATA.Queries
 				public struct ResultFields
 				{
 					public const string TRANSACTION_ID = "TransactionID";
-					public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
+
+                    public const string GENERALRESULTID = "GeneralResultID";
+                    public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
 					public const string GENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
 					public const string GENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
-					public const string GENERALRESULTID = "GeneralResultID";
-					public const string PROGRAM_ID = "ProgramID";
+
+                    public const string ACCURATERESULTID = "AccurateResultID";
+                    public const string ACCURATEFINALUSERCRITICALERRORRESULTID = "AccurateFinalUserCriticalErrorResultID";
+                    public const string ACCURATEBUSINESSCRITICALERRORRESULTID = "AccurateBusinessCriticalErrorResultID";
+                    public const string ACCURATEFULFILLMENTCRITICALERRORRESULTID = "AccurateFulfillmentCriticalErrorResultID";
+
+                    public const string CONTROLLABLERESULTID = "ControllableResultID";
+                    public const string CONTROLLABLEFINALUSERCRITICALERRORRESULTID = "ControllableFinalUserCriticalErrorResultID";
+                    public const string CONTROLLABLEBUSINESSCRITICALERRORRESULTID = "ControllableBusinessCriticalErrorResultID";
+                    public const string CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID = "ControllableFulfillmentCriticalErrorResultID";
+
+                    public const string PROGRAM_ID = "ProgramID";
 				}
 			}
 			
@@ -135,10 +159,22 @@ namespace SCC_DATA.Queries
 				public struct ResultFields
 				{
 					public const string TRANSACTION_ID = "TransactionID";
-					public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
-					public const string GENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
-					public const string GENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
-					public const string GENERALRESULTID = "GeneralResultID";
+
+                    public const string GLOBALGENERALRESULTID = "GeneralResultID";
+                    public const string GLOBALGENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
+					public const string GLOBALGENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
+					public const string GLOBALGENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
+
+                    public const string GLOBALACCURATERESULTID = "AccurateResultID";
+                    public const string GLOBALACCURATEFINALUSERCRITICALERRORRESULTID = "AccurateFinalUserCriticalErrorResultID";
+					public const string GLOBALACCURATEBUSINESSCRITICALERRORRESULTID = "AccurateBusinessCriticalErrorResultID";
+					public const string GLOBALACCURATEFULFILLMENTCRITICALERRORRESULTID = "AccurateFulfillmentCriticalErrorResultID";
+
+                    public const string GLOBALCONTROLLABLERESULTID = "ControllableResultID";
+                    public const string GLOBALCONTROLLABLEFINALUSERCRITICALERRORRESULTID = "ControllableFinalUserCriticalErrorResultID";
+					public const string GLOBALCONTROLLABLEBUSINESSCRITICALERRORRESULTID = "ControllableBusinessCriticalErrorResultID";
+					public const string GLOBALCONTROLLABLEFULFILLMENTCRITICALERRORRESULTID = "ControllableFulfillmentCriticalErrorResultID";
+
 					public const string CALIBRATOR_USER_ID = "CalibratorUserID";
 				}
 			}
@@ -167,10 +203,21 @@ namespace SCC_DATA.Queries
 				{
 					public const string TRANSACTION_ID = "TransactionID";
 					public const string TRANSACTION_DATE = "TransactionDate";
-					public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
+
+                    public const string GENERALRESULTID = "GeneralResultID";
+                    public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
 					public const string GENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
 					public const string GENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
-					public const string GENERALRESULTID = "GeneralResultID";
+
+                    public const string ACCURATERESULTID = "AccurateResultID";
+                    public const string ACCURATEFINALUSERCRITICALERRORRESULTID = "AccurateFinalUserCriticalErrorResultID";
+					public const string ACCURATEBUSINESSCRITICALERRORRESULTID = "AccurateBusinessCriticalErrorResultID";
+					public const string ACCURATEFULFILLMENTCRITICALERRORRESULTID = "AccurateFulfillmentCriticalErrorResultID";
+
+                    public const string CONTROLLABLERESULTID = "ControllableResultID";
+                    public const string CONTROLLABLEFINALUSERCRITICALERRORRESULTID = "ControllableFinalUserCriticalErrorResultID";
+					public const string CONTROLLABLEBUSINESSCRITICALERRORRESULTID = "ControllableBusinessCriticalErrorResultID";
+					public const string CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID = "ControllableFulfillmentCriticalErrorResultID";
 				}
 			}
 			
@@ -204,6 +251,7 @@ namespace SCC_DATA.Queries
 				{
 					public const string TRANSACTION_ID_LIST = "@transactionIDList";
 					public const string ERROR_TYPE_ID_LIST = "@errorTypeIDList";
+					public const string CONSTRAINT_TYPE_ID = "@constraintTypeID";
 					public const string ATTRIBUTE_ID_LIST = "@attributeIDList";
 				}
 

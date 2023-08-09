@@ -665,7 +665,10 @@ namespace SCC.Controllers
                     switch ((SCC_BL.DBValues.Catalog.NOTIFICATION_MATRIX_ENTITY)auxNotificationMatrix.EntityID)
                     {
                         case SCC_BL.DBValues.Catalog.NOTIFICATION_MATRIX_ENTITY.DIRECT_SUPERVISOR:
-                            usersToNotify.Add(userToEvaluate.SupervisorList.FirstOrDefault().SupervisorID);
+                            if (userToEvaluate.SupervisorList.Count() > 0)
+                            {
+                                usersToNotify.Add(userToEvaluate.SupervisorList.FirstOrDefault().SupervisorID);
+                            }
                             break;
                         case SCC_BL.DBValues.Catalog.NOTIFICATION_MATRIX_ENTITY.INDIRECT_SUPERVISOR:
                             usersToNotify.AddRange(userToEvaluate.SupervisorList.Select(e => e.SupervisorID));
@@ -690,6 +693,30 @@ namespace SCC.Controllers
         public static string GenerateRandomString()
         {
             return SCC_BL.Tools.Utils.GenerateRandomString();
+        }
+
+        protected void ProcessPrograms()
+        {
+            List<Program> programList = new List<Program>();
+
+            using (Program program = new Program())
+            {
+                programList = program.SelectAll();
+            }
+
+            foreach (Program program in programList)
+            {
+                if (DateTime.Now >= program.EndDate)
+                {
+                    program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED;
+                    program.BasicInfo.Update();
+                }
+            }
+        }
+
+        protected void ExecuteInitialActions()
+        {
+            ProcessPrograms();
         }
     }
 }

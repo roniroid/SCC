@@ -24,7 +24,7 @@ namespace SCC.ViewModels
 
             this.ResultBySubattributeList = new List<ResultBySubattribute>();
 
-            foreach (SCC_BL.Reports.Results.AccuracyBySubattribute accuracyBySubattributeResult in AccuracyBySubattributeResultList.OrderBy(e => e.AttributeID))
+            foreach (SCC_BL.Reports.Results.AccuracyBySubattribute accuracyBySubattributeResult in this.AccuracyBySubattributeResultList.Where(e => !e.SuccessfulResult).OrderBy(e => e.AttributeID))
             {
                 if (this.ResultBySubattributeList.Select(e => e.AttributeID).Where(e => e == accuracyBySubattributeResult.AttributeID).Count() <= 0)
                 {

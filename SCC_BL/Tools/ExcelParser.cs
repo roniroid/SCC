@@ -1188,7 +1188,11 @@ namespace SCC_BL.Tools
                                     customControlType == SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.RADIO_BUTTON ||
                                     customControlType == SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST)
                                 {
-                                    customControlValue = currentCustomControl.ValueList.Where(e => e.ID == currentTransactionCustomFieldCatalog.ValueID).FirstOrDefault().Value;
+                                    var auxCurrentCustomControlValue = currentCustomControl.ValueList.Where(e => e.ID == currentTransactionCustomFieldCatalog.ValueID).FirstOrDefault();
+                                    customControlValue =
+                                        auxCurrentCustomControlValue != null
+                                            ? auxCurrentCustomControlValue.Value
+                                            : string.Empty;
                                 }
                             }
                         }
@@ -1226,9 +1230,19 @@ namespace SCC_BL.Tools
                                     List<Attribute> auxChildAttributeList = attributeList.Where(e => e.ParentAttributeID == auxCurrentAttribute.ID).ToList();
                                     TransactionAttributeCatalog auxChildTransactionAttributeCatalog = transaction.AttributeList.Where(e => auxChildAttributeList.Select(s => s.ID).Contains(e.AttributeID) && e.Checked).FirstOrDefault();
 
-                                    Attribute auxChildAttribute = attributeList.Where(e => e.ID == auxChildTransactionAttributeCatalog.AttributeID).FirstOrDefault();
+                                    Attribute auxChildAttribute =
+                                        auxChildTransactionAttributeCatalog != null
+                                            ? attributeList
+                                                .Where(e => e.ID == auxChildTransactionAttributeCatalog.AttributeID)
+                                                .FirstOrDefault()
+                                            : null;
 
-                                    attributeSubattributes += $"~{auxChildAttribute.Name}";
+                                    attributeSubattributes +=
+                                        auxChildAttribute != null 
+                                            ? $"~{auxChildAttribute.Name}"
+                                            : "~";
+
+                                    if (auxChildAttribute == null) continue;
 
                                     while (attributeList.Where(e => e.ParentAttributeID == auxChildAttribute.ID).Count() > 0)
                                     {
@@ -1272,11 +1286,27 @@ namespace SCC_BL.Tools
                                     businessIntelligenceFieldChildren += $"~~{auxCurrentBusinessIntelligenceField.Name}";
 
                                     List<BusinessIntelligenceField> auxChildBusinessIntelligenceFieldList = businessIntelligenceFieldList.Where(e => e.ParentBIFieldID == auxCurrentBusinessIntelligenceField.ID).ToList();
-                                    TransactionBIFieldCatalog auxChildTransactionBIFieldCatalog = transaction.BIFieldList.Where(e => auxChildBusinessIntelligenceFieldList.Select(s => s.ID).Contains(e.BIFieldID) && e.Checked).FirstOrDefault();
+                                    TransactionBIFieldCatalog auxChildTransactionBIFieldCatalog = 
+                                        transaction.BIFieldList
+                                            .Where(e => 
+                                                auxChildBusinessIntelligenceFieldList.Select(s => 
+                                                    s.ID)
+                                                .Contains(e.BIFieldID) && e.Checked)
+                                            .FirstOrDefault();
 
-                                    BusinessIntelligenceField auxChildBusinessIntelligenceField = businessIntelligenceFieldList.Where(e => e.ID == auxChildTransactionBIFieldCatalog.BIFieldID).FirstOrDefault();
+                                    BusinessIntelligenceField auxChildBusinessIntelligenceField =
+                                        auxChildTransactionBIFieldCatalog != null
+                                            ? businessIntelligenceFieldList
+                                                .Where(e => e.ID == auxChildTransactionBIFieldCatalog.BIFieldID)
+                                                .FirstOrDefault()
+                                            : null;
 
-                                    businessIntelligenceFieldChildren += $"~{auxChildBusinessIntelligenceField.Name}";
+                                    businessIntelligenceFieldChildren +=
+                                        auxChildBusinessIntelligenceField!= null
+                                            ? $"~{auxChildBusinessIntelligenceField.Name}"
+                                            : string.Empty;
+
+                                    if (auxChildBusinessIntelligenceField == null) continue;
 
                                     while (businessIntelligenceFieldList.Where(e => e.ParentBIFieldID == auxChildBusinessIntelligenceField.ID).Count() > 0)
                                     {
@@ -1285,7 +1315,10 @@ namespace SCC_BL.Tools
 
                                         auxChildBusinessIntelligenceField = businessIntelligenceFieldList.Where(e => e.ID == auxChildTransactionBIFieldCatalog.BIFieldID).FirstOrDefault();
 
-                                        businessIntelligenceFieldChildren += $"~{auxChildBusinessIntelligenceField.Name}";
+                                        businessIntelligenceFieldChildren +=
+                                            auxChildBusinessIntelligenceField != null
+                                                ? $"~{auxChildBusinessIntelligenceField.Name}"
+                                                : string.Empty;
                                     }
                                 }
                             }

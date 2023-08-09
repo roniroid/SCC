@@ -222,6 +222,50 @@ namespace SCC_DATA.Queries
 				}
 			}
 
+			public struct SelectByLevel
+			{
+				public const string NAME = "[dbo].[usp_AttributeSelectByLevel]";
+
+				public struct Parameters
+                {
+                    public const string FORM_ID = "@formID";
+                    public const string LEVEL = "@level";
+				}
+
+				public struct ResultFields
+				{
+					public const string ID = "ID";
+					public const string FORMID = "FormID";
+					public const string NAME = "Name";
+					public const string DESCRIPTION = "Description";
+					public const string ERRORTYPEID = "ErrorTypeID";
+					public const string PARENTATTRIBUTEID = "ParentAttributeID";
+					public const string MAXSCORE = "MaxScore";
+					public const string TOPDOWNSCORE = "TopDownScore";
+					public const string HASFORCEDCOMMENT = "HasForcedComment";
+					public const string ISKNOWN = "IsKnown";
+					public const string ISCONTROLLABLE = "IsControllable";
+					public const string ISSCORABLE = "IsScorable";
+					public const string ORDER = "Order";
+					public const string BASICINFOID = "BasicInfoID";
+				}
+			}
+
+			public struct SelectParentIDListByID
+			{
+				public const string NAME = "[dbo].[usp_AttributeSelectParentListByID]";
+
+				public struct Parameters
+                {
+                    public const string ATTRIBUTE_ID = "@attributeID";
+				}
+
+				public struct ResultFields
+				{
+					public const string ID = "ID";
+				}
+			}
+
 			public struct SelectSubattributeByName
 			{
 				public const string NAME = "[dbo].[usp_AttributeSubattributeSelectByName]";

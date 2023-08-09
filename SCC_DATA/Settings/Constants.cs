@@ -21,8 +21,5 @@ namespace SCC_DATA.Settings
 
         //LOCAL PC
         //public const string DEFAULT_CONNECTION = "Data Source=RONIROID;Initial Catalog=NETCOM_SCC;Integrated Security=True";
-
-        //LOCAL LAPTOP
-        public const string DEFAULT_CONNECTION = "Data Source=RONIROID-LAPTOP;Initial Catalog=NETCOM_SCC_PRODUCTION;Integrated Security=True";
     }
 }

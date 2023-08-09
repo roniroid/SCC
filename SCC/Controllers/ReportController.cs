@@ -1994,7 +1994,7 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult AccuracyByAttributeWithOverallAcurracy(string transactionIDList, int errorTypeID, int totalTransactions)
+        public ActionResult AccuracyByAttributeWithOverallAcurracy(string transactionIDList, int errorTypeID, int constraintTypeID, int totalTransactions)
         {
             List<SCC_BL.Reports.Results.AccuracyByAttribute> resultAccuracyByAttribute = new List<SCC_BL.Reports.Results.AccuracyByAttribute>();
             ViewModels.ReportResultsAccuracyByAttributeViewModel reportResultsAccuracyByAttributeViewModel = new ViewModels.ReportResultsAccuracyByAttributeViewModel();
@@ -2005,7 +2005,8 @@ namespace SCC.Controllers
                 {
                     resultAccuracyByAttribute = report.AccuracyByAttribute(
                         transactionIDList,
-                        errorTypeID.ToString());
+                        errorTypeID.ToString(),
+                        constraintTypeID);
 
                     reportResultsAccuracyByAttributeViewModel = new ViewModels.ReportResultsAccuracyByAttributeViewModel(resultAccuracyByAttribute, totalTransactions);
                 }
@@ -2116,9 +2117,18 @@ namespace SCC.Controllers
                     reportResultsOverallAccuracyViewModel = new ViewModels.ReportResultsOverallAccuracyViewModel(resultOverallAccuracy);
                     /*reportOverallAccuracyViewModel.ReportResultsOverallAccuracyViewModel = reportResultsOverallAccuracyViewModel;*/
 
+                    int constraintTypeID = (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_CONSTRAINT.NONE;
+
+                    if (reportAccuracyByAttributeViewModel.AttributeControllable == true)
+                        constraintTypeID = (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_CONSTRAINT.CONTROLLABLE;
+
+                    if (reportAccuracyByAttributeViewModel.AttributeKnown == true)
+                        constraintTypeID = (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_CONSTRAINT.KNOWN;
+
                     resultAccuracyByAttribute = report.AccuracyByAttribute(
                         String.Join(",", resultOverallAccuracy.Select(e => e.TransactionID)),
                         String.Join(",", reportAccuracyByAttributeViewModel.ErrorTypeIDArray),
+                        constraintTypeID,
                         String.Join(",", reportAccuracyByAttributeViewModel.AttributeIDArray));
 
                     reportResultsAccuracyByAttributeViewModel = new ViewModels.ReportResultsAccuracyByAttributeViewModel(resultAccuracyByAttribute, reportResultsOverallAccuracyViewModel.TotalTransactions);

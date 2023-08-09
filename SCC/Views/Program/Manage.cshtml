@@ -230,7 +230,7 @@
                                 <button data-elementid="@program.ID" class="btn-element-action btn-element-action-primary btn-program-edit" title="Editar">
                                     <i class='bx bxs-pencil'></i>
                                 </button>
-                                if (program.EndDate == null || DateTime.Now < program.EndDate)
+                                @*if (program.EndDate == null || DateTime.Now < program.EndDate)
                                 {
                                     <form class="d-inline frm-delete" action="@Url.Action(nameof(ProgramController.Delete), mainControllerName)" method="post">
                                         @Html.Hidden("programID", program.ID)
@@ -238,7 +238,7 @@
                                             <i class='bx bxs-trash'></i>
                                         </button>
                                     </form>
-                                }
+                                }*@
                                 using (ProgramFormCatalog programFormCatalog = ProgramFormCatalog.ProgramFormCatalogWithProgramID(program.ID))
                                 {
                                     List<ProgramFormCatalog> programFormCatalogList = programFormCatalog.SelectByProgramID();
@@ -253,13 +253,19 @@
                                         </form>
                                     }
                                 }
+                                <form class="d-inline frm-deactivate" action="@Url.Action(nameof(ProgramController.Activate), mainControllerName)" method="post">
+                                    @Html.Hidden("programID", program.ID)
+                                    <button class="btn-element-action btn-element-action-danger" type="submit" title="Desactivar">
+                                        <i class='bx bxs-x-square'></i>
+                                    </button>
+                                </form>
                                 <button data-elementid="@program.ID" class="btn-element-action btn-element-action-warning btn-program-logs" title="Ver logs">
                                     <i class='bx bx-book-reader'></i>
                                 </button>
                             }
                             else
                             {
-                                <form class="d-inline frm-reactivate" action="@Url.Action(nameof(ProgramController.Reactivate), mainControllerName)" method="post">
+                                <form class="d-inline frm-reactivate" action="@Url.Action(nameof(ProgramController.Activate), mainControllerName)" method="post">
                                     @Html.Hidden("programID", program.ID)
                                     <button class="btn-element-action btn-element-action-success" type="submit" title="Reactivar">
                                         <i class='bx bxs-check-square'></i>
@@ -415,6 +421,14 @@
 
     $('.frm-reactivate').submit((e) => {
         let message = '¿Quieres reactivar este elemento del sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+
+    $('.frm-deactivate').submit((e) => {
+        let message = '¿Quieres desactivar este elemento del sistema?';
 
         if (confirm(message) != true) {
             return false;

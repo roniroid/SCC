@@ -1,7 +1,8 @@
-﻿@model List<User>
-
+﻿@using SCC.ViewModels;
 @using SCC.Controllers;
 @using SCC_BL;
+
+@model UserProgramAndProgramGroupManagementViewModel
 
 @{
     User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
@@ -129,13 +130,13 @@
                 <th>
                     Programas
                 </th>
-                @*<th>
+                <th>
                     Acciones
-                </th>*@
+                </th>
             </tr>
         </thead>
         <tbody>
-            @foreach (User user in Model)
+            @foreach (User user in Model.UserList)
             {
                 string tableRowClass = string.Empty;
                 if (user.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED)
@@ -178,8 +179,11 @@
                             }
                         </ol>
                     </td>
-                    @*<td>
-                    </td>*@
+                    <td>
+                        <button data-elementid="@user.ID" class="btn-element-action btn-element-action-primary btn-edit" title="Editar">
+                            <i class='bx bxs-pencil'></i>
+                        </button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -277,6 +281,17 @@
 
         if (confirm(message) != true) {
             return false;
+        }
+    });
+
+    $('.btn-edit').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(UserController.AsignProgramsAndProgramGroups), mainControllerName)?userID=' + elementID, '_self');
         }
     });
 </script>

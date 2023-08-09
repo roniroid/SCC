@@ -59,10 +59,22 @@ namespace SCC_BL
 				{
 					SCC_BL.Reports.Results.ComparativeByUser comparativeByUserResult = new SCC_BL.Reports.Results.ComparativeByUser(
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.TRANSACTION_ID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATERESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLERESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]),
+
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.USER_ID]));
 
 					comparativeByUserResultList.Add(comparativeByUserResult);
@@ -84,10 +96,22 @@ namespace SCC_BL
 				{
 					SCC_BL.Reports.Results.ComparativeByProgram comparativeByProgramResult = new SCC_BL.Reports.Results.ComparativeByProgram(
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.TRANSACTION_ID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.GENERALRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.GENERALRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.ACCURATERESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.CONTROLLABLERESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]),
+
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByProgram.ResultFields.PROGRAM_ID]));
 
 					comparativeByProgramResultList.Add(comparativeByProgramResult);
@@ -109,10 +133,22 @@ namespace SCC_BL
 				{
 					SCC_BL.Reports.Results.CalibratorComparison calibratorComparisonResult = new SCC_BL.Reports.Results.CalibratorComparison(
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.TRANSACTION_ID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GENERALRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALGENERALRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALGENERALFINALUSERCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALGENERALBUSINESSCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALGENERALFULFILLMENTCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALACCURATERESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALACCURATEFINALUSERCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALACCURATEBUSINESSCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALACCURATEFULFILLMENTCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALCONTROLLABLERESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALCONTROLLABLEFINALUSERCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALCONTROLLABLEBUSINESSCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.GLOBALCONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]),
+
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparison.ResultFields.CALIBRATOR_USER_ID]));
 
 					calibratorComparisonResultList.Add(calibratorComparisonResult);
@@ -135,10 +171,21 @@ namespace SCC_BL
 					SCC_BL.Reports.Results.AccuracyTrend accuracyTrendResult = new SCC_BL.Reports.Results.AccuracyTrend(
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.TRANSACTION_ID]),
 						Convert.ToDateTime(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.TRANSACTION_DATE]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALRESULTID]));
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATERESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLERESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]));
 
 					accuracyTrendResultList.Add(accuracyTrendResult);
 				}
@@ -147,7 +194,7 @@ namespace SCC_BL
 			return accuracyTrendResultList;
 		}
 		
-		public List<SCC_BL.Reports.Results.AccuracyByAttribute> AccuracyByAttribute(string transactionIDArray, string errorTypeIDList, string attributeIDArray = null)
+		public List<SCC_BL.Reports.Results.AccuracyByAttribute> AccuracyByAttribute(string transactionIDArray, string errorTypeIDList, int constraintTypeID, string attributeIDArray = null)
 		{
 			List<SCC_BL.Reports.Results.AccuracyByAttribute> accuracyByAttributeResultList = new List<SCC_BL.Reports.Results.AccuracyByAttribute>();
 
@@ -156,6 +203,7 @@ namespace SCC_BL
 				DataTable dt = report.AccuracyByAttribute(
 					transactionIDArray, 
 					errorTypeIDList,
+                    constraintTypeID,
 					attributeIDArray);
 
 				foreach (DataRow dr in dt.Rows)

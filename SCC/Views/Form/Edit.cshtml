@@ -299,7 +299,7 @@
                                 @Html.TextBoxFor(modelitem => Model.Name, null, new { @class = "property-field-control", placeholder = "Nombre", autocomplete = "off", required = "" })
                             </div>
                         </div>
-                        <div class="row property-field d-none">
+                        <div class="row property-field">
                             <div class="col-5 property-field-label">
                                 Tipo <span class="required">*</span>
                             </div>
@@ -574,7 +574,7 @@
                                     spaceCounter++;
                                 }
 
-                                <tr class="attribute-table-row" data-attributeorder="@attribute.Order" data-attributeid="@attribute.ID" data-attributedeleted="@(attribute.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED)" data-attributeghostid="@attributeCounter">
+                                <tr class="attribute-table-row" data-attributeorder="@attribute.Order" data-attributeid="@attribute.ID" data-attributedeleted="@(attribute.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED)" data-attributeghostid="@attributeCounter" title="@attribute.Description">
                                     <td class="td-name">
                                         <div class="attribute-container">
                                             @for (int i = 0; i < spaceCounter; i++)
@@ -923,8 +923,10 @@
             const dataCustomControlTable = data;
             dataCustomControlTable['order'] = [[2, 'asc']];
 
+            const dataSelectedCustomControlTable = { ...data, 'order': [[2, 'asc']], 'scrollY': '500px', 'scrollCollapse': true };
+
             startDataTable('#tbCustomControlList', dataCustomControlTable);
-            startDataTable('#tbSelectedCustomControlList', data);
+            startDataTable('#tbSelectedCustomControlList', dataSelectedCustomControlTable);
 
             const dataBIFieldTable = data;
             dataBIFieldTable['order'] = [[2, 'asc']];
