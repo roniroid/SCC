@@ -30,7 +30,12 @@ namespace SCC.ViewModels
             {
                 if (this.ResultByAttributeList.Select(e => e.AttributeID).Where(e => e == accuracyByAttributeResult.AttributeID).Count() <= 0)
                 {
-                    int successfulResultCount = AccuracyByAttributeResultList.Where(e => e.AttributeID == accuracyByAttributeResult.AttributeID && e.SuccessFulResult).Count();
+                    int successfulResultCount = 
+                        this.AccuracyByAttributeResultList
+                            .Where(e => 
+                                e.AttributeID == accuracyByAttributeResult.AttributeID && 
+                                e.SuccessFulResult)
+                            .Count();
 
                     ResultByAttribute resultByAttribute = new ResultByAttribute();
 
@@ -38,6 +43,7 @@ namespace SCC.ViewModels
                     resultByAttribute.AttributeID = accuracyByAttributeResult.AttributeID;
                     resultByAttribute.AttributeName = accuracyByAttributeResult.AttributeName;
                     resultByAttribute.Quantity = successfulResultCount;
+                    resultByAttribute.SetIsControllable();
 
                     this.ResultByAttributeList.Add(resultByAttribute);
                 }
@@ -63,8 +69,6 @@ namespace SCC.ViewModels
                     parentIDArray = attribute.SelectParentIDArrayByID();
                     parentIDArray.Append(this.AttributeID);
                 }
-
-                levelOneAttributeList = levelOneAttributeList.Where(e => e.IsControllable).ToList();
 
                 for (int i = 0; i < parentIDArray.Length; i++)
                 {
