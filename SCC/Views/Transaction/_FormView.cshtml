@@ -2008,7 +2008,7 @@
         }
     }
 
-    const attributeLevelZeroIDList = $('.attribute-row.level-zero-attribute').map((index, e) => $(e).data('attributeid')).get();
+    /*const attributeLevelZeroIDList = $('.attribute-row.level-zero-attribute').map((index, e) => $(e).data('attributeid')).get();
     const controllableAttributeLevelOneList = $('.attribute-row[data-iscontrollable="True"]').filter((e) => attributeLevelZeroIDList.includes($(e).data('parentattributeid')));
     const controllableAttributeLevelOneIDList = $(controllableAttributeLevelOneList).map((index, e) => $(e).data('attributeid')).get();
 
@@ -2028,7 +2028,7 @@
         }
 
         return isControllable;
-    }
+    }*/
 
     const attributeLevelZeroIDList = $('.attribute-row.level-zero-attribute').map((index, e) => $(e).data('attributeid')).get();
     const controllableAttributeLevelOneList = $('.attribute-row[data-iscontrollable="True"]').filter((e) => attributeLevelZeroIDList.includes($(e).data('parentattributeid')));
@@ -2056,7 +2056,7 @@
 
         return isControllable;
     }
-    //Revisar
+
     async function hasCheckedChildren(parentAttributeID, ignoreNonControllableCE = false) {
         let result = false;
         let childrenAttributeIDList = [];

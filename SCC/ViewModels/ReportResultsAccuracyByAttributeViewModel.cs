@@ -61,6 +61,7 @@ namespace SCC.ViewModels
                 {
                     levelOneAttributeList = attribute.SelectByLevel(1);
                     parentIDArray = attribute.SelectParentIDArrayByID();
+                    parentIDArray.Append(this.AttributeID);
                 }
 
                 levelOneAttributeList = levelOneAttributeList.Where(e => e.IsControllable).ToList();
