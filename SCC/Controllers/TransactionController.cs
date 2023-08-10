@@ -3123,7 +3123,41 @@ namespace SCC.Controllers
 
                         if (currentSubattributeName.Length > 1 && currentSubattributeName.ElementAt(0) == '~') currentSubattributeName = currentSubattributeName.Substring(1);
 
-                        using (SCC_BL.Attribute subattribute = SCC_BL.Attribute.AttributeWithParentAttributeIDAndName(tempAttributeHierarchy.LastOrDefault().ID, currentSubattributeName))
+                        int indexTempAttributeHierarchy = tempAttributeHierarchy.Count() - 1;
+                        bool foundTempAttribute = false;
+
+                        while (indexTempAttributeHierarchy >= 0)
+                        {
+                            using (SCC_BL.Attribute subattribute = SCC_BL.Attribute.AttributeWithParentAttributeIDAndName(tempAttributeHierarchy[indexTempAttributeHierarchy].ID, currentSubattributeName))
+                            {
+                                try
+                                {
+                                    subattribute.SetSubattributeDataByName();
+
+                                    if (subattribute.ID > 0 && subattribute.ID != null)
+                                    {
+                                        foundTempAttribute = true;
+                                        break;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _transactionImportErrorList.Add(
+                                        new SCC_BL.Helpers.Transaction.Import.Error(
+                                            transactionImportErrorElementName,
+                                            SCC_BL.Results.Transaction.ImportData.ErrorList.Attribute.UNKNOWN
+                                                .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
+                                            currentRowCount,
+                                            currentCellIndex + 2));
+                                }
+                            }
+
+                            indexTempAttributeHierarchy--;
+                        }
+
+                        if (!foundTempAttribute) continue;
+
+                        using (SCC_BL.Attribute subattribute = SCC_BL.Attribute.AttributeWithParentAttributeIDAndName(tempAttributeHierarchy[indexTempAttributeHierarchy].ID, currentSubattributeName))
                         {
                             try
                             {

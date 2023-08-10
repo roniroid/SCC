@@ -30,7 +30,12 @@ namespace SCC.ViewModels
             {
                 if (this.ResultByAttributeList.Select(e => e.AttributeID).Where(e => e == accuracyByAttributeResult.AttributeID).Count() <= 0)
                 {
-                    int successfulResultCount = AccuracyByAttributeResultList.Where(e => e.AttributeID == accuracyByAttributeResult.AttributeID && e.SuccessFulResult).Count();
+                    int successfulResultCount = 
+                        this.AccuracyByAttributeResultList
+                            .Where(e => 
+                                e.AttributeID == accuracyByAttributeResult.AttributeID && 
+                                e.SuccessFulResult)
+                            .Count();
 
                     ResultByAttribute resultByAttribute = new ResultByAttribute();
 
@@ -50,31 +55,6 @@ namespace SCC.ViewModels
             public int AttributeID { get; set;}
             public string AttributeName { get; set;}
             public int Quantity { get; set;}
-            public bool IsControllable { get; set;}
-
-            public void SetIsControllable()
-            {
-                List<SCC_BL.Attribute> levelOneAttributeList = new List<SCC_BL.Attribute>();
-                int[] parentIDArray = new int[0];
-
-                using (SCC_BL.Attribute attribute = new SCC_BL.Attribute(this.AttributeID))
-                {
-                    levelOneAttributeList = attribute.SelectByLevel(1);
-                    parentIDArray = attribute.SelectParentIDArrayByID();
-                    parentIDArray.Append(this.AttributeID);
-                }
-
-                levelOneAttributeList = levelOneAttributeList.Where(e => e.IsControllable).ToList();
-
-                for (int i = 0; i < parentIDArray.Length; i++)
-                {
-                    if (levelOneAttributeList.Select(s => s.ID).Contains(parentIDArray[i]))
-                    {
-                        this.IsControllable = true;
-                        break;
-                    }
-                }
-            }
         }
     }
 }

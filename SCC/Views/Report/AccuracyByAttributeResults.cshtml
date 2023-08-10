@@ -152,7 +152,15 @@
             {
                 if (processedID.Where(e => e == accuracyByAttributeResult.AttributeID).Count() <= 0)
                 {
-                    int successfulResultCount = Model.AccuracyByAttributeResultList.Where(e => e.AttributeID == accuracyByAttributeResult.AttributeID && e.SuccessFulResult).Count();
+                    int successfulResultCount = 
+                        Model.AccuracyByAttributeResultList
+                            .Where(e => 
+                                e.AttributeID == accuracyByAttributeResult.AttributeID && 
+                                e.SuccessFulResult &&
+                                (isControllable 
+                                    ? !e.IsControllable
+                                    : true))
+                            .Count();
 
                     <tr>
                         <td class="text-start">
@@ -241,16 +249,17 @@
     const ctx = document.getElementById('myChart');
 
     const DEFAULT_DATA = {
-        labels: [@Html.Raw(String.Join(",", Model.ResultByAttributeList.Select(e => $"\"{ e.AttributeName }\"")))],
+        labels: [
+            @Html.Raw(
+                String.Join(
+                    ",", 
+                    Model.ResultByAttributeList
+                        .Select(e => $"\"{ e.AttributeName }\"")))],
         datasets: [
             {
                 data: [
                     @String.Join(",",
                         Model.ResultByAttributeList
-                            .Where(e =>
-                                isControllable
-                                    ? e.IsControllable
-                                    : true)
                             .Select(e =>
                                 String.Format(
                                     CultureInfo.InvariantCulture,
@@ -269,7 +278,11 @@
                     'rgb(255, 190, 113, 0.8)'
                 ],
                 borderWidth: 1,
-                successCount: [@String.Join(",", Model.ResultByAttributeList.Select(e => e.Quantity))],
+                successCount: [
+                    @String.Join(
+                        ",", 
+                        Model.ResultByAttributeList
+                            .Select(e => e.Quantity))],
                 totalCount: @Model.TotalTransactions,
             }
         ]

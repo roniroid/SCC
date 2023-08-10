@@ -368,10 +368,10 @@ namespace SCC_BL
                             }
                     });
 
-				//Create new ones
-				int cont = 1;
+                //Create new ones
+                int cont = 1;
 
-				foreach (int customControlID in customControlIDList)
+                foreach (int customControlID in customControlIDList)
 				{
 					if (!this.CustomFieldList.Select(e => e.CustomControlID).Contains(customControlID))
 					{
@@ -380,9 +380,26 @@ namespace SCC_BL
 					}
 
 					cont++;
-				}
+                }
 
-				return Results.Form.UpdateCustomFieldList.CODE.SUCCESS;
+                //Activate old and deleted ones
+
+                this.CustomFieldList
+                    .Where(e =>
+                        e.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED ||
+                        e.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED)
+                    .ToList()
+                    .ForEach(e => {
+                        if (customControlIDList.Contains(e.CustomControlID))
+                        {
+                            CustomField customField = new CustomField(e.ID, this.ID, e.CustomControlID, cont, e.BasicInfoID, creationUserID, (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.UPDATED);
+                            customField.Update();
+
+                            cont++;
+                        }
+                    });
+
+                return Results.Form.UpdateCustomFieldList.CODE.SUCCESS;
 			}
 			catch (Exception ex)
 			{
