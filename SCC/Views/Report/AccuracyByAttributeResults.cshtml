@@ -156,7 +156,10 @@
                         Model.AccuracyByAttributeResultList
                             .Where(e => 
                                 e.AttributeID == accuracyByAttributeResult.AttributeID && 
-                                e.SuccessFulResult)
+                                e.SuccessFulResult &&
+                                (isControllable 
+                                    ? !e.IsControllable
+                                    : true))
                             .Count();
 
                     <tr>
@@ -251,20 +254,12 @@
                 String.Join(
                     ",", 
                     Model.ResultByAttributeList
-                        .Where(e => 
-                            isControllable
-                                ? !e.IsControllable
-                                : true)
                         .Select(e => $"\"{ e.AttributeName }\"")))],
         datasets: [
             {
                 data: [
                     @String.Join(",",
                         Model.ResultByAttributeList
-                            .Where(e =>
-                                isControllable
-                                    ? !e.IsControllable
-                                    : true)
                             .Select(e =>
                                 String.Format(
                                     CultureInfo.InvariantCulture,
@@ -287,10 +282,6 @@
                     @String.Join(
                         ",", 
                         Model.ResultByAttributeList
-                            .Where(e =>
-                                isControllable
-                                    ? !e.IsControllable
-                                    : true)
                             .Select(e => e.Quantity))],
                 totalCount: @Model.TotalTransactions,
             }

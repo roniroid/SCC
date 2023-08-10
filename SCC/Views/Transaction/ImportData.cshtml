@@ -103,7 +103,7 @@
                 <tr class="@tableRowClass">
                     <td>@uploadedFile.ID</td>
                     <td>@uploadedFile.FileName</td>
-                    <td>@uploadedFile.BasicInfo.CreationDate.ToString("dd MMM yyyy hh:mm:ss")</td>
+                    <td data-order="@uploadedFile.BasicInfo.CreationDate.ToString("yyyyMMddHHmmss")">@uploadedFile.BasicInfo.CreationDate.ToString("dd MMM yyyy hh:mm:ss")</td>
                     <td>
                         @if (uploadedFile.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_UPLOADED_FILE.LOADED_FILE_DATA_IMPORT)
                         {

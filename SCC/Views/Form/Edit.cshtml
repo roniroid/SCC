@@ -92,7 +92,7 @@
                                             " strikethrough";
                                 }
 
-                                <tr class="@tableRowClass" data-customcontrolid="@customControl.ID" data-selected="@(Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID).Count() > 0 ? "true" : "false")">
+                                <tr class="@tableRowClass" data-customcontrolid="@customControl.ID" data-selected="@(Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED).Count() > 0 ? "true" : "false")">
                                     <td class="text-center td-buttons">
                                         <button class="btn-element-action btn-element-action-success btn-custom-control-select" title="Seleccionar">
                                             <i class="bx bxs-check-circle"></i>
@@ -380,7 +380,7 @@
                         <tbody>
                             @foreach (CustomControl customControl in customControlList)
                             {
-                                if (Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID).Count() > 0)
+                                if (Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED).Count() > 0)
                                 {
                                     string tableRowClass = string.Empty;
                                     if (customControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED)

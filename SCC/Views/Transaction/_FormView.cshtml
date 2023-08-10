@@ -548,76 +548,76 @@
             </h3>
         </div>
 
-        @foreach (CustomField customField in Model.Form.CustomFieldList)
+        @foreach (CustomField customField in Model.Form.CustomFieldList.Where(e => e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED))
         {
-            if (!Model.Form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
-            {
-                continue;
-            }
-
-            TransactionCustomFieldCatalog currentTransactionCustomFieldCatalog = null;
-
-            if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() > 0)
-            {
-                currentTransactionCustomFieldCatalog = Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).FirstOrDefault();
-            }
-
-            Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
-            htmlAttributes.Add("autocomplete", "off");
-
-            using (CustomControl customControl = Model.Form.CustomControlList.Where(e => e.ID == customField.CustomControlID).FirstOrDefault())
-            {
-                if (customControl.IsRequired)
+                if (!Model.Form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
                 {
-                    htmlAttributes.Add("required", "");
+                    continue;
                 }
 
-                if (!string.IsNullOrEmpty(customControl.Mask))
+                TransactionCustomFieldCatalog currentTransactionCustomFieldCatalog = null;
+
+                if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() > 0)
                 {
-                    switch (customControl.Mask)
+                    currentTransactionCustomFieldCatalog = Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).FirstOrDefault();
+                }
+
+                Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+                htmlAttributes.Add("autocomplete", "off");
+
+                using (CustomControl customControl = Model.Form.CustomControlList.Where(e => e.ID == customField.CustomControlID).FirstOrDefault())
+                {
+                    if (customControl.IsRequired)
                     {
-                        case SCC_BL.Settings.AppValues.Masks.Date1.MASK:
-                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Date1.PATTERN);
-                            htmlAttributes.Add("type", "date");
-                            break;
-                        case SCC_BL.Settings.AppValues.Masks.Time1.MASK:
-                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Time1.PATTERN);
-                            htmlAttributes.Add("type", "time");
-                            break;
-                        case SCC_BL.Settings.AppValues.Masks.PhoneNumber1.MASK:
-                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber1.PATTERN);
-                            htmlAttributes.Add("type", "text");
-                            break;
-                        case SCC_BL.Settings.AppValues.Masks.PhoneNumber2.MASK:
-                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber2.PATTERN);
-                            htmlAttributes.Add("type", "text");
-                            break;
-                        case SCC_BL.Settings.AppValues.Masks.Alphanumeric1.MASK:
-                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN);
-                            htmlAttributes.Add("type", "text");
-                            break;
-                        case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
-                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Name1.PATTERN);
-                            htmlAttributes.Add("type", "text");
-                            break;
-                        case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
-                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.LastName1.PATTERN);
-                            htmlAttributes.Add("type", "text");
-                            break;
-                        case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
-                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Email1.PATTERN);
-                            htmlAttributes.Add("type", "text");
-                            break;
-                        default:
-                            break;
+                        htmlAttributes.Add("required", "");
                     }
-                }
 
-                string currentControlClass = "property-field-control custom-control-value " + customControl.CssClass;
+                    if (!string.IsNullOrEmpty(customControl.Mask))
+                    {
+                        switch (customControl.Mask)
+                        {
+                            case SCC_BL.Settings.AppValues.Masks.Date1.MASK:
+                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Date1.PATTERN);
+                                htmlAttributes.Add("type", "date");
+                                break;
+                            case SCC_BL.Settings.AppValues.Masks.Time1.MASK:
+                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Time1.PATTERN);
+                                htmlAttributes.Add("type", "time");
+                                break;
+                            case SCC_BL.Settings.AppValues.Masks.PhoneNumber1.MASK:
+                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber1.PATTERN);
+                                htmlAttributes.Add("type", "text");
+                                break;
+                            case SCC_BL.Settings.AppValues.Masks.PhoneNumber2.MASK:
+                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber2.PATTERN);
+                                htmlAttributes.Add("type", "text");
+                                break;
+                            case SCC_BL.Settings.AppValues.Masks.Alphanumeric1.MASK:
+                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN);
+                                htmlAttributes.Add("type", "text");
+                                break;
+                            case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
+                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Name1.PATTERN);
+                                htmlAttributes.Add("type", "text");
+                                break;
+                            case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
+                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.LastName1.PATTERN);
+                                htmlAttributes.Add("type", "text");
+                                break;
+                            case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
+                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Email1.PATTERN);
+                                htmlAttributes.Add("type", "text");
+                                break;
+                            default:
+                                break;
+                        }
+                    }
 
-                htmlAttributes.Add("placeholder", customControl.Label);
-                htmlAttributes.Add("title", customControl.Description);
-                htmlAttributes.Add("class", currentControlClass);
+                    string currentControlClass = "property-field-control custom-control-value " + customControl.CssClass;
+
+                    htmlAttributes.Add("placeholder", customControl.Label);
+                    htmlAttributes.Add("title", customControl.Description);
+                    htmlAttributes.Add("class", currentControlClass);
 
                 <div class="row property-field custom-control-field" data-customcontrolid="@customControl.ID" data-customfieldid="@customField.ID" data-transactioncustomfieldid="@(currentTransactionCustomFieldCatalog != null ? currentTransactionCustomFieldCatalog.ID : 0)" >
                     <div class="col-5 property-field-label">
@@ -625,69 +625,69 @@
                     </div>
                     <div class="col-7 value-container">
                         @switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)customControl.ControlTypeID)
-                        {
+        {
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
-                                htmlAttributes.Add(
-                                    "value",
-                                    currentTransactionCustomFieldCatalog != null
-                                        ? currentTransactionCustomFieldCatalog.Comment
-                                        : customControl.DefaultValue);
+                htmlAttributes.Add(
+                    "value",
+                    currentTransactionCustomFieldCatalog != null
+                        ? currentTransactionCustomFieldCatalog.Comment
+                        : customControl.DefaultValue);
 
-                                @Html.TextBox(
-                                    "customControl_" + customControl.ID,
-                                    currentTransactionCustomFieldCatalog != null
-                                        ? currentTransactionCustomFieldCatalog.Comment
-                                        : customControl.DefaultValue,
-                                    htmlAttributes);
-                                break;
-                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
-                                htmlAttributes.Add(
-                                    "rows",
-                                    customControl.NumberOfRows.ToString());
+                @Html.TextBox(
+                    "customControl_" + customControl.ID,
+                    currentTransactionCustomFieldCatalog != null
+                        ? currentTransactionCustomFieldCatalog.Comment
+                        : customControl.DefaultValue,
+                    htmlAttributes);
+                break;
+            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
+                htmlAttributes.Add(
+                    "rows",
+                    customControl.NumberOfRows.ToString());
 
-                                htmlAttributes.Add(
-                                    "cols",
-                                    customControl.NumberOfColumns.ToString());
+                htmlAttributes.Add(
+                    "cols",
+                    customControl.NumberOfColumns.ToString());
 
-                                htmlAttributes.Add(
-                                    "value",
-                                    currentTransactionCustomFieldCatalog != null
-                                        ? currentTransactionCustomFieldCatalog.Comment
-                                        : customControl.DefaultValue);
+                htmlAttributes.Add(
+                    "value",
+                    currentTransactionCustomFieldCatalog != null
+                        ? currentTransactionCustomFieldCatalog.Comment
+                        : customControl.DefaultValue);
 
-                                @Html.TextArea(
-                                    "customControl_" + customControl.ID,
-                                    currentTransactionCustomFieldCatalog != null
-                                        ? currentTransactionCustomFieldCatalog.Comment
-                                        : customControl.DefaultValue,
-                                    htmlAttributes);
-                                break;
-                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
-                                htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
+                @Html.TextArea(
+                    "customControl_" + customControl.ID,
+                    currentTransactionCustomFieldCatalog != null
+                        ? currentTransactionCustomFieldCatalog.Comment
+                        : customControl.DefaultValue,
+                    htmlAttributes);
+                break;
+            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
+                htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
 
                                 <div class="radio-controls d-inline-block">
                                     @foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
-                                    {
-                                        bool isChecked = false;
+        {
+            bool isChecked = false;
 
-                                        htmlAttributes.Remove("label");
-                                        htmlAttributes.Add("label", customControlValueCatalog.Name);
+            htmlAttributes.Remove("label");
+            htmlAttributes.Add("label", customControlValueCatalog.Name);
 
-                                        if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() <= 0)
-                                        {
-                                            if (customControlValueCatalog.IsDefaultValue)
-                                            {
-                                                isChecked = true;
-                                            }
-                                        }
-                                        else
-                                        if (currentTransactionCustomFieldCatalog != null)
-                                        {
-                                            if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
-                                            {
-                                                isChecked = true;
-                                            }
-                                        }
+            if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() <= 0)
+            {
+                if (customControlValueCatalog.IsDefaultValue)
+                {
+                    isChecked = true;
+                }
+            }
+            else
+            if (currentTransactionCustomFieldCatalog != null)
+            {
+                if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
+                {
+                    isChecked = true;
+                }
+            }
                                         <div>
                                             <input id="customControl_@customControlValueCatalog.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />
                                             <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>

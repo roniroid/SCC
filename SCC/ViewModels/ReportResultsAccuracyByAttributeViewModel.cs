@@ -43,7 +43,6 @@ namespace SCC.ViewModels
                     resultByAttribute.AttributeID = accuracyByAttributeResult.AttributeID;
                     resultByAttribute.AttributeName = accuracyByAttributeResult.AttributeName;
                     resultByAttribute.Quantity = successfulResultCount;
-                    resultByAttribute.SetIsControllable();
 
                     this.ResultByAttributeList.Add(resultByAttribute);
                 }
@@ -56,29 +55,6 @@ namespace SCC.ViewModels
             public int AttributeID { get; set;}
             public string AttributeName { get; set;}
             public int Quantity { get; set;}
-            public bool IsControllable { get; set;}
-
-            public void SetIsControllable()
-            {
-                List<SCC_BL.Attribute> levelOneAttributeList = new List<SCC_BL.Attribute>();
-                int[] parentIDArray = new int[0];
-
-                using (SCC_BL.Attribute attribute = new SCC_BL.Attribute(this.AttributeID))
-                {
-                    levelOneAttributeList = attribute.SelectByLevel(1);
-                    parentIDArray = attribute.SelectParentIDArrayByID();
-                    parentIDArray.Append(this.AttributeID);
-                }
-
-                for (int i = 0; i < parentIDArray.Length; i++)
-                {
-                    if (levelOneAttributeList.Select(s => s.ID).Contains(parentIDArray[i]))
-                    {
-                        this.IsControllable = true;
-                        break;
-                    }
-                }
-            }
         }
     }
 }
