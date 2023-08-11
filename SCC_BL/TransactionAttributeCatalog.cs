@@ -51,6 +51,14 @@ namespace SCC_BL
 			return @object;
 		}
 
+		public static TransactionAttributeCatalog TransactionAttributeCatalogWithTransactionIDAndAttributeID(int transactionID, int attributeID)
+		{
+			TransactionAttributeCatalog @object = new TransactionAttributeCatalog();
+			@object.TransactionID = transactionID;
+			@object.AttributeID = attributeID;
+			return @object;
+		}
+
 		//For Update
 		public TransactionAttributeCatalog(int id, int transactionID, int attributeID, string comment, int? valueID, int scoreValue, bool @checked, int basicInfoID, int modificationUserID, int statusID)
 		{
@@ -168,6 +176,42 @@ namespace SCC_BL
 				this.ScoreValue = Convert.ToInt32(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByID.ResultFields.SCORE_VALUE]);
 				this.Checked = Convert.ToBoolean(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByID.ResultFields.CHECKED]);
 				this.BasicInfoID = Convert.ToInt32(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByID.ResultFields.BASICINFOID]);
+
+				this.BasicInfo = new BasicInfo(this.BasicInfoID);
+				this.BasicInfo.SetDataByID();
+			}
+		}
+
+        public void SetDataByTransactionIDAndAttributeID()
+		{
+			using (SCC_DATA.Repositories.TransactionAttributeCatalog repoTransactionAttributeCatalog = new SCC_DATA.Repositories.TransactionAttributeCatalog())
+			{
+				DataRow dr = repoTransactionAttributeCatalog.SelectByTransactionIDAndAttributeID(this.TransactionID, this.AttributeID);
+
+				if (dr.ItemArray.Length <= 1)
+				{
+					this.ID = Convert.ToInt32(dr[0]);
+                    return;
+                }
+
+                int? valueID = null;
+
+				try
+				{
+					valueID = Convert.ToInt32(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.ResultFields.VALUEID]);
+				}
+				catch (Exception ex)
+				{
+				}
+
+				this.ID = Convert.ToInt32(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.ResultFields.ID]);
+				this.TransactionID = Convert.ToInt32(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.ResultFields.TRANSACTIONID]);
+				this.AttributeID = Convert.ToInt32(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.ResultFields.ATTRIBUTEID]);
+				this.Comment = Convert.ToString(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.ResultFields.COMMENT]);
+				this.ValueID = valueID;
+				this.ScoreValue = Convert.ToInt32(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.ResultFields.SCORE_VALUE]);
+				this.Checked = Convert.ToBoolean(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.ResultFields.CHECKED]);
+				this.BasicInfoID = Convert.ToInt32(dr[SCC_DATA.Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.ResultFields.BASICINFOID]);
 
 				this.BasicInfo = new BasicInfo(this.BasicInfoID);
 				this.BasicInfo.SetDataByID();

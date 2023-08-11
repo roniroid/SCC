@@ -142,11 +142,6 @@ namespace SCC_BL
 			}
 		}
 
-		void SetIsControllable()
-		{
-
-		}
-
 		public Attribute(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE attributeErrorType, int formID, int attributeNameIndex, int attributeDataStartIndex, int actualGhostID, int parentAttributeGhostID, int order, int creationUserID)
         {
 			this.ErrorTypeID = (int)attributeErrorType;
@@ -439,7 +434,7 @@ namespace SCC_BL
 
 			using (SCC_DATA.Repositories.Attribute repoAttribute = new SCC_DATA.Repositories.Attribute())
 			{
-				DataTable dt = repoAttribute.SelectByLevel(this.FormID, level);
+				DataTable dt = repoAttribute.SelectByLevel(this.ID, level);
 
 				foreach (DataRow dr in dt.Rows)
 				{
@@ -488,19 +483,21 @@ namespace SCC_BL
 
 		public int[] SelectParentIDArrayByID()
 		{
-			List<int> parentAttributeIDList = new List<int>();
+			int[] parentAttributeIDList = new int[0];
 
 			using (SCC_DATA.Repositories.Attribute repoAttribute = new SCC_DATA.Repositories.Attribute())
 			{
 				DataTable dt = repoAttribute.SelectParentIDListByID(this.ID);
 
-				foreach (DataRow dr in dt.Rows)
-				{
-					parentAttributeIDList.Add(Convert.ToInt32(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectParentIDListByID.ResultFields.ID]));
-				}
+                parentAttributeIDList = new int[dt.Rows.Count];
+
+				for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    parentAttributeIDList[i] = Convert.ToInt32(dt.Rows[i][SCC_DATA.Queries.Attribute.StoredProcedures.SelectParentIDListByID.ResultFields.ID]);
+                }
 			}
 
-			return parentAttributeIDList.ToArray();
+			return parentAttributeIDList;
 		}
 
 		public void SetDataByID()

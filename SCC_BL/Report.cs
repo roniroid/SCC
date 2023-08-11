@@ -210,7 +210,8 @@ namespace SCC_BL
 				{
 					SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult = new SCC_BL.Reports.Results.AccuracyByAttribute(
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.TRANSACTION_ATTRIBUTE_ID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.ATTRIBUTE_ID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.TRANSACTION_ID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.ATTRIBUTE_ID]),
 						Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.ATTRIBUTE_NAME]),
 						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.SUCCESSFUL_RESULT]));
 

@@ -156,10 +156,9 @@
                         Model.AccuracyByAttributeResultList
                             .Where(e => 
                                 e.AttributeID == accuracyByAttributeResult.AttributeID && 
-                                e.SuccessFulResult &&
                                 (isControllable 
-                                    ? !e.IsControllable
-                                    : true))
+                                    ? e.IsControllable
+                                    : e.SuccessFulResult))
                             .Count();
 
                     <tr>

@@ -258,6 +258,7 @@ namespace SCC_DATA.Queries
 				public struct ResultFields
 				{
 					public const string TRANSACTION_ATTRIBUTE_ID = "TransactionAttributeID";
+					public const string TRANSACTION_ID = "TransactionID";
 					public const string ATTRIBUTE_ID = "AttributeID";
 					public const string ATTRIBUTE_NAME = "AttributeName";
 					public const string SUCCESSFUL_RESULT = "SuccessfulResult";

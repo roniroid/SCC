@@ -802,6 +802,7 @@ namespace SCC_BL.Results
 					public const string NO_NAME_FOUND = "No se ha encontrado al " + ELEMENT_NAME + " en el sistema.\r\n\tNombre: " + REPLACE_CUSTOM_CONTENT;
 					public const string NO_VALUE_ENTERED = "No se ha encontrado el valor en el archivo para el " + ELEMENT_NAME;
 					public const string NO_VALUE_FOUND = "No se ha encontrado al valor del " + ELEMENT_NAME + " en el sistema.\r\n\tValor: " + REPLACE_CUSTOM_CONTENT;
+					public const string EMPTY_VALUE_FOUND = "Se ha encontrado un valor vacío para el " + ELEMENT_NAME + ".";
 					public const string NO_SUBATTRIBUTE_NAME_FOUND = "No se ha encontrado al subatributo en el sistema.\r\n\tNombre: " + REPLACE_CUSTOM_CONTENT;
 
 					public const string NO_CUSTOM_FIELD_FOUND = "No se ha encontrado al el control personalizado enlazado al formulario.\r\n\tNombre: " + REPLACE_CUSTOM_CONTENT;

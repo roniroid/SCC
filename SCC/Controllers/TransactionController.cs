@@ -3405,7 +3405,7 @@ namespace SCC.Controllers
                 if (customControlValue.Equals("-")) customControlValue = string.Empty;
                 customControlValue = customControlValue.Trim();
 
-                if (string.IsNullOrEmpty(customControlValue))
+                /*if (string.IsNullOrEmpty(customControlValue))
                 {
                     _transactionImportErrorList.Add(
                         new SCC_BL.Helpers.Transaction.Import.Error(
@@ -3416,7 +3416,8 @@ namespace SCC.Controllers
 
                     _setNextCustomControlIndex();
                     continue;
-                }
+                }*/
+
                 try
                 {
                     CustomControl customControl = new CustomControl();
@@ -3517,12 +3518,25 @@ namespace SCC.Controllers
                         customControlType == SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.RADIO_BUTTON || 
                         customControlType == SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST)
                     {
+                        if (string.IsNullOrEmpty(customControlValue))
+                        {
+                            _transactionImportErrorList.Add(
+                                new SCC_BL.Helpers.Transaction.Import.Error(
+                                    transactionImportErrorElementName,
+                                    SCC_BL.Results.Transaction.ImportData.ErrorList.CustomControl.EMPTY_VALUE_FOUND,
+                                    currentRowCount,
+                                    currentCellIndex,
+                                    SCC_BL.Settings.Notification.Type.INFO));
+
+                            _setNextCustomControlIndex();
+                            continue;
+                        }
+
                         customControlValueCatalog =
                             customControl.ValueList
                                 .Where(e =>
                                     e.Value.Trim().ToUpper().Equals(customControlValue.Trim().ToUpper()))
                                 .FirstOrDefault();
-
 
                         if (customControlValueCatalog == null)
                         {

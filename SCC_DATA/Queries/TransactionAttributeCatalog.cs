@@ -97,6 +97,29 @@ namespace SCC_DATA.Queries
 				}
 			}
 
+			public struct SelectByTransactionIDAndAttributeID
+			{
+				public const string NAME = "[dbo].[usp_TransactionAttributeCatalogSelectByTransactionIDAndAttributeID]";
+
+				public struct Parameters
+				{
+					public const string TRANSACTIONID = "@transactionID";
+					public const string ATTRIBUTE_ID = "@attributeID";
+				}
+
+				public struct ResultFields
+				{
+					public const string ID = "ID";
+					public const string TRANSACTIONID = "TransactionID";
+					public const string ATTRIBUTEID = "AttributeID";
+					public const string COMMENT = "Comment";
+					public const string VALUEID = "ValueID";
+					public const string SCORE_VALUE = "ScoreValue";
+					public const string CHECKED = "Checked";
+					public const string BASICINFOID = "BasicInfoID";
+				}
+			}
+
 			public struct SelectAttributeIDListByTransactionID
 			{
 				public const string NAME = "[dbo].[usp_TransactionAttributeCatalogSelectAttributeIDListByTransactionID]";

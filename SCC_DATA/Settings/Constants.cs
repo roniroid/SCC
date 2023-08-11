@@ -11,7 +11,7 @@ namespace SCC_DATA.Settings
         public const int DEFAULT_TIMEOUT = 6000;
 
         //PRODUCTION
-        public const string DEFAULT_CONNECTION = "Data Source=172.24.89.25;Initial Catalog=NETCOM_SCC;Persist Security Info=True;User ID=sa;Password=Netcom240";
+        //public const string DEFAULT_CONNECTION = "Data Source=172.24.89.25;Initial Catalog=NETCOM_SCC;Persist Security Info=True;User ID=sa;Password=Netcom240";
 
         //PRODUCTION LOCAL
         //public const string DEFAULT_CONNECTION = "Data Source=RONIROID;Initial Catalog=NETCOM_SCC_PRODUCTION;Integrated Security=True";
@@ -23,6 +23,6 @@ namespace SCC_DATA.Settings
         //public const string DEFAULT_CONNECTION = "Data Source=RONIROID;Initial Catalog=NETCOM_SCC;Integrated Security=True";
 
         //LOCAL LAPTOP
-        //public const string DEFAULT_CONNECTION = "Data Source=RONIROID-LAPTOP;Initial Catalog=NETCOM_SCC_PRODUCTION;Integrated Security=True";
+        public const string DEFAULT_CONNECTION = "Data Source=RONIROID-LAPTOP;Initial Catalog=NETCOM_SCC_PRODUCTION;Integrated Security=True";
     }
 }

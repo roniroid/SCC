@@ -167,7 +167,7 @@ namespace SCC_DATA.Repositories
 				using (DBDriver db = new DBDriver())
 				{
 					SqlParameter[] parameters = new SqlParameter[] {
-						db.CreateParameter(Queries.Attribute.StoredProcedures.SelectByLevel.Parameters.FORM_ID, formID, System.Data.SqlDbType.Int),
+						db.CreateParameter(Queries.Attribute.StoredProcedures.SelectByLevel.Parameters.ATTRIBUTE_ID, formID, System.Data.SqlDbType.Int),
 						db.CreateParameter(Queries.Attribute.StoredProcedures.SelectByLevel.Parameters.LEVEL, level, System.Data.SqlDbType.Int),
 					};
 
