@@ -13,16 +13,18 @@ namespace SCC_BL.Reports.Results
         public int AttributeID { get; set; } = 0;
         public string AttributeName { get; set; }
         public bool SuccessFulResult { get; set; }
-        public bool IsControllable { get; set; }
+        public bool IsControllable { get; set; } = true;
 
-        public AccuracyByAttribute(int transactionAttributeID, int transactionID, int attributeID, string attributeName, bool successFulResult)
+        public AccuracyByAttribute(int transactionAttributeID, int transactionID, int attributeID, string attributeName, bool successFulResult, bool mustBeControllable)
         {
             this.TransactionAttributeID = transactionAttributeID;
             this.TransactionID = transactionID;
             this.AttributeID = attributeID;
             this.AttributeName = attributeName;
             this.SuccessFulResult = successFulResult;
-            this.SetIsControllable();
+
+            if (mustBeControllable)
+                this.SetIsControllable();
         }
 
         public void SetIsControllable()
@@ -32,18 +34,25 @@ namespace SCC_BL.Reports.Results
             using (SCC_BL.Attribute attribute = SCC_BL.Attribute.AttributeWithParentAttributeID(this.AttributeID))
                 childrenAttributeList = attribute.SelectByParentAttributeID();
 
-            this.IsControllable = true;
+            childrenAttributeList = childrenAttributeList.Where(e => !e.IsControllable).ToList();
 
-            bool attributeIsControllable = childrenAttributeList.Where(e => !e.IsControllable).Count() <= 0;
+            bool attributeIsControllable = childrenAttributeList.Count() <= 0;
 
             if (!attributeIsControllable)
             {
-                using (TransactionAttributeCatalog transactionAttributeCatalog = TransactionAttributeCatalog.TransactionAttributeCatalogWithTransactionIDAndAttributeID(this.TransactionID, this.AttributeID))
+                foreach (SCC_BL.Attribute currentChildAttribute in childrenAttributeList)
                 {
-                    transactionAttributeCatalog.SetDataByTransactionIDAndAttributeID();
+                    using (TransactionAttributeCatalog transactionAttributeCatalog = TransactionAttributeCatalog.TransactionAttributeCatalogWithTransactionIDAndAttributeID(this.TransactionID, currentChildAttribute.ID))
+                    {
+                        transactionAttributeCatalog.SetDataByTransactionIDAndAttributeID();
 
-                    if (transactionAttributeCatalog.Checked)
-                        this.IsControllable = false;
+                        if (transactionAttributeCatalog.Checked)
+                        {
+                            this.IsControllable = false;
+                            this.SuccessFulResult = true;
+                            break;
+                        }
+                    }
                 }
             }
         }

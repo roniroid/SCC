@@ -602,6 +602,8 @@
             $($form).append('<input type="hidden" name="errorTypeID" value="' + errorTypeID + '" /> ');
             $($form).append('<input type="hidden" name="constraintTypeID" value="' + constraintTypeID + '" /> ');
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+            $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+            $($form).append('<input type="hidden" name="isControllable" value="@isControllable.ToString().ToLower()" /> ');
 
             $(document.body).append($form);
 

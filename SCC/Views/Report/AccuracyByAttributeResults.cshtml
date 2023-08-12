@@ -119,10 +119,7 @@
 </div>
 
 @{
-    bool isControllable =
-        Model.RequestObject.AttributeControllable != null
-            ? Model.RequestObject.AttributeControllable.Value
-            : false;
+    bool isControllable = (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Report.AccuracyByAttribute.IS_CONTROLLABLE];
 }
 
 <div class="tableContainer mt-4">
@@ -152,13 +149,11 @@
             {
                 if (processedID.Where(e => e == accuracyByAttributeResult.AttributeID).Count() <= 0)
                 {
-                    int successfulResultCount = 
+                    int successfulResultCount =
                         Model.AccuracyByAttributeResultList
-                            .Where(e => 
-                                e.AttributeID == accuracyByAttributeResult.AttributeID && 
-                                (isControllable 
-                                    ? e.IsControllable
-                                    : e.SuccessFulResult))
+                            .Where(e =>
+                                e.AttributeID == accuracyByAttributeResult.AttributeID &&
+                                e.SuccessFulResult)
                             .Count();
 
                     <tr>

@@ -1220,6 +1220,11 @@ namespace SCC_BL.Settings
                         }
                     }
                 }
+                
+                public struct AccuracyByAttribute
+                {
+                    public const string IS_CONTROLLABLE = "IS_CONTROLLABLE";
+                }
 
                 public struct _CalibratorComparison
                 {

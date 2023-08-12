@@ -2103,8 +2103,14 @@ namespace SCC.Controllers
                 try
                 {
                     string firstName = userName.Split(',')[1].Trim();
-                    string surName = userName.Split(',')[0].Split(' ')[0].Trim();
-                    string lastName = userName.Split(',')[0].Split(' ')[1].Trim();
+
+                    string[] surnames = userName.Split(',')[0].Split(' ');
+
+                    string lastName = surnames[surnames.Length - 1].Trim();
+
+                    surnames = surnames.Take(surnames.Length - 1).ToArray();
+
+                    string surName = String.Join(" ", surnames);
 
                     user.SetDataByName(firstName, surName, lastName);
 
@@ -2170,8 +2176,14 @@ namespace SCC.Controllers
                 try
                 {
                     string firstName = userName.Split(',')[1].Trim();
-                    string surName = userName.Split(',')[0].Split(' ')[0].Trim();
-                    string lastName = userName.Split(',')[0].Split(' ')[1].Trim();
+
+                    string[] surnames = userName.Split(',')[0].Split(' ');
+
+                    string lastName = surnames[surnames.Length - 1].Trim();
+
+                    surnames = surnames.Take(surnames.Length - 1).ToArray();
+
+                    string surName = String.Join(" ", surnames);
 
                     user.SetDataByName(firstName, surName, lastName);
 
@@ -3089,6 +3101,20 @@ namespace SCC.Controllers
                                 e.Value.Trim().ToUpper().Equals(attributeValue.Trim().ToUpper()))
                             .FirstOrDefault();
 
+                    if (attributeValueCatalog == null)
+                    {
+                        _transactionImportErrorList.Add(
+                            new SCC_BL.Helpers.Transaction.Import.Error(
+                                transactionImportErrorElementName,
+                                SCC_BL.Results.Transaction.ImportData.ErrorList.Attribute.NO_VALUE_FOUND
+                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, attributeValue),
+                                currentRowCount,
+                                currentCellIndex));
+
+                        _setNextAttributeIndex();
+                        continue;
+                    }
+
                     if (attributeValueCatalog.ID <= 0)
                     {
                         _transactionImportErrorList.Add(
@@ -3784,6 +3810,20 @@ namespace SCC.Controllers
                                     e.ParentBIFieldID == null &&
                                     e.Name.Trim().ToUpper().Equals(businessIntelligenceFieldName.Trim().ToUpper()))
                                 .FirstOrDefault();
+                    }
+
+                    if (businessIntelligenceField == null)
+                    {
+                        _transactionImportErrorList.Add(
+                            new SCC_BL.Helpers.Transaction.Import.Error(
+                                transactionImportErrorElementName,
+                                SCC_BL.Results.Transaction.ImportData.ErrorList.BusinessIntelligenceField.NO_NAME_FOUND
+                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, businessIntelligenceFieldName),
+                                currentRowCount,
+                                currentCellIndex));
+
+                        _setNextBusinessIntelligenceFieldIndex();
+                        continue;
                     }
 
                     if (businessIntelligenceField.ID <= 0)

@@ -792,13 +792,15 @@ namespace SCC_BL.Tools
         {
             int dividend = columnIndex + 1;
             string columnName = String.Empty;
+
             while (dividend > 0)
             {
                 int modulo = (dividend - 1) % 26;
                 columnName = Convert.ToChar(65 + modulo).ToString() + columnName;
                 dividend = (int)((dividend - modulo) / 26);
             }
-            return columnName + rowIndex.ToString();
+
+            return columnName + (rowIndex - 1).ToString();
         }
 
         /*public void ExportDataTableToExcelBytedFile(DataTable dataTable, string path)

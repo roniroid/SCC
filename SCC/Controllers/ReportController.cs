@@ -1994,11 +1994,12 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult AccuracyByAttributeWithOverallAcurracy(string transactionIDList, int errorTypeID, int constraintTypeID, int totalTransactions)
+        public ActionResult AccuracyByAttributeWithOverallAcurracy(string transactionIDList, int errorTypeID, int constraintTypeID, int totalTransactions, bool isControllable)
         {
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report.AccuracyByAttribute.IS_CONTROLLABLE] = isControllable;
+
             List<SCC_BL.Reports.Results.AccuracyByAttribute> resultAccuracyByAttribute = new List<SCC_BL.Reports.Results.AccuracyByAttribute>();
             ViewModels.ReportResultsAccuracyByAttributeViewModel reportResultsAccuracyByAttributeViewModel = new ViewModels.ReportResultsAccuracyByAttributeViewModel();
-
             try
             {
                 using (Report report = new Report())
@@ -2006,7 +2007,8 @@ namespace SCC.Controllers
                     resultAccuracyByAttribute = report.AccuracyByAttribute(
                         transactionIDList,
                         errorTypeID.ToString(),
-                        constraintTypeID);
+                        constraintTypeID,
+                        isControllable);
 
                     reportResultsAccuracyByAttributeViewModel = new ViewModels.ReportResultsAccuracyByAttributeViewModel(resultAccuracyByAttribute, totalTransactions);
                 }
@@ -2129,6 +2131,7 @@ namespace SCC.Controllers
                         String.Join(",", resultOverallAccuracy.Select(e => e.TransactionID)),
                         String.Join(",", reportAccuracyByAttributeViewModel.ErrorTypeIDArray),
                         constraintTypeID,
+                        reportAccuracyByAttributeViewModel.AttributeControllable == true,
                         String.Join(",", reportAccuracyByAttributeViewModel.AttributeIDArray));
 
                     reportResultsAccuracyByAttributeViewModel = new ViewModels.ReportResultsAccuracyByAttributeViewModel(resultAccuracyByAttribute, reportResultsOverallAccuracyViewModel.TotalTransactions);
