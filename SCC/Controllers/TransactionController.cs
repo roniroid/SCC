@@ -3075,9 +3075,24 @@ namespace SCC.Controllers
                     attribute =
                         form.AttributeList
                             .Where(e =>
-                                e.Name.Trim().ToUpper().Equals(attributeName.Trim().ToUpper()))
+                                e.Name.Trim().ToUpper().Equals(attributeName.Trim().ToUpper()) &&
+                                (e.ParentAttributeID == 0 || e.ParentAttributeID == null))
                             .FirstOrDefault();
 
+                    if (attribute == null)
+                    {
+                        _transactionImportErrorList.Add(
+                            new SCC_BL.Helpers.Transaction.Import.Error(
+                                transactionImportErrorElementName,
+                                SCC_BL.Results.Transaction.ImportData.ErrorList.Attribute.NO_NAME_FOUND
+                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, attributeName),
+                                currentRowCount,
+                                currentCellIndex));
+
+                        _setNextAttributeIndex();
+                        continue;
+                    }
+                    else
                     if (attribute.ID <= 0)
                     {
                         _transactionImportErrorList.Add(
@@ -3114,7 +3129,7 @@ namespace SCC.Controllers
                         _setNextAttributeIndex();
                         continue;
                     }
-
+                    else
                     if (attributeValueCatalog.ID <= 0)
                     {
                         _transactionImportErrorList.Add(

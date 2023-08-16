@@ -152,7 +152,7 @@
                     });
             }
 
-            @foreach (SCC.ViewModels.ReportResultsAccuracyBySubattributeViewModel.OrderHelper orderHelper in Model.OrderHelperList.OrderByDescending(e => e.Quantity))
+            @foreach (SCC.ViewModels.ReportResultsAccuracyBySubattributeViewModel.OrderHelper orderHelper in Model.OrderHelperList.Where(e => e.Quantity < Model.TotalTransactions).OrderByDescending(e => e.Quantity))
             {
                 SCC_BL.Reports.Results.AccuracyBySubattribute accuracyBySubattributeResult =
                     Model.AccuracyBySubattributeResultList
@@ -288,10 +288,18 @@
 
     const REDUCE_ARRAY = ((sum, dataPoint) => sum + dataPoint);
     const TOTAL_SUM = DATA_POINTS.reduce(REDUCE_ARRAY);
-    console.log(TOTAL_SUM);
 
     const CUMULATIVE_SUM = (sum => dataPoint => sum += ((dataPoint / TOTAL_SUM) * 100))(0);
     const CUMULATIVE_DATA_POINTS = DATA_POINTS.map(CUMULATIVE_SUM);
+
+    /*console.log('DATA_POINTS');
+    console.log(DATA_POINTS);
+    console.log('---------------------------');
+    console.log('TOTAL_SUM');
+    console.log(TOTAL_SUM);
+    console.log('---------------------------');
+    console.log('CUMULATIVE_DATA_POINTS');
+    console.log(CUMULATIVE_DATA_POINTS);*/
 
     const PARETO_DATA_POINTS = [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.Quantity))];
 

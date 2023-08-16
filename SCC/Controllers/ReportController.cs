@@ -2229,7 +2229,7 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult AccuracyBySubattribute(string transactionIDList, int totalTransactions)
+        public ActionResult AccuracyBySubattribute(int selectedAttributeID, string transactionIDList, int totalTransactions, bool mustBeControllable = false)
         {
             List<SCC_BL.Reports.Results.AccuracyBySubattribute> resultAccuracyBySubattribute = new List<SCC_BL.Reports.Results.AccuracyBySubattribute>();
             ViewModels.ReportResultsAccuracyBySubattributeViewModel reportResultsAccuracyBySubattributeViewModel = new ViewModels.ReportResultsAccuracyBySubattributeViewModel();
@@ -2239,7 +2239,9 @@ namespace SCC.Controllers
                 using (Report report = new Report())
                 {
                     resultAccuracyBySubattribute = report.AccuracyBySubattribute(
-                        transactionIDList);
+                        selectedAttributeID,
+                        transactionIDList,
+                        mustBeControllable);
 
                     reportResultsAccuracyBySubattributeViewModel = new ViewModels.ReportResultsAccuracyBySubattributeViewModel(resultAccuracyBySubattribute, totalTransactions);
                 }

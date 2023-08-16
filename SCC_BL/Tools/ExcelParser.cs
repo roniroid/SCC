@@ -1340,7 +1340,13 @@ namespace SCC_BL.Tools
 
         private Cell CreateCell(string cellValue)
         {
-            return new Cell(new InlineString(new DocumentFormat.OpenXml.Drawing.Text(cellValue)));
+            return new Cell
+            {
+                DataType = CellValues.InlineString,
+                InlineString = new InlineString(new DocumentFormat.OpenXml.Spreadsheet.Text { Space = SpaceProcessingModeValues.Preserve, Text = cellValue })
+            };
+
+            //return new Cell(new InlineString(new DocumentFormat.OpenXml.Drawing.Text(cellValue)));
         }
 
         public void Dispose()

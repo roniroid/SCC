@@ -761,8 +761,6 @@
     <Content Include="Views\User\LogIn.cshtml" />
     <Content Include="Views\User\SignIn.cshtml" />
     <Content Include="Views\User\Manage.cshtml" />
-    <Content Include="Views\Log\Index.cshtml" />
-    <Content Include="Views\Log\_LogList.cshtml" />
     <Content Include="Views\User\MassiveImport.cshtml" />
     <Content Include="Views\User\MassivePasswordChange.cshtml" />
     <Content Include="Views\Role\Manage.cshtml" />
@@ -816,8 +814,10 @@
     <Content Include="Views\Transaction\ErrorList.cshtml" />
     <Content Include="Views\Calibration\CheckGlobalResultsByCalibrator.cshtml" />
     <Content Include="Views\Calibration\CheckGlobalResultsByTransaction.cshtml" />
-    <Content Include="Views\Log\LogFiles.cshtml" />
     <Content Include="Views\Form\Edit_old.cshtml" />
+    <Content Include="Views\Log\Index.cshtml" />
+    <Content Include="Views\Log\LogFiles.cshtml" />
+    <Content Include="Views\Log\_LogList.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
