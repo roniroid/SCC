@@ -204,6 +204,14 @@ namespace SCC.Controllers
                             !expertUserList.Select(s => s.ID).Contains(e.ID))
                         .ToList());
 
+                expertUserList.AddRange(
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.FACILITATOR)
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
+                            !expertUserList.Select(s => s.ID).Contains(e.ID))
+                        .ToList());
+
                 expertUserList =
                     expertUserList
                         .GroupBy(e =>

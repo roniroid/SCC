@@ -15,15 +15,21 @@ namespace SCC_BL.Reports.Results
         public int? GeneralBusinessCriticalErrorResultID { get; set; } = 0;
         public int? GeneralFulfillmentCriticalErrorResultID { get; set; } = 0;
 
+        public double? GeneralNonCriticalErrorAverageResult { get; set; } = 0;
+
         public int? AccurateResultID { get; set; } = 0;
         public int? AccurateFinalUserCriticalErrorResultID { get; set; } = 0;
         public int? AccurateBusinessCriticalErrorResultID { get; set; } = 0;
         public int? AccurateFulfillmentCriticalErrorResultID { get; set; } = 0;
 
+        public double? AccurateNonCriticalErrorAverageResult { get; set; } = 0;
+
         public int? ControllableResultID { get; set; } = 0;
         public int? ControllableFinalUserCriticalErrorResultID { get; set; } = 0;
         public int? ControllableBusinessCriticalErrorResultID { get; set; } = 0;
         public int? ControllableFulfillmentCriticalErrorResultID { get; set; } = 0;
+
+        public double? ControllableNonCriticalErrorAverageResult { get; set; } = 0;
 
         public int UserID { get; set; } = 0;
 
@@ -34,17 +40,20 @@ namespace SCC_BL.Reports.Results
             int generalFinalUserCriticalErrorResultID,
             int generalBusinessCriticalErrorResultID,
             int generalFulfillmentCriticalErrorResultID, 
+            int generalNonCriticalErrorAverageResult, 
 
             int accurateResultID,
             int accurateFinalUserCriticalErrorResultID, 
             int accurateBusinessCriticalErrorResultID, 
-            int accurateFulfillmentCriticalErrorResultID, 
+            int accurateFulfillmentCriticalErrorResultID,
+            int accurateNonCriticalErrorAverageResult,
 
             int controllableResultID,
             int controllableFinalUserCriticalErrorResultID, 
             int controllableBusinessCriticalErrorResultID, 
-            int controllableFulfillmentCriticalErrorResultID, 
-            
+            int controllableFulfillmentCriticalErrorResultID,
+            int controllableNonCriticalErrorAverageResult,
+
             int userID)
         {
             this.TransactionID = transactionID;
@@ -54,15 +63,21 @@ namespace SCC_BL.Reports.Results
             this.GeneralBusinessCriticalErrorResultID = generalBusinessCriticalErrorResultID;
             this.GeneralFulfillmentCriticalErrorResultID = generalFulfillmentCriticalErrorResultID;
 
+            this.GeneralNonCriticalErrorAverageResult = generalNonCriticalErrorAverageResult;
+
             this.AccurateResultID = accurateResultID;
             this.AccurateFinalUserCriticalErrorResultID = accurateFinalUserCriticalErrorResultID;
             this.AccurateBusinessCriticalErrorResultID = accurateBusinessCriticalErrorResultID;
             this.AccurateFulfillmentCriticalErrorResultID = accurateFulfillmentCriticalErrorResultID;
 
+            this.AccurateNonCriticalErrorAverageResult = accurateNonCriticalErrorAverageResult;
+
             this.ControllableResultID = controllableResultID;
             this.ControllableFinalUserCriticalErrorResultID = controllableFinalUserCriticalErrorResultID;
             this.ControllableBusinessCriticalErrorResultID = controllableBusinessCriticalErrorResultID;
             this.ControllableFulfillmentCriticalErrorResultID = controllableFulfillmentCriticalErrorResultID;
+
+            this.ControllableNonCriticalErrorAverageResult = controllableNonCriticalErrorAverageResult;
 
             this.UserID = userID;
         }

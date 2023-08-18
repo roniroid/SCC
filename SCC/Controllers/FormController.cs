@@ -140,11 +140,7 @@ namespace SCC.Controllers
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DISABLED)
                         .ToList();
 
-            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
-                errorTypeList =
-                    catalog.SelectByCategoryID()
-                        .Where(e => e.Active)
-                        .ToList();
+            errorTypeList = SCC_BL.Attribute.GetAttributeErrorType();
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Edit.TypeList.NAME] =
                 new SelectList(

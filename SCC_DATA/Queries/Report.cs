@@ -82,16 +82,19 @@ namespace SCC_DATA.Queries
                     public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
                     public const string GENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
                     public const string GENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
+                    public const string GENERALNONCRITICALERRORRESULT = "GeneralNonCriticalErrorResult";
 
                     public const string ACCURATERESULTID = "AccurateResultID";
                     public const string ACCURATEFINALUSERCRITICALERRORRESULTID = "AccurateFinalUserCriticalErrorResultID";
                     public const string ACCURATEBUSINESSCRITICALERRORRESULTID = "AccurateBusinessCriticalErrorResultID";
                     public const string ACCURATEFULFILLMENTCRITICALERRORRESULTID = "AccurateFulfillmentCriticalErrorResultID";
+                    public const string ACCURATENONCRITICALERRORRESULT = "AccurateNonCriticalErrorResult";
 
                     public const string CONTROLLABLERESULTID = "ControllableResultID";
                     public const string CONTROLLABLEFINALUSERCRITICALERRORRESULTID = "ControllableFinalUserCriticalErrorResultID";
                     public const string CONTROLLABLEBUSINESSCRITICALERRORRESULTID = "ControllableBusinessCriticalErrorResultID";
                     public const string CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID = "ControllableFulfillmentCriticalErrorResultID";
+                    public const string CONTROLLABLENONCRITICALERRORRESULT = "ControllableNonCriticalErrorResult";
 
                     public const string USER_ID = "UserID";
 				}

@@ -64,16 +64,19 @@ namespace SCC_BL
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALNONCRITICALERRORRESULT]),
 
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATERESULTID]),
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATENONCRITICALERRORRESULT]),
 
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLERESULTID]),
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLENONCRITICALERRORRESULT]),
 
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.USER_ID]));
 

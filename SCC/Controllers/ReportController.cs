@@ -118,11 +118,7 @@ namespace SCC.Controllers
                         .ToList();
             }
 
-            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
-                errorTypeList =
-                    catalog.SelectByCategoryID()
-                        .Where(e => e.Active)
-                        .ToList();
+            errorTypeList = SCC_BL.Attribute.GetAttributeErrorType(true);
 
             using (CustomControl customControl = new CustomControl())
                 customControlList =
@@ -492,11 +488,7 @@ namespace SCC.Controllers
                         .ToList();
             }
 
-            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
-                errorTypeList =
-                    catalog.SelectByCategoryID()
-                        .Where(e => e.Active)
-                        .ToList();
+            errorTypeList = SCC_BL.Attribute.GetAttributeErrorType(true);
 
             using (CustomControl customControl = new CustomControl())
                 customControlList =
@@ -679,11 +671,7 @@ namespace SCC.Controllers
                         .ToList();
             }
 
-            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
-                errorTypeList =
-                    catalog.SelectByCategoryID()
-                        .Where(e => e.Active)
-                        .ToList();
+            errorTypeList = SCC_BL.Attribute.GetAttributeErrorType(true);
 
             using (CustomControl customControl = new CustomControl())
                 customControlList =
@@ -866,11 +854,7 @@ namespace SCC.Controllers
                         .ToList();
             }
 
-            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
-                errorTypeList =
-                    catalog.SelectByCategoryID()
-                        .Where(e => e.Active)
-                        .ToList();
+            errorTypeList = SCC_BL.Attribute.GetAttributeErrorType(true);
 
             using (CustomControl customControl = new CustomControl())
                 customControlList =
@@ -1009,11 +993,7 @@ namespace SCC.Controllers
                         .Where(e => e.Active)
                         .ToList();
 
-            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
-                errorTypeList =
-                    catalog.SelectByCategoryID()
-                        .Where(e => e.Active)
-                        .ToList();
+            errorTypeList = SCC_BL.Attribute.GetAttributeErrorType(true);
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparison.ProgramList.NAME] =
                 new MultiSelectList(
@@ -1195,11 +1175,7 @@ namespace SCC.Controllers
                         .ToList();
             }
 
-            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
-                errorTypeList =
-                    catalog.SelectByCategoryID()
-                        .Where(e => e.Active)
-                        .ToList();
+            errorTypeList = SCC_BL.Attribute.GetAttributeErrorType(true);
 
             using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TIME_INTERVAL))
                 intervalTypeList =
@@ -1400,11 +1376,7 @@ namespace SCC.Controllers
                         .ToList();
             }
 
-            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
-                errorTypeList =
-                    catalog.SelectByCategoryID()
-                        .Where(e => e.Active)
-                        .ToList();
+            errorTypeList = SCC_BL.Attribute.GetAttributeErrorType(true);
 
             using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TIME_INTERVAL))
                 intervalTypeList =

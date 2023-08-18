@@ -779,6 +779,27 @@ namespace SCC_BL
 			return attributeList;
 		}
 
+		public static List<Catalog> GetAttributeErrorType(bool includeGlobal = false)
+		{
+			List<Catalog> errorTypeList = new List<Catalog>();
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
+                errorTypeList =
+                    catalog.SelectByCategoryID()
+                        .Where(e => e.Active)
+                        .ToList();
+
+			if (!includeGlobal)
+			{
+				errorTypeList =
+					errorTypeList
+						.Where(e => e.ID != (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE)
+						.ToList();
+            }
+
+			return errorTypeList;
+        }
+
 		public void Dispose()
 		{
 		}

@@ -126,6 +126,9 @@
                 <th class="text-center">
                     Usuario
                 </th>
+                <th class="text-center">
+                    Total de transacciones
+                </th>
                 @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                 {
                     <th class="text-center">
@@ -144,9 +147,18 @@
                         Precisión Error Crítico de Cumplimiento
                     </th>
                 }
-                <th class="text-center">
-                    Precisión Error Crítico Global
-                </th>
+                @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                {
+                    <th class="text-center">
+                        Precisión Error No Crítico
+                    </th>
+                }
+                @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                {
+                    <th class="text-center">
+                        Precisión Error Crítico Global
+                    </th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -201,6 +213,20 @@
                                 : resultsByUser.GeneralFulfillmentCriticalErrorCountSuccess
                             ) / resultsByUser.TotalTransactions) * 100) 
                         : 0);
+                string percentageNCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                        Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                            ? "{0:0.0#}"
+                            : */"{0:0.##}",
+                    resultsByUser.TotalTransactions > 0 
+                        ? ((Convert.ToDecimal(
+                            isControllable
+                                ? resultsByUser.ControllableNonCriticalErrorAverageResult
+                                : resultsByUser.GeneralNonCriticalErrorAverageResult
+                            ))) 
+                        : 0);
                 string percentageGCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
@@ -224,6 +250,9 @@
                         }
                         @($"{ user.Person.SurName } { user.Person.LastName }, { user.Person.FirstName }")
                     </td>
+                    <td>
+                        @resultsByUser.TotalTransactions
+                    </td>
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                     {
                         <td>
@@ -242,9 +271,18 @@
                             @percentageFCE.Replace('.', ',')%
                         </td>
                     }
-                    <td>
-                        @percentageGCE.Replace('.', ',')%
-                    </td>
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                    {
+                        <td>
+                            @percentageNCE.Replace('.', ',')%
+                        </td>
+                    }
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                    {
+                        <td>
+                            @percentageGCE.Replace('.', ',')%
+                        </td>
+                    }
                 </tr>
             }
         </tbody>
@@ -329,7 +367,14 @@
             {
                 @:'Error Crítico de Cumplimiento',
             }
-            'Error Crítico Global'
+            @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+            {
+                @:'Error No Crítico',
+            }
+            @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+            {
+                @:'Error Crítico Global',
+            }
         ],
         datasets: [
             @{
@@ -347,8 +392,14 @@
                 {
                     colorList.Add("rgba(137, 222, 122)");
                 }
-
-                colorList.Add("rgba(255, 190, 113)");
+                if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                {
+                    colorList.Add("rgba(255, 190, 113)");
+                }
+                if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                {
+                    colorList.Add("rgba(128, 133, 233)");
+                }
 
                 int currentColor = 0;
             }
@@ -357,10 +408,10 @@
                 string percentageFUCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                            /*Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                            Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                                ? "{0:0.0#}"
-                                : */"{0:0.##}",
+                                /*Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                                Convert.ToString((Convert.ToDouble(Model.GeneralFinalUserCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                    ? "{0:0.0#}"
+                                    : */"{0:0.##}",
                         resultsByUser.TotalTransactions > 0
                             ? ((Convert.ToDecimal(
                                 isControllable
@@ -371,10 +422,10 @@
                 string percentageBCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                            /*Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                            Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                                ? "{0:0.0#}"
-                                : */"{0:0.##}",
+                                /*Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                                Convert.ToString((Convert.ToDouble(Model.GeneralBusinessCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                    ? "{0:0.0#}"
+                                    : */"{0:0.##}",
                         resultsByUser.TotalTransactions > 0
                             ? ((Convert.ToDecimal(
                                 isControllable
@@ -385,10 +436,10 @@
                 string percentageFCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                            /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                            Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                                ? "{0:0.0#}"
-                                : */"{0:0.##}",
+                                /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                                Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                    ? "{0:0.0#}"
+                                    : */"{0:0.##}",
                         resultsByUser.TotalTransactions > 0
                             ? ((Convert.ToDecimal(
                                 isControllable
@@ -396,13 +447,27 @@
                                     : resultsByUser.GeneralFulfillmentCriticalErrorCountSuccess
                                 ) / resultsByUser.TotalTransactions) * 100)
                             : 0).Replace(',', '.');
+                string percentageNCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                                /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                                Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                    ? "{0:0.0#}"
+                                    : */"{0:0.##}",
+                        resultsByUser.TotalTransactions > 0
+                            ? ((Convert.ToDecimal(
+                                isControllable
+                                    ? resultsByUser.ControllableNonCriticalErrorAverageResult
+                                    : resultsByUser.GeneralNonCriticalErrorAverageResult
+                                )))
+                            : 0).Replace(',', '.');
                 string percentageGCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
-                            /*Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                            Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                                ? "{0:0.0#}"
-                                : */"{0:0.##}",
+                                /*Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                                Convert.ToString((Convert.ToDouble(Model.GeneralResultCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                    ? "{0:0.0#}"
+                                    : */"{0:0.##}",
                         resultsByUser.TotalTransactions > 0
                             ? ((Convert.ToDecimal(
                                 isControllable
@@ -410,6 +475,18 @@
                                     : resultsByUser.GeneralResultCountSuccess
                                 ) / resultsByUser.TotalTransactions) * 100)
                             : 0).Replace(',', '.');
+
+                string usersString =
+                    String.Join(
+                        ",",
+                        Model.ResultsByUserList
+                            .Select(e =>
+                            {
+                                User user = new User(e.UserID);
+                                user.SetDataByID();
+
+                                return $"'{user.Person.SurName} {user.Person.LastName}, {user.Person.FirstName}'";
+                            }));
 
                 @:{
                     @:data: [
@@ -425,28 +502,76 @@
                         {
                             @percentageFCE@:,
                         }
-                        @percentageGCE
+                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                        {
+                            @percentageNCE@:,
+                        }
+                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                        {
+                            @percentageGCE@:,
+                        }
                     @:],
                     @:borderColor: '@colorList[currentColor]',
                     @:backgroundColor: '@colorList[currentColor]',
                     @:borderWidth: 1,
-                    @:successCount: [
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
-                        {
-                            @resultsByUser.GeneralFinalUserCriticalErrorCountSuccess@:,
-                        }
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
-                        {
-                            @resultsByUser.GeneralBusinessCriticalErrorCountSuccess@:,
-                        }
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
-                        {
-                            @resultsByUser.GeneralFulfillmentCriticalErrorCountSuccess@:,
-                        }
-                        @resultsByUser.GeneralResultCountSuccess
-                    @:],
-                    @:errorTypeIDs:[@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
-                    @:totalCount: @resultsByUser.TotalTransactions,
+                    @:customData: {
+                        @:currentUser: [@Html.Raw(usersString)],
+                        @:successCount: [
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
+                            {
+                                @(isControllable
+                                    ? resultsByUser.ControllableFinalUserCriticalErrorCountSuccess
+                                    : resultsByUser.GeneralFinalUserCriticalErrorCountSuccess)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
+                            {
+                                @(isControllable
+                                    ? resultsByUser.ControllableBusinessCriticalErrorCountSuccess
+                                    : resultsByUser.GeneralBusinessCriticalErrorCountSuccess)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
+                            {
+                                @(isControllable
+                                    ? resultsByUser.ControllableFulfillmentCriticalErrorCountSuccess
+                                    : resultsByUser.GeneralFulfillmentCriticalErrorCountSuccess)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                            {
+                                @(isControllable
+                                    ? resultsByUser.TotalTransactions
+                                    : resultsByUser.TotalTransactions)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                            {
+                                @(isControllable
+                                    ? resultsByUser.ControllableResultCountSuccess
+                                    : resultsByUser.GeneralResultCountSuccess)@:,
+                            }
+                        @:],
+                        @:errorTypeIDs: [
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
+                            {
+                                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
+                            {
+                                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
+                            {
+                                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                            {
+                                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                            {
+                                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE)@:,
+                            }
+                        @:],
+                        @:totalCount: @resultsByUser.TotalTransactions,
+                    @:}
                 @:},
 
                 currentColor++;
@@ -582,7 +707,10 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `${context.formattedValue.replace(',', '.')}% (${context.dataset.successCount[context.dataIndex]}/${context.dataset.totalCount})`
+                        label: (context) => {
+                            console.log(context);
+                            return `${context.dataset.customData.currentUser[context.datasetIndex]}: ${context.formattedValue.replace(',', '.')}% (${context.dataset.customData.successCount[context.dataIndex]}/${context.dataset.customData.totalCount})`;
+                        }
                     }
                 },
                 chartAreaBorder: {
@@ -617,7 +745,7 @@
             const firstPoint = points[0];
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
-            let errorTypeID = myChart.data.datasets[firstPoint.datasetIndex].errorTypeIDs[firstPoint.index];
+            let errorTypeID = myChart.data.datasets[firstPoint.datasetIndex].customData.errorTypeIDs[firstPoint.index];
 
             const url = '@Url.Action(nameof(ReportController.AccuracyByAttribute), mainControllerName)';
 
