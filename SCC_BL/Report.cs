@@ -64,16 +64,19 @@ namespace SCC_BL
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.GENERALNONCRITICALERRORRESULT]),
 
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATERESULTID]),
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.ACCURATENONCRITICALERRORRESULT]),
 
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLERESULTID]),
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.CONTROLLABLENONCRITICALERRORRESULT]),
 
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.ComparativeByUser.ResultFields.USER_ID]));
 
@@ -251,23 +254,25 @@ namespace SCC_BL
 			return accuracyTrendByAttributeResultList;
 		}
 		
-		public List<SCC_BL.Reports.Results.AccuracyBySubattribute> AccuracyBySubattribute(string transactionAttributeIDList)
+		public List<SCC_BL.Reports.Results.AccuracyBySubattribute> AccuracyBySubattribute(int selectedAttributeID, string transactionAttributeIDList, bool mustBeControllable)
 		{
 			List<SCC_BL.Reports.Results.AccuracyBySubattribute> accuracyBySubattributeResultList = new List<SCC_BL.Reports.Results.AccuracyBySubattribute>();
 
 			using (SCC_DATA.Repositories.Report report = new SCC_DATA.Repositories.Report())
 			{
-				DataTable dt = report.AccuracyBySubattribute(transactionAttributeIDList);
+				DataTable dt = report.AccuracyBySubattribute(selectedAttributeID, transactionAttributeIDList);
 
 				foreach (DataRow dr in dt.Rows)
 				{
 					SCC_BL.Reports.Results.AccuracyBySubattribute accuracyBySubattributeResult = new SCC_BL.Reports.Results.AccuracyBySubattribute(
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.TRANSACTION_ATTRIBUTE_ID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.TRANSACTION_ID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ATTRIBUTE_ID]),
 						Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ATTRIBUTE_NAME]),
 						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.SUCCESSFUL_RESULT]),
 						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.HAS_CHILDREN]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ERROR_TYPE_ID]));
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ERROR_TYPE_ID]),
+                        mustBeControllable);
 
 					accuracyBySubattributeResultList.Add(accuracyBySubattributeResult);
 				}

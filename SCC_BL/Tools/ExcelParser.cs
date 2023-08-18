@@ -1097,22 +1097,22 @@ namespace SCC_BL.Tools
                     dataRow.Append(CreateCell("N/A"));
                     dataRow.Append(CreateCell("N/A"));
                     dataRow.Append(CreateCell("N/A"));
-                    dataRow.Append(CreateCell(transaction.AccurateFinalUserCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS ? "Pasó" : "Falló"));
-                    dataRow.Append(CreateCell(transaction.AccurateBusinessCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS ? "Pasó" : "Falló"));
-                    dataRow.Append(CreateCell(transaction.AccurateFulfillmentCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS ? "Pasó" : "Falló"));
-                    dataRow.Append(CreateCell(transaction.ControllableFinalUserCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS ? "Pasó" : "Falló"));
-                    dataRow.Append(CreateCell(transaction.ControllableBusinessCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS ? "Pasó" : "Falló"));
-                    dataRow.Append(CreateCell(transaction.ControllableFulfillmentCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS ? "Pasó" : "Falló"));
+                    dataRow.Append(CreateCell(transaction.AccurateFinalUserCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS ? "100%" : "0%"));
+                    dataRow.Append(CreateCell(transaction.AccurateBusinessCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS ? "100%" : "0%"));
+                    dataRow.Append(CreateCell(transaction.AccurateFulfillmentCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS ? "100%" : "0%"));
+                    dataRow.Append(CreateCell(transaction.ControllableFinalUserCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS ? "100%" : "0%"));
+                    dataRow.Append(CreateCell(transaction.ControllableBusinessCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS ? "100%" : "0%"));
+                    dataRow.Append(CreateCell(transaction.ControllableFulfillmentCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS ? "100%" : "0%"));
                     dataRow.Append(CreateCell(transaction.Comment));
                     dataRow.Append(CreateCell(transaction.DisputeCommentaries.Count() > 0 ? "Yes" : "No"));
                     dataRow.Append(CreateCell(transaction.DisputeCommentaries.Count() > 0 ? transaction.DisputeCommentaries[0].Comment : string.Empty));
-                    dataRow.Append(CreateCell($"{ transaction.UserToEvaluate.Username }"));
+                    dataRow.Append(CreateCell(transaction.DisputeCommentaries.Count() > 0 ? $"{ transaction.UserToEvaluate.Username }" : string.Empty));
                     dataRow.Append(CreateCell(transaction.DisputeCommentaries.Count() > 0 ? transaction.DisputeCommentaries[0].BasicInfo.CreationDate.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty));
                     dataRow.Append(CreateCell(transaction.DevolutionCommentaries.Count() > 0 ? transaction.DevolutionCommentaries[0].BasicInfo.CreationDate.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty));
                     dataRow.Append(CreateCell(transaction.DevolutionCommentaries.Count() > 0 ? transaction.DevolutionCommentaries[0].Comment : string.Empty));
                     dataRow.Append(CreateCell(transaction.DevolutionUserStrengths.Count() > 0 ? transaction.DevolutionUserStrengths[0].Comment : string.Empty));
                     dataRow.Append(CreateCell(transaction.DevolutionImprovementSteps.Count() > 0 ? transaction.DevolutionImprovementSteps[0].Comment : string.Empty));
-                    dataRow.Append(CreateCell($"{transaction.UserToEvaluate.Username}"));
+                    dataRow.Append(CreateCell(transaction.DevolutionCommentaries.Count() > 0 ? $"{transaction.UserToEvaluate.Username}" : string.Empty));
                     dataRow.Append(CreateCell(string.Empty));
                     dataRow.Append(CreateCell(string.Empty));
                     dataRow.Append(CreateCell(string.Empty));
@@ -1120,7 +1120,7 @@ namespace SCC_BL.Tools
                     dataRow.Append(CreateCell(string.Empty));
                     dataRow.Append(CreateCell(string.Empty));
                     dataRow.Append(CreateCell(transaction.InvalidationCommentaries.Count() > 0 ? "Yes" : "No"));
-                    dataRow.Append(CreateCell($"{ transaction.UserToEvaluate.Username }"));
+                    dataRow.Append(CreateCell(transaction.InvalidationCommentaries.Count() > 0 ? $"{transaction.UserToEvaluate.Username}" : string.Empty));
                     dataRow.Append(CreateCell(transaction.InvalidationCommentaries.Count() > 0 ? transaction.InvalidationCommentaries[0].BasicInfo.CreationDate.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty));
                     dataRow.Append(CreateCell(transaction.InvalidationCommentaries.Count() > 0 ? transaction.InvalidationCommentaries[0].Comment : string.Empty));
                     dataRow.Append(CreateCell(string.Empty));
@@ -1214,49 +1214,62 @@ namespace SCC_BL.Tools
                         if (transaction.AttributeList.Select(e => e.AttributeID).Contains(currentAttribute.ID))
                         {
                             TransactionAttributeCatalog currentTransactionAttributeCatalog = transaction.AttributeList.Where(e => e.AttributeID == currentAttribute.ID).FirstOrDefault();
-                            AttributeValueCatalog currrentAttributeValueCatalog = currentAttribute.ValueList.Where(e => e.ID == currentTransactionAttributeCatalog.ValueID).FirstOrDefault();
+                            AttributeValueCatalog currrentAttributeValueCatalog = null;
 
-                            attributeComment = currentTransactionAttributeCatalog.Comment;
-
-                            if (currrentAttributeValueCatalog.TriggersChildVisualization)
+                            if (currentTransactionAttributeCatalog != null)
                             {
-                                attributeSubattributes = "";
+                                currrentAttributeValueCatalog = currentAttribute.ValueList.Where(e => e.ID == currentTransactionAttributeCatalog.ValueID).FirstOrDefault();
 
-                                attributeSuccess = "NO";
+                                if (!string.IsNullOrEmpty(currentTransactionAttributeCatalog.Comment))
+                                    attributeComment = currentTransactionAttributeCatalog.Comment;
+                            }
+                            else
+                            {
+                                currrentAttributeValueCatalog = currentAttribute.ValueList.Where(e => !e.TriggersChildVisualization).FirstOrDefault();
+                            }
 
-                                List<Attribute> childAttributeList = currentAttribute.ChildrenList;
-
-                                foreach (TransactionAttributeCatalog childTransactionAttributeCatalog in transaction.AttributeList.Where(e => childAttributeList.Select(s => s.ID).Contains(e.AttributeID) && e.Checked))
+                            if (currrentAttributeValueCatalog != null)
+                            {
+                                if (currrentAttributeValueCatalog.TriggersChildVisualization)
                                 {
-                                    Attribute auxCurrentAttribute = childAttributeList.Where(e => e.ID == childTransactionAttributeCatalog.AttributeID).FirstOrDefault();
+                                    attributeSubattributes = "";
 
-                                    attributeSubattributes += $"~~{ auxCurrentAttribute.Name }";
+                                    attributeSuccess = "NO";
 
-                                    List<Attribute> auxChildAttributeList = attributeList.Where(e => e.ParentAttributeID == auxCurrentAttribute.ID).ToList();
-                                    TransactionAttributeCatalog auxChildTransactionAttributeCatalog = transaction.AttributeList.Where(e => auxChildAttributeList.Select(s => s.ID).Contains(e.AttributeID) && e.Checked).FirstOrDefault();
+                                    List<Attribute> childAttributeList = currentAttribute.ChildrenList;
 
-                                    Attribute auxChildAttribute =
-                                        auxChildTransactionAttributeCatalog != null
-                                            ? attributeList
-                                                .Where(e => e.ID == auxChildTransactionAttributeCatalog.AttributeID)
-                                                .FirstOrDefault()
-                                            : null;
-
-                                    attributeSubattributes +=
-                                        auxChildAttribute != null 
-                                            ? $"~{auxChildAttribute.Name}"
-                                            : "~";
-
-                                    if (auxChildAttribute == null) continue;
-
-                                    while (attributeList.Where(e => e.ParentAttributeID == auxChildAttribute.ID).Count() > 0)
+                                    foreach (TransactionAttributeCatalog childTransactionAttributeCatalog in transaction.AttributeList.Where(e => childAttributeList.Select(s => s.ID).Contains(e.AttributeID) && e.Checked))
                                     {
-                                        auxChildAttributeList = attributeList.Where(e => e.ParentAttributeID == auxChildAttribute.ID).ToList();
-                                        auxChildTransactionAttributeCatalog = transaction.AttributeList.Where(e => auxChildAttributeList.Select(s => s.ID).Contains(e.AttributeID) && e.Checked).FirstOrDefault();
+                                        Attribute auxCurrentAttribute = childAttributeList.Where(e => e.ID == childTransactionAttributeCatalog.AttributeID).FirstOrDefault();
 
-                                        auxChildAttribute = attributeList.Where(e => e.ID == auxChildTransactionAttributeCatalog.AttributeID).FirstOrDefault();
+                                        attributeSubattributes += $"~~{auxCurrentAttribute.Name}";
 
-                                        attributeSubattributes += $"~{auxChildAttribute.Name}";
+                                        List<Attribute> auxChildAttributeList = attributeList.Where(e => e.ParentAttributeID == auxCurrentAttribute.ID).ToList();
+                                        TransactionAttributeCatalog auxChildTransactionAttributeCatalog = transaction.AttributeList.Where(e => auxChildAttributeList.Select(s => s.ID).Contains(e.AttributeID) && e.Checked).FirstOrDefault();
+
+                                        Attribute auxChildAttribute =
+                                            auxChildTransactionAttributeCatalog != null
+                                                ? attributeList
+                                                    .Where(e => e.ID == auxChildTransactionAttributeCatalog.AttributeID)
+                                                    .FirstOrDefault()
+                                                : null;
+
+                                        attributeSubattributes +=
+                                            auxChildAttribute != null
+                                                ? $"~{auxChildAttribute.Name}"
+                                                : "";
+
+                                        if (auxChildAttribute == null) continue;
+
+                                        while (attributeList.Where(e => e.ParentAttributeID == auxChildAttribute.ID).Count() > 0)
+                                        {
+                                            auxChildAttributeList = attributeList.Where(e => e.ParentAttributeID == auxChildAttribute.ID).ToList();
+                                            auxChildTransactionAttributeCatalog = transaction.AttributeList.Where(e => auxChildAttributeList.Select(s => s.ID).Contains(e.AttributeID) && e.Checked).FirstOrDefault();
+
+                                            auxChildAttribute = attributeList.Where(e => e.ID == auxChildTransactionAttributeCatalog.AttributeID).FirstOrDefault();
+
+                                            attributeSubattributes += $"~{auxChildAttribute.Name}";
+                                        }
                                     }
                                 }
                             }
@@ -1270,7 +1283,7 @@ namespace SCC_BL.Tools
                     foreach (BusinessIntelligenceField currentBusinessIntelligenceField in businessIntelligenceFieldList.Where(e => e.ParentBIFieldID == null || e.ParentBIFieldID == 0))
                     {
                         string businessIntelligenceFieldComment = "-";
-                        string businessIntelligenceFieldChildren = string.Empty;
+                        string businessIntelligenceFieldChildren = "-";
 
                         if (transaction.BIFieldList.Select(e => e.BIFieldID).Contains(currentBusinessIntelligenceField.ID))
                         {
@@ -1288,7 +1301,7 @@ namespace SCC_BL.Tools
                                 {
                                     BusinessIntelligenceField auxCurrentBusinessIntelligenceField = childBusinessIntelligenceFieldList.Where(e => e.ID == childTransactionBIFieldCatalog.BIFieldID).FirstOrDefault();
 
-                                    businessIntelligenceFieldChildren += $"~~{auxCurrentBusinessIntelligenceField.Name}";
+                                    businessIntelligenceFieldChildren += $"{auxCurrentBusinessIntelligenceField.Name}";
 
                                     List<BusinessIntelligenceField> auxChildBusinessIntelligenceFieldList = businessIntelligenceFieldList.Where(e => e.ParentBIFieldID == auxCurrentBusinessIntelligenceField.ID).ToList();
                                     TransactionBIFieldCatalog auxChildTransactionBIFieldCatalog = 
@@ -1344,7 +1357,13 @@ namespace SCC_BL.Tools
 
         private Cell CreateCell(string cellValue)
         {
-            return new Cell(new InlineString(new DocumentFormat.OpenXml.Drawing.Text(cellValue)));
+            return new Cell
+            {
+                DataType = CellValues.InlineString,
+                InlineString = new InlineString(new DocumentFormat.OpenXml.Spreadsheet.Text { Space = SpaceProcessingModeValues.Preserve, Text = cellValue })
+            };
+
+            //return new Cell(new InlineString(new DocumentFormat.OpenXml.Drawing.Text(cellValue)));
         }
 
         public void Dispose()

@@ -108,10 +108,10 @@
                         </div>
                         <div class="row property-field">
                             <div class="col-5 property-field-label">
-                                Segundo apellido <span class="required">*</span>
+                                Segundo apellido 
                             </div>
                             <div class="col-7">
-                                @Html.TextBoxFor(modelitem => Model.Person.LastName, null, new { @class = "property-field-control", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", placeholder = "Segundo apellido", autocomplete = "off", required = "" })
+                                @Html.TextBoxFor(modelitem => Model.Person.LastName, null, new { @class = "property-field-control", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", placeholder = "Segundo apellido", autocomplete = "off"@*, required = ""*@ })
                             </div>
                         </div>
                         <div class="row property-field">

@@ -754,7 +754,18 @@ namespace SCC.Controllers
             Person oldPerson = new Person(userPerson.Person.ID);
             oldPerson.SetDataByID();
 
-            Person newPerson = new Person(userPerson.Person.ID, userPerson.Person.Identification, userPerson.Person.FirstName, userPerson.Person.SurName, userPerson.Person.LastName, userPerson.Person.CountryID, userPerson.Person.BasicInfoID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.UPDATED);
+            Person newPerson = new Person(
+                userPerson.Person.ID, 
+                userPerson.Person.Identification, 
+                userPerson.Person.FirstName, 
+                userPerson.Person.SurName, 
+                !string.IsNullOrEmpty(userPerson.Person.LastName)
+                    ? userPerson.Person.LastName
+                    : string.Empty, 
+                userPerson.Person.CountryID, 
+                userPerson.Person.BasicInfoID, 
+                GetActualUser().ID, 
+                (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.UPDATED);
             try
             {
                 int result = newPerson.Update();
@@ -935,7 +946,16 @@ namespace SCC.Controllers
             if (supervisorStartDate == null) supervisorStartDate = DateTime.Now;
             if (workspaceStartDate == null) workspaceStartDate = DateTime.Now;
 
-            Person newPerson = new Person(userPerson.Person.Identification, userPerson.Person.FirstName, userPerson.Person.SurName, userPerson.Person.LastName, userPerson.Person.CountryID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
+            Person newPerson = new Person(
+                userPerson.Person.Identification, 
+                userPerson.Person.FirstName, 
+                userPerson.Person.SurName, 
+                !string.IsNullOrEmpty(userPerson.Person.LastName)
+                    ? userPerson.Person.LastName
+                    : string.Empty, 
+                userPerson.Person.CountryID, 
+                GetActualUser().ID, 
+                (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
 
             try
             {

@@ -554,7 +554,7 @@
                         <tbody id="attributeTableBody">
                             @{
                                 int attributeCounter = 4000;
-                                List<Catalog> errotTypeCatalogListTemp = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE).SelectByCategoryID();
+                                List<Catalog> errotTypeCatalogListTemp = SCC_BL.Attribute.GetAttributeErrorType();
                             }
 
                             @foreach (SCC_BL.Attribute attribute in Model.AttributeList.OrderBy(e => e.Order))

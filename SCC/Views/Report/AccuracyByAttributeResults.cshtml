@@ -246,7 +246,7 @@
         labels: [
             @Html.Raw(
                 String.Join(
-                    ",", 
+                    ",",
                     Model.ResultByAttributeList
                         .Select(e => $"\"{ e.AttributeName }\"")))],
         datasets: [
@@ -274,10 +274,15 @@
                 borderWidth: 1,
                 successCount: [
                     @String.Join(
-                        ",", 
+                        ",",
                         Model.ResultByAttributeList
                             .Select(e => e.Quantity))],
                 totalCount: @Model.TotalTransactions,
+                currentAttributeID: [
+                    @String.Join(
+                        ",",
+                        Model.ResultByAttributeList
+                            .Select(e => e.AttributeID))],
             }
         ]
     };
@@ -438,15 +443,22 @@
 
         if (points.length) {
             const firstPoint = points[0];
+            const datasetIndex = firstPoint.datasetIndex;
+            const dataIndex = firstPoint.index;
+
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
+
+            const selectedTransactionID = myChart.data.datasets[datasetIndex].currentAttributeID[dataIndex];
 
             const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
 
             const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
 
+            $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedTransactionID + '" /> ');
             $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyByAttributeResultList.Select(e => e.TransactionAttributeID))" /> ');
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+            $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');
 
             $(document.body).append($form);
 

@@ -226,14 +226,15 @@ namespace SCC_DATA.Repositories
 			}
 		}
 		
-		public System.Data.DataTable AccuracyBySubattribute(string transactionAttributeIDList)
+		public System.Data.DataTable AccuracyBySubattribute(int selectedAttributeID, string transactionAttributeIDList)
 		{
 			try
 			{
 				using (DBDriver db = new DBDriver())
 				{
 					SqlParameter[] parameters = new SqlParameter[] {
-						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyBySubattribute.Parameters.TRANSACTION_ATTRIBUTE_ID_LIST, transactionAttributeIDList, System.Data.SqlDbType.VarChar)
+						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyBySubattribute.Parameters.TRANSACTION_ATTRIBUTE_ID_LIST, transactionAttributeIDList, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyBySubattribute.Parameters.SELECTED_ATTRIBUTE_ID, selectedAttributeID, System.Data.SqlDbType.Int)
 					};
 
 					return

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml.EMMA;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -46,9 +47,9 @@ namespace SCC.ViewModels
             this.AccuracyBySubattributeResultList
                 .ToList()
                 .ForEach(e => {
-                    if (!OrderHelperList.Select(f => f.AttributeID).Contains(e.AttributeID))
+                    if (!this.OrderHelperList.Select(f => f.AttributeID).Contains(e.AttributeID))
                     {
-                        OrderHelperList.Add(
+                        this.OrderHelperList.Add(
                             new OrderHelper() { 
                                 AttributeID = e.AttributeID,
                                 Quantity = this.AccuracyBySubattributeResultList.Where(g => g.AttributeID == e.AttributeID && g.SuccessfulResult).Count()
@@ -56,8 +57,14 @@ namespace SCC.ViewModels
                     }
                 });
 
+            this.OrderHelperList =
+                this.OrderHelperList
+                    .Where(e => e.Quantity < this.TotalTransactions)
+                    .ToList();
+
             this.ResultBySubattributeList =
                 this.ResultBySubattributeList
+                    .Where(e => e.Quantity < this.TotalTransactions)
                     .OrderBy(e => e.Quantity)
                     .ToList();
         }
