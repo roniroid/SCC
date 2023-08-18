@@ -1,12 +1,15 @@
 ﻿using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Validation;
 using DocumentFormat.OpenXml.Wordprocessing;
 using SCC_DATA.Queries;
+using SCC_DATA.Settings;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -1334,6 +1337,7 @@ namespace SCC_BL.Tools
                 }
 
                 worksheetPart.Worksheet.Save();
+                spreadsheetDocument.Save();
                 spreadsheetDocument.Close();
             }
         }

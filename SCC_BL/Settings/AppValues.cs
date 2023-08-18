@@ -57,6 +57,7 @@ namespace SCC_BL.Settings
                     EXCEL_FILES = 0
                 }
 
+                public const string EXCEL_FILES_XML = "application/xml";
                 public const string EXCEL_FILES_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
                 public const string EXCEL_FILES_XLS = "application/vnd.ms-excel";
                 public const string TEXT_FILES = "text/plain";
