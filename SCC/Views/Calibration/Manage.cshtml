@@ -181,7 +181,18 @@
                             }
                         </div>
                         <div class="col-12 mt-2">
-                            @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
+                            @{
+                                bool expiredDate = DateTime.Now > calibration.EndDate;
+                            }
+
+                            @if (expiredDate)
+                            {
+                                <div class="text-center">
+                                    <span>Esta sesión de calibración ha caducado</span>
+                                </div>
+                            }
+                            else
+                            if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
                             {
                                 <div class="text-danger text-center">
                                     <span>Usted no posee permiso para calibrar evaluaciones</span>

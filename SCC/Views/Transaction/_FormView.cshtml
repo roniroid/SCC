@@ -625,71 +625,71 @@
                     </div>
                     <div class="col-7 value-container">
                         @switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)customControl.ControlTypeID)
-        {
+                        {
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
-                htmlAttributes.Add(
-                    "value",
-                    currentTransactionCustomFieldCatalog != null
-                        ? currentTransactionCustomFieldCatalog.Comment
-                        : customControl.DefaultValue);
+                                htmlAttributes.Add(
+                                    "value",
+                                    currentTransactionCustomFieldCatalog != null
+                                        ? currentTransactionCustomFieldCatalog.Comment
+                                        : customControl.DefaultValue);
 
-                @Html.TextBox(
-                    "customControl_" + customControl.ID,
-                    currentTransactionCustomFieldCatalog != null
-                        ? currentTransactionCustomFieldCatalog.Comment
-                        : customControl.DefaultValue,
-                    htmlAttributes);
-                break;
-            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
-                htmlAttributes.Add(
-                    "rows",
-                    customControl.NumberOfRows.ToString());
+                                @Html.TextBox(
+                                    "customControl_" + customControl.ID,
+                                    currentTransactionCustomFieldCatalog != null
+                                        ? currentTransactionCustomFieldCatalog.Comment
+                                        : customControl.DefaultValue,
+                                    htmlAttributes);
+                                break;
+                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
+                                htmlAttributes.Add(
+                                    "rows",
+                                    customControl.NumberOfRows.ToString());
 
-                htmlAttributes.Add(
-                    "cols",
-                    customControl.NumberOfColumns.ToString());
+                                htmlAttributes.Add(
+                                    "cols",
+                                    customControl.NumberOfColumns.ToString());
 
-                htmlAttributes.Add(
-                    "value",
-                    currentTransactionCustomFieldCatalog != null
-                        ? currentTransactionCustomFieldCatalog.Comment
-                        : customControl.DefaultValue);
+                                htmlAttributes.Add(
+                                    "value",
+                                    currentTransactionCustomFieldCatalog != null
+                                        ? currentTransactionCustomFieldCatalog.Comment
+                                        : customControl.DefaultValue);
 
-                @Html.TextArea(
-                    "customControl_" + customControl.ID,
-                    currentTransactionCustomFieldCatalog != null
-                        ? currentTransactionCustomFieldCatalog.Comment
-                        : customControl.DefaultValue,
-                    htmlAttributes);
-                break;
-            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
-                htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
+                                @Html.TextArea(
+                                    "customControl_" + customControl.ID,
+                                    currentTransactionCustomFieldCatalog != null
+                                        ? currentTransactionCustomFieldCatalog.Comment
+                                        : customControl.DefaultValue,
+                                    htmlAttributes);
+                                break;
+                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
 
                                 <div class="radio-controls d-inline-block">
                                     @foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
-        {
-            bool isChecked = false;
+                                    {
+                                        bool isChecked = false;
 
-            htmlAttributes.Remove("label");
-            htmlAttributes.Add("label", customControlValueCatalog.Name);
+                                        htmlAttributes.Remove("label");
+                                        htmlAttributes.Add("label", customControlValueCatalog.Name);
 
-            if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() <= 0)
-            {
-                if (customControlValueCatalog.IsDefaultValue)
-                {
-                    isChecked = true;
-                }
-            }
-            else
-            if (currentTransactionCustomFieldCatalog != null)
-            {
-                if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
-                {
-                    isChecked = true;
-                }
-            }
+                                        if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() <= 0)
+                                        {
+                                            if (customControlValueCatalog.IsDefaultValue)
+                                            {
+                                                isChecked = true;
+                                            }
+                                        }
+                                        else
+                                        if (currentTransactionCustomFieldCatalog != null)
+                                        {
+                                            if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
+                                            {
+                                                isChecked = true;
+                                            }
+                                        }
                                         <div>
-                                            <input id="customControl_@customControlValueCatalog.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />
+                                            <input id="customControl_@customControlValueCatalog.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
                                             <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
                                         </div>
                                         @*<input id="customControl_@customControl.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />*@
@@ -728,7 +728,7 @@
                                         }
 
                                         <div>
-                                            <input id="customControl_@customControlValueCatalog.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="radio" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />
+                                            <input id="customControl_@customControlValueCatalog.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="radio" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
                                             <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
                                         </div>
                                         @*htmlAttributes.Remove("label");
@@ -745,7 +745,7 @@
                                 </div>
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
-                                <select class="custom-control-chosen-select" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description">
+                                <select class="custom-control-multiple custom-control-chosen-select" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" @(customControl.IsRequired ? "required" : string.Empty) >
                                     <option value="">Seleccionar</option>
                                     @{
                                         foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
@@ -2681,6 +2681,18 @@
             return false;
         }
 
+        /*const customControlMultipleElements = $('.custom-control-multiple[required]');
+
+        for (let i = 0; i < customControlMultipleElements.length; i++) {
+            const currentElement = $(customControlMultipleElements[i]);
+
+            if ($(currentElement).val() == '' || $(currentElement).val() == null) {
+                alert('Seleccione valores para las listas desplegables requeridas');
+                currentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+        }*/
+
         let message = '¿Quiere guardar los cambios?';
 
         if (confirm(message) != true) {
@@ -2859,13 +2871,11 @@
                     let parentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
 
                     while (parentAttributeID != null && parentAttributeID > 0) {
-                        console.log('entró')
                         auxParentAttributeRow = $('.attribute-row[data-attributeid="' + parentAttributeID + '"]');
                         parentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
                     }
 
                     if (parentAttributeID == null || parentAttributeID == 0) {
-                        console.log('salió')
                         isControllable = $(auxParentAttributeRow).data('iscontrollable') == 'True';
                     }
                 }

@@ -27,7 +27,7 @@ namespace SCC.ViewModels
         public string[] SupervisorNamesArray { get; set; }
         public string[] EvaluatorUserNamesArray { get; set; }
         public string[] BIFieldNamesArray { get; set; }
-        public Dictionary<string, string> TransactionCustomFieldCatalogNamesAndValues { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> TransactionCustomFieldCatalogNamesAndValues { get; set; } = null;
 
         public class CustomControlHelper
         {
@@ -105,6 +105,8 @@ namespace SCC.ViewModels
 
         void SetTransactionCustomFieldCatalogList()
         {
+            this.TransactionCustomFieldCatalogNamesAndValues = new Dictionary<string, string>();
+
             try
             {
                 List<TransactionCustomFieldCatalog> currentTransactionCustomFieldCatalogList = Controllers.OverallController.Deserialize<List<TransactionCustomFieldCatalog>>(this.TransactionCustomFieldCatalog);

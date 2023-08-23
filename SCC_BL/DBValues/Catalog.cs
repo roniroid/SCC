@@ -612,7 +612,7 @@ namespace SCC_BL.DBValues
             BCE = 1344,
             FCE = 1345,
             NCE = 1346,
-            GCE = 3415,
+            GCE = 3419,
         }
 
         public enum TRANSACTION_COMMENT_TYPE

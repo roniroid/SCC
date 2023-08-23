@@ -557,7 +557,7 @@
                                 List<Catalog> errotTypeCatalogListTemp = SCC_BL.Attribute.GetAttributeErrorType();
                             }
 
-                            @foreach (SCC_BL.Attribute attribute in Model.AttributeList.OrderBy(e => e.Order))
+                            @foreach (SCC_BL.Attribute attribute in Model.AttributeList)
                             {
                                 List<int> checkedAttributes = new List<int>();
 
@@ -574,7 +574,7 @@
                                     spaceCounter++;
                                 }
 
-                                <tr class="attribute-table-row" data-attributeorder="@attribute.Order" data-attributeid="@attribute.ID" data-attributedeleted="@(attribute.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED)" data-attributeghostid="@attributeCounter" title="@attribute.Description">
+                                <tr class="attribute-table-row" data-attributeorder="@attribute.Order" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-attributedeleted="@(attribute.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED)" data-attributeghostid="@attributeCounter" data-haschanged="false" title="@attribute.Description">
                                     <td class="td-name">
                                         <div class="attribute-container">
                                             @for (int i = 0; i < spaceCounter; i++)
@@ -730,6 +730,18 @@
 
                 response.forEach(e => {
                     attributeValueCatalogList.push(e);
+
+                    let actualRow = $('#accordionAttribute .accordion-item #attributeContainer .accordion-body #tbAttributeList #attributeTableBody .attribute-table-row[data-attributeid="' + parseInt(sessionStorage.getItem('attributeid')) + '"]');
+
+                    if (actualRow != null) {
+                        $(actualRow).data('haschanged', 'true');
+                    } else {
+                        actualRow = $('#accordionAttribute .accordion-item #attributeContainer .accordion-body #tbAttributeList #attributeTableBody .attribute-table-row[data-attributeghostid="' + parseInt(sessionStorage.getItem('attributeghostid')) + '"]');
+
+                        if (actualRow != null) {
+                            $(actualRow).data('haschanged', 'true');
+                        }
+                    }
                 });
 
                 $('#attributeValueOptionTableBody').html('');
@@ -1050,6 +1062,8 @@
                 $(previousRow).data('attributeorder', orderActualRow)
 
                 $(previousRow).before($(actualRow));
+
+                $(actualRow).data('haschanged', 'true');
             }
         });
 
@@ -1065,6 +1079,8 @@
                 $(nextRow).data('attributeorder', orderActualRow)
 
                 $(nextRow).after($(actualRow));
+
+                $(actualRow).data('haschanged', 'true');
             }
         });
 
@@ -1074,6 +1090,8 @@
 
             if ($(container).find('.attribute-marginator').length > 0) {
                 $(container).find('.attribute-marginator').first().remove();
+
+                $(actualRow).data('haschanged', 'true');
             }
         });
 
@@ -1083,9 +1101,26 @@
 
             if ($(actualRow)[0] != $(actualRow).parent().find('>:first-child')[0]) {
                 $(container).prepend('<div class="attribute-marginator px-4"></div>');
+
+                $(actualRow).data('haschanged', 'true');
             }
         });
     }
+
+    $('.attribute-input-container .attribute-value-container').off('change').on('change', function (e) {
+        let actualRow = $(e.currentTarget).parent().parent().parent().parent();
+        $(actualRow).data('haschanged', 'true');
+    });
+
+    $('.td-error-type .select-error-type-select').off('change').on('change', function (e) {
+        let actualRow = $(e.currentTarget).parent().parent();
+        $(actualRow).data('haschanged', 'true');
+    });
+
+    $('.attribute-check-box').off('change').on('change', function (e) {
+        let actualRow = $(e.currentTarget).parent().parent();
+        $(actualRow).data('haschanged', 'true');
+    });
 
     function loadAttributeValueCatalog() {
         attributeValueCatalogList
@@ -1218,6 +1253,7 @@
                 newRow.dataset.attributeid = 0;
                 newRow.dataset.attributedeleted = 'False';
                 newRow.dataset.attributeghostid = attributeCounter;
+                newRow.dataset.haschanged = true;
 
                 let newColumnName = document.createElement('td');
                 newColumnName.classList.add('td-name');
@@ -1628,7 +1664,7 @@
 
         getFormObject()
             .then((response) => {
-                @*console.log(response);*@
+                //console.log(response);
 
                 $('#btnSubmit').prop('disabled', true);
                 $.ajax({
@@ -1840,6 +1876,8 @@
                     let isControllable = $(e).find('td.td-is-controllable').find('input.attribute-control').first().is(':checked');
                     let isScorable = $(e).find('td.td-is-scorable').find('input.attribute-control').first().is(':checked');
 
+                    let hasChanged = $(e).data('haschanged') == 'true';
+
                     if
                     (
                         (name != '' && name != null) &&
@@ -1866,7 +1904,8 @@
                             "BasicInfoID": 0,
                             "BasicInfoID": null,
                             "AttributeGhostID": attributeGhostID,
-                            "ParentAttributeID": parentAttributeID
+                            "ParentAttributeID": parentAttributeID,
+                            "HasChanged": hasChanged
                         };
 
                         optionList.push(jsonOption);
@@ -1879,6 +1918,84 @@
             }
         });
     }
+
+   @*function getAttributeList() {
+        return new Promise((resolve, reject) => {
+            try {
+                let optionList = [];
+
+                $('.attribute-table-row').each((index, e) => {
+                    let attributeID = parseInt($(e).data('attributeid'));
+                    let attributeGhostID = parseInt($(e).data('attributeghostid'));
+                    let orderNumber = parseInt($(e).data('attributeorder'));
+                    let valueDeleted = $(e).data('attributedeleted') == 'True';
+                    let parentAttributeGhostID = 0;//Procesar
+                    let parentAttributeID = 0;//Procesar
+
+                    if ($(e).find('td.td-name .attribute-container .attribute-marginator').length > 0) {
+                        let foundMarginatorCount = $(e).find('td.td-name .attribute-container .attribute-marginator').length;
+
+                        let auxControl = $(e);
+                        while ($(auxControl).find('td.td-name .attribute-container .attribute-marginator').length >= foundMarginatorCount) {
+                            auxControl = $(auxControl).prev();
+                        }
+
+                        parentAttributeGhostID = parseInt($(auxControl).data('attributeghostid'));
+                        parentAttributeID = parseInt($(auxControl).data('attributeid'));
+                    }
+
+                    let name = $(e).find('td.td-name').find('input.attribute-control').first().val();
+                    let description = $(e).find('td.td-name').find('input.attribute-control').first().val();
+                    let errorType = $(e).find('td.td-error-type').find('select.attribute-control').first().val();
+                    let maxScore = $(e).find('td.td-max-score').find('input.attribute-control').first().val();
+                    let topDownScore = $(e).find('td.td-top-down-score').find('input.attribute-control').first().is(':checked');
+                    let forceComment = $(e).find('td.td-force-comment').find('input.attribute-control').first().is(':checked');
+                    let isKnown = $(e).find('td.td-is-known').find('input.attribute-control').first().is(':checked');
+                    let isControllable = $(e).find('td.td-is-controllable').find('input.attribute-control').first().is(':checked');
+                    let isScorable = $(e).find('td.td-is-scorable').find('input.attribute-control').first().is(':checked');
+
+                    let hasChanged = $(e).data('haschanged') == 'true';
+
+                    if
+                    (
+                        (name != '' && name != null) &&
+                        (errorType != '' && errorType != null) &&
+                        (orderNumber != '' && orderNumber != null) &&
+                        valueDeleted != true
+                    )
+                    {
+                        let jsonOption =
+                        {
+                            "ID": attributeID,
+                            "FormID": @Model.ID,
+                            "Name": name,
+                            "Description": description,
+                            "ErrorTypeID": errorType,
+                            "ParentAttributeGhostID": parentAttributeGhostID,
+                            "MaxScore": maxScore,
+                            "TopDownScore": topDownScore,
+                            "HasForcedComment": forceComment,
+                            "IsKnown": isKnown,
+                            "IsControllable": isControllable,
+                            "IsScorable": isScorable,
+                            "Order": orderNumber,
+                            "BasicInfoID": 0,
+                            "BasicInfoID": null,
+                            "AttributeGhostID": attributeGhostID,
+                            "ParentAttributeID": parentAttributeID,
+                            "HasChanged": hasChanged
+                        };
+
+                        optionList.push(jsonOption);
+                    }
+                });
+
+                resolve(optionList);
+            } catch (e) {
+                reject(e);
+            }
+        });
+    }*@
 
     $('#btnCancel').click(() => {
         window.open('@Url.Action(nameof(FormController.Edit), mainControllerName)', '_self');
@@ -1928,81 +2045,6 @@
         $('#tbSelectedBIFieldList').DataTable().search(currentSearch, false, false).draw();
 
         return await response;
-    }
-
-    function getAttributeList() {
-        return new Promise((resolve, reject) => {
-            try {
-                let optionList = [];
-
-                $('.attribute-table-row').each((index, e) => {
-                    let attributeID = parseInt($(e).data('attributeid'));
-                    let attributeGhostID = parseInt($(e).data('attributeghostid'));
-                    let orderNumber = parseInt($(e).data('attributeorder'));
-                    let valueDeleted = $(e).data('attributedeleted') == 'True';
-                    let parentAttributeGhostID = 0;//Procesar
-                    let parentAttributeID = 0;//Procesar
-
-                    if ($(e).find('td.td-name .attribute-container .attribute-marginator').length > 0) {
-                        let foundMarginatorCount = $(e).find('td.td-name .attribute-container .attribute-marginator').length;
-
-                        let auxControl = $(e);
-                        while ($(auxControl).find('td.td-name .attribute-container .attribute-marginator').length >= foundMarginatorCount) {
-                            auxControl = $(auxControl).prev();
-                        }
-
-                        parentAttributeGhostID = parseInt($(auxControl).data('attributeghostid'));
-                        parentAttributeID = parseInt($(auxControl).data('attributeid'));
-                    }
-
-                    let name = $(e).find('td.td-name').find('input.attribute-control').first().val();
-                    let description = $(e).find('td.td-name').find('input.attribute-control').first().val();
-                    let errorType = $(e).find('td.td-error-type').find('select.attribute-control').first().val();
-                    let maxScore = $(e).find('td.td-max-score').find('input.attribute-control').first().val();
-                    let topDownScore = $(e).find('td.td-top-down-score').find('input.attribute-control').first().is(':checked');
-                    let forceComment = $(e).find('td.td-force-comment').find('input.attribute-control').first().is(':checked');
-                    let isKnown = $(e).find('td.td-is-known').find('input.attribute-control').first().is(':checked');
-                    let isControllable = $(e).find('td.td-is-controllable').find('input.attribute-control').first().is(':checked');
-                    let isScorable = $(e).find('td.td-is-scorable').find('input.attribute-control').first().is(':checked');
-
-                    if
-                    (
-                        (name != '' && name != null) &&
-                        (errorType != '' && errorType != null) &&
-                        (orderNumber != '' && orderNumber != null) &&
-                        valueDeleted != true
-                    )
-                    {
-                        let jsonOption =
-                        {
-                            "ID": attributeID,
-                            "FormID": @Model.ID,
-                            "Name": name,
-                            "Description": description,
-                            "ErrorTypeID": errorType,
-                            "ParentAttributeGhostID": parentAttributeGhostID,
-                            "MaxScore": maxScore,
-                            "TopDownScore": topDownScore,
-                            "HasForcedComment": forceComment,
-                            "IsKnown": isKnown,
-                            "IsControllable": isControllable,
-                            "IsScorable": isScorable,
-                            "Order": orderNumber,
-                            "BasicInfoID": 0,
-                            "BasicInfoID": null,
-                            "AttributeGhostID": attributeGhostID,
-                            "ParentAttributeID": parentAttributeID
-                        };
-
-                        optionList.push(jsonOption);
-                    }
-                });
-
-                resolve(optionList);
-            } catch (e) {
-                reject(e);
-            }
-        });
     }
 
     $('#btnCancel').click(() => {

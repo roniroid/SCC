@@ -29,8 +29,6 @@ namespace SCC.ViewModels
             public int GeneralBusinessCriticalErrorCountFail { get; set; } = 0;
             public int GeneralFulfillmentCriticalErrorCountFail { get; set; } = 0;
 
-            public double GeneralNonCriticalErrorAverageResult { get; set; } = 0;
-
             public int AccurateResultCountSuccess { get; set; } = 0;
             public int AccurateFinalUserCriticalErrorCountSuccess { get; set; } = 0;
             public int AccurateBusinessCriticalErrorCountSuccess { get; set; } = 0;
@@ -40,8 +38,6 @@ namespace SCC.ViewModels
             public int AccurateFinalUserCriticalErrorCountFail { get; set; } = 0;
             public int AccurateBusinessCriticalErrorCountFail { get; set; } = 0;
             public int AccurateFulfillmentCriticalErrorCountFail { get; set; } = 0;
-
-            public double AccurateNonCriticalErrorAverageResult { get; set; } = 0;
 
             public int ControllableResultCountSuccess { get; set; } = 0;
             public int ControllableFinalUserCriticalErrorCountSuccess { get; set; } = 0;
@@ -53,8 +49,6 @@ namespace SCC.ViewModels
             public int ControllableBusinessCriticalErrorCountFail { get; set; } = 0;
             public int ControllableFulfillmentCriticalErrorCountFail { get; set; } = 0;
 
-            public double ControllableNonCriticalErrorAverageResult { get; set; } = 0;
-
             //RESULTS:
 
             public Double GeneralCriticalErrorPercentage { get; set; }
@@ -62,15 +56,21 @@ namespace SCC.ViewModels
             public Double GeneralBusinessCriticalErrorPercentage { get; set; }
             public Double GeneralFulfillmentCriticalErrorPercentage { get; set; }
 
+            public Double GeneralNonCriticalErrorAverageResult { get; set; } = 0;
+
             public Double AccurateCriticalErrorPercentage { get; set; }
             public Double AccurateFinalUserCriticalErrorPercentage { get; set; }
             public Double AccurateBusinessCriticalErrorPercentage { get; set; }
             public Double AccurateFulfillmentCriticalErrorPercentage { get; set; }
 
+            public Double AccurateNonCriticalErrorAverageResult { get; set; } = 0;
+
             public Double ControllableCriticalErrorPercentage { get; set; }
             public Double ControllableFinalUserCriticalErrorPercentage { get; set; }
             public Double ControllableBusinessCriticalErrorPercentage { get; set; }
             public Double ControllableFulfillmentCriticalErrorPercentage { get; set; }
+
+            public Double ControllableNonCriticalErrorAverageResult { get; set; } = 0;
 
             public AccuracyTrendByPeriod(
                 DateTime period,
@@ -78,16 +78,20 @@ namespace SCC.ViewModels
                 Double generalFinalUserCriticalErrorPercentage, 
                 Double generalBusinessCriticalErrorPercentage, 
                 Double generalFulfillmentCriticalErrorPercentage,
+                Double generalNonCriticalErrorPercentage,
 
                 Double accurateCriticalErrorPercentage,
                 Double accurateFinalUserCriticalErrorPercentage,
                 Double accurateBusinessCriticalErrorPercentage,
                 Double accurateFulfillmentCriticalErrorPercentage,
+                Double accurateNonCriticalErrorPercentage,
 
                 Double controllableCriticalErrorPercentage,
                 Double controllableFinalUserCriticalErrorPercentage,
                 Double controllableBusinessCriticalErrorPercentage,
                 Double controllableFulfillmentCriticalErrorPercentage,
+                Double controllableNonCriticalErrorPercentage,
+
                 int transactionCount)
             {
                 this.Period = period;
@@ -96,16 +100,19 @@ namespace SCC.ViewModels
                 this.GeneralFinalUserCriticalErrorPercentage = generalFinalUserCriticalErrorPercentage;
                 this.GeneralBusinessCriticalErrorPercentage = generalBusinessCriticalErrorPercentage;
                 this.GeneralFulfillmentCriticalErrorPercentage = generalFulfillmentCriticalErrorPercentage;
+                this.GeneralNonCriticalErrorAverageResult = generalNonCriticalErrorPercentage;
 
                 this.AccurateCriticalErrorPercentage = accurateCriticalErrorPercentage;
                 this.AccurateFinalUserCriticalErrorPercentage = accurateFinalUserCriticalErrorPercentage;
                 this.AccurateBusinessCriticalErrorPercentage = accurateBusinessCriticalErrorPercentage;
                 this.AccurateFulfillmentCriticalErrorPercentage = accurateFulfillmentCriticalErrorPercentage;
+                this.AccurateNonCriticalErrorAverageResult = accurateNonCriticalErrorPercentage;
 
                 this.ControllableCriticalErrorPercentage = controllableCriticalErrorPercentage;
                 this.ControllableFinalUserCriticalErrorPercentage = controllableFinalUserCriticalErrorPercentage;
                 this.ControllableBusinessCriticalErrorPercentage = controllableBusinessCriticalErrorPercentage;
                 this.ControllableFulfillmentCriticalErrorPercentage = controllableFulfillmentCriticalErrorPercentage;
+                this.ControllableNonCriticalErrorAverageResult = controllableNonCriticalErrorPercentage;
 
                 this.TransactionCount = transactionCount;
             }
@@ -225,6 +232,11 @@ namespace SCC.ViewModels
                             e.GeneralFulfilmentCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS)
                         .Count() / tempAccuracyTrendResultList.Count()) * 100;
 
+                Double percentageGeneralNonCriticalError =
+                    ((Double)tempAccuracyTrendResultList
+                        .Where(e =>
+                            e.GeneralNonCriticalErrorResult != null)
+                        .Sum(e => e.GeneralNonCriticalErrorResult) / tempAccuracyTrendResultList.Count());
 
                 Double percentageAccurateGlobalCriticalError =
                     ((Double)tempAccuracyTrendResultList
@@ -250,6 +262,11 @@ namespace SCC.ViewModels
                             e.AccurateFulfilmentCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS)
                         .Count() / tempAccuracyTrendResultList.Count()) * 100;
 
+                Double percentageAccurateNonCriticalError =
+                    ((Double)tempAccuracyTrendResultList
+                        .Where(e =>
+                            e.AccurateNonCriticalErrorResult != null)
+                        .Sum(e => e.AccurateNonCriticalErrorResult) / tempAccuracyTrendResultList.Count());
 
                 Double percentageControllableGlobalCriticalError =
                     ((Double)tempAccuracyTrendResultList
@@ -275,6 +292,12 @@ namespace SCC.ViewModels
                             e.ControllableFulfilmentCriticalErrorResultID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS)
                         .Count() / tempAccuracyTrendResultList.Count()) * 100;
 
+                Double percentageControllableNonCriticalError =
+                    ((Double)tempAccuracyTrendResultList
+                        .Where(e =>
+                            e.ControllableNonCriticalErrorResult != null)
+                        .Sum(e => e.ControllableNonCriticalErrorResult) / tempAccuracyTrendResultList.Count());
+
 
                 AccuracyTrendByPeriod accuracyTrendByPeriod = new AccuracyTrendByPeriod(
                         minDate,
@@ -282,16 +305,19 @@ namespace SCC.ViewModels
                         percentageGeneralFinalUserCriticalError > 0 ? percentageGeneralFinalUserCriticalError : 0,
                         percentageGeneralBusinessCriticalError > 0 ? percentageGeneralBusinessCriticalError : 0,
                         percentageGeneralFulfilmentCriticalError > 0 ? percentageGeneralFulfilmentCriticalError : 0,
+                        percentageGeneralNonCriticalError > 0 ? percentageGeneralNonCriticalError : 0,
 
                         percentageAccurateGlobalCriticalError > 0 ? percentageAccurateGlobalCriticalError : 0,
                         percentageAccurateFinalUserCriticalError > 0 ? percentageAccurateFinalUserCriticalError : 0,
                         percentageAccurateBusinessCriticalError > 0 ? percentageAccurateBusinessCriticalError : 0,
                         percentageAccurateFulfilmentCriticalError > 0 ? percentageAccurateFulfilmentCriticalError : 0,
+                        percentageAccurateNonCriticalError > 0 ? percentageAccurateNonCriticalError : 0,
 
                         percentageControllableGlobalCriticalError > 0 ? percentageControllableGlobalCriticalError : 0,
                         percentageControllableFinalUserCriticalError > 0 ? percentageControllableFinalUserCriticalError : 0,
                         percentageControllableBusinessCriticalError > 0 ? percentageControllableBusinessCriticalError : 0,
                         percentageControllableFulfilmentCriticalError > 0 ? percentageControllableFulfilmentCriticalError : 0,
+                        percentageControllableNonCriticalError > 0 ? percentageControllableNonCriticalError : 0,
                         tempAccuracyTrendResultList.Count()
                     );
 
@@ -299,6 +325,41 @@ namespace SCC.ViewModels
 
                 minDate = newMinDate;
             }
+
+            //Count the first intervals with no data from start
+            int noDataCountStart = 0;
+
+            foreach (AccuracyTrendByPeriod currentAccuracyTrendByPeriod in this.AccuracyTrendByPeriodList.OrderBy(e => e.Period))
+            {
+                if (currentAccuracyTrendByPeriod.TransactionCount == 0)
+                    noDataCountStart++;
+                else
+                    break;
+            }
+
+            this.AccuracyTrendByPeriodList = 
+                this.AccuracyTrendByPeriodList
+                    .Skip(
+                        noDataCountStart > 0 
+                            ? (noDataCountStart - 1) 
+                            : noDataCountStart)
+                    .ToList();
+
+            //Count the first intervals with no data from end
+            int noDataCountEnd = 0;
+
+            foreach (AccuracyTrendByPeriod currentAccuracyTrendByPeriod in this.AccuracyTrendByPeriodList.OrderByDescending(e => e.Period))
+            {
+                if (currentAccuracyTrendByPeriod.TransactionCount == 0)
+                    noDataCountEnd++;
+                else
+                    break;
+            }
+
+            this.AccuracyTrendByPeriodList = 
+                this.AccuracyTrendByPeriodList
+                    .Take(this.AccuracyTrendByPeriodList.Count() - (noDataCountEnd - 1))
+                    .ToList();
         }
     }
 }

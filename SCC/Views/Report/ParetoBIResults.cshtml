@@ -273,10 +273,16 @@
     console.log(DATA_POINTS);
 
     const REDUCE_ARRAY = ((sum, dataPoint) => sum + dataPoint);
-    const TOTAL_SUM = DATA_POINTS.length > 0 ? DATA_POINTS.reduce(REDUCE_ARRAY) : 0;
+    const TOTAL_SUM =
+        DATA_POINTS.length > 0
+            ? DATA_POINTS.reduce(REDUCE_ARRAY)
+            : 0;
 
     const CUMULATIVE_SUM = (sum => dataPoint => sum += ((dataPoint / TOTAL_SUM) * 100))(0);
-    const CUMULATIVE_DATA_POINTS = DATA_POINTS.map(CUMULATIVE_SUM);
+    const CUMULATIVE_DATA_POINTS =
+        DATA_POINTS.length > 0
+            ? DATA_POINTS.map(CUMULATIVE_SUM)
+            : 0;
 
     const PARETO_DATA_POINTS = [@String.Join(",", Model.ResultByBIFieldList.Select(e => e.Quantity))];
 

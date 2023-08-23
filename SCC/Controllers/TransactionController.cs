@@ -1186,7 +1186,10 @@ namespace SCC.Controllers
             using (Workspace workspace = new Workspace())
                 workspaceList =
                     workspace.SelectAll()
-                        .Where(e => e.Monitorable)
+                        .Where(e => 
+                            e.Monitorable &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DISABLED)
                         .ToList();
 
             using (Program program = new Program())
@@ -1194,7 +1197,9 @@ namespace SCC.Controllers
                     program.SelectWithForm()
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
-                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED &&
+                            (DateTime.Now < e.EndDate ||
+                            e.EndDate == null))
                         .GroupBy(e =>
                             e.ID)
                         .Select(e =>
@@ -2514,7 +2519,7 @@ namespace SCC.Controllers
 
             string comment = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.COMMENT].ToString().Trim();
 
-            if (string.IsNullOrEmpty(comment))
+            /*if (string.IsNullOrEmpty(comment))
             {
                 _transactionImportErrorList.Add(
                     new SCC_BL.Helpers.Transaction.Import.Error(
@@ -2524,7 +2529,7 @@ namespace SCC.Controllers
                         (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.COMMENT));
 
                 hasError = true;
-            }
+            }*/
 
             //GENERAL RESULTS
 
@@ -3226,6 +3231,19 @@ namespace SCC.Controllers
                             {
                                 subattribute.SetSubattributeDataByName();
 
+                                if (subattribute == null)
+                                {
+                                    _transactionImportErrorList.Add(
+                                        new SCC_BL.Helpers.Transaction.Import.Error(
+                                            transactionImportErrorElementName,
+                                            SCC_BL.Results.Transaction.ImportData.ErrorList.Attribute.NO_SUBATTRIBUTE_NAME_FOUND
+                                                .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, currentSubattributeName),
+                                            currentRowCount,
+                                            currentCellIndex + 2));
+
+                                    break;
+                                }
+                                else
                                 if (subattribute.ID <= 0)
                                 {
                                     _transactionImportErrorList.Add(
@@ -3902,13 +3920,46 @@ namespace SCC.Controllers
 
                         SCC_BL.BusinessIntelligenceField subfield = new SCC_BL.BusinessIntelligenceField();
 
+                        int indexTempBusinessIntelligenceFieldHierarchy = tempBusinessIntelligenceFieldHierarchy.Count() - 1;
+                        bool foundTempBusinessIntelligenceField = false;
+
+                        while (indexTempBusinessIntelligenceFieldHierarchy >= 0)
+                        {
+                            using (SCC_BL.BusinessIntelligenceField subBusinessIntelligenceField = SCC_BL.BusinessIntelligenceField.BusinessIntelligenceFieldWithParentIDAndName(tempBusinessIntelligenceFieldHierarchy[indexTempBusinessIntelligenceFieldHierarchy].ID, currentSubfieldName))
+                            {
+                                try
+                                {
+                                    subBusinessIntelligenceField.SetDataByParentIDAndName();
+
+                                    if (subBusinessIntelligenceField.ID > 0 && subBusinessIntelligenceField.ID != null)
+                                    {
+                                        foundTempBusinessIntelligenceField = true;
+                                        break;
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    _transactionImportErrorList.Add(
+                                        new SCC_BL.Helpers.Transaction.Import.Error(
+                                            transactionImportErrorElementName,
+                                            SCC_BL.Results.Transaction.ImportData.ErrorList.BusinessIntelligenceField.UNKNOWN
+                                                .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
+                                            currentRowCount,
+                                            currentCellIndex));
+                                }
+                            }
+
+                            indexTempBusinessIntelligenceFieldHierarchy--;
+                        }
+
+                        if (!foundTempBusinessIntelligenceField) continue;
+
                         try
                         {
-
                             subfield =
                                 form.BusinessIntelligenceFieldList
                                     .Where(e =>
-                                        e.ParentBIFieldID == tempBusinessIntelligenceFieldHierarchy.LastOrDefault().ID &&
+                                        e.ParentBIFieldID == tempBusinessIntelligenceFieldHierarchy[indexTempBusinessIntelligenceFieldHierarchy].ID &&
                                         e.Name.Trim().ToUpper().Equals(currentSubfieldName.Trim().ToUpper()))
                                     .FirstOrDefault();
 

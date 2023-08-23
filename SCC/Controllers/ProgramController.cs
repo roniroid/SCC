@@ -29,7 +29,9 @@ namespace SCC.Controllers
                     programManagementViewModel.ProgramList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
-                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED &&
+                            (DateTime.Now <= e.EndDate ||
+                            e.EndDate == null))
                         .ToList();
 
             return View(programManagementViewModel);

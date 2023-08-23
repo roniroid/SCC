@@ -491,12 +491,20 @@
         //updateAttributeList();
     });
 
+    let mustLoadAttributes = true;
+
     $('#@nameof(Model.ProgramIDArray)').change(() => {
-        updateAttributeList();
+        mustLoadAttributes = true;
     });
 
     $('#@nameof(Model.ErrorTypeIDArray)').change(() => {
-        updateAttributeList();
+        mustLoadAttributes = true;
+    })
+
+    $('#@nameof(Model.AttributeIDArray)').on('chosen:showing_dropdown', function (event, chosen) {
+        if (mustLoadAttributes) {
+            updateAttributeList();
+        }
     });
 
     async function updateAttributeList() {
@@ -505,7 +513,7 @@
             ($('#@nameof(Model.ErrorTypeIDArray)').val() == null || $('#@nameof(Model.ErrorTypeIDArray)').val().length == 0)) {
             $('#@nameof(Model.AttributeIDArray)').html('');
             $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");
-            alert('Por favor, seleccione los programas y los tipos de error para obtener los atributos');
+            //alert('Por favor, seleccione los programas y los tipos de error para obtener los atributos');
             return false;
         }
 
@@ -515,6 +523,8 @@
             'programIDArray': $('#@nameof(Model.ProgramIDArray)').val(),
             'errorTypeIDArray': $('#@nameof(Model.ErrorTypeIDArray)').val()
         };
+
+        showWaitingModal();
 
         let response =
             await fetch(
@@ -531,11 +541,15 @@
 
         $('#@nameof(Model.AttributeIDArray)').html('');
 
-        $(response).each((index, e) => {
-            $('#@nameof(Model.AttributeIDArray)').append(`<option value="${ e.ID }">${ e.Name }</option>`);
-        });
+        for (let i = 0; i < response.length; i++) {
+            $('#@nameof(Model.AttributeIDArray)').append(`<option value="${ response[i].ID }">${ response[i].Name }</option>`);
+        }
 
         $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");
+
+        hideWaitingModal();
+
+        mustLoadAttributes = false;
     }
 
     $('.report-no-constraint').click(() => {

@@ -83,12 +83,14 @@
     });
 
     function loadReportConfiguration(reportTypeID) {
+        showWaitingModal();
+
         const containerID = 'reportConfigurationContainer';
 
         $('#' + containerID).html('');
 
         let url = '@Url.Action(nameof(ReportController.ReportTypeView), mainControllerName)?reportTypeID=' + reportTypeID;
 
-        loadHtmlToControl(url, containerID);
+        loadHtmlToControl(url, containerID, () => hideWaitingModal(), () => hideWaitingModal());
     }
 </script>

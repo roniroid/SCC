@@ -817,7 +817,7 @@ namespace SCC_BL.Results
 					public const string NO_COLUMNS = "No se han encontrado celdas que contentan atributos en el archivo";
 					public const string NO_NAME_ENTERED = "No se ha encontrado el nombre en el archivo para el " + ELEMENT_NAME;
 					public const string NO_NAME_FOUND = "No se ha encontrado al " + ELEMENT_NAME + " en el sistema.\r\n\tNombre: " + REPLACE_CUSTOM_CONTENT;
-					public const string NO_SUBFIELD_NAME_FOUND = "No se ha encontrado al subatributo en el sistema.\r\n\tNombre: " + REPLACE_CUSTOM_CONTENT;
+					public const string NO_SUBFIELD_NAME_FOUND = "No se ha encontrado al campo de inteligencia de negocios en el sistema.\r\n\tNombre: " + REPLACE_CUSTOM_CONTENT;
 
 					public const string UNKNOWN = "Ha ocurrido un error al buscar al " + ELEMENT_NAME + ".\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
 				}

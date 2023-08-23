@@ -184,7 +184,9 @@
                 @foreach (Program program in Model.ProgramList)
                 {
                     string tableRowClass = string.Empty;
-                    if (program.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED)
+                    if (
+                        program.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED ||
+                        DateTime.Now > program.EndDate)
                     {
                         tableRowClass +=
                             string.IsNullOrEmpty(tableRowClass) ?

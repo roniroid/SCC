@@ -115,6 +115,10 @@
     </div>
 </div>
 
+@{
+    bool isControllable = (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyBySubattribute.IS_CONTROLLABLE];
+}
+
 <div class="tableContainer mt-4">
     <table class="display cell-border text-center" id="tbInfo">
         <thead>
@@ -147,7 +151,8 @@
                 int totalCumulativeSum = 0;
 
                 Model.OrderHelperList
-                    .ForEach(e => { 
+                    .ForEach(e =>
+                    {
                         totalCumulativeSum += Model.AccuracyBySubattributeResultList.Where(f => f.AttributeID == e.AttributeID && f.SuccessfulResult).Count();
                     });
             }
@@ -287,10 +292,16 @@
     const DATA_POINTS = [@String.Join(",", Model.ResultBySubattributeList.Select(e => Model.TotalTransactions - e.Quantity))];
 
     const REDUCE_ARRAY = ((sum, dataPoint) => sum + dataPoint);
-    const TOTAL_SUM = DATA_POINTS.reduce(REDUCE_ARRAY);
+    const TOTAL_SUM =
+        DATA_POINTS.length > 0
+            ? DATA_POINTS.reduce(REDUCE_ARRAY)
+            : 0;
 
     const CUMULATIVE_SUM = (sum => dataPoint => sum += ((dataPoint / TOTAL_SUM) * 100))(0);
-    const CUMULATIVE_DATA_POINTS = DATA_POINTS.map(CUMULATIVE_SUM);
+    const CUMULATIVE_DATA_POINTS =
+        DATA_POINTS.length > 0
+            ? DATA_POINTS.map(CUMULATIVE_SUM)
+            : 0;
 
     /*console.log('DATA_POINTS');
     console.log(DATA_POINTS);
@@ -316,10 +327,12 @@
                     'rgba(0, 0, 0, 1)'
                 ],
                 borderWidth: 2,
-                successCount: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.Quantity))],
-                transactionAttributeIDList: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.TransactionAttributeID))],
-                totalCount: @Model.TotalTransactions,
                 yAxisID: 'y1',
+                customData: {
+                    successCount: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.Quantity))],
+                    transactionAttributeIDList: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.TransactionAttributeID))],
+                    totalCount: @Model.TotalTransactions,
+                }
             },{
                 data: DATA_POINTS,
                 @*data: [@String.Join(",", Model.ResultBySubattributeList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
@@ -330,12 +343,19 @@
                     'rgba(118, 178, 240, 0.8)',
                 ],
                 borderWidth: 1,
-                hasChildren: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.HasChildren.ToString().ToLower()))],
-                successCount: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.Quantity))],
-                transactionAttributeIDList: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.TransactionAttributeID))],
-                totalCount: @Model.TotalTransactions,
                 type: 'bar',
                 barPercentage: 1,
+                customData: {
+                    hasChildren: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.HasChildren.ToString().ToLower()))],
+                    successCount: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.Quantity))],
+                    transactionAttributeIDList: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.TransactionAttributeID))],
+                    totalCount: @Model.TotalTransactions,
+                    currentAttributeID: [
+                        @String.Join(
+                            ",",
+                            Model.ResultBySubattributeList
+                                .Select(e => e.AttributeID))],
+                }
             }
         ]
     };
@@ -504,7 +524,7 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `(${context.dataset.successCount[context.dataIndex]}/${context.dataset.totalCount})`
+                        label: (context) => `(${context.dataset.customData.successCount[context.dataIndex]}/${context.dataset.customData.totalCount})`
                     }
                 },
                 chartAreaBorder: {
@@ -534,7 +554,7 @@
                     /*const label = myChart.data.labels[firstPoint.index];
                     const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
 
-                    let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].hasChildren[firstPoint.index];
+                    let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
 
                     if (hasChildren) {
                         event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
@@ -554,15 +574,19 @@
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
 
-            let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].hasChildren[firstPoint.index];
+            let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
 
             if (hasChildren) {
+                const selectedTransactionID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
+
                 const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
 
                 const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
 
+                $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedTransactionID + '" /> ');
                 $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyBySubattributeResultList.Select(e => e.TransactionAttributeID))" /> ');
                 $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+                $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');
 
                 $(document.body).append($form);
 

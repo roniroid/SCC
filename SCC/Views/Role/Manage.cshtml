@@ -88,7 +88,7 @@
                         </div>
                         <div class="row property-field @(actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_ROLES) ? string.Empty : "d-none")">
                             <div class="col-5 property-field-label">
-                                Permisos disponibles <span class="required">*</span>
+                                Permisos disponibles 
                             </div>
                             <div class="col-7">
                                 @Html.DropDownList(
@@ -366,12 +366,12 @@
     $('#btnSubmit').click(() => {
         const requiredAdviseElement = $('.required-advise');
 
-        if (
+        /*if (
             ($('#permissionList').val() == '' || $('#permissionList').val() == null)
         ) {
             $(requiredAdviseElement).removeClass('d-none');
             return false;
-        }
+        }*/
 
         const message = '¿Quiere guardar los cambios?';
 

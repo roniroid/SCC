@@ -1155,6 +1155,8 @@ namespace SCC_BL.Settings
                 
                 public struct _AccuracyByAttribute
                 {
+                    public const string IS_CONTROLLABLE = "IS_CONTROLLABLE";
+
                     public struct ProgramList
                     {
                         public const string NAME = "REPORT_ATTRIBUTE_ACCURACY_PROGRAM_LIST";
@@ -1222,7 +1224,7 @@ namespace SCC_BL.Settings
                     }
                 }
                 
-                public struct AccuracyByAttribute
+                public struct _AccuracyBySubattribute
                 {
                     public const string IS_CONTROLLABLE = "IS_CONTROLLABLE";
                 }

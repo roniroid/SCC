@@ -177,11 +177,9 @@ namespace SCC.Controllers
                     errorTypeList,
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
-                    debugging
-                        ? errorTypeList.Select(e => e.ID)
-                        : hasModel
-                            ? reportOverallAccuracyViewModel.ErrorTypeIDArray
-                            : null);
+                    hasModel
+                        ? reportOverallAccuracyViewModel.ErrorTypeIDArray
+                        : errorTypeList.Select(e => e.ID));
 
             if (!hasModel)
                 reportOverallAccuracyViewModel.AttributeNoConstraint = true;
@@ -547,11 +545,9 @@ namespace SCC.Controllers
                     errorTypeList,
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
-                    debugging
-                        ? errorTypeList.Select(e => e.ID)
-                        : hasModel
-                            ? reportComparativeByUserViewModel.ErrorTypeIDArray
-                            : null);
+                    hasModel
+                        ? reportComparativeByUserViewModel.ErrorTypeIDArray
+                        : errorTypeList.Select(e => e.ID));
 
             if (!hasModel)
                 reportComparativeByUserViewModel.AttributeNoConstraint = true;
@@ -730,11 +726,9 @@ namespace SCC.Controllers
                     errorTypeList,
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
-                    debugging
-                        ? errorTypeList.Select(e => e.ID)
-                        : hasModel
-                            ? reportComparativeByProgramViewModel.ErrorTypeIDArray
-                            : null);
+                    hasModel
+                        ? reportComparativeByProgramViewModel.ErrorTypeIDArray
+                        : errorTypeList.Select(e => e.ID));
 
             if (!hasModel)
                 reportComparativeByProgramViewModel.AttributeNoConstraint = true;
@@ -913,11 +907,9 @@ namespace SCC.Controllers
                     errorTypeList,
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
-                    debugging
-                        ? errorTypeList.Select(e => e.ID)
-                        : hasModel
-                            ? reportAttributeAccuracyViewModel.ErrorTypeIDArray
-                            : null);
+                    hasModel
+                        ? reportAttributeAccuracyViewModel.ErrorTypeIDArray
+                        : errorTypeList.Select(e => e.ID));
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.AttributeList.NAME] =
                 new MultiSelectList(
@@ -1055,11 +1047,9 @@ namespace SCC.Controllers
                     errorTypeList,
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
-                    debugging
-                        ? errorTypeList.Select(e => e.ID)
-                        : hasModel
-                            ? reportCalibratorComparisonViewModel.ErrorTypeIDArray
-                            : null);
+                    hasModel
+                        ? reportCalibratorComparisonViewModel.ErrorTypeIDArray
+                        : errorTypeList.Select(e => e.ID));
 
             return PartialView(nameof(_CalibratorComparison), reportCalibratorComparisonViewModel);
         }
@@ -1240,11 +1230,9 @@ namespace SCC.Controllers
                     errorTypeList,
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
-                    debugging
-                        ? errorTypeList.Select(e => e.ID)
-                        : hasModel
-                            ? reportAccuracyTrendViewModel.ErrorTypeIDArray
-                            : null);
+                    hasModel
+                        ? reportAccuracyTrendViewModel.ErrorTypeIDArray
+                        : errorTypeList.Select(e => e.ID));
 
             int? selectedInterval = null;
 
@@ -1441,11 +1429,9 @@ namespace SCC.Controllers
                     errorTypeList,
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
-                    debugging
-                        ? errorTypeList.Select(e => e.ID)
-                        : hasModel
-                            ? reportAccuracyTrendByAttributeViewModel.ErrorTypeIDArray
-                            : null);
+                    hasModel
+                        ? reportAccuracyTrendByAttributeViewModel.ErrorTypeIDArray
+                        : errorTypeList.Select(e => e.ID));
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrendByAttribute.AttributeList.NAME] =
                 new MultiSelectList(
@@ -1968,7 +1954,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult AccuracyByAttributeWithOverallAcurracy(string transactionIDList, int errorTypeID, int constraintTypeID, int totalTransactions, bool isControllable)
         {
-            ViewData[SCC_BL.Settings.AppValues.ViewData.Report.AccuracyByAttribute.IS_CONTROLLABLE] = isControllable;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.IS_CONTROLLABLE] = isControllable;
 
             List<SCC_BL.Reports.Results.AccuracyByAttribute> resultAccuracyByAttribute = new List<SCC_BL.Reports.Results.AccuracyByAttribute>();
             ViewModels.ReportResultsAccuracyByAttributeViewModel reportResultsAccuracyByAttributeViewModel = new ViewModels.ReportResultsAccuracyByAttributeViewModel();
@@ -1989,6 +1975,9 @@ namespace SCC.Controllers
             {
                 SaveProcessingInformation<SCC_BL.Results.Report.AccuracyByAttribute.Error>(null, null, reportResultsAccuracyByAttributeViewModel, ex);
             }
+
+            //reportResultsAccuracyByAttributeViewModel.RequestObject = reportResultsAccuracyByAttributeViewModel;
+            reportResultsAccuracyByAttributeViewModel.RequestObject.SetDescriptiveData();
 
             return View(nameof(ReportController.AccuracyByAttributeResults), reportResultsAccuracyByAttributeViewModel);
         }
@@ -2024,6 +2013,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult AccuracyByAttribute(ViewModels.ReportAccuracyByAttributeViewModel reportAccuracyByAttributeViewModel)
         {
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.IS_CONTROLLABLE] = reportAccuracyByAttributeViewModel.AttributeControllable == true;
+
             List<SCC_BL.Reports.Results.OverallAccuracy> resultOverallAccuracy = new List<SCC_BL.Reports.Results.OverallAccuracy>();
             ViewModels.ReportResultsOverallAccuracyViewModel reportResultsOverallAccuracyViewModel = new ViewModels.ReportResultsOverallAccuracyViewModel();
 
@@ -2203,6 +2194,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult AccuracyBySubattribute(int selectedAttributeID, string transactionIDList, int totalTransactions, bool mustBeControllable = false)
         {
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyBySubattribute.IS_CONTROLLABLE] = mustBeControllable;
+
             List<SCC_BL.Reports.Results.AccuracyBySubattribute> resultAccuracyBySubattribute = new List<SCC_BL.Reports.Results.AccuracyBySubattribute>();
             ViewModels.ReportResultsAccuracyBySubattributeViewModel reportResultsAccuracyBySubattributeViewModel = new ViewModels.ReportResultsAccuracyBySubattributeViewModel();
 

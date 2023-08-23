@@ -175,20 +175,23 @@ namespace SCC_BL
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.TRANSACTION_ID]),
 						Convert.ToDateTime(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.TRANSACTION_DATE]),
 
-                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]),
+						Convert.ToDouble(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALNONCRITICALERRORRESULT]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.GENERALRESULTID]),
 
-                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATERESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]),
+						Convert.ToDouble(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATENONCRITICALERRORRESULT]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.ACCURATERESULTID]),
 
-                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLERESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]));
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]),
+                        Convert.ToDouble(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLENONCRITICALERRORRESULT]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrend.ResultFields.CONTROLLABLERESULTID]));
 
 					accuracyTrendResultList.Add(accuracyTrendResult);
 				}

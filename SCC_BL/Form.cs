@@ -195,7 +195,16 @@ namespace SCC_BL
 				}
 			});
         }*/
+
         void SetAttributeList()
+        {
+            this.AttributeList = new List<Attribute>();
+
+            using (Attribute attribute = Attribute.AttributeWithFormID(this.ID))
+                this.AttributeList = attribute.SelectHierarchyByFormID(true);
+        }
+
+        /*void SetAttributeList()
         {
             //this.AttributeList = Attribute.AttributeWithFormID(this.ID).SelectByFormID();
 
@@ -234,7 +243,7 @@ namespace SCC_BL
 				this.AttributeList
 					.OrderBy(e => e.Order)
 					.ToList();
-        }
+        }*/
 
         public void SetDataByName(bool simpleData = false)
 		{
@@ -507,7 +516,7 @@ namespace SCC_BL
 				//Update existing ones
 				List<Attribute> updatedAttributeList = new List<Attribute>();
 
-				foreach (Attribute attribute in attributeList)
+				foreach (Attribute attribute in attributeList.Where(e => e.HasChanged))
 				{
 					if (this.AttributeList.Select(e => e.ID).Contains(attribute.ID))
 					{
@@ -558,7 +567,7 @@ namespace SCC_BL
 				//Create new ones
 				List<Attribute> insertedAttributeList = new List<Attribute>();
 
-				foreach (Attribute attribute in attributeList)
+				foreach (Attribute attribute in attributeList.Where(e => e.HasChanged))
 				{
 					if (!this.AttributeList.Select(e => e.ID).Contains(attribute.ID))
 					{

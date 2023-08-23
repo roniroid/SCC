@@ -90,6 +90,29 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
+		public System.Data.DataTable SelectHierarchyByFormID(int formID)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					SqlParameter[] parameters = new SqlParameter[] {
+						db.CreateParameter(Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.Parameters.FORMID, formID, System.Data.SqlDbType.Int)
+					};
+
+					return
+						db.Select(
+							Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.NAME,
+							parameters
+						);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
 		public System.Data.DataTable SelectIDListByFormID(int formID)
 		{
 			try

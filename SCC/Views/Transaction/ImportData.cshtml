@@ -53,7 +53,7 @@
                                 Archivo Excel <span class="required">*</span>
                             </div>
                             <div class="col-7">
-                                <input type="file" name="file" max-size="@(SCC_BL.Settings.Overall.MAX_FILE_SIZE_MB * 1000)" accept=".csv, .xls, xlsx, xlt, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+                                <input type="file" name="file" max-size="@(SCC_BL.Settings.Overall.MAX_FILE_SIZE_MB * 1000)" accept=".csv, .xls, xlsx, xlt, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" required />
                             </div>
                         </div>
                     </div>
@@ -124,6 +124,7 @@
     $(document).ready(function () {
         fetchDatatableBasicData().then(response => {
             let data = response;
+            data['order'] = [[2, "desc"]];
 
             startDataTable('#tbInfo', data);
         });
@@ -145,5 +146,6 @@
 
     $('#frmManage').submit(() => {
         $('#btnSubmit').prop('disabled', true);
+        showWaitingModal();
     });
 </script>

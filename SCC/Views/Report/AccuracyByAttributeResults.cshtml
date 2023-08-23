@@ -119,7 +119,7 @@
 </div>
 
 @{
-    bool isControllable = (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Report.AccuracyByAttribute.IS_CONTROLLABLE];
+    bool isControllable = (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.IS_CONTROLLABLE];
 }
 
 <div class="tableContainer mt-4">
@@ -272,17 +272,19 @@
                     'rgb(255, 190, 113, 0.8)'
                 ],
                 borderWidth: 1,
-                successCount: [
-                    @String.Join(
-                        ",",
-                        Model.ResultByAttributeList
-                            .Select(e => e.Quantity))],
-                totalCount: @Model.TotalTransactions,
-                currentAttributeID: [
-                    @String.Join(
-                        ",",
-                        Model.ResultByAttributeList
-                            .Select(e => e.AttributeID))],
+                customData: {
+                    successCount: [
+                        @String.Join(
+                            ",",
+                            Model.ResultByAttributeList
+                                .Select(e => e.Quantity))],
+                    totalCount: @Model.TotalTransactions,
+                    currentAttributeID: [
+                        @String.Join(
+                            ",",
+                            Model.ResultByAttributeList
+                                .Select(e => e.AttributeID))],
+                }
             }
         ]
     };
@@ -410,7 +412,7 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `${context.formattedValue.replace(',', '.')}% (${context.dataset.successCount[context.dataIndex]}/${context.dataset.totalCount})`
+                        label: (context) => `${context.formattedValue.replace(',', '.')}% (${context.dataset.customData.successCount[context.dataIndex]}/${context.dataset.customData.totalCount})`
                     }
                 },
                 chartAreaBorder: {
@@ -449,7 +451,7 @@
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
 
-            const selectedTransactionID = myChart.data.datasets[datasetIndex].currentAttributeID[dataIndex];
+            const selectedTransactionID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
 
             const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
 
