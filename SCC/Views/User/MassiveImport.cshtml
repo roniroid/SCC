@@ -109,7 +109,7 @@
                             using (SCC_BL.User user = new SCC_BL.User(uploadedFile.BasicInfo.CreationUserID.Value))
                             {
                                 user.SetDataByID();
-                                userWhoUploaded = $"{ user.Person.Identification } - { user.Person.SurName } { user.Person.LastName }, { user.Person.FirstName }";
+                                userWhoUploaded = $"{ user.Person.Identification } - { user.Person.SurName }, { user.Person.FirstName }";
                             }
                         }
 

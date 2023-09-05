@@ -115,6 +115,34 @@ namespace SCC_BL
 			return customFieldList;
 		}
 
+		public List<CustomField> SelectAll()
+		{
+			List<CustomField> customFieldList = new List<CustomField>();
+
+			using (SCC_DATA.Repositories.CustomField repoCustomField = new SCC_DATA.Repositories.CustomField())
+			{
+				DataTable dt = repoCustomField.SelectAll();
+
+				foreach (DataRow dr in dt.Rows)
+				{
+					CustomField customField = new CustomField(
+						this.ID = Convert.ToInt32(dr[SCC_DATA.Queries.CustomField.StoredProcedures.SelectAll.ResultFields.ID]),
+						this.FormID = Convert.ToInt32(dr[SCC_DATA.Queries.CustomField.StoredProcedures.SelectAll.ResultFields.FORMID]),
+						this.CustomControlID = Convert.ToInt32(dr[SCC_DATA.Queries.CustomField.StoredProcedures.SelectAll.ResultFields.CUSTOMCONTROLID]),
+						this.Order = Convert.ToInt32(dr[SCC_DATA.Queries.CustomField.StoredProcedures.SelectAll.ResultFields.ORDER]),
+						this.BasicInfoID = Convert.ToInt32(dr[SCC_DATA.Queries.CustomField.StoredProcedures.SelectAll.ResultFields.BASICINFOID])
+					);
+
+					customField.BasicInfo = new BasicInfo(customField.BasicInfoID);
+					customField.BasicInfo.SetDataByID();
+
+					customFieldList.Add(customField);
+				}
+			}
+
+			return customFieldList;
+		}
+
 		public int DeleteByID()
 		{
 			using (SCC_DATA.Repositories.CustomField repoCustomField = new SCC_DATA.Repositories.CustomField())

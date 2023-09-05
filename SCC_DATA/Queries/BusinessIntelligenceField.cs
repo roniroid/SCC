@@ -129,6 +129,27 @@ namespace SCC_DATA.Queries
                 }
             }
 
+			public struct SelectByProgramID
+            {
+				public const string NAME = "[dbo].[usp_BusinessIntelligenceFieldSelectByProgramID]";
+
+				public struct ResultFields
+				{
+					public const string ID = "ID";
+					public const string NAME = "Name";
+					public const string DESCRIPTION = "Description";
+					public const string PARENTBIFIELDID = "ParentBIFieldID";
+					public const string HASFORCEDCOMMENT = "HasForcedComment";
+					public const string BASICINFOID = "BasicInfoID";
+                    public const string ORDER = "Order";
+                }
+
+                public struct Parameters
+                {
+                    public const string PROGRAM_ID_LIST = "@programIDList";
+                }
+            }
+
 			public struct Update
 			{
 				public const string NAME = "[dbo].[usp_BusinessIntelligenceFieldUpdate]";

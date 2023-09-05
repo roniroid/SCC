@@ -89,11 +89,9 @@
         if (Model.FormID > 0) {
             int programID = 0;
 
-            using (ProgramFormCatalog programFormCatalog = ProgramFormCatalog.ProgramFormCatalogWithFormID(Model.FormID))
-            {
-                List<ProgramFormCatalog> programFormCatalogList = programFormCatalog.SelectByFormID();
-                programID = programFormCatalogList.FirstOrDefault().ProgramID;
-            }
+            List<ProgramFormCatalog> programFormCatalogList = (List<ProgramFormCatalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Edit.ProgramFormList.NAME];
+
+            programID = programFormCatalogList.FirstOrDefault().ProgramID;
 
             @:loadFormWindow(@programID);
         }

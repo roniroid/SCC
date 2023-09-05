@@ -9,6 +9,11 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+
+    bool isControllable =
+        Model.RequestObject.AttributeControllable != null
+            ? Model.RequestObject.AttributeControllable.Value
+            : false;
 }
 
 <link href="~/Content/Custom/radio.css" rel="stylesheet" />
@@ -155,7 +160,14 @@
                                     Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                                         ? "{0:0.0#}"
                                         : */"{0:0.##}",
-                                    accuracyTrendResult.TransactionCount > 0 ? ((Convert.ToDecimal(accuracyTrendResult.AccuracyTrendByAttributeInPeriod.Where(e => e.AttributeID == accuracyTrendByAttribute.AttributeID && accuracyTrendByAttribute.SuccessfulResult).Count()) / accuracyTrendResult.TransactionCount) * 100) : 0)%
+                                    accuracyTrendResult.TransactionCount > 0 
+                                        ? ((Convert.ToDecimal(
+                                            accuracyTrendResult.AccuracyTrendByAttributeInPeriod
+                                                .Where(e => 
+                                                    e.AttributeID == accuracyTrendByAttribute.AttributeID && 
+                                                    accuracyTrendByAttribute.SuccessfulResult)
+                                                .Count()) / accuracyTrendResult.TransactionCount) * 100) 
+                                        : 0)%
                             </td>
                         }
                     </tr>
@@ -313,6 +325,8 @@
 
     Chart.register([ChartDataLabels, chartAreaBorder, backgroundColorPlugin]);
 
+    let minScale = 0;
+
     let myChart = new Chart(ctx, {
         type: 'line',
         data: DEFAULT_DATA,
@@ -337,9 +351,10 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
+                    min: minScale,
                     max: 100,
                     ticks: {
-                        stepSize: 25,
+                        stepSize: minScale < 50 ? 25 : 10,
                         callback: function (value) {
                             return value + '%';
                         }

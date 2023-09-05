@@ -445,9 +445,7 @@
 
                     while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                     {
-                        auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
-
-                        auxAttribute.SetDataByID();
+                        auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                         spaceCounter++;
                     }
@@ -543,9 +541,7 @@
 
                     while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                     {
-                        auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
-
-                        auxAttribute.SetDataByID();
+                        auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                         spaceCounter++;
                     }
@@ -641,9 +637,7 @@
 
                     while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                     {
-                        auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
-
-                        auxAttribute.SetDataByID();
+                        auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                         spaceCounter++;
                     }
@@ -739,9 +733,7 @@
 
                     while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                     {
-                        auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
-
-                        auxAttribute.SetDataByID();
+                        auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                         spaceCounter++;
                     }
@@ -836,9 +828,7 @@
 
                     while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
                     {
-                        auxBusinessIntelligenceField = new SCC_BL.BusinessIntelligenceField(auxBusinessIntelligenceField.ParentBIFieldID.Value);
-
-                        auxBusinessIntelligenceField.SetDataByID();
+                        auxBusinessIntelligenceField = Model.Form.BusinessIntelligenceFieldList.Where(e => e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value).FirstOrDefault();
 
                         spaceCounter++;
                     }

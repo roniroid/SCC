@@ -80,13 +80,13 @@
                 <tr class="@tableRowClass">
                     <td>@calibration.ID</td>
                     <td>@calibration.Description</td>
-                    <td>@calibration.ExperiencedUser.Person.SurName @calibration.ExperiencedUser.Person.LastName, @calibration.ExperiencedUser.Person.FirstName (@calibration.ExperiencedUser.Person.Identification)</td>
+                    <td>@calibration.ExperiencedUser.Person.SurName, @calibration.ExperiencedUser.Person.FirstName (@calibration.ExperiencedUser.Person.Identification)</td>
                     <td>
                         <ol>
                             @foreach (User calibratorUser in calibration.CalibratorUserList)
                             {
                                 <li>
-                                    @calibratorUser.Person.SurName @calibratorUser.Person.LastName, @calibratorUser.Person.FirstName (@calibratorUser.Person.Identification)
+                                    @calibratorUser.Person.SurName, @calibratorUser.Person.FirstName (@calibratorUser.Person.Identification)
                                 </li>
                             }
                         </ol>

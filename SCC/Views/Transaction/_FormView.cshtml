@@ -83,7 +83,7 @@
             <div class="@(hasUserToEvaluate ? "d-none" : string.Empty)">
                 @Html.DropDownList(
                     "userToEvaluate",
-                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList),
+                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value != actualUser.ID.ToString()),
                     "Seleccione un usuario",
                     new
                     {
@@ -550,74 +550,74 @@
 
         @foreach (CustomField customField in Model.Form.CustomFieldList.Where(e => e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED))
         {
-                if (!Model.Form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
+            if (!Model.Form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
+            {
+                continue;
+            }
+
+            TransactionCustomFieldCatalog currentTransactionCustomFieldCatalog = null;
+
+            if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() > 0)
+            {
+                currentTransactionCustomFieldCatalog = Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).FirstOrDefault();
+            }
+
+            Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+            htmlAttributes.Add("autocomplete", "off");
+
+            using (CustomControl customControl = Model.Form.CustomControlList.Where(e => e.ID == customField.CustomControlID).FirstOrDefault())
+            {
+                if (customControl.IsRequired)
                 {
-                    continue;
+                    htmlAttributes.Add("required", "");
                 }
 
-                TransactionCustomFieldCatalog currentTransactionCustomFieldCatalog = null;
-
-                if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() > 0)
+                if (!string.IsNullOrEmpty(customControl.Mask))
                 {
-                    currentTransactionCustomFieldCatalog = Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).FirstOrDefault();
+                    switch (customControl.Mask)
+                    {
+                        case SCC_BL.Settings.AppValues.Masks.Date1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Date1.PATTERN);
+                            htmlAttributes.Add("type", "date");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Time1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Time1.PATTERN);
+                            htmlAttributes.Add("type", "time");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.PhoneNumber1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.PhoneNumber2.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber2.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Alphanumeric1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Name1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.SurName1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.SurName1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Email1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        default:
+                            break;
+                    }
                 }
 
-                Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
-                htmlAttributes.Add("autocomplete", "off");
+                string currentControlClass = "property-field-control custom-control-value " + customControl.CssClass;
 
-                using (CustomControl customControl = Model.Form.CustomControlList.Where(e => e.ID == customField.CustomControlID).FirstOrDefault())
-                {
-                    if (customControl.IsRequired)
-                    {
-                        htmlAttributes.Add("required", "");
-                    }
-
-                    if (!string.IsNullOrEmpty(customControl.Mask))
-                    {
-                        switch (customControl.Mask)
-                        {
-                            case SCC_BL.Settings.AppValues.Masks.Date1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Date1.PATTERN);
-                                htmlAttributes.Add("type", "date");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.Time1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Time1.PATTERN);
-                                htmlAttributes.Add("type", "time");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.PhoneNumber1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.PhoneNumber2.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber2.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.Alphanumeric1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Name1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.LastName1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Email1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    string currentControlClass = "property-field-control custom-control-value " + customControl.CssClass;
-
-                    htmlAttributes.Add("placeholder", customControl.Label);
-                    htmlAttributes.Add("title", customControl.Description);
-                    htmlAttributes.Add("class", currentControlClass);
+                htmlAttributes.Add("placeholder", customControl.Label);
+                htmlAttributes.Add("title", customControl.Description);
+                htmlAttributes.Add("class", currentControlClass);
 
                 <div class="row property-field custom-control-field" data-customcontrolid="@customControl.ID" data-customfieldid="@customField.ID" data-transactioncustomfieldid="@(currentTransactionCustomFieldCatalog != null ? currentTransactionCustomFieldCatalog.ID : 0)" >
                     <div class="col-5 property-field-label">
@@ -1263,7 +1263,7 @@
                         <span>@attribute.Name</span>
                     </div>
                     <div class="col-1 d-flex align-items-center attribute-value-container text-center">
-                        <input class="attribute-property-field-control attribute-nce text-center d-none" min="0" max="@attribute.MaxScore" title="Escriba un valor" type="number" name="name" value="@(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.ScoreValue : attribute.MaxScore)" disabled />
+                        <input class="attribute-property-field-control attribute-nce text-center d-none" min="0" max="@attribute.MaxScore" title="Escriba un valor" type="number" name="name" value="@(currentTransactionAttributeCatalog != null ? /*currentTransactionAttributeCatalog.ScoreValue*/ attribute.MaxScore : attribute.MaxScore)" disabled />
                         <b><i>@attribute.MaxScore pts</i></b>
                         <!--Agregar controles y funcionalidades de max score-->
                     </div>
@@ -1884,6 +1884,8 @@
     }
 
     async function initialLoad() {
+        //await showWaitingModal();
+
         await $('.attribute-value-select').trigger('change', { eventTriggered: false });
         await $('.attribute-checked').trigger('change', { eventTriggered: false });
 
@@ -1891,6 +1893,8 @@
 
         await updateResults();
         loadedData = true;
+
+        //await hideWaitingModal();
     }
 
     $('.attribute-value-select').on('change', (e, data = { eventTriggered: true }) => {

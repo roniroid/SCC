@@ -860,7 +860,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>65512</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>https://localhost:44343/Netcom/SCCv2/</IISUrl>
+          <IISUrl>https://localhost:44343/Netcom/SCC/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>

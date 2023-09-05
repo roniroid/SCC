@@ -75,7 +75,7 @@ namespace SCC_BL.Settings
                     {
                         IDENTIFICATION = 0,
                         FIRST_NAME = 1,
-                        LAST_NAME = 2,
+                        SUR_NAME = 2,
                         EMAIL = 3,
                         START_DATE = 4,
                         END_DATE = 5,
@@ -260,7 +260,7 @@ namespace SCC_BL.Settings
                 PHONE_2 = 4,
                 ALPHANUMERIC_1 = 5,
                 NAME_1 = 6,
-                LAST_NAME_1 = 7,
+                SUR_NAME_1 = 7,
                 EMAIL_1 = 8,
             }
 
@@ -300,10 +300,10 @@ namespace SCC_BL.Settings
                 public const string PATTERN = "^[a-zA-ZÀ-ÿñÑ]+(\\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$";
             }
 
-            public struct LastName1
+            public struct SurName1
             {
                 public const string MASK = "Apellido";
-                public const string PATTERN = "^[a-zA-ZÀ-ÿñÑ]+$";
+                public const string PATTERN = "^[a-zA-ZÀ-ÿñÑ]+(\\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$";
             }
 
             public struct Email1
@@ -421,6 +421,11 @@ namespace SCC_BL.Settings
                             public const string VALUE = "ID";
                         }
                     }
+
+                    public struct ProgramFormList
+                    {
+                        public const string NAME = "EDIT_TRANSACTION_PROGRAM_FORM_LIST";
+                    }
                 }
 
                 public struct FormView
@@ -495,6 +500,24 @@ namespace SCC_BL.Settings
                     {
                         public const string NAME = "SEARCH_TRANSACTION_USER_LIST";
                     }
+
+                    public struct AllData
+                    {
+                        public struct ResultCatalog
+                        {
+                            public const string NAME = "ALL_RESULT_CATALOG";
+                        }
+
+                        public struct User
+                        {
+                            public const string NAME = "ALL_USER_CATALOG";
+                        }
+
+                        public struct Program
+                        {
+                            public const string NAME = "ALL_PROGRAM_CATALOG";
+                        }
+                    }
                 }
             }
 
@@ -540,6 +563,23 @@ namespace SCC_BL.Settings
                     {
                         public const string NAME = "SEARCH_CALIBRATION_PROGRAM_LIST";
                     }
+
+                    //Has transactions
+
+                    public struct ProgramFormList
+                    {
+                        public const string NAME = "SEARCH_TRANSACTION_ALL_PROGRAM_FORM_LIST";
+                    }
+
+                    public struct AllProgramList
+                    {
+                        public const string NAME = "SEARCH_TRANSACTION_ALL_PROGRAM_LIST";
+                    }
+
+                    public struct AllUserList
+                    {
+                        public const string NAME = "SEARCH_TRANSACTION_ALL_USER_LIST";
+                    }
                 }
 
                 public struct Edit
@@ -563,6 +603,17 @@ namespace SCC_BL.Settings
                     public struct TransactionList
                     {
                         public const string NAME = "EDIT_CALIBRATION_TRANSACTION_LIST";
+                    }
+                }
+            }
+
+            public struct Program
+            {
+                public struct Manage
+                {
+                    public struct ProgramFormList
+                    {
+                        public const string NAME = "MANAGE_PROGRAM_PROGRAM_FORM_LIST";
                     }
                 }
             }
@@ -900,6 +951,44 @@ namespace SCC_BL.Settings
                         {
                             public const string TEXT = "Name";
                             public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct AllData
+                    {
+                        public struct LanguageCatalog
+                        {
+                            public const string NAME = "ALL_LANGUAGE_CATALOG";
+                        }
+
+                        public struct CountryCatalog
+                        {
+                            public const string NAME = "ALL_COUNTRY_CATALOG";
+                        }
+
+                        public struct RoleCatalog
+                        {
+                            public const string NAME = "ALL_ROLE_CATALOG";
+                        }
+
+                        public struct Supervisor
+                        {
+                            public const string NAME = "ALL_SUPERVISOR_CATALOG";
+                        }
+
+                        public struct Workspace
+                        {
+                            public const string NAME = "ALL_WORKSPACE_CATALOG";
+                        }
+
+                        public struct Group
+                        {
+                            public const string NAME = "ALL_GROUP_CATALOG";
+                        }
+
+                        public struct Program
+                        {
+                            public const string NAME = "ALL_PROGRAM_CATALOG";
                         }
                     }
                 }
@@ -1369,6 +1458,8 @@ namespace SCC_BL.Settings
 
                 public struct _AccuracyTrendByAttribute
                 {
+                    public const string IS_CONTROLLABLE = "IS_CONTROLLABLE";
+
                     public struct ProgramList
                     {
                         public const string NAME = "REPORT_ACCURACY_TREND_BY_ATTRIBUTE_PROGRAM_LIST";

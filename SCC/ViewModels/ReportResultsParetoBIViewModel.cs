@@ -45,6 +45,7 @@ namespace SCC.ViewModels
             }
 
             this.ParetoBIResultList
+                .Where(e => !e.SuccessfulResult)
                 .ToList()
                 .ForEach(e => {
                     if (!this.OrderHelperList.Select(f => f.BusinessIntelligenceFieldID).Contains(e.BusinessIntelligenceFieldID))
@@ -53,13 +54,14 @@ namespace SCC.ViewModels
                             new OrderHelper()
                             {
                                 BusinessIntelligenceFieldID = e.BusinessIntelligenceFieldID,
-                                Quantity = this.ParetoBIResultList.Where(g => g.BusinessIntelligenceFieldID == e.BusinessIntelligenceFieldID && g.SuccessfulResult).Count()
+                                Quantity = this.ParetoBIResultList.Where(g => g.BusinessIntelligenceFieldID == e.BusinessIntelligenceFieldID && !g.SuccessfulResult).Count()
                             });
                     }
                 });
 
             this.ResultByBIFieldList =
                 this.ResultByBIFieldList
+                    .Where(e => e.Quantity > 0)
                     .OrderBy(e => e.Quantity)
                     .ToList();
         }

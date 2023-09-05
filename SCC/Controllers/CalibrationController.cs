@@ -1,8 +1,10 @@
-﻿using SCC.ViewModels;
+﻿using DocumentFormat.OpenXml.Office2021.DocumentTasks;
+using SCC.ViewModels;
 using SCC_BL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using static SCC_BL.Settings.AppValues;
@@ -82,6 +84,15 @@ namespace SCC.Controllers
 
             calibrationCheckResultsViewModel.CalibrationSession = new Calibration(calibrationSessionID);
             calibrationCheckResultsViewModel.CalibrationSession.SetDataByID();
+
+            calibrationCheckResultsViewModel.Form = new Form(calibrationCheckResultsViewModel.SelectedCalibration.FormID);
+            calibrationCheckResultsViewModel.Form.SetDataByID();
+
+            calibrationCheckResultsViewModel.ExperiencedUser = new SCC_BL.User(calibrationCheckResultsViewModel.CalibrationSession.ExperiencedUserID);
+            calibrationCheckResultsViewModel.ExperiencedUser.SetDataByID();
+
+            calibrationCheckResultsViewModel.EvaluatorUser = new SCC_BL.User(calibrationCheckResultsViewModel.SelectedCalibration.EvaluatorUserID);
+            calibrationCheckResultsViewModel.EvaluatorUser.SetDataByID();
 
             return View(calibrationCheckResultsViewModel);
         }
@@ -189,7 +200,7 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 expertUserList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
@@ -197,7 +208,7 @@ namespace SCC.Controllers
                         .ToList());
 
                 expertUserList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
@@ -205,7 +216,7 @@ namespace SCC.Controllers
                         .ToList());
 
                 expertUserList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.FACILITATOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.FACILITATOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
@@ -224,7 +235,7 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 calibratorUserList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.CALIBRATOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.CALIBRATOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
@@ -232,7 +243,7 @@ namespace SCC.Controllers
                         .ToList());
 
                 calibratorUserList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.FACILITATOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.FACILITATOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
@@ -240,7 +251,7 @@ namespace SCC.Controllers
                         .ToList());
 
                 calibratorUserList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
@@ -302,14 +313,14 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.ExpertUserList.NAME] =
                 new SelectList(
-                    expertUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.SurName } { e.Person.LastName }, { e.Person.FirstName } (id: { e.Person.Identification })" }),
+                    expertUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.SurName }, { e.Person.FirstName } (id: { e.Person.Identification })" }),
                     "Key",
                     "Value",
                     experiencedUserID);
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.CalibratorUserList.NAME] =
                 new MultiSelectList(
-                    calibratorUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.SurName } { e.Person.LastName }, { e.Person.FirstName } (id: { e.Person.Identification })" }),
+                    calibratorUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.SurName }, { e.Person.FirstName } (id: { e.Person.Identification })" }),
                     "Key",
                     "Value",
                     calibration.ID > 0
@@ -425,7 +436,7 @@ namespace SCC.Controllers
 
                             string message =
                                 SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.Creation.AGENT_CALIBRATION
-                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_TRANSACTION_IDENTIFIERS, String.Join(", ", transactionIdentifierArray.Select(e => "\"" + e + "\"")));
 
                             CalibrationSessionCreatedSendMail(usersToNotifyList.ToArray(), message);
@@ -499,7 +510,7 @@ namespace SCC.Controllers
 
                             string message =
                                 SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.Update.AGENT_CALIBRATION
-                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_TRANSACTION_IDENTIFIERS, String.Join(", ", transactionIdentifierArray.Select(e => "\"" + e + "\"")));
 
                             CalibrationSessionCreatedSendMail(usersToNotifyList.ToArray(), message);
@@ -813,6 +824,26 @@ namespace SCC.Controllers
                     nameof(SelectListItem.Value),
                     nameof(SelectListItem.Text));
 
+            //If transactions are found
+
+            List<ProgramFormCatalog> programFormCatalogList = new List<ProgramFormCatalog>();
+            List<Program> allProgramList = new List<Program>();
+            List<User> userList = new List<User>();
+
+
+            using (ProgramFormCatalog programFormCatalog = new ProgramFormCatalog())
+                programFormCatalogList = programFormCatalog.SelectAll();
+
+            using (Program program = new Program())
+                allProgramList = program.SelectWithForm();
+
+            using (User user = new User())
+                userList = user.SelectAll(true);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Search.ProgramFormList.NAME] = programFormCatalogList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Search.AllProgramList.NAME] = allProgramList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Search.AllUserList.NAME] = userList;
+
             return View(transactionSearchViewModel);
         }
 
@@ -902,10 +933,10 @@ namespace SCC.Controllers
                         (int)SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.CALIBRATION_OTHERS,
                         isNew
                             ? SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.Creation.AGENT_CALIBRATION
-                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_CALIBRATING_USER, $"{ auxUser.Person.Identification } - {auxUser.Person.SurName} {auxUser.Person.LastName}, {auxUser.Person.FirstName}")
+                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_CALIBRATING_USER, $"{ auxUser.Person.Identification } - {auxUser.Person.SurName}, {auxUser.Person.FirstName}")
                                 .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_TRANSACTION_IDENTIFIERS, String.Join(", ", transactionIdentifierArray.Select(e => "\"" + e + "\"")))
                             : SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.Update.AGENT_CALIBRATION
-                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_CALIBRATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName} {auxUser.Person.LastName}, {auxUser.Person.FirstName}")
+                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_CALIBRATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName}, {auxUser.Person.FirstName}")
                                 .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_TRANSACTION_IDENTIFIERS, String.Join(", ", transactionIdentifierArray.Select(e => "\"" + e + "\"")))
                                 .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.CalibrationSession.REPLACE_OBJECT_INFO, Serialize(oldCalibration)),
                     userNotificationUrlList);

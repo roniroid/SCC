@@ -34,3 +34,16 @@
     justify-content: center;
     grid-column: 2 / span 3;
 }
+
+/*th.rotate {
+    height: 140px;
+    white-space: nowrap;
+
+    transform:
+    translate(25px, 51px)
+    rotate(270deg);
+    width: 30px;
+
+    border-bottom: 1px solid #ccc;
+    padding: 5px 10px;
+}*/

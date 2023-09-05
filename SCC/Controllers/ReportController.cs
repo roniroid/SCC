@@ -55,27 +55,26 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
                             e.WorkspaceList.Select(s => s.Monitorable).Count() > 0)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
             using (User user = new User())
             {
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -91,14 +90,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -141,7 +140,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._OverallAccuracy.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -152,7 +151,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._OverallAccuracy.SupervisorList.NAME] =
                 new MultiSelectList(
-                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -163,7 +162,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._OverallAccuracy.EvaluatorList.NAME] =
                 new MultiSelectList(
-                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -220,13 +219,12 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
                             e.WorkspaceList.Select(s => s.Monitorable).Count() > 0)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -249,14 +247,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -272,14 +270,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -329,7 +327,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ParetoBI.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -340,7 +338,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ParetoBI.SupervisorList.NAME] =
                 new MultiSelectList(
-                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -351,7 +349,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ParetoBI.EvaluatorList.NAME] =
                 new MultiSelectList(
-                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -407,13 +405,12 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
                             e.WorkspaceList.Select(s => s.Monitorable).Count() > 0)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -436,14 +433,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -459,14 +456,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -509,7 +506,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByUser.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -520,7 +517,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByUser.SupervisorList.NAME] =
                 new MultiSelectList(
-                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -531,7 +528,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByUser.EvaluatorList.NAME] =
                 new MultiSelectList(
-                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -588,13 +585,12 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
                             e.WorkspaceList.Select(s => s.Monitorable).Count() > 0)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -617,14 +613,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -640,14 +636,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -690,7 +686,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByProgram.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -701,7 +697,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByProgram.SupervisorList.NAME] =
                 new MultiSelectList(
-                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -712,7 +708,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByProgram.EvaluatorList.NAME] =
                 new MultiSelectList(
-                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -769,13 +765,12 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
                             e.WorkspaceList.Select(s => s.Monitorable).Count() > 0)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -798,14 +793,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -821,14 +816,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -871,7 +866,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -882,7 +877,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.SupervisorList.NAME] =
                 new MultiSelectList(
-                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -893,7 +888,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.EvaluatorList.NAME] =
                 new MultiSelectList(
-                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -954,18 +949,17 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 calibratedUserList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
             using (User user = new User())
                 calibratedSupervisorList =
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -973,7 +967,7 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 calibratorUserList =
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.CALIBRATOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.CALIBRATOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -1000,7 +994,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparison.CalibratedUserList.NAME] =
                 new MultiSelectList(
-                    calibratedUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    calibratedUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -1011,7 +1005,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparison.CalibratedSupervisorList.NAME] =
                 new MultiSelectList(
-                    calibratedSupervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    calibratedSupervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -1022,7 +1016,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparison.CalibratorUserList.NAME] =
                 new MultiSelectList(
-                    calibratorUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    calibratorUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -1086,13 +1080,12 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
                             e.WorkspaceList.Select(s => s.Monitorable).Count() > 0)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -1115,14 +1108,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -1138,14 +1131,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -1194,7 +1187,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrend.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -1205,7 +1198,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrend.SupervisorList.NAME] =
                 new MultiSelectList(
-                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -1216,7 +1209,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrend.EvaluatorList.NAME] =
                 new MultiSelectList(
-                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -1285,13 +1278,12 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
                             e.WorkspaceList.Select(s => s.Monitorable).Count() > 0)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -1314,14 +1306,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 supervisorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -1337,14 +1329,14 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList());
 
                 evaluatorList.AddRange(
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR)
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
@@ -1393,7 +1385,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrendByAttribute.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -1404,7 +1396,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrendByAttribute.SupervisorList.NAME] =
                 new MultiSelectList(
-                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -1415,7 +1407,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrendByAttribute.EvaluatorList.NAME] =
                 new MultiSelectList(
-                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    evaluatorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     debugging
@@ -1843,7 +1835,7 @@ namespace SCC.Controllers
                             : null,
                         reportAccuracyTrendViewModel.TransactionCustomFieldCatalog);
 
-                    reportResultsAccuracyTrendViewModel = new ViewModels.ReportResultsAccuracyTrendViewModel(resultAccuracyTrendResultList, (SCC_BL.DBValues.Catalog.TIME_INTERVAL)reportAccuracyTrendViewModel.IntervalTypeID);
+                    reportResultsAccuracyTrendViewModel = new ViewModels.ReportResultsAccuracyTrendViewModel(resultAccuracyTrendResultList, (SCC_BL.DBValues.Catalog.TIME_INTERVAL)reportAccuracyTrendViewModel.IntervalTypeID, reportAccuracyTrendViewModel);
                     /*reportResultsAccuracyTrendViewModel.ReportResultsAccuracyTrendViewModel = reportResultsAccuracyTrendViewModel;*/
                 }
             }
@@ -1925,12 +1917,13 @@ namespace SCC.Controllers
                             : null,
                         reportAccuracyTrendByAttributeViewModel.TransactionCustomFieldCatalog);
 
-                    reportResultsAccuracyTrendViewModel = new ViewModels.ReportResultsAccuracyTrendViewModel(resultAccuracyTrendResultList, (SCC_BL.DBValues.Catalog.TIME_INTERVAL)reportAccuracyTrendByAttributeViewModel.IntervalTypeID);
+                    //reportResultsAccuracyTrendViewModel = new ViewModels.ReportResultsAccuracyTrendViewModel(resultAccuracyTrendResultList, (SCC_BL.DBValues.Catalog.TIME_INTERVAL)reportAccuracyTrendByAttributeViewModel.IntervalTypeID, reportAccuracyTrendByAttributeViewModel);
                     /*reportResultsAccuracyTrendViewModel.ReportResultsAccuracyTrendViewModel = reportResultsAccuracyTrendViewModel;*/
 
                     resultAccuracyTrendByAttribute = report.AccuracyTrendByAttribute(
                         String.Join(",", resultAccuracyTrendResultList.Select(e => e.TransactionID)),
                         String.Join(",", reportAccuracyTrendByAttributeViewModel.ErrorTypeIDArray),
+                        reportAccuracyTrendByAttributeViewModel.AttributeControllable == true,
                         String.Join(",", reportAccuracyTrendByAttributeViewModel.AttributeIDArray));
 
                     reportResultsAccuracyTrendByAttributeViewModel = 
@@ -1958,6 +1951,7 @@ namespace SCC.Controllers
 
             List<SCC_BL.Reports.Results.AccuracyByAttribute> resultAccuracyByAttribute = new List<SCC_BL.Reports.Results.AccuracyByAttribute>();
             ViewModels.ReportResultsAccuracyByAttributeViewModel reportResultsAccuracyByAttributeViewModel = new ViewModels.ReportResultsAccuracyByAttributeViewModel();
+
             try
             {
                 using (Report report = new Report())
@@ -1983,8 +1977,10 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult AccuracyTrendByAttributeWithAcurracyTrend(string transactionIDList, int errorTypeID, int intervalTypeID)
+        public ActionResult AccuracyTrendByAttributeWithAcurracyTrend(string transactionIDList, int errorTypeID, int intervalTypeID, bool mustBeControllable)
         {
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyBySubattribute.IS_CONTROLLABLE] = mustBeControllable;
+
             List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> resultAccuracyTrendByAttribute = new List<SCC_BL.Reports.Results.AccuracyTrendByAttribute>();
             ViewModels.ReportResultsAccuracyTrendByAttributeViewModel reportResultsAccuracyTrendByAttributeViewModel = new ViewModels.ReportResultsAccuracyTrendByAttributeViewModel();
 
@@ -1994,7 +1990,8 @@ namespace SCC.Controllers
                 {
                     resultAccuracyTrendByAttribute = report.AccuracyTrendByAttribute(
                         transactionIDList,
-                        errorTypeID.ToString());
+                        errorTypeID.ToString(),
+                        mustBeControllable);
 
                     reportResultsAccuracyTrendByAttributeViewModel = 
                         new ViewModels.ReportResultsAccuracyTrendByAttributeViewModel(
@@ -2006,6 +2003,8 @@ namespace SCC.Controllers
             {
                 SaveProcessingInformation<SCC_BL.Results.Report.AccuracyByAttribute.Error>(null, null, reportResultsAccuracyTrendByAttributeViewModel, ex);
             }
+
+            //reportResultsAccuracyTrendByAttributeViewModel.RequestObject.SetDescriptiveData();
 
             return View(nameof(ReportController.AccuracyByAttributeResults), reportResultsAccuracyTrendByAttributeViewModel);
         }
@@ -2280,6 +2279,23 @@ namespace SCC.Controllers
             }
 
             return Serialize(attributeList);
+        }
+
+        public string BIFieldByProgramID(int[] programIDArray)
+        {
+            if (programIDArray == null) return string.Empty;
+
+            List<SCC_BL.BusinessIntelligenceField> businessIntelligenceFieldList = new List<SCC_BL.BusinessIntelligenceField>();
+
+            using (SCC_BL.BusinessIntelligenceField businessIntelligenceField = new SCC_BL.BusinessIntelligenceField())
+            {
+                businessIntelligenceFieldList =
+                    businessIntelligenceField.SelectByProgramID(
+                        String.Join(",", programIDArray),
+                        true);
+            }
+
+            return Serialize(businessIntelligenceFieldList);
         }
     }
 }

@@ -56,10 +56,6 @@
     </style>
 </head>
 <body>
-    @{
-        Form form = new Form(Model.SelectedCalibration.FormID);
-        form.SetDataByID();
-    }
     <div class="panel d-block">
         <div class="row d-block text-center m-5">
             <h3>
@@ -69,12 +65,7 @@
                 @{
                     string experiencedUserName = string.Empty;
 
-                    using (SCC_BL.User user = new SCC_BL.User(Model.CalibrationSession.ExperiencedUserID))
-                    {
-                        user.SetDataByID();
-
-                        experiencedUserName = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.LastName}, {user.Person.FirstName}";
-                    }
+                    experiencedUserName = $"{Model.ExperiencedUser.Person.Identification} - {Model.ExperiencedUser.Person.SurName}, {Model.ExperiencedUser.Person.FirstName}";
                 }
 
                 Experto de la sesión: @experiencedUserName
@@ -88,12 +79,7 @@
                 @{
                     string evaluatorUserName = string.Empty;
 
-                    using (SCC_BL.User evaluatorUser = new SCC_BL.User(Model.SelectedCalibration.EvaluatorUserID))
-                    {
-                        evaluatorUser.SetDataByID();
-
-                        evaluatorUserName = $"{evaluatorUser.Person.SurName} {evaluatorUser.Person.LastName}, {evaluatorUser.Person.FirstName}";
-                    }
+                    evaluatorUserName = $"{Model.EvaluatorUser.Person.SurName}, {Model.EvaluatorUser.Person.FirstName}";
                 }
 
                 <p class="fw-bold">@evaluatorUserName</p>
@@ -102,7 +88,7 @@
                 Precisión a nivel de atributo principal
             </div>
         </div>
-        @if (form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE).Count() > 0)
+        @if (Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE).Count() > 0)
         {
             <div class="row bg-custom-error-title text-light my-2 p-3">
                 <span>
@@ -110,7 +96,7 @@
                 </span>
             </div>
             <div class="attribute-container">
-                @foreach (SCC_BL.Attribute attribute in form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
+                @foreach (SCC_BL.Attribute attribute in Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                 {
                     TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.SelectedCalibration.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
 
@@ -129,9 +115,7 @@
 
                         while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                         {
-                            auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
-
-                            auxAttribute.SetDataByID();
+                            auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                             spaceCounter++;
                         }
@@ -142,7 +126,7 @@
                                 {
                                     <div class="attribute-marginator px-4 d-inline-block"></div>
                                 }
-                                @if (form.AttributeList
+                                @if (Model.Form.AttributeList
                                         .Where(e =>
                                             e.ParentAttributeID == attribute.ID)
                                         .Count() > 0)
@@ -180,7 +164,7 @@
                 }
             </div>
         }
-        @if (form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE).Count() > 0)
+        @if (Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE).Count() > 0)
         {
             <div class="row bg-custom-error-title text-light my-2 p-3">
                 <span>
@@ -188,7 +172,7 @@
                 </span>
             </div>
             <div class="attribute-container">
-                @foreach (SCC_BL.Attribute attribute in form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
+                @foreach (SCC_BL.Attribute attribute in Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
                 {
                     TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.SelectedCalibration.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
 
@@ -207,8 +191,7 @@
 
                         while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                         {
-                            auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
-                            auxAttribute.SetDataByID();
+                            auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                             spaceCounter++;
                         }
@@ -219,7 +202,7 @@
                                 {
                                     <div class="attribute-marginator px-4 d-inline-block"></div>
                                 }
-                                @if (form.AttributeList
+                                @if (Model.Form.AttributeList
                                         .Where(e =>
                                             e.ParentAttributeID == attribute.ID)
                                         .Count() > 0)
@@ -257,7 +240,7 @@
                 }
             </div>
         }
-        @if (form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE).Count() > 0)
+        @if (Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE).Count() > 0)
         {
             <div class="row bg-custom-error-title text-light my-2 p-3">
                 <span>
@@ -265,7 +248,7 @@
                 </span>
             </div>
             <div class="attribute-container">
-                @foreach (SCC_BL.Attribute attribute in form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
+                @foreach (SCC_BL.Attribute attribute in Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
                 {
                     TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.SelectedCalibration.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
 
@@ -284,8 +267,7 @@
 
                         while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                         {
-                            auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
-                            auxAttribute.SetDataByID();
+                            auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
 
                             spaceCounter++;
                         }
@@ -296,7 +278,7 @@
                                 {
                                     <div class="attribute-marginator px-4 d-inline-block"></div>
                                 }
-                                @if (form.AttributeList
+                                @if (Model.Form.AttributeList
                                         .Where(e =>
                                             e.ParentAttributeID == attribute.ID)
                                         .Count() > 0)
@@ -335,7 +317,7 @@
             </div>
         }
     </div>
-    @if (form.CustomFieldList.Count() > 0)
+    @if (Model.Form.CustomFieldList.Count() > 0)
     {
         <div class="panel d-block">
             <div class="row d-block text-center m-5">
@@ -344,9 +326,9 @@
                 </h3>
             </div>
             <div class="customControl-container">
-                @foreach (CustomField customField in form.CustomFieldList)
+                @foreach (CustomField customField in Model.Form.CustomFieldList)
                 {
-                    if (!form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
+                    if (!Model.Form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
                     {
                         continue;
                     }
@@ -361,7 +343,7 @@
                     Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
                     htmlAttributes.Add("autocomplete", "off");
 
-                    using (CustomControl customControl = form.CustomControlList.Where(e => e.ID == customField.CustomControlID).FirstOrDefault())
+                    using (CustomControl customControl = Model.Form.CustomControlList.Where(e => e.ID == customField.CustomControlID).FirstOrDefault())
                     {
                         string currentControlClass = "property-field-control custom-control-value " + customControl.CssClass;
 
@@ -519,7 +501,7 @@
             </div>
         </div>
     }
-    @if (form.FormBIFieldCatalogList.Count() > 0)
+    @if (Model.Form.FormBIFieldCatalogList.Count() > 0)
     {
         <div class="panel d-block">
             <div class="row d-block text-center m-5">
@@ -528,10 +510,10 @@
                 </h3>
             </div>
             <div class="bifield-container">
-                @foreach (FormBIFieldCatalog formBIField in form.FormBIFieldCatalogList)
+                @foreach (FormBIFieldCatalog formBIField in Model.Form.FormBIFieldCatalogList)
                 {
                     BusinessIntelligenceField currentBusinessIntelligenceField =
-                        form.BusinessIntelligenceFieldList
+                        Model.Form.BusinessIntelligenceFieldList
                             .Where(e =>
                                 e.ID == formBIField.BIFieldID)
                             .FirstOrDefault();
@@ -555,7 +537,7 @@
                         int spaceCounter = 0;
 
                         SCC_BL.BusinessIntelligenceField auxBusinessIntelligenceField =
-                            form.BusinessIntelligenceFieldList
+                            Model.Form.BusinessIntelligenceFieldList
                                 .Where(e =>
                                     e.ID == formBIField.BIFieldID)
                                 .FirstOrDefault();
@@ -563,7 +545,7 @@
                         while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
                         {
                             auxBusinessIntelligenceField =
-                                form.BusinessIntelligenceFieldList
+                                Model.Form.BusinessIntelligenceFieldList
                                     .Where(e =>
                                         e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value)
                                     .FirstOrDefault();
@@ -571,13 +553,13 @@
                             spaceCounter++;
                         }
 
-                        <div class="row bg-light text-dark border border-secondary mt-1 bifield-row @(form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == formBIField.BIFieldID).Count() == 0 ? "no-children" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID == null || currentBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)" data-hasforcedcomment="@currentBusinessIntelligenceField.HasForcedComment" data-basicinfoid="@currentBusinessIntelligenceField.BasicInfoID" data-bifieldid="@currentBusinessIntelligenceField.ID" data-parentbifieldid="@currentBusinessIntelligenceField.ParentBIFieldID" data-order="@formBIField.Order">
+                        <div class="row bg-light text-dark border border-secondary mt-1 bifield-row @(Model.Form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == formBIField.BIFieldID).Count() == 0 ? "no-children" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID == null || currentBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)" data-hasforcedcomment="@currentBusinessIntelligenceField.HasForcedComment" data-basicinfoid="@currentBusinessIntelligenceField.BasicInfoID" data-bifieldid="@currentBusinessIntelligenceField.ID" data-parentbifieldid="@currentBusinessIntelligenceField.ParentBIFieldID" data-order="@formBIField.Order">
                             <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(currentBusinessIntelligenceField.Description) ? currentBusinessIntelligenceField.Description : currentBusinessIntelligenceField.Name)">
                                 @for (int i = 0; i < spaceCounter; i++)
                                 {
                                     <div class="bifield-marginator px-4 d-inline-block"></div>
                                 }
-                                @if (form.BusinessIntelligenceFieldList
+                                @if (Model.Form.BusinessIntelligenceFieldList
                                         .Where(e =>
                                             e.ParentBIFieldID == currentBusinessIntelligenceField.ID)
                                         .Count() > 0)

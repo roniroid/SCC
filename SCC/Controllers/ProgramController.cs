@@ -16,6 +16,13 @@ namespace SCC.Controllers
         {
             ProgramManagementViewModel programManagementViewModel = new ProgramManagementViewModel();
 
+            List<ProgramFormCatalog> programFormCatalogList = new List<ProgramFormCatalog>();
+
+            using (ProgramFormCatalog programFormCatalog = new ProgramFormCatalog())
+                programFormCatalogList = programFormCatalog.SelectAll();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Program.Manage.ProgramFormList.NAME] = programFormCatalogList;
+
             if (programID != null)
             {
                 programManagementViewModel.Program = new Program(programID.Value);

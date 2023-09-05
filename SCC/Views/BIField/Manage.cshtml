@@ -85,9 +85,8 @@
                                     @{
                                         string parentName = string.Empty;
 
-                                        using (BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField(Model.BusinessIntelligenceField.ParentBIFieldID.Value))
+                                        using (BusinessIntelligenceField businessIntelligenceField = Model.BIFieldList.Where(e => e.ID == Model.BusinessIntelligenceField.ParentBIFieldID.Value).FirstOrDefault())
                                         {
-                                            businessIntelligenceField.SetDataByID();
                                             parentName = businessIntelligenceField.Name;
                                         }
                                     }
@@ -361,8 +360,7 @@
 
                 while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
                 {
-                    auxBusinessIntelligenceField = new BusinessIntelligenceField(auxBusinessIntelligenceField.ParentBIFieldID.Value);
-                    auxBusinessIntelligenceField.SetDataByID();
+                    auxBusinessIntelligenceField = Model.BIFieldList.Where(e => e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value).FirstOrDefault();
 
                     spaceCounter++;
                 }

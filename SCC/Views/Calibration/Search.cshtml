@@ -15,6 +15,8 @@
 
     bool hasModel = Model.TransactionSearchHelper != null;
 
+    List<User> allUserList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Search.AllUserList.NAME];
+
     ViewBag.Title = "Búsqueda de transacciones";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -768,20 +770,18 @@
                     </td>
                     <td>
                         @{
-                            User userToEvaluate = new User(transaction.UserToEvaluateID);
-                            userToEvaluate.SetDataByID();
+                            User userToEvaluate = allUserList.Where(e => e.ID == transaction.UserToEvaluateID).FirstOrDefault();
                         }
 
-                        @userToEvaluate.Person.SurName @userToEvaluate.Person.LastName, @userToEvaluate.Person.FirstName
+                        @userToEvaluate.Person.SurName, @userToEvaluate.Person.FirstName
                     </td>
                     <td>
                         <ul>
                             @foreach (UserSupervisorCatalog userSupervisorCatalog in userToEvaluate.SupervisorList)
                             {
-                                User supervisorUser = new User(userSupervisorCatalog.SupervisorID);
-                                supervisorUser.SetDataByID();
+                                User supervisorUser = allUserList.Where(e => e.ID == userSupervisorCatalog.SupervisorID).FirstOrDefault();
 
-                                <li>@supervisorUser.Person.SurName @supervisorUser.Person.LastName, @supervisorUser.Person.FirstName</li>
+                                <li>@supervisorUser.Person.SurName, @supervisorUser.Person.FirstName</li>
                             }
                         </ul>
                     </td>
@@ -791,14 +791,13 @@
                         @{
                             int? programID = null;
 
-                            using (ProgramFormCatalog programFormCatalog = ProgramFormCatalog.ProgramFormCatalogWithFormID(transaction.FormID))
-                            {
-                                List<ProgramFormCatalog> programFormCatalogList = programFormCatalog.SelectByFormID();
-                                programID = programFormCatalogList.FirstOrDefault().ProgramID;
-                            }
+                            List<ProgramFormCatalog> programFormCatalogList = (List<ProgramFormCatalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Search.ProgramFormList.NAME];
+                            List<Program> allProgramList = (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Search.AllProgramList.NAME];
 
-                            Program program = new Program(programID.Value);
-                            program.SetDataByID();
+                            ProgramFormCatalog programFormCatalog = programFormCatalogList.Where(e => e.FormID == transaction.FormID).LastOrDefault();
+                            programID = programFormCatalogList.FirstOrDefault().ProgramID; 
+                            
+                            Program program = allProgramList.Where(e => e.ID == programID.Value).FirstOrDefault();
                         }
 
                         @program.Name

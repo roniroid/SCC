@@ -248,7 +248,7 @@
                             User user = new User(resultsByUser.UserID);
                             user.SetDataByID();
                         }
-                        @($"{ user.Person.SurName } { user.Person.LastName }, { user.Person.FirstName }")
+                        @($"{ user.Person.SurName }, { user.Person.FirstName }")
                     </td>
                     <td>
                         @resultsByUser.TotalTransactions
@@ -485,7 +485,7 @@
                                 User user = new User(e.UserID);
                                 user.SetDataByID();
 
-                                return $"'{user.Person.SurName} {user.Person.LastName}, {user.Person.FirstName}'";
+                                return $"'{user.Person.SurName}, {user.Person.FirstName}'";
                             }));
 
                 @:{

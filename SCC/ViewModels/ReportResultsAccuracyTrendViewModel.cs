@@ -122,18 +122,22 @@ namespace SCC.ViewModels
         {
         }
 
-        public ReportResultsAccuracyTrendViewModel(List<SCC_BL.Reports.Results.AccuracyTrend> accuracyTrendResultList, SCC_BL.DBValues.Catalog.TIME_INTERVAL intervalTypeID)
+        public ReportResultsAccuracyTrendViewModel(List<SCC_BL.Reports.Results.AccuracyTrend> accuracyTrendResultList, SCC_BL.DBValues.Catalog.TIME_INTERVAL intervalTypeID, ReportAccuracyTrendViewModel requestObject)
         {
             this.IntervalTypeID = intervalTypeID;
             this.AccuracyTrendResultList = accuracyTrendResultList;
+            this.RequestObject = requestObject;
 
             ProcessData();
         }
 
         public void ProcessData()
         {
-            DateTime minDate = this.AccuracyTrendResultList.Min(e => e.TransactionStartDate);
-            DateTime maxDate = this.AccuracyTrendResultList.Max(e => e.TransactionStartDate);
+            if (RequestObject.TransactionStartDate == null && RequestObject.TransactionEndDate == null)
+                return;
+
+            DateTime minDate = this.AccuracyTrendResultList.Count() > 0 ? this.AccuracyTrendResultList.Min(e => e.TransactionStartDate) : RequestObject.TransactionStartDate.Value;
+            DateTime maxDate = this.AccuracyTrendResultList.Count() > 0 ? this.AccuracyTrendResultList.Max(e => e.TransactionStartDate) : RequestObject.TransactionStartDate.Value;
 
             switch (this.IntervalTypeID)
             {
@@ -327,7 +331,7 @@ namespace SCC.ViewModels
             }
 
             //Count the first intervals with no data from start
-            int noDataCountStart = 0;
+            /*int noDataCountStart = 0;
 
             foreach (AccuracyTrendByPeriod currentAccuracyTrendByPeriod in this.AccuracyTrendByPeriodList.OrderBy(e => e.Period))
             {
@@ -359,6 +363,12 @@ namespace SCC.ViewModels
             this.AccuracyTrendByPeriodList = 
                 this.AccuracyTrendByPeriodList
                     .Take(this.AccuracyTrendByPeriodList.Count() - (noDataCountEnd - 1))
+                    .ToList();*/
+
+            //Take the ones that have data
+            this.AccuracyTrendByPeriodList =
+                this.AccuracyTrendByPeriodList
+                    .Where(e => e.TransactionCount > 0)
                     .ToList();
         }
     }

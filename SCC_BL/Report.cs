@@ -229,7 +229,7 @@ namespace SCC_BL
 			return accuracyByAttributeResultList;
 		}
 		
-		public List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> AccuracyTrendByAttribute(string transactionIDArray, string errorTypeIDList, string attributeIDArray = null)
+		public List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> AccuracyTrendByAttribute(string transactionIDArray, string errorTypeIDList, bool mustBeControllable, string attributeIDArray = null)
 		{
 			List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> accuracyTrendByAttributeResultList = new List<SCC_BL.Reports.Results.AccuracyTrendByAttribute>();
 
@@ -248,7 +248,8 @@ namespace SCC_BL
 						Convert.ToDateTime(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrendByAttribute.ResultFields.TRANSACTION_DATE]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrendByAttribute.ResultFields.ATTRIBUTE_ID]),
 						Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrendByAttribute.ResultFields.ATTRIBUTE_NAME]),
-						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrendByAttribute.ResultFields.SUCCESSFUL_RESULT]));
+						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyTrendByAttribute.ResultFields.SUCCESSFUL_RESULT]),
+                        mustBeControllable);
 
 					accuracyTrendByAttributeResultList.Add(accuracyTrendByAttributeResult);
 				}

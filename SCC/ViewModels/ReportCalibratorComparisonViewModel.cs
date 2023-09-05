@@ -50,7 +50,7 @@ namespace SCC.ViewModels
                 using (User user = new User(this.CalibratedUserIDArray[i]))
                 {
                     user.SetDataByID();
-                    this.CalibratedUserNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.LastName} {user.Person.FirstName}";
+                    this.CalibratedUserNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.FirstName}";
                 }
             }
 
@@ -62,7 +62,7 @@ namespace SCC.ViewModels
                 using (User user = new User(this.CalibratedSupervisorUserIDArray[i]))
                 {
                     user.SetDataByID();
-                    this.CalibratedSupervisorNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.LastName} {user.Person.FirstName}";
+                    this.CalibratedSupervisorNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.FirstName}";
                 }
             }
 
@@ -74,7 +74,7 @@ namespace SCC.ViewModels
                 using (User user = new User(this.CalibratorUserIDArray[i]))
                 {
                     user.SetDataByID();
-                    this.CalibratorUserNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.LastName} {user.Person.FirstName}";
+                    this.CalibratorUserNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.FirstName}";
                 }
             }
 

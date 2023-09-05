@@ -66,6 +66,20 @@ namespace SCC_DATA.Queries
 				}
 			}
 
+			public struct SelectAll
+			{
+				public const string NAME = "[dbo].[usp_CustomFieldSelectAll]";
+
+				public struct ResultFields
+				{
+					public const string ID = "ID";
+					public const string FORMID = "FormID";
+					public const string CUSTOMCONTROLID = "CustomControlID";
+					public const string ORDER = "Order";
+					public const string BASICINFOID = "BasicInfoID";
+				}
+			}
+
 			public struct SelectByID
 			{
 				public const string NAME = "[dbo].[usp_CustomFieldSelectByID]";

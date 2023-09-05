@@ -127,6 +127,12 @@ namespace SCC.ViewModels
 
                 minDate = newMinDate;
             }
+
+            //Take the ones that have data
+            this.AccuracyTrendByPeriodList =
+                this.AccuracyTrendByPeriodList
+                    .Where(e => e.TransactionCount > 0)
+                    .ToList();
         }
     }
 }

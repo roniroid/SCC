@@ -118,6 +118,10 @@
     </div>
 </div>
 
+@{ 
+    int failTotalResultCount = Model.ParetoBIResultList.Where(e => !e.SuccessfulResult).Count();
+}
+
 <div class="tableContainer mt-4">
     <table class="display cell-border text-center" id="tbInfo">
         <thead>
@@ -165,6 +169,8 @@
                         .FirstOrDefault();
 
                 int successfulResultCount = Model.ParetoBIResultList.Where(e => e.BusinessIntelligenceFieldID == paretoBIResult.BusinessIntelligenceFieldID && e.SuccessfulResult).Count();
+                int failResultCount = Model.ParetoBIResultList.Where(e => e.BusinessIntelligenceFieldID == paretoBIResult.BusinessIntelligenceFieldID && !e.SuccessfulResult).Count();
+
                 currentCumulativeAmount = currentCumulativeAmount + ((Convert.ToDecimal(successfulResultCount) / Model.TotalTransactions) * 100);
 
                 cumulativeSum += successfulResultCount;
@@ -177,7 +183,7 @@
                         @paretoBIResult.BusinessIntelligenceFieldName
                     </td>
                     <td>
-                        @successfulResultCount
+                        @failResultCount
                     </td>
                     <td>
                         @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(successfulResultCount) / totalCumulativeSum) * 100)).Replace('.', ',')%
@@ -193,6 +199,21 @@
                     maxSuccessfulResultCount = successfulResultCount;
                 }
             }
+            <tr>
+                <td>
+                </td>
+                <td>
+                    Total
+                </td>
+                <td>
+                    @failTotalResultCount
+                </td>
+                <td>
+                    100%
+                </td>
+                <td>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -200,7 +221,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
-    $(document).ready(function () {
+    @*$(document).ready(function () {
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
             let fileName = 'Resultados de pareto para inteligencia de negocios' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
@@ -257,6 +278,24 @@
 
             startDataTable('#tbInfo', data);
         });
+    });*@
+
+    $(document).ready(function () {
+        $("#tbInfo").on("draw.dt", function () {
+            $(this).find(".dataTables_empty").parents('tbody').empty();
+        }).DataTable({
+            "paging": false,
+            "ordering": false,
+            "info": false,
+            "searching": false,
+            "zeroRecords": " ",
+            "columnDefs": [
+                {
+                    className: "text-center",
+                    targets: [0, 1, 2, 3, 4]
+                }
+            ]
+        });
     });
 
     Array.prototype.max = function () {
@@ -270,7 +309,6 @@
     const ctx = document.getElementById('myChart');
 
     const DATA_POINTS = [@String.Join(",", Model.ResultByBIFieldList.Select(e => Model.TotalTransactions - e.Quantity))];
-    console.log(DATA_POINTS);
 
     const REDUCE_ARRAY = ((sum, dataPoint) => sum + dataPoint);
     const TOTAL_SUM =

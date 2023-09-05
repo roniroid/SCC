@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SCC_BL.Settings.AppValues.ViewData.Form.Edit;
 
 namespace SCC_BL
 {
@@ -240,9 +241,50 @@ namespace SCC_BL
 				biFieldList
 					.OrderBy(e => e.Order)
 					.ToList();
-		}
+        }
 
-		public int DeleteByID()
+        public List<BusinessIntelligenceField> SelectByProgramID(string programIDArray, bool simplifiedData = false)
+        {
+            List<BusinessIntelligenceField> businessIntelligenceFieldList = new List<BusinessIntelligenceField>();
+
+            using (SCC_DATA.Repositories.BusinessIntelligenceField repoBusinessIntelligenceField = new SCC_DATA.Repositories.BusinessIntelligenceField())
+            {
+                DataTable dt = repoBusinessIntelligenceField.SelectByProgramID(programIDArray);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    int? parentBIFieldID = null;
+
+                    try { parentBIFieldID = Convert.ToInt32(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.ResultFields.PARENTBIFIELDID]); } catch (Exception) { }
+
+                    BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField(
+                        Convert.ToInt32(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.ResultFields.ID]),
+                        Convert.ToString(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.ResultFields.NAME]),
+                        Convert.ToString(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.ResultFields.DESCRIPTION]),
+                        parentBIFieldID,
+                        Convert.ToBoolean(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.ResultFields.HASFORCEDCOMMENT]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.ResultFields.BASICINFOID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.ResultFields.ORDER])
+                    );
+
+                    businessIntelligenceField.BasicInfo = new BasicInfo(businessIntelligenceField.BasicInfoID);
+                    businessIntelligenceField.BasicInfo.SetDataByID();
+
+
+					if (!simplifiedData)
+                    {
+                        //businessIntelligenceField.SetValueList();
+                        businessIntelligenceField.SetChildList();
+                    }
+
+                    businessIntelligenceFieldList.Add(businessIntelligenceField);
+                }
+            }
+
+            return businessIntelligenceFieldList;
+        }
+
+        public int DeleteByID()
 		{
 			using (SCC_DATA.Repositories.BusinessIntelligenceField repoBusinessIntelligenceField = new SCC_DATA.Repositories.BusinessIntelligenceField())
 			{

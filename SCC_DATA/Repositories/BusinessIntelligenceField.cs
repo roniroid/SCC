@@ -154,7 +154,30 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public int Update(int id, string name, string description, int? parentBIFieldID, bool hasForcedComment, int order)
+        public System.Data.DataTable SelectByProgramID(string programIDArray)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.Parameters.PROGRAM_ID_LIST, programIDArray, System.Data.SqlDbType.VarChar)
+                    };
+
+                    return
+                        db.Select(
+                            Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public int Update(int id, string name, string description, int? parentBIFieldID, bool hasForcedComment, int order)
 		{
 			try
 			{

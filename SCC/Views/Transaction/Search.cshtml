@@ -15,6 +15,13 @@
 
     bool hasModel = Model.TransactionSearchHelper != null;
 
+    //Starts loading data
+
+    List<Catalog> allResultList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Search.AllData.ResultCatalog.NAME];
+    List<User> allUserList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Search.AllData.User.NAME];
+
+    //Finish loading data
+
     ViewBag.Title = "Búsqueda de transacciones";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -87,7 +94,7 @@
                                     <datalist id="dataListUser">
                                         @foreach (User user in userList)
                                         {
-                                            <option value="@user.Person.Identification">@($"{ user.Person.Identification } - { user.Person.SurName } { user.Person.LastName }, { user.Person.FirstName } - { user.Email }")</option>
+                                            <option value="@user.Person.Identification">@($"{ user.Person.Identification } - { user.Person.SurName }, { user.Person.FirstName } - { user.Email }")</option>
                                         }
                                     </datalist>
                                 </div>
@@ -737,55 +744,55 @@
     <table class="display cell-border" id="tbInfo">
         <thead>
             <tr>
-                <th>
+                <th class="rotate">
                     <input class="transaction-selected-all" type="checkbox" />
                 </th>
-                <th>
+                <th class="rotate">
                     Identificador
                 </th>
-                <th>
+                <th class="rotate">
                     Usuario monitoreado
                 </th>
-                <th>
+                <th class="rotate">
                     Supervisor
                 </th>
-                <th>
+                <th class="rotate">
                     Fecha de la transacción
                 </th>
-                <th>
+                <th class="rotate">
                     Fecha de la evaluación
                 </th>
-                <th>
+                <th class="rotate">
                     Programa
                 </th>
-                <th>
+                <th class="rotate">
                     Monitoreado por
                 </th>
-                <th>
+                <th class="rotate">
                     Comentario
                 </th>
-                <th>
+                <th class="rotate">
                     EC Global
                 </th>
-                <th>
+                <th class="rotate">
                     EC Usuario Final
                 </th>
-                <th>
+                <th class="rotate">
                     EC Negocios
                 </th>
-                <th>
+                <th class="rotate">
                     EC Cumplimiento
                 </th>
-                <th>
+                <th class="rotate">
                     Estado coaching recibido
                 </th>
-                <th>
+                <th class="rotate">
                     Disputado
                 </th>
-                <th>
+                <th class="rotate">
                     Invalidado
                 </th>
-                <th>
+                <th class="rotate">
                     Devolución
                 </th>
             </tr>
@@ -809,29 +816,58 @@
                     <td>
                         <a href="@Url.Action(nameof(TransactionController.Edit), OverallController.GetControllerName(typeof(TransactionController)), new { transactionID = transaction.ID })" target="_blank">@transaction.Identifier</a>
                     </td>
-                    <td>@transaction.UserToEvaluate.Person.SurName @transaction.UserToEvaluate.Person.LastName, @transaction.UserToEvaluate.Person.FirstName</td>
+                    <td>@transaction.UserToEvaluate.Person.SurName, @transaction.UserToEvaluate.Person.FirstName</td>
                     <td>
                         <ul>
                             @foreach (UserSupervisorCatalog userSupervisorCatalog in transaction.UserToEvaluate.SupervisorList)
                             {
-                                User supervisorUser = new User(userSupervisorCatalog.SupervisorID);
-                                supervisorUser.SetDataByID();
+                                User supervisorUser = allUserList.Where(e => e.ID == userSupervisorCatalog.SupervisorID).FirstOrDefault();
 
-                                <li>@supervisorUser.Person.SurName @supervisorUser.Person.LastName, @supervisorUser.Person.FirstName</li>
+                                <li>@supervisorUser.Person.SurName, @supervisorUser.Person.FirstName</li>
                             }
                         </ul>
                     </td>
                     <td data-order="@transaction.TransactionDate.ToString("yyyyMMdd")">@transaction.TransactionDate.ToString("dd/MM/yyyy")</td>
                     <td data-order="@transaction.EvaluationDate.ToString("yyyyMMdd")">@transaction.EvaluationDate.ToString("dd/MM/yyyy")</td>
                     <td>@transaction.Program.Name</td>
-                    <td>@transaction.EvaluatorUser.Person.SurName @transaction.EvaluatorUser.Person.LastName, @transaction.EvaluatorUser.Person.FirstName</td>
+                    <td>
+                        @{ 
+                            User evaluatorUser = allUserList.Where(e => e.ID == transaction.EvaluatorUserID).FirstOrDefault();
+                        }
+
+                        @evaluatorUser.Person.SurName, @evaluatorUser.Person.FirstName
+                    </td>
                     <td>
                         @transaction.Comment
                     </td>
-                    <td>@transaction.ControllableResult.Description</td>
-                    <td>@transaction.ControllableFinalUserCriticalErrorResult.Description</td>
-                    <td>@transaction.ControllableBusinessCriticalErrorResult.Description</td>
-                    <td>@transaction.ControllableFulfillmentCriticalErrorResult.Description</td>
+                    <td>
+                        @{ 
+                            Catalog controllableResult = allResultList.Where(e => e.ID == transaction.ControllableResultID).FirstOrDefault();
+                        }
+
+                        @controllableResult.Description
+                    </td>
+                    <td>
+                        @{ 
+                            Catalog controllableFUCEResult = allResultList.Where(e => e.ID == transaction.ControllableFinalUserCriticalErrorResultID).FirstOrDefault();
+                        }
+
+                        @controllableFUCEResult.Description
+                    </td>
+                    <td>
+                        @{ 
+                            Catalog controllableBCEResult = allResultList.Where(e => e.ID == transaction.ControllableBusinessCriticalErrorResultID).FirstOrDefault();
+                        }
+
+                        @controllableBCEResult.Description
+                    </td>
+                    <td>
+                        @{ 
+                            Catalog controllableFCEResult = allResultList.Where(e => e.ID == transaction.ControllableFulfillmentCriticalErrorResultID).FirstOrDefault();
+                        }
+
+                        @controllableFCEResult.Description
+                    </td>
                     <td>
                         @*RELLENAR*@
                     </td>

@@ -27,8 +27,8 @@ namespace SCC_BL.Reports.Results
             this.HasChildren = hasChildren;
             this.ErrorTypeID = errorTypeID;
 
-            if (mustBeControllable)
-                this.SetIsControllable();
+            //if (mustBeControllable)
+                //this.SetIsControllable();
         }
 
         public void SetIsControllable()

@@ -35,53 +35,92 @@ namespace SCC.Controllers
             List<Group> groupList = new List<Group>();
             List<Program> programList = new List<Program>();
 
+            //Starts filling all data
+
             using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.USER_LANGUAGE))
-                languageList = 
-                    catalog.SelectByCategoryID()
+                languageList = catalog.SelectByCategoryID();
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
+                countryList = catalog.SelectByCategoryID();
+
+            using (User user = new User())
+                supervisorList = user.SelectAll(true);
+
+            using (Workspace workspace = new Workspace())
+                workspaceList = workspace.SelectAll();
+
+            using (Role role = new Role())
+                roleList = role.SelectAll();
+
+            using (Group group = new Group())
+                groupList = group.SelectAll();
+
+            using (Program program = new Program())
+                programList = program.SelectAll();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.LanguageCatalog.NAME] = languageList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.CountryCatalog.NAME] = countryList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Supervisor.NAME] = supervisorList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Workspace.NAME] = workspaceList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.RoleCatalog.NAME] = roleList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Group.NAME] = groupList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Program.NAME] = programList;
+
+            //Ends filling all data
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.USER_LANGUAGE))
+                languageList =
+                    languageList
                         .Where(e => e.Active)
                         .ToList();
 
             using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
-                countryList = 
-                    catalog.SelectByCategoryID()
+                countryList =
+                    countryList
                         .Where(e => e.Active)
                         .ToList();
 
             using (User user = new User())
-                supervisorList = 
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                supervisorList =
+                    supervisorList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList();
 
             using (Workspace workspace = new Workspace())
-                workspaceList = 
-                    workspace.SelectAll()
+                workspaceList =
+                    workspaceList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DISABLED)
                         .ToList();
 
             using (Role role = new Role())
-                roleList = 
-                    role.SelectAll()
+                roleList =
+                    roleList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DISABLED)
                         .ToList();
 
             using (Group group = new Group())
-                groupList = 
-                    group.SelectAll()
+                groupList =
+                    groupList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DISABLED)
                         .ToList();
 
             using (Program program = new Program())
-                programList = 
-                    program.SelectAll()
+                programList =
+                    programList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
@@ -103,7 +142,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Supervisor.NAME] =
                 new MultiSelectList(
-                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     userManagementViewModel.User.SupervisorList.Select(s => s.SupervisorID));
@@ -183,12 +222,11 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -208,7 +246,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignRolesAndPermissions.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     userID != null
@@ -314,12 +352,11 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -339,7 +376,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     userID != null
@@ -758,10 +795,7 @@ namespace SCC.Controllers
                 userPerson.Person.ID, 
                 userPerson.Person.Identification, 
                 userPerson.Person.FirstName, 
-                userPerson.Person.SurName, 
-                !string.IsNullOrEmpty(userPerson.Person.LastName)
-                    ? userPerson.Person.LastName
-                    : string.Empty, 
+                userPerson.Person.SurName,
                 userPerson.Person.CountryID, 
                 userPerson.Person.BasicInfoID, 
                 GetActualUser().ID, 
@@ -950,9 +984,6 @@ namespace SCC.Controllers
                 userPerson.Person.Identification, 
                 userPerson.Person.FirstName, 
                 userPerson.Person.SurName, 
-                !string.IsNullOrEmpty(userPerson.Person.LastName)
-                    ? userPerson.Person.LastName
-                    : string.Empty, 
                 userPerson.Person.CountryID, 
                 GetActualUser().ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
@@ -1170,7 +1201,7 @@ namespace SCC.Controllers
                     return RedirectToAction(nameof(UserController.SignIn), _mainControllerName);
                 }
 
-                person = new Person(userPerson.Person.Identification, userPerson.Person.FirstName, userPerson.Person.SurName, userPerson.Person.LastName, userPerson.Person.CountryID, null, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
+                person = new Person(userPerson.Person.Identification, userPerson.Person.FirstName, userPerson.Person.SurName, userPerson.Person.CountryID, null, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
 
                 int result = person.CheckExistence();
 
@@ -1287,16 +1318,15 @@ namespace SCC.Controllers
             using (User user = new User())
             {
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
             }
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.MassivePasswordChange.User.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value");
             
@@ -1304,7 +1334,7 @@ namespace SCC.Controllers
 
             userList
                 .ForEach(e => {
-                    userListDictionary.Add(e.ID, $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }");
+                    userListDictionary.Add(e.ID, $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }");
                 });
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.MassivePasswordChange.User.NAME] =
@@ -1649,7 +1679,7 @@ namespace SCC.Controllers
             }
 
             User user = new User(userID);
-            user.SetDataByID();
+            user.SetDataByID(true);
 
             try
             {
@@ -1679,7 +1709,7 @@ namespace SCC.Controllers
         public ActionResult Activate(int userID, bool activate)
         {
             User user = new User(userID);
-            user.SetDataByID();
+            user.SetDataByID(true);
 
             try
             {

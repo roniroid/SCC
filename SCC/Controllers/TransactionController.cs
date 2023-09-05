@@ -1,4 +1,8 @@
-﻿using SCC.ViewModels;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.EMMA;
+using DocumentFormat.OpenXml.Spreadsheet;
+using SCC.ViewModels;
 using SCC_BL;
 using SCC_BL.Tools;
 using System;
@@ -97,6 +101,13 @@ namespace SCC.Controllers
                     nameof(Program.Name),
                     transactionProgram);
 
+            List<ProgramFormCatalog> programFormCatalogList = new List<ProgramFormCatalog>();
+
+            using (ProgramFormCatalog programFormCatalog = ProgramFormCatalog.ProgramFormCatalogWithFormID(transaction.FormID))
+                programFormCatalogList = programFormCatalog.SelectByFormID();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Edit.ProgramFormList.NAME] = programFormCatalogList;
+
             return View(transaction);
         }
 
@@ -117,14 +128,13 @@ namespace SCC.Controllers
                                     .Where(w => w.Monitorable)
                                     .Count() > 0)
                             .OrderBy(o => o.Person.SurName)
-                            .ThenBy(o => o.Person.LastName)
                             .ThenBy(o => o.Person.FirstName)
                             .ToList();
 
-                userList =
+                /*userList =
                     userList
                         .Where(e => e.ID != GetActualUser().ID)
-                        .ToList();
+                        .ToList();*/
 
                 TransactionFormViewModel transactionFormViewModel = new TransactionFormViewModel();
                 transactionFormViewModel.Transaction.SetIdentifier();
@@ -157,7 +167,7 @@ namespace SCC.Controllers
 
                 ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] =
                     new SelectList(
-                        userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                        userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                         "Key",
                         "Value",
                         userToEvaluateID);
@@ -208,14 +218,14 @@ namespace SCC.Controllers
             {
                 message =
                     SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.Creation.AGENT_DISPUTATION
-                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_DISPUTATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_DISPUTATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                         .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_TRANSACTION_IDENTIFIER, transactionIdentifier);
             }
             else
             {
                 message =
                     SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.Update.AGENT_DISPUTATION
-                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_DISPUTATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_DISPUTATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                         .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_TRANSACTION_IDENTIFIER, transactionIdentifier)
                         .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_OBJECT_INFO, oldCommentary);
             }
@@ -236,14 +246,14 @@ namespace SCC.Controllers
             {
                 message =
                     SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.Creation.AGENT_INVALIDATION
-                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_INVALIDATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_INVALIDATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                         .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_TRANSACTION_IDENTIFIER, transactionIdentifier);
             }
             else
             {
                 message =
                     SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.Update.AGENT_INVALIDATION
-                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_INVALIDATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_INVALIDATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                         .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_TRANSACTION_IDENTIFIER, transactionIdentifier)
                         .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_OBJECT_INFO, oldCommentary);
             }
@@ -264,14 +274,14 @@ namespace SCC.Controllers
             {
                 message =
                     SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.Creation.AGENT_DEVOLUTION
-                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_RETURNING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_RETURNING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                         .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_TRANSACTION_IDENTIFIER, transactionIdentifier);
             }
             else
             {
                 message =
                     SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.Update.AGENT_DEVOLUTION
-                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_RETURNING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                        .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_RETURNING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                         .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_TRANSACTION_IDENTIFIER, transactionIdentifier)
                         .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_OBJECT_INFO, oldCommentary);
             }
@@ -415,17 +425,17 @@ namespace SCC.Controllers
                 else
                 {
                     User auxUser = new User(userIDList[i]);
-                    auxUser.SetDataByID();
+                    auxUser.SetDataByID(true);
 
                     SaveNotification(
                             userIDList[i],
                             (int)SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.DISPUTE_OTHERS,
                             isNew
                                 ? SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.Creation.AGENT_DISPUTATION
-                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_DISPUTATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName} {auxUser.Person.LastName}, {auxUser.Person.FirstName}")
+                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_DISPUTATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName}, {auxUser.Person.FirstName}")
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_TRANSACTION_IDENTIFIER, transactionIDentifier)
                                 : SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.Update.AGENT_DISPUTATION
-                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_DISPUTATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName} {auxUser.Person.LastName}, {auxUser.Person.FirstName}")
+                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_DISPUTATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName}, {auxUser.Person.FirstName}")
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_TRANSACTION_IDENTIFIER, transactionIDentifier)
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Disputation.REPLACE_OBJECT_INFO, oldCommentary),
                             userNotificationUrlList);
@@ -457,17 +467,17 @@ namespace SCC.Controllers
                 else
                 {
                     User auxUser = new User(userIDList[i]);
-                    auxUser.SetDataByID();
+                    auxUser.SetDataByID(true);
 
                     SaveNotification(
                             userIDList[i],
                             (int)SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.INVALIDATION_OTHERS,
                             isNew
                                 ? SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.Creation.AGENT_INVALIDATION
-                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_INVALIDATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName} {auxUser.Person.LastName}, {auxUser.Person.FirstName}")
+                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_INVALIDATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName}, {auxUser.Person.FirstName}")
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_TRANSACTION_IDENTIFIER, transactionIDentifier)
                                 : SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.Update.AGENT_INVALIDATION
-                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_INVALIDATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName} {auxUser.Person.LastName}, {auxUser.Person.FirstName}")
+                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_INVALIDATING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName}, {auxUser.Person.FirstName}")
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_TRANSACTION_IDENTIFIER, transactionIDentifier)
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Invalidation.REPLACE_OBJECT_INFO, oldCommentary),
                             userNotificationUrlList);
@@ -499,17 +509,17 @@ namespace SCC.Controllers
                 else
                 {
                     User auxUser = new User(userIDList[i]);
-                    auxUser.SetDataByID();
+                    auxUser.SetDataByID(true);
 
                     SaveNotification(
                             userIDList[i],
                             (int)SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.DEVOLUTION_OTHERS,
                             isNew
                                 ? SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.Creation.AGENT_DEVOLUTION
-                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_RETURNING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName} {auxUser.Person.LastName}, {auxUser.Person.FirstName}")
+                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_RETURNING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName}, {auxUser.Person.FirstName}")
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_TRANSACTION_IDENTIFIER, transactionIDentifier)
                                 : SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.Update.AGENT_DEVOLUTION
-                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_RETURNING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName} {auxUser.Person.LastName}, {auxUser.Person.FirstName}")
+                                    .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_RETURNING_USER, $"{auxUser.Person.Identification} - {auxUser.Person.SurName}, {auxUser.Person.FirstName}")
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_TRANSACTION_IDENTIFIER, transactionIDentifier)
                                     .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Devolution.REPLACE_OBJECT_INFO, oldCommentary),
                             userNotificationUrlList);
@@ -819,7 +829,7 @@ namespace SCC.Controllers
 
                         string message =
                             SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.Creation.AGENT_CALIBRATION
-                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                                 .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_TRANSACTION_IDENTIFIER, newTransaction.Identifier);
 
                         int[] usersToNotify = GetUsersToNotify(SCC_BL.DBValues.Catalog.NOTIFICATION_MATRIX_ACTION.CALIBRATION, newTransaction.ID);
@@ -1089,7 +1099,7 @@ namespace SCC.Controllers
 
                         string message =
                             SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.Update.AGENT_CALIBRATION
-                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName} {currentUser.Person.LastName}, {currentUser.Person.FirstName}")
+                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
                                 .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_TRANSACTION_IDENTIFIER, oldTransaction.Identifier)
                                 .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_OBJECT_INFO, Serialize(oldTransaction));
 
@@ -1156,6 +1166,56 @@ namespace SCC.Controllers
                 {
                     transactionSearchViewModel.TransactionList = transaction.Search(transactionSearchHelper);
                 }
+
+                List<Catalog> allResultList = new List<Catalog>();
+                List<User> allUserList = new List<User>();
+
+                //Starts filling all data
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_GENERAL_RESULT_FINAL))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_GENERAL_RESULT_FINAL_USER_CRITICAL_ERROR))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_GENERAL_RESULT_BUSINESS_CRITICAL_ERROR))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_CONTROLLABLE_RESULT_FINAL))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_ACCURATE_RESULT_FINAL))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_ACCURATE_RESULT_FINAL_USER_CRITICAL_ERROR))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_ACCURATE_RESULT_BUSINESS_CRITICAL_ERROR))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_ACCURATE_RESULT_FULFILLMENT_CRITICAL_ERROR))
+                    allResultList.AddRange(catalog.SelectByCategoryID());
+
+                using (User user = new User())
+                    allUserList = user.SelectAll(true);
+
+                ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Search.AllData.ResultCatalog.NAME] = allResultList;
+
+                ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Search.AllData.User.NAME] = allUserList;
+
+                //Ends filling all data
             }
 
             List<Catalog> catalogSearchStringType = new List<Catalog>();
@@ -1210,7 +1270,6 @@ namespace SCC.Controllers
                 userList =
                     user.SelectAll(true)
                         .OrderBy(e => e.Person.SurName)
-                        .ThenBy(e => e.Person.LastName)
                         .ThenBy(e => e.Person.FirstName)
                         .ToList();
 
@@ -1395,13 +1454,23 @@ namespace SCC.Controllers
                     SaveProcessingInformation<SCC_BL.Results.UploadedFile.TransactionImport.Error>(null, null, null, new Exception("No se ha encontrado la ruta de carga del archivo"));
                 }
 
-                if (_transactionImportErrorList.Count() > 0)
+                //if (_transactionImportErrorList.Count() > 0)
+                if (true)
                 {
                     _transactionImportErrorList =
                         _transactionImportErrorList
-                            .OrderBy(e => e.RowNumber)
-                            .ThenBy(e => e.ColumnNumber)
+                            .Where(e => 
+                                e.Type != SCC_BL.Settings.Notification.Type.INFO)
                             .ToList();
+
+                    if (_transactionImportErrorList != null)
+                    {
+                        _transactionImportErrorList =
+                            _transactionImportErrorList
+                                .OrderBy(e => e.RowNumber)
+                                .ThenBy(e => e.ColumnNumber)
+                                .ToList();
+                    }
 
                     _transactionImportSuccessList =
                         _transactionImportSuccessList
@@ -1557,6 +1626,58 @@ namespace SCC.Controllers
                 SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX);
         }
 
+        //Start data for transaction import
+
+        List<User> _transactionImportUserList = null;
+        Program _transactionImportProgram = null;
+        ProgramFormCatalog _transactionImportProgramFormCatalog = null;
+        Form _transactionImportForm = null;
+
+        //End data for transaction import
+
+        void StartPersistentDataForTransactionImport(int programID, string formName, int rowCount)
+        {
+            if (_transactionImportUserList == null)
+            {
+                using (User user = new SCC_BL.User())
+                {
+                    this._transactionImportUserList = user.SelectAll(true);
+                }
+            }
+
+            if (_transactionImportProgram != null)
+            {
+                if (_transactionImportProgram.ID != programID)
+                {
+                    _transactionImportProgram = null;
+                    _transactionImportProgramFormCatalog = null;
+                    _transactionImportForm = null;
+                }
+            }
+
+            if (_transactionImportProgram == null)
+            {
+                using (Program program = new SCC_BL.Program(programID))
+                {
+                    program.SetDataByID();
+                    this._transactionImportProgram = program;
+                }
+            }
+
+            if (_transactionImportProgramFormCatalog == null)
+            {
+                _transactionImportProgramFormCatalog = GetProgramFormCatalogByProgramID(programID, rowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Program.ExcelFields.NAME);
+            }
+
+            if (_transactionImportForm == null)
+            {
+                if (_transactionImportProgramFormCatalog != null)
+                    _transactionImportForm = GetFormByID(_transactionImportProgramFormCatalog.FormID);
+                else
+                    _transactionImportForm = GetFormByName(formName, rowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Form.ExcelFields.NAME);
+            }
+        }
+
         public SCC_BL.Results.UploadedFile.TransactionImport.CODE ProcessImportExcel(System.Data.DataTable dt, int programID)
         {
             try
@@ -1596,6 +1717,16 @@ namespace SCC.Controllers
                 int biFieldStartIndex = lastAttributeIndex + 1;
                 int biFieldEndIndex = headersCount - 1;
 
+                /*foreach (System.Data.DataRow row in dt.Rows)
+                {
+                    ProcessRow(headerList, row, dt.Rows.Cast<System.Data.DataRow>().ToList().IndexOf(row), minDate, maxDate, programID, firstAttributeIndex, lastAttributeIndex, customControlStartIndex, customControlEndIndex, biFieldStartIndex, biFieldEndIndex);
+                }*/
+
+                StartPersistentDataForTransactionImport(
+                    programID,
+                    dt.Rows[0].ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Form.ExcelFields.NAME].ToString().Trim(),
+                    0);
+
                 Parallel.ForEach<System.Data.DataRow>(dt.Rows.Cast<System.Data.DataRow>(), (row) => {
                     ProcessRow(headerList, row, dt.Rows.Cast<System.Data.DataRow>().ToList().IndexOf(row), minDate, maxDate, programID, firstAttributeIndex, lastAttributeIndex, customControlStartIndex, customControlEndIndex, biFieldStartIndex, biFieldEndIndex);
                 });
@@ -1605,7 +1736,9 @@ namespace SCC.Controllers
                 SaveProcessingInformation<SCC_BL.Results.UploadedFile.FormUpload.Error>(ex);
             }
 
-            if (_transactionImportErrorList.Count() > 0)
+            bool hasNonInfoErrors = _transactionImportErrorList.Any(e => e.Type != SCC_BL.Settings.Notification.Type.INFO);
+
+            if (hasNonInfoErrors)
             {
                 string lineList = string.Empty;
 
@@ -1637,49 +1770,57 @@ namespace SCC.Controllers
             User agentUser = new User();
             User supervisorUser = new User();
             User evaluatorUser = new User();
-
             Program program = new Program();
-
+            ProgramFormCatalog programFormCatalog = new ProgramFormCatalog();
             Form form = new Form();
 
             List<ImportTransactionAttributeHelper> importTransactionAttributeHelperList = new List<ImportTransactionAttributeHelper>();
-
             List<ImportTransactionCustomControlHelper> importTransactionCustomControlHelperList = new List<ImportTransactionCustomControlHelper>();
-
             List<ImportTransactionBusinessIntelligenceFieldHelper> importTransactionBusinessIntelligenceFieldHelperList = new List<ImportTransactionBusinessIntelligenceFieldHelper>();
 
-            ProgramFormCatalog programFormCatalog = new ProgramFormCatalog();
-
             Transaction transaction = new Transaction();
-
             List<string> labelList = new List<string>();
             List<TransactionLabelCatalog> transactionLabelCatalogList = new List<TransactionLabelCatalog>();
-
             List<TransactionCommentary> transactionCommentaryList = new List<TransactionCommentary>();
 
             //BEGIN TO ENCAPSULATE OBJECTS
 
             string agentUserIdentification = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.User.ExcelFields.AGENT_IDENTIFICATION].ToString().Trim();
+            string supervisorUserName = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.User.ExcelFields.SUPERVISOR_NAME].ToString().Trim();
+            string evaluatorUserName = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.User.ExcelFields.EVALUATOR_NAME].ToString().Trim();
+            string programName = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Program.ExcelFields.NAME].ToString().Trim();
+            string formName = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Form.ExcelFields.NAME].ToString().Trim();
+            string transactionOldIdentifier = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.OLD_IDENTIFIER].ToString().Trim();
+            string labelExcelField = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.LABELS].ToString().Trim();
+
+            StartPersistentDataForTransactionImport(
+                programID,
+                formName,
+                currentRowCount);
+
+            //Starts looking for data in database
+
             agentUser = GetAgentUserByIdentification(agentUserIdentification, currentRowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.User.ExcelFields.AGENT_IDENTIFICATION);
 
-            string supervisorUserName = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.User.ExcelFields.SUPERVISOR_NAME].ToString().Trim();
             supervisorUser = GetSupervisorUserByName(supervisorUserName, currentRowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.User.ExcelFields.SUPERVISOR_NAME);
 
-            string evaluatorUserName = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.User.ExcelFields.EVALUATOR_NAME].ToString().Trim();
             evaluatorUser = GetEvaluatorUserByName(evaluatorUserName, currentRowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.User.ExcelFields.EVALUATOR_NAME);
 
-            string programName = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Program.ExcelFields.NAME].ToString().Trim();
             //program = GetProgramByName(programName, currentRowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Program.ExcelFields.NAME, minDate, maxDate);
             program = GetProgramByID(programID);
 
-            programFormCatalog = GetProgramFormCatalogByProgramID(program.ID, currentRowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Program.ExcelFields.NAME);
+            //programFormCatalog = GetProgramFormCatalogByProgramID(program.ID, currentRowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Program.ExcelFields.NAME);
 
-            string formName = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Form.ExcelFields.NAME].ToString().Trim();
+            programFormCatalog = _transactionImportProgramFormCatalog;
 
-            if (programFormCatalog != null)
+            /*if (programFormCatalog != null)
                 form = GetFormByID(programFormCatalog.FormID);
             else
-                form = GetFormByName(formName, currentRowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Form.ExcelFields.NAME);
+                form = GetFormByName(formName, currentRowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Form.ExcelFields.NAME);*/
+
+            form = _transactionImportForm;
+
+            //Finishes looking for data in database
 
             importTransactionAttributeHelperList = GetAttributesFromRow(headerList, row, firstAttributeIndex, lastAttributeIndex, form.ID, currentRowCount, form);
 
@@ -1687,12 +1828,9 @@ namespace SCC.Controllers
 
             importTransactionBusinessIntelligenceFieldHelperList = GetBusinessIntelligenceFieldsFromRow(headerList, row, biFieldStartIndex, biFieldEndIndex, currentRowCount, form);
 
-            string transactionOldIdentifier = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.OLD_IDENTIFIER].ToString().Trim();
-
             string transactionNewIdentifier = SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.IDENTIFIER_PREFIX + transactionOldIdentifier;
             transaction = GetTransactionByIdentifier(transactionNewIdentifier, currentRowCount, (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.OLD_IDENTIFIER);
 
-            string labelExcelField = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.LABELS].ToString().Trim();
             labelList.Add(labelExcelField);
 
             transactionCommentaryList = GetTransactionCommentaryListFromRow(row);
@@ -2040,40 +2178,53 @@ namespace SCC.Controllers
                 return null;
             }
 
-            using (User user = new SCC_BL.User(userIdentification))
+            User user = new SCC_BL.User(userIdentification);
+
+            try
             {
-                try
-                {
-                    user.SetDataByUsername();
+                //user.SetDataByUsername();
+                user = _transactionImportUserList.Where(e => e.Username.ToUpper().Trim().Equals(user.Username.ToUpper().Trim())).FirstOrDefault();
 
-                    if (user.ID <= 0)
-                    {
-                        _transactionImportErrorList.Add(
-                            new SCC_BL.Helpers.Transaction.Import.Error(
-                                transactionImportErrorElementName,
-                                SCC_BL.Results.Transaction.ImportData.ErrorList.User.Agent.NO_IDENTIFICATION_FOUND
-                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, userIdentification),
-                                currentRowCount,
-                                currentColumnCount));
-
-                        return null;
-                    }
-                }
-                catch (Exception ex)
+                if (user == null)
                 {
                     _transactionImportErrorList.Add(
                         new SCC_BL.Helpers.Transaction.Import.Error(
-                            transactionImportErrorElementName, 
-                            SCC_BL.Results.Transaction.ImportData.ErrorList.User.Agent.UNKNOWN
-                                .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
+                            transactionImportErrorElementName,
+                            SCC_BL.Results.Transaction.ImportData.ErrorList.User.Agent.NO_IDENTIFICATION_FOUND
+                                .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, userIdentification),
                             currentRowCount,
                             currentColumnCount));
 
                     return null;
                 }
+                else
+                if (user.ID <= 0)
+                {
+                    _transactionImportErrorList.Add(
+                        new SCC_BL.Helpers.Transaction.Import.Error(
+                            transactionImportErrorElementName,
+                            SCC_BL.Results.Transaction.ImportData.ErrorList.User.Agent.NO_IDENTIFICATION_FOUND
+                                .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, userIdentification),
+                            currentRowCount,
+                            currentColumnCount));
 
-                return user;
+                    return null;
+                }
             }
+            catch (Exception ex)
+            {
+                _transactionImportErrorList.Add(
+                    new SCC_BL.Helpers.Transaction.Import.Error(
+                        transactionImportErrorElementName,
+                        SCC_BL.Results.Transaction.ImportData.ErrorList.User.Agent.UNKNOWN
+                            .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
+                        currentRowCount,
+                        currentColumnCount));
+
+                return null;
+            }
+
+            return user;
         }
 
         User GetSupervisorUserByName(string userName, int currentRowCount, int currentColumnCount)
@@ -2103,61 +2254,61 @@ namespace SCC.Controllers
                 return null;
             }
 
-            using (User user = new SCC_BL.User(userName))
+            User user = new SCC_BL.User();
+
+            try
             {
-                try
-                {
-                    string firstName = userName.Split(',')[1].Trim();
+                string surname = userName.Split(',')[0].Trim();
+                string firstName = userName.Split(',')[1].Trim();
 
-                    string[] surnames = userName.Split(',')[0].Split(' ');
+                //user.SetDataByName(firstName, surname);
+                user = 
+                    _transactionImportUserList
+                        .Where(e =>
+                            e.Person.SurName.ToUpper().Trim().Equals(surname.ToUpper().Trim()) &&
+                            e.Person.FirstName.ToUpper().Trim().Equals(firstName.ToUpper().Trim()))
+                        .FirstOrDefault();
 
-                    string
-                        surName = string.Empty,
-                        lastName = string.Empty;
-
-                    if (surnames.Length == 1)
-                    {
-                        surName = surnames[surnames.Length - 1].Trim();
-                    }
-                    else
-                    {
-                        lastName = surnames[surnames.Length - 1].Trim();
-
-                        surnames = surnames.Take(surnames.Length - 1).ToArray();
-
-                        surName = String.Join(" ", surnames);
-                    }
-
-                    user.SetDataByName(firstName, surName, lastName);
-
-                    if (user.ID <= 0)
-                    {
-                        _transactionImportErrorList.Add(
-                            new SCC_BL.Helpers.Transaction.Import.Error(
-                                transactionImportErrorElementName,
-                                SCC_BL.Results.Transaction.ImportData.ErrorList.User.Supervisor.NO_NAME_FOUND
-                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, userName),
-                                currentRowCount,
-                                currentColumnCount));
-
-                        return null;
-                    }
-                }
-                catch (Exception ex)
+                if (user == null)
                 {
                     _transactionImportErrorList.Add(
                         new SCC_BL.Helpers.Transaction.Import.Error(
-                            transactionImportErrorElementName, 
-                            SCC_BL.Results.Transaction.ImportData.ErrorList.User.Supervisor.UNKNOWN
-                                .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
+                            transactionImportErrorElementName,
+                            SCC_BL.Results.Transaction.ImportData.ErrorList.User.Supervisor.NO_NAME_FOUND
+                                .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, userName),
                             currentRowCount,
                             currentColumnCount));
 
                     return null;
                 }
+                else
+                if (user.ID <= 0)
+                {
+                    _transactionImportErrorList.Add(
+                        new SCC_BL.Helpers.Transaction.Import.Error(
+                            transactionImportErrorElementName,
+                            SCC_BL.Results.Transaction.ImportData.ErrorList.User.Supervisor.NO_NAME_FOUND
+                                .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, userName),
+                            currentRowCount,
+                            currentColumnCount));
 
-                return user;
+                    return null;
+                }
             }
+            catch (Exception ex)
+            {
+                _transactionImportErrorList.Add(
+                    new SCC_BL.Helpers.Transaction.Import.Error(
+                        transactionImportErrorElementName,
+                        SCC_BL.Results.Transaction.ImportData.ErrorList.User.Supervisor.UNKNOWN
+                            .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
+                        currentRowCount,
+                        currentColumnCount));
+
+                return null;
+            }
+
+            return user;
         }
 
         User GetEvaluatorUserByName(string userName, int currentRowCount, int currentColumnCount)
@@ -2187,61 +2338,61 @@ namespace SCC.Controllers
                 return null;
             }
 
-            using (User user = new SCC_BL.User(userName))
+            User user = new SCC_BL.User();
+
+            try
             {
-                try
-                {
-                    string firstName = userName.Split(',')[1].Trim();
+                string surname = userName.Split(',')[0].Trim();
+                string firstName = userName.Split(',')[1].Trim();
 
-                    string[] surnames = userName.Split(',')[0].Split(' ');
+                //user.SetDataByName(firstName, surname);
+                user =
+                    _transactionImportUserList
+                        .Where(e =>
+                            e.Person.SurName.ToUpper().Trim().Equals(surname.ToUpper().Trim()) &&
+                            e.Person.FirstName.ToUpper().Trim().Equals(firstName.ToUpper().Trim()))
+                        .FirstOrDefault();
 
-                    string
-                        surName = string.Empty,
-                        lastName = string.Empty;
-
-                    if (surnames.Length == 1)
-                    {
-                        surName = surnames[surnames.Length - 1].Trim();
-                    }
-                    else
-                    {
-                        lastName = surnames[surnames.Length - 1].Trim();
-
-                        surnames = surnames.Take(surnames.Length - 1).ToArray();
-
-                        surName = String.Join(" ", surnames);
-                    }
-
-                    user.SetDataByName(firstName, surName, lastName);
-
-                    if (user.ID <= 0)
-                    {
-                        _transactionImportErrorList.Add(
-                            new SCC_BL.Helpers.Transaction.Import.Error(
-                                transactionImportErrorElementName,
-                                SCC_BL.Results.Transaction.ImportData.ErrorList.User.Evaluator.NO_NAME_FOUND
-                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, userName),
-                                currentRowCount,
-                                currentColumnCount));
-
-                        return null;
-                    }
-                }
-                catch (Exception ex)
+                if (user == null)
                 {
                     _transactionImportErrorList.Add(
                         new SCC_BL.Helpers.Transaction.Import.Error(
-                            transactionImportErrorElementName, 
-                            SCC_BL.Results.Transaction.ImportData.ErrorList.User.Evaluator.UNKNOWN
-                                .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
+                            transactionImportErrorElementName,
+                            SCC_BL.Results.Transaction.ImportData.ErrorList.User.Evaluator.NO_NAME_FOUND
+                                .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, userName),
                             currentRowCount,
                             currentColumnCount));
 
                     return null;
                 }
+                else
+                if (user.ID <= 0)
+                {
+                    _transactionImportErrorList.Add(
+                        new SCC_BL.Helpers.Transaction.Import.Error(
+                            transactionImportErrorElementName,
+                            SCC_BL.Results.Transaction.ImportData.ErrorList.User.Evaluator.NO_NAME_FOUND
+                                .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, userName),
+                            currentRowCount,
+                            currentColumnCount));
 
-                return user;
+                    return null;
+                }
             }
+            catch (Exception ex)
+            {
+                _transactionImportErrorList.Add(
+                    new SCC_BL.Helpers.Transaction.Import.Error(
+                        transactionImportErrorElementName,
+                        SCC_BL.Results.Transaction.ImportData.ErrorList.User.Evaluator.UNKNOWN
+                            .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
+                        currentRowCount,
+                        currentColumnCount));
+
+                return null;
+            }
+
+            return user;
         }
 
         ProgramFormCatalog GetProgramFormCatalogByProgramID(int programID, int currentRowCount, int currentColumnCount)
@@ -2345,29 +2496,29 @@ namespace SCC.Controllers
         {
             string transactionImportErrorElementName = "Program";
 
-            using (Program program = new SCC_BL.Program(programID))
+            Program program = new SCC_BL.Program(programID);
+
+            try
             {
-                try
-                {
-                    program.SetDataByID();
-                }
-                catch (Exception ex)
-                {
-                    _transactionImportErrorList.Add(
-                        new SCC_BL.Helpers.Transaction.Import.Error(
-                            transactionImportErrorElementName, 
-                            SCC_BL.Results.Transaction.ImportData.ErrorList.Program.UNKNOWN
-                                .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
-                            0,
-                            0));
-
-                    //Se podría crear si se necesitase
-
-                    return null;
-                }
-
-                return program;
+                //program.SetDataByID();
+                program = _transactionImportProgram;
             }
+            catch (Exception ex)
+            {
+                _transactionImportErrorList.Add(
+                    new SCC_BL.Helpers.Transaction.Import.Error(
+                        transactionImportErrorElementName,
+                        SCC_BL.Results.Transaction.ImportData.ErrorList.Program.UNKNOWN
+                            .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, ex.ToString()),
+                        0,
+                        0));
+
+                //Se podría crear si se necesitase
+
+                return null;
+            }
+
+            return program;
         }
 
         Form GetFormByName(string formName, int currentRowCount, int currentColumnCount)
@@ -2938,13 +3089,59 @@ namespace SCC.Controllers
 
             TimeSpan timeElapsedValue = new TimeSpan(DateTime.Now.Hour, DateTime.Now.Minute, DateTime.Now.Second);
 
-            if (!string.IsNullOrEmpty(timeElapsed))
+            try
             {
-                int hours = Convert.ToInt32(timeElapsed.Split(':')[0]);
-                int minutes = Convert.ToInt32(timeElapsed.Split(':')[1]);
-                int seconds = Convert.ToInt32(timeElapsed.Split(':')[2]);
+                if (!string.IsNullOrEmpty(timeElapsed))
+                {
+                    int hours = 0;
+                    int minutes = 0;
+                    int seconds = 0;
 
-                timeElapsedValue = new TimeSpan(hours, minutes, seconds);
+                    if (timeElapsed.Contains("day"))
+                    {
+                        hours = 23;
+                        minutes = 59;
+                        seconds = 59;
+                    }
+                    else
+                    {
+
+                        hours = Convert.ToInt32(timeElapsed.Split(':')[0]);
+                        minutes = Convert.ToInt32(timeElapsed.Split(':')[1]);
+                        seconds = Convert.ToInt32(timeElapsed.Split(':')[2]);
+
+                        if (hours > 23)
+                        {
+                            hours = 23;
+                            minutes = 59;
+                            seconds = 59;
+                        }
+                    }
+
+                    timeElapsedValue = new TimeSpan(hours, minutes, seconds);
+                }
+                else
+                {
+                    _transactionImportErrorList.Add(
+                        new SCC_BL.Helpers.Transaction.Import.Error(
+                            transactionImportErrorElementName,
+                            SCC_BL.Results.Transaction.ImportData.ErrorList.Transaction.BAD_FORMAT_TIME_ELAPSED,
+                            currentRowCount,
+                            (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.TIME_ELAPSED));
+
+                    hasError = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                _transactionImportErrorList.Add(
+                    new SCC_BL.Helpers.Transaction.Import.Error(
+                        transactionImportErrorElementName,
+                        SCC_BL.Results.Transaction.ImportData.ErrorList.Transaction.BAD_FORMAT_TIME_ELAPSED,
+                        currentRowCount,
+                        (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.TIME_ELAPSED));
+
+                hasError = true;
             }
 
             Transaction transaction = new Transaction(identifier, userToEvaluateID, evaluatorUserID, evaluationDate, transactionDate, formID, comment, generalResultID, generalFUCEResultID, generalBCEResultID, generalFCEResultID, generalNCEResultValue, accurateResultID, accurateFUCEResultID, accurateBCEResultID, accurateFCEResultID, accurateNCEResultValue, controllableResultID, controllableFUCEResultID, controllableBCEResultID, controllableFCEResultID, controllableNCEResultValue, timeElapsedValue, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION.CREATED, (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.EVALUATION, null);
@@ -3579,7 +3776,7 @@ namespace SCC.Controllers
                                 break;
                             case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
                                 break;
-                            case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
+                            case SCC_BL.Settings.AppValues.Masks.SurName1.MASK:
                                 break;
                             case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
                                 break;
@@ -3625,6 +3822,7 @@ namespace SCC.Controllers
                                 new SCC_BL.Helpers.Transaction.Import.Error(
                                     transactionImportErrorElementName,
                                     SCC_BL.Results.Transaction.ImportData.ErrorList.CustomControl.NO_VALUE_FOUND
+                                        .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT_2, customControlName)
                                         .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, customControlValue),
                                     currentRowCount,
                                     currentCellIndex));
@@ -3639,6 +3837,7 @@ namespace SCC.Controllers
                                 new SCC_BL.Helpers.Transaction.Import.Error(
                                     transactionImportErrorElementName,
                                     SCC_BL.Results.Transaction.ImportData.ErrorList.CustomControl.NO_VALUE_FOUND
+                                        .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT_2, customControlName)
                                         .Replace(SCC_BL.Results.CommonElements.REPLACE_CUSTOM_CONTENT, customControlValue),
                                     currentRowCount,
                                     currentCellIndex));

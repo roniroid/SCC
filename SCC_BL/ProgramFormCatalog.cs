@@ -118,6 +118,34 @@ namespace SCC_BL
 			return programFormCatalogList;
 		}
 
+		public List<ProgramFormCatalog> SelectAll()
+		{
+			List<ProgramFormCatalog> programFormCatalogList = new List<ProgramFormCatalog>();
+
+			using (SCC_DATA.Repositories.ProgramFormCatalog repoProgramFormCatalog = new SCC_DATA.Repositories.ProgramFormCatalog())
+			{
+				DataTable dt = repoProgramFormCatalog.SelectAll();
+
+				foreach (DataRow dr in dt.Rows)
+				{
+					ProgramFormCatalog programFormCatalog = new ProgramFormCatalog(
+						Convert.ToInt32(dr[SCC_DATA.Queries.ProgramFormCatalog.StoredProcedures.SelectAll.ResultFields.ID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.ProgramFormCatalog.StoredProcedures.SelectAll.ResultFields.PROGRAMID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.ProgramFormCatalog.StoredProcedures.SelectAll.ResultFields.FORMID]),
+						Convert.ToDateTime(dr[SCC_DATA.Queries.ProgramFormCatalog.StoredProcedures.SelectAll.ResultFields.STARTDATE]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.ProgramFormCatalog.StoredProcedures.SelectAll.ResultFields.BASICINFOID])
+					);
+
+					programFormCatalog.BasicInfo = new BasicInfo(programFormCatalog.BasicInfoID);
+					programFormCatalog.BasicInfo.SetDataByID();
+
+					programFormCatalogList.Add(programFormCatalog);
+				}
+			}
+
+			return programFormCatalogList;
+		}
+
 		public List<ProgramFormCatalog> SelectByFormID()
 		{
 			List<ProgramFormCatalog> programFormCatalogList = new List<ProgramFormCatalog>();

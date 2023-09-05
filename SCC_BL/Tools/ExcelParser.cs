@@ -1069,17 +1069,17 @@ namespace SCC_BL.Tools
                     {
                         using (User supervisorUser = new User(transaction.UserToEvaluate.SupervisorList[0].SupervisorID))
                         {
-                            supervisorUser.SetDataByID();
+                            supervisorUser.SetDataByID(true);
 
-                            currentSupervisorName = $"{ supervisorUser.Person.SurName } { supervisorUser.Person.LastName }, { supervisorUser.Person.FirstName }";
+                            currentSupervisorName = $"{ supervisorUser.Person.SurName }, { supervisorUser.Person.FirstName }";
                         }
                     }
 
                     dataRow.Append(CreateCell($"{ transaction.Identifier }"));
                     dataRow.Append(CreateCell($"{transaction.UserToEvaluate.Username}"));
-                    dataRow.Append(CreateCell($"{ transaction.UserToEvaluate.Person.SurName } { transaction.UserToEvaluate.Person.LastName }, { transaction.UserToEvaluate.Person.FirstName }"));
+                    dataRow.Append(CreateCell($"{ transaction.UserToEvaluate.Person.SurName }, { transaction.UserToEvaluate.Person.FirstName }"));
                     dataRow.Append(CreateCell(currentSupervisorName));
-                    dataRow.Append(CreateCell($"{transaction.EvaluatorUser.Person.SurName} {transaction.EvaluatorUser.Person.LastName}, {transaction.EvaluatorUser.Person.FirstName}"));
+                    dataRow.Append(CreateCell($"{transaction.EvaluatorUser.Person.SurName}, {transaction.EvaluatorUser.Person.FirstName}"));
                     dataRow.Append(CreateCell($"{ transaction.Program.Name }"));
                     dataRow.Append(CreateCell(String.Join(",", transaction.TransactionLabelList.Select(e => e.Description))));
                     dataRow.Append(CreateCell(transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")));
@@ -1172,7 +1172,7 @@ namespace SCC_BL.Tools
                                             break;
                                         case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
                                             break;
-                                        case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
+                                        case SCC_BL.Settings.AppValues.Masks.SurName1.MASK:
                                             break;
                                         case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
                                             break;

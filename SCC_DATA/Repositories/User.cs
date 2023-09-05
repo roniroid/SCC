@@ -175,7 +175,7 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public System.Data.DataRow SelectByName(string firstName, string surName, string lastName)
+		public System.Data.DataRow SelectByName(string firstName, string surName)
 		{
 			try
 			{
@@ -183,8 +183,7 @@ namespace SCC_DATA.Repositories
 				{
 					SqlParameter[] parameters = new SqlParameter[] {
 						db.CreateParameter(Queries.User.StoredProcedures.SelectByName.Parameters.FIRST_NAME, firstName, System.Data.SqlDbType.VarChar),
-						db.CreateParameter(Queries.User.StoredProcedures.SelectByName.Parameters.SUR_NAME, surName, System.Data.SqlDbType.VarChar),
-						db.CreateParameter(Queries.User.StoredProcedures.SelectByName.Parameters.LAST_NAME, lastName, System.Data.SqlDbType.VarChar)
+						db.CreateParameter(Queries.User.StoredProcedures.SelectByName.Parameters.SUR_NAME, surName, System.Data.SqlDbType.VarChar)
 					};
 
 					System.Data.DataTable response = new System.Data.DataTable();

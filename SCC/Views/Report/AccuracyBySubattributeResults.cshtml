@@ -117,6 +117,7 @@
 
 @{
     bool isControllable = (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyBySubattribute.IS_CONTROLLABLE];
+    int failTotalResultCount = Model.AccuracyBySubattributeResultList.Where(e => !e.SuccessfulResult).Count();
 }
 
 <div class="tableContainer mt-4">
@@ -166,6 +167,8 @@
                         .FirstOrDefault();
 
                 int successfulResultCount = Model.AccuracyBySubattributeResultList.Where(e => e.AttributeID == accuracyBySubattributeResult.AttributeID && e.SuccessfulResult).Count();
+                int failResultCount = Model.AccuracyBySubattributeResultList.Where(e => e.AttributeID == accuracyBySubattributeResult.AttributeID && !e.SuccessfulResult).Count();
+
                 string errorType = string.Empty;
                 currentCumulativeAmount = currentCumulativeAmount + ((Convert.ToDecimal(successfulResultCount) / Model.TotalTransactions) * 100);
 
@@ -197,7 +200,7 @@
                         @accuracyBySubattributeResult.AttributeName (@errorType)
                     </td>
                     <td>
-                        @successfulResultCount
+                        @failResultCount
                     </td>
                     <td>
                         @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(successfulResultCount) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
@@ -213,6 +216,21 @@
                     maxSuccessfulResultCount = successfulResultCount;
                 }
             }
+            <tr>
+                <td>
+                </td>
+                <td>
+                    Total
+                </td>
+                <td>
+                    @failTotalResultCount
+                </td>
+                <td>
+                    100%
+                </td>
+                <td>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -221,7 +239,23 @@
 
 <script>
     $(document).ready(function () {
-        fetchDatatableBasicData().then(response => {
+        $("#tbInfo").on("draw.dt", function () {
+            $(this).find(".dataTables_empty").parents('tbody').empty();
+        }).DataTable({
+            "paging": false,
+            "ordering": false,
+            "info": false,
+            "searching": false,
+            "zeroRecords": " ",
+            "columnDefs": [
+                {
+                    className: "text-center",
+                    targets: [0, 1, 2, 3, 4]
+                }
+            ]
+        });
+
+        @*fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
             let fileName = 'Resultados de precisión por subatributo' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
 
@@ -276,7 +310,7 @@
             data["buttons"].push(copyButton);
 
             startDataTable('#tbInfo', data);
-        });
+        });*@
     });
 
     Array.prototype.max = function () {
@@ -449,7 +483,7 @@
                     max: 100,
                     position: 'right',
                     offset: true,
-                    position: 20,
+                    //position: 20,
                 },
                 x: {
                     title: {
@@ -571,19 +605,21 @@
 
         if (points.length) {
             const firstPoint = points[0];
+            const datasetIndex = firstPoint.datasetIndex;
+            const dataIndex = firstPoint.index;
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
 
             let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
 
             if (hasChildren) {
-                const selectedTransactionID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
+                const selectedAttributeID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
 
                 const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
 
                 const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
 
-                $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedTransactionID + '" /> ');
+                $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedAttributeID + '" /> ');
                 $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyBySubattributeResultList.Select(e => e.TransactionAttributeID))" /> ');
                 $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
                 $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');

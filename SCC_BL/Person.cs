@@ -15,7 +15,6 @@ namespace SCC_BL
 		public string Identification { get; set; }
 		public string FirstName { get; set; }
 		public string SurName { get; set; }
-		public string LastName { get; set; }
 		public int CountryID { get; set; } = (int)SCC_BL.DBValues.Catalog.PERSON_COUNTRY.COSTA_RICA;
 		public int BasicInfoID { get; set; }
 		//----------------------------------------------------
@@ -38,12 +37,11 @@ namespace SCC_BL
 		}
 
 		//For Insert
-		public Person(string identification, string firstName, string surName, string lastName, int countryID, int? creationUserID, int statusID)
+		public Person(string identification, string firstName, string surName, int countryID, int? creationUserID, int statusID)
 		{
 			this.Identification = identification;
 			this.FirstName = firstName;
 			this.SurName = surName;
-			this.LastName = lastName;
 			this.CountryID = countryID;
 
 			this.BasicInfo = new BasicInfo(creationUserID, statusID);
@@ -52,13 +50,12 @@ namespace SCC_BL
         }
 
 		//For Update
-		public Person(int id, string identification, string firstName, string surName, string lastName, int countryID, int basicInfoID, int modificationUserID, int statusID)
+		public Person(int id, string identification, string firstName, string surName, int countryID, int basicInfoID, int modificationUserID, int statusID)
 		{
 			this.ID = id;
 			this.Identification = identification;
 			this.FirstName = firstName;
 			this.SurName = surName;
-			this.LastName = lastName;
             this.CountryID = countryID;
 
             this.BasicInfo = new BasicInfo(basicInfoID, modificationUserID, statusID);
@@ -67,13 +64,12 @@ namespace SCC_BL
         }
 
 		//For SelectByID (RESULT)
-		public Person(int id, string identification, string firstName, string surName, string lastName, int basicInfoID, int countryID)
+		public Person(int id, string identification, string firstName, string surName, int basicInfoID, int countryID)
 		{
 			this.ID = id;
 			this.Identification = identification;
 			this.FirstName = firstName;
 			this.SurName = surName;
-			this.LastName = lastName;
 			this.CountryID = countryID;
 			this.BasicInfoID = basicInfoID;
 		}
@@ -110,7 +106,7 @@ namespace SCC_BL
 
 			using (SCC_DATA.Repositories.Person repoPerson = new SCC_DATA.Repositories.Person())
 			{
-				this.ID = repoPerson.Insert(this.Identification, this.FirstName, this.SurName, this.LastName, this.CountryID, this.BasicInfoID);
+				this.ID = repoPerson.Insert(this.Identification, this.FirstName, this.SurName, this.CountryID, this.BasicInfoID);
 
 				return this.ID;
 			}
@@ -126,7 +122,6 @@ namespace SCC_BL
 				this.Identification = Convert.ToString(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByID.ResultFields.IDENTIFICATION]);
 				this.FirstName = Convert.ToString(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByID.ResultFields.FIRSTNAME]);
 				this.SurName = Convert.ToString(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByID.ResultFields.SURNAME]);
-				this.LastName = Convert.ToString(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByID.ResultFields.LASTNAME]);
 				this.CountryID = Convert.ToInt32(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByID.ResultFields.COUNTRY_ID]);
 				this.BasicInfoID = Convert.ToInt32(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByID.ResultFields.BASICINFOID]);
 
@@ -145,7 +140,6 @@ namespace SCC_BL
 				this.Identification = Convert.ToString(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByIdentification.ResultFields.IDENTIFICATION]);
 				this.FirstName = Convert.ToString(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByIdentification.ResultFields.FIRSTNAME]);
 				this.SurName = Convert.ToString(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByIdentification.ResultFields.SURNAME]);
-				this.LastName = Convert.ToString(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByIdentification.ResultFields.LASTNAME]);
                 this.CountryID = Convert.ToInt32(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByIdentification.ResultFields.COUNTRY_ID]);
                 this.BasicInfoID = Convert.ToInt32(dr[SCC_DATA.Queries.Person.StoredProcedures.SelectByIdentification.ResultFields.BASICINFOID]);
 
@@ -160,7 +154,7 @@ namespace SCC_BL
 
 			using (SCC_DATA.Repositories.Person repoPerson = new SCC_DATA.Repositories.Person())
 			{
-				return repoPerson.Update(this.ID, this.Identification, this.FirstName, this.SurName, this.LastName, this.CountryID);
+				return repoPerson.Update(this.ID, this.Identification, this.FirstName, this.SurName, this.CountryID);
 			}
 		}
 

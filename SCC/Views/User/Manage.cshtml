@@ -15,6 +15,18 @@
 
     bool hasModel = Model.User.ID != null && Model.User.ID > 0;
 
+    //Starts loading data
+
+    List<Catalog> allLanguageList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.LanguageCatalog.NAME];
+    List<Catalog> allCountryList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.CountryCatalog.NAME];
+    List<User> allSupervisorList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Supervisor.NAME];
+    List<Workspace> allWorkspaceList = (List<Workspace>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Workspace.NAME];
+    List<Role> allRoleList = (List<Role>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.RoleCatalog.NAME];
+    List<Group> allGroupList = (List<Group>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Group.NAME];
+    List<Program> allProgramList = (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Program.NAME];
+
+    //Finish loading data
+
     ViewBag.Title = "Administración de usuarios";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -100,18 +112,10 @@
                         </div>
                         <div class="row property-field">
                             <div class="col-5 property-field-label">
-                                Primer apellido <span class="required">*</span>
+                                Apellidos <span class="required">*</span>
                             </div>
                             <div class="col-7">
-                                @Html.TextBoxFor(modelitem => Model.Person.SurName, null, new { @class = "property-field-control", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", placeholder = "Primer apellido", autocomplete = "off", required = "" })
-                            </div>
-                        </div>
-                        <div class="row property-field">
-                            <div class="col-5 property-field-label">
-                                Segundo apellido 
-                            </div>
-                            <div class="col-7">
-                                @Html.TextBoxFor(modelitem => Model.Person.LastName, null, new { @class = "property-field-control", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", placeholder = "Segundo apellido", autocomplete = "off"@*, required = ""*@ })
+                                @Html.TextBoxFor(modelitem => Model.Person.SurName, null, new { @class = "property-field-control", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", placeholder = "Apellidos", autocomplete = "off", required = "" })
                             </div>
                         </div>
                         <div class="row property-field">
@@ -473,7 +477,7 @@
                             @user.Person.FirstName
                         </td>
                         <td>
-                            @user.Person.SurName @user.Person.LastName
+                            @user.Person.SurName
                         </td>
                         <td>
                             @user.Email
@@ -487,9 +491,8 @@
                             @{
                                 string languageName = string.Empty;
 
-                                using (Catalog catalog = new Catalog(user.LanguageID))
+                                using (Catalog catalog = allLanguageList.Where(e => e.ID == user.LanguageID).FirstOrDefault())
                                 {
-                                    catalog.SetDataByID();
                                     languageName = catalog.Description;
                                 }
                             }
@@ -502,9 +505,8 @@
 
                                 foreach (UserWorkspaceCatalog userWorkspaceCatalog in user.UserWorkspaceCatalogList)
                                 {
-                                    using (Workspace workspace = new Workspace(userWorkspaceCatalog.WorkspaceID))
+                                    using (Workspace workspace = allWorkspaceList.Where(e => e.ID == userWorkspaceCatalog.WorkspaceID).FirstOrDefault())
                                     {
-                                        workspace.SetDataByID();
                                         workspaceNameList += string.IsNullOrEmpty(workspaceNameList)
                                             ? workspace.Name
                                             : $",{workspace.Identifier}";
@@ -520,9 +522,8 @@
 
                                 foreach (UserSupervisorCatalog userSupervisorCatalog in user.SupervisorList)
                                 {
-                                    using (User supervisor = new User(userSupervisorCatalog.SupervisorID))
+                                    using (User supervisor = allSupervisorList.Where(e => e.ID == userSupervisorCatalog.SupervisorID).FirstOrDefault())
                                     {
-                                        supervisor.SetDataByID();
                                         supervisorList += string.IsNullOrEmpty(supervisorList)
                                             ? supervisor.Person.Identification
                                             : $",{supervisor.Person.Identification}";
@@ -552,9 +553,8 @@
 
                                 foreach (UserRoleCatalog userRoleCatalog in user.RoleList)
                                 {
-                                    using (Role role = new Role(userRoleCatalog.RoleID))
+                                    using (Role role = allRoleList.Where(e => e.ID == userRoleCatalog.RoleID).FirstOrDefault())
                                     {
-                                        role.SetDataByID();
                                         roleNameList += string.IsNullOrEmpty(roleNameList)
                                             ? role.Identifier
                                             : $",{role.Identifier}";
@@ -570,9 +570,8 @@
 
                                 foreach (UserGroupCatalog userGroupCatalog in user.GroupList)
                                 {
-                                    using (Group group = new Group(userGroupCatalog.GroupID))
+                                    using (Group group = allGroupList.Where(e => e.ID == userGroupCatalog.GroupID).FirstOrDefault())
                                     {
-                                        group.SetDataByID();
                                         groupNameList += string.IsNullOrEmpty(groupNameList)
                                             ? group.Name
                                             : $",{group.Name}";
@@ -588,9 +587,8 @@
 
                                 foreach (UserProgramCatalog userProgramCatalog in user.ProgramList)
                                 {
-                                    using (Program program = new Program(userProgramCatalog.ProgramID))
+                                    using (Program program = allProgramList.Where(e => e.ID == userProgramCatalog.ProgramID).FirstOrDefault())
                                     {
-                                        program.SetDataByID();
                                         programNameList += string.IsNullOrEmpty(programNameList)
                                             ? program.Name
                                             : $",{program.Name}";
@@ -681,7 +679,7 @@
 
                     <tr class="@tableRowClass">
                         <td>@user.Person.Identification</td>
-                        <td>@user.Person.SurName @user.Person.LastName @user.Person.FirstName</td>
+                        <td>@user.Person.SurName @user.Person.FirstName</td>
                         <td>@user.Email</td>
                         <td data-order="@user.StartDate.ToString("yyyy/MM/dd")">
                             @user.StartDate.ToString("dd MMM yyyy")
@@ -689,8 +687,7 @@
                         <td>
                             @foreach (UserWorkspaceCatalog userWorkspace in user.UserWorkspaceCatalogList)
                             {
-                                Workspace tempWorkspace = new Workspace(userWorkspace.WorkspaceID);
-                                tempWorkspace.SetDataByID();
+                                Workspace tempWorkspace = allWorkspaceList.Where(e => e.ID == userWorkspace.WorkspaceID).FirstOrDefault();
 
                                 <span>
                                     @tempWorkspace.Name
@@ -710,8 +707,7 @@
                         <td>
                             @foreach (UserSupervisorCatalog userSupervisor in user.SupervisorList)
                             {
-                                User tempSupervisor = new User(userSupervisor.SupervisorID);
-                                tempSupervisor.SetDataByID();
+                                User tempSupervisor = allSupervisorList.Where(e => e.ID == userSupervisor.SupervisorID).FirstOrDefault();
 
                                 <span>
                                     @tempSupervisor.Person.Identification
@@ -731,8 +727,7 @@
                         <td>
                             @foreach (UserRoleCatalog userRole in user.RoleList)
                             {
-                                Role tempRole = new Role(userRole.RoleID);
-                                tempRole.SetDataByID();
+                                Role tempRole = allRoleList.Where(e => e.ID == userRole.RoleID).FirstOrDefault();
 
                                 <span>
                                     @tempRole.Name
@@ -743,8 +738,7 @@
                         <td>
                             @foreach (UserGroupCatalog userGroup in user.GroupList)
                             {
-                                Group tempGroup = new Group(userGroup.GroupID);
-                                tempGroup.SetDataByID();
+                                Group tempGroup = allGroupList.Where(e => e.ID == userGroup.GroupID).FirstOrDefault();
 
                                 <span>
                                     @tempGroup.Name
@@ -765,9 +759,8 @@
                             @{
                                 string countryName = string.Empty;
 
-                                using (Catalog countryCatalog = new Catalog(user.Person.CountryID))
+                                using (Catalog countryCatalog = allCountryList.Where(e => e.ID == user.Person.CountryID).FirstOrDefault())
                                 {
-                                    countryCatalog.SetDataByID();
                                     countryName = countryCatalog.Description;
                                 }
                             }
@@ -778,9 +771,8 @@
                             @{
                                 string languageName = string.Empty;
 
-                                using (Catalog languageCatalog = new Catalog(user.LanguageID))
+                                using (Catalog languageCatalog = allLanguageList.Where(e => e.ID == user.LanguageID).FirstOrDefault())
                                 {
-                                    languageCatalog.SetDataByID();
                                     languageName = languageCatalog.Description;
                                 }
                             }

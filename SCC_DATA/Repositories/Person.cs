@@ -56,7 +56,7 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public int Insert(string identification, string firstName, string surName, string lastName, int countryID, int basicInfoID)
+		public int Insert(string identification, string firstName, string surName, int countryID, int basicInfoID)
 		{
 			try
 			{
@@ -66,7 +66,6 @@ namespace SCC_DATA.Repositories
 						db.CreateParameter(Queries.Person.StoredProcedures.Insert.Parameters.IDENTIFICATION, identification, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.Person.StoredProcedures.Insert.Parameters.FIRSTNAME, firstName, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.Person.StoredProcedures.Insert.Parameters.SURNAME, surName, System.Data.SqlDbType.VarChar),
-						db.CreateParameter(Queries.Person.StoredProcedures.Insert.Parameters.LASTNAME, lastName, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.Person.StoredProcedures.Insert.Parameters.COUNTRY_ID, countryID, System.Data.SqlDbType.Int),
 						db.CreateParameter(Queries.Person.StoredProcedures.Insert.Parameters.BASICINFOID, basicInfoID, System.Data.SqlDbType.Int)
 					};
@@ -130,7 +129,7 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public int Update(int id, string identification, string firstName, string surName, string lastName, int countryID)
+		public int Update(int id, string identification, string firstName, string surName, int countryID)
 		{
 			try
 			{
@@ -141,7 +140,6 @@ namespace SCC_DATA.Repositories
 						db.CreateParameter(Queries.Person.StoredProcedures.Update.Parameters.IDENTIFICATION, identification, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.Person.StoredProcedures.Update.Parameters.FIRSTNAME, firstName, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.Person.StoredProcedures.Update.Parameters.SURNAME, surName, System.Data.SqlDbType.VarChar),
-						db.CreateParameter(Queries.Person.StoredProcedures.Update.Parameters.LASTNAME, lastName, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.Person.StoredProcedures.Update.Parameters.COUNTRY_ID, countryID, System.Data.SqlDbType.Int)
 					};
 

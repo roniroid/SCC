@@ -483,6 +483,69 @@
 
     Chart.register([ChartDataLabels, chartAreaBorder, backgroundColorPlugin]);
 
+    @{ 
+        double minScale = 100;
+
+        if (isControllable)
+        {
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableFinalUserCriticalErrorPercentage).Min() < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableFinalUserCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableBusinessCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableBusinessCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableFulfillmentCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableFulfillmentCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableNonCriticalErrorAverageResult).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableNonCriticalErrorAverageResult).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableCriticalErrorPercentage).Min(e => e);
+            }
+        }
+        else
+        {
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateFinalUserCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateFinalUserCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateBusinessCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateBusinessCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateFulfillmentCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateFulfillmentCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateNonCriticalErrorAverageResult).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateNonCriticalErrorAverageResult).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateCriticalErrorPercentage).Min(e => e);
+            }
+        }
+
+        minScale = minScale >= 10 ? (minScale - (minScale % 10)) : 0;
+    }
+
+    let minScale = @minScale;
+
     let myChart = new Chart(ctx, {
         type: 'line',
         data: DEFAULT_DATA,
@@ -502,9 +565,10 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
+                    min: minScale,
                     max: 100,
                     ticks: {
-                        stepSize: 25,
+                        stepSize: minScale < 50 ? 25 : 10,
                         callback: function (value) {
                             return value + '%';
                         }

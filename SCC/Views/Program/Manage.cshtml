@@ -241,19 +241,18 @@
                                         </button>
                                     </form>
                                 }*@
-                                using (ProgramFormCatalog programFormCatalog = ProgramFormCatalog.ProgramFormCatalogWithProgramID(program.ID))
-                                {
-                                    List<ProgramFormCatalog> programFormCatalogList = programFormCatalog.SelectByProgramID();
 
-                                    if (programFormCatalogList.Count() > 0)
-                                    {
-                                        <form class="d-inline frm-import-data" action="@Url.Action(nameof(TransactionController.ImportData), transactionControllerName)" method="get" target="_blank">
-                                            @Html.Hidden("programID", program.ID)
-                                            <button class="btn-element-action btn-element-action-secondary btn-program-import-transactions" type="submit" title="Importar transacciones">
-                                                <i class='bx bx-import'></i>
-                                            </button>
-                                        </form>
-                                    }
+                                List<ProgramFormCatalog> programFormCatalogList = (List<ProgramFormCatalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Program.Manage.ProgramFormList.NAME];
+                                programFormCatalogList = programFormCatalogList.Where(e => e.ProgramID == program.ID).ToList();
+                            
+                                if (programFormCatalogList.Count() > 0)
+                                {
+                                    <form class="d-inline frm-import-data" action="@Url.Action(nameof(TransactionController.ImportData), transactionControllerName)" method="get" target="_blank">
+                                        @Html.Hidden("programID", program.ID)
+                                        <button class="btn-element-action btn-element-action-secondary btn-program-import-transactions" type="submit" title="Importar transacciones">
+                                            <i class='bx bx-import'></i>
+                                        </button>
+                                    </form>
                                 }
                                 <form class="d-inline frm-deactivate" action="@Url.Action(nameof(ProgramController.Activate), mainControllerName)" method="post">
                                     @Html.Hidden("programID", program.ID)

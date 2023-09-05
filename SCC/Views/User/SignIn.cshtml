@@ -36,8 +36,7 @@
                     <div class="section login-input-block">
                         @Html.TextBoxFor(modelitem => Model.Person.Identification, null, new { placeholder = "Cédula", pattern = "^[0-9]+$", autocomplete = "off", required = "" })
                         @Html.TextBoxFor(modelitem => Model.Person.FirstName, null, new { placeholder = "Nombre", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", autocomplete = "off", required = "" })
-                        @Html.TextBoxFor(modelitem => Model.Person.SurName, null, new { placeholder = "Primer apellido", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", autocomplete = "off", required = "" })
-                        @Html.TextBoxFor(modelitem => Model.Person.LastName, null, new { placeholder = "Segundo apellido", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", autocomplete = "off", required = "" })
+                        @Html.TextBoxFor(modelitem => Model.Person.SurName, null, new { placeholder = "Apellidos", pattern = @"^[a-zA-ZÀ-ÿñÑ]+(\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$", autocomplete = "off", required = "" })
                         @Html.TextBoxFor(modelitem => Model.User.Email, null, new { placeholder = "Correo electrónico", pattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*$", type = "email", autocomplete = "off", required = "" })
                         @Html.DropDownListFor(modelitem => Model.Person.CountryID, (ViewData[SCC_BL.Settings.AppValues.ViewData.User.SignIn.Catalog.CountryCatalog.NAME] as SelectList))
                         @Html.DropDownListFor(modelitem => Model.User.LanguageID, (ViewData[SCC_BL.Settings.AppValues.ViewData.User.SignIn.Catalog.LanguageCatalog.NAME] as SelectList))

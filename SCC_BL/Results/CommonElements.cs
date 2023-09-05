@@ -16,5 +16,6 @@ namespace SCC_BL.Results
         public const string REPLACE_LOCAL_LOG_STACK_TRACE = "%stackTrace%";
 
         public const string REPLACE_CUSTOM_CONTENT = "%customContent%";
+        public const string REPLACE_CUSTOM_CONTENT_2 = "%customContent2%";
     }
 }

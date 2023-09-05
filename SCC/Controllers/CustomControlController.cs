@@ -98,8 +98,8 @@ namespace SCC.Controllers
                         case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
                             maskID = (int)SCC_BL.Settings.AppValues.Masks.MaskID.NAME_1;
                             break;
-                        case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
-                            maskID = (int)SCC_BL.Settings.AppValues.Masks.MaskID.LAST_NAME_1;
+                        case SCC_BL.Settings.AppValues.Masks.SurName1.MASK:
+                            maskID = (int)SCC_BL.Settings.AppValues.Masks.MaskID.SUR_NAME_1;
                             break;
                         case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
                             maskID = (int)SCC_BL.Settings.AppValues.Masks.MaskID.EMAIL_1;

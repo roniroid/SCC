@@ -191,7 +191,7 @@
                             User user = new User(resultsByCalibrator.CalibratorUserID);
                             user.SetDataByID();
                         }
-                        @($"{ user.Person.SurName } { user.Person.LastName }, { user.Person.FirstName }")
+                        @($"{ user.Person.SurName }, { user.Person.FirstName }")
                     </td>
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                     {

@@ -201,7 +201,6 @@ namespace SCC_DATA.Queries
 				{
 					public const string FIRST_NAME = "@firstName";
 					public const string SUR_NAME = "@surName";
-					public const string LAST_NAME = "@lastName";
 				}
 
 				public struct ResultFields

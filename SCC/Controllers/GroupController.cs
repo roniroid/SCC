@@ -27,12 +27,11 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -44,7 +43,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Group.Manage.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     groupManagementViewModel.Group.UserList.Select(s => s.UserID));

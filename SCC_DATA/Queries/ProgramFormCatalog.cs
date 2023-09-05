@@ -85,6 +85,20 @@ namespace SCC_DATA.Queries
 				}
 			}
 
+			public struct SelectAll
+			{
+				public const string NAME = "[dbo].[usp_ProgramFormCatalogSelectAll]";
+
+				public struct ResultFields
+				{
+					public const string ID = "ID";
+					public const string PROGRAMID = "ProgramID";
+					public const string FORMID = "FormID";
+					public const string STARTDATE = "StartDate";
+					public const string BASICINFOID = "BasicInfoID";
+				}
+			}
+
 			public struct SelectByFormID
 			{
 				public const string NAME = "[dbo].[usp_ProgramFormCatalogSelectByFormID]";

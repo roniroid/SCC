@@ -14,7 +14,6 @@ namespace SCC_DATA.Queries
 			public const string IDENTIFICATION = "Identification";
 			public const string FIRSTNAME = "FirstName";
 			public const string SURNAME = "SurName";
-			public const string LASTNAME = "LastName";
             public const string COUNTRY_ID = "CountryID";
             public const string BASICINFOID = "BasicInfoID";
 		}
@@ -55,7 +54,6 @@ namespace SCC_DATA.Queries
 					public const string IDENTIFICATION = "@identification";
 					public const string FIRSTNAME = "@firstName";
 					public const string SURNAME = "@surName";
-					public const string LASTNAME = "@lastName";
 					public const string COUNTRY_ID = "@countryID";
 					public const string BASICINFOID = "@basicInfoID";
 				}
@@ -81,7 +79,6 @@ namespace SCC_DATA.Queries
 					public const string IDENTIFICATION = "Identification";
 					public const string FIRSTNAME = "FirstName";
 					public const string SURNAME = "SurName";
-					public const string LASTNAME = "LastName";
 					public const string COUNTRY_ID = "CountryID";
 					public const string BASICINFOID = "BasicInfoID";
 				}
@@ -102,7 +99,6 @@ namespace SCC_DATA.Queries
 					public const string IDENTIFICATION = "Identification";
 					public const string FIRSTNAME = "FirstName";
 					public const string SURNAME = "SurName";
-					public const string LASTNAME = "LastName";
                     public const string COUNTRY_ID = "CountryID";
                     public const string BASICINFOID = "BasicInfoID";
 				}
@@ -118,7 +114,6 @@ namespace SCC_DATA.Queries
 					public const string IDENTIFICATION = "@identification";
 					public const string FIRSTNAME = "@firstName";
 					public const string SURNAME = "@surName";
-					public const string LASTNAME = "@lastName";
                     public const string COUNTRY_ID = "@countryID";
                 }
 			}
