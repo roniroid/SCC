@@ -20,7 +20,8 @@ namespace SCC.ViewModels
 
         public ReportResultsAccuracyBySubattributeViewModel(List<SCC_BL.Reports.Results.AccuracyBySubattribute> accuracyBySubattributeResultList, int totalTransactions)
         {
-            this.TotalTransactions = totalTransactions;
+            //this.TotalTransactions = totalTransactions;
+            this.TotalTransactions = accuracyBySubattributeResultList.Count();
             this.AccuracyBySubattributeResultList = accuracyBySubattributeResultList;
 
             this.ResultBySubattributeList = new List<ResultBySubattribute>();
@@ -29,14 +30,14 @@ namespace SCC.ViewModels
             {
                 if (this.ResultBySubattributeList.Select(e => e.AttributeID).Where(e => e == accuracyBySubattributeResult.AttributeID).Count() <= 0)
                 {
-                    int successfulResultCount = AccuracyBySubattributeResultList.Where(e => e.AttributeID == accuracyBySubattributeResult.AttributeID && e.SuccessfulResult).Count();
+                    int failResultCount = AccuracyBySubattributeResultList.Where(e => e.AttributeID == accuracyBySubattributeResult.AttributeID && !e.SuccessfulResult).Count();
 
                     ResultBySubattribute resultBySubattribute = new ResultBySubattribute();
 
                     resultBySubattribute.TransactionAttributeID = accuracyBySubattributeResult.TransactionAttributeID;
                     resultBySubattribute.AttributeID = accuracyBySubattributeResult.AttributeID;
                     resultBySubattribute.AttributeName = accuracyBySubattributeResult.AttributeName;
-                    resultBySubattribute.Quantity = successfulResultCount;
+                    resultBySubattribute.Quantity = failResultCount;
                     resultBySubattribute.HasChildren = accuracyBySubattributeResult.HasChildren;
                     resultBySubattribute.ErrorTypeID = accuracyBySubattributeResult.ErrorTypeID;
 
@@ -52,20 +53,21 @@ namespace SCC.ViewModels
                         this.OrderHelperList.Add(
                             new OrderHelper() { 
                                 AttributeID = e.AttributeID,
-                                Quantity = this.AccuracyBySubattributeResultList.Where(g => g.AttributeID == e.AttributeID && g.SuccessfulResult).Count()
+                                Quantity = this.AccuracyBySubattributeResultList.Where(g => g.AttributeID == e.AttributeID && !g.SuccessfulResult).Count()
                             });
                     }
                 });
 
             this.OrderHelperList =
                 this.OrderHelperList
-                    .Where(e => e.Quantity < this.TotalTransactions)
+                    .Where(e => e.Quantity <= this.TotalTransactions)
+                    .OrderByDescending(e => e.Quantity)
                     .ToList();
 
             this.ResultBySubattributeList =
                 this.ResultBySubattributeList
-                    .Where(e => e.Quantity < this.TotalTransactions)
-                    .OrderBy(e => e.Quantity)
+                    .Where(e => e.Quantity <= this.TotalTransactions)
+                    .OrderByDescending(e => e.Quantity)
                     .ToList();
         }
 

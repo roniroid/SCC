@@ -38,7 +38,7 @@ namespace SCC.ViewModels
         public string[] EvaluatorUserNamesArray { get; set; }
         public string[] ErrorTypeNamesArray { get; set; }
         public Dictionary<string, string> TransactionCustomFieldCatalogNamesAndValues { get; set; } = null;
-        public Custom
+        public SCC_BL.Reports.Helpers.CustomControlByProgram CustomControlByProgram { get; set; } = new SCC_BL.Reports.Helpers.CustomControlByProgram();
 
         public class CustomControlHelper
         {

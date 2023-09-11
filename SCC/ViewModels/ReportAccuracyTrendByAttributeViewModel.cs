@@ -35,6 +35,7 @@ namespace SCC.ViewModels
         public string IntervalTypeName { get; set; }
         public string[] AttributeNamesArray { get; set; }
         public Dictionary<string, string> TransactionCustomFieldCatalogNamesAndValues { get; set; } = null;
+        public SCC_BL.Reports.Helpers.CustomControlByProgram CustomControlByProgram { get; set; } = new SCC_BL.Reports.Helpers.CustomControlByProgram();
 
         public class CustomControlHelper
         {

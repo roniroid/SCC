@@ -333,6 +333,14 @@ namespace SCC_BL.Settings
                         }
                     }
                 }
+
+                public struct _LogList
+                {
+                    public struct AllUserList
+                    {
+                        public const string NAME = "LOG_LOG_LIST_ALL_USER_LIST";
+                    }
+                }
             }
 
             public struct Workspace
@@ -350,7 +358,8 @@ namespace SCC_BL.Settings
 
                 public struct Manage
                 {
-                    public const string MODEL_ID = "CUSTOM_CONTROL_MODEL_ID";
+                    public const string MODEL_ID = "CUSTOM_CONTROL_MANAGE_MODEL_ID";
+                    public const string MODULE_LIST = "CUSTOM_CONTROL_MANAGE_MODULE_CATALOG";
                 }
 
                 public struct CustomControlTypeView
@@ -401,6 +410,16 @@ namespace SCC_BL.Settings
                             public const string TEXT = "Description";
                             public const string VALUE = "ID";
                         }
+                    }
+
+                    public struct AllUserList
+                    {
+                        public const string NAME = "MANAGE_GROUP_ALL_USER_LIST";
+                    }
+
+                    public struct AllModuleList
+                    {
+                        public const string NAME = "MANAGE_GROUP_ALL_MODULE_LIST";
                     }
                 }
             }
@@ -634,6 +653,10 @@ namespace SCC_BL.Settings
                             public const string VALUE = "ID";
                         }
                     }
+                    public struct AllProgramList
+                    {
+                        public const string NAME = "MANAGE_PROGRAM_GROUP_ALL_PROGRAM_LIST";
+                    }
                 }
             }
 
@@ -659,6 +682,14 @@ namespace SCC_BL.Settings
             public struct Form
             {
                 public const string FORMS = "FORMS";
+
+                public struct Manage
+                {
+                    public struct AllTypeList
+                    {
+                        public const string NAME = "MANAGE_FORM_ALL_TYPE_LIST";
+                    }
+                }
 
                 public struct Edit
                 {
@@ -742,6 +773,10 @@ namespace SCC_BL.Settings
                             public const string TEXT = "Name";
                             public const string VALUE = "ID";
                         }
+                    }
+                    public struct AllProgramList
+                    {
+                        public const string NAME = "FORM_BINDING_ALL_PROGRAM_LIST";
                     }
                 }
             }
@@ -1123,6 +1158,14 @@ namespace SCC_BL.Settings
                             public const string TEXT = "FullName";
                             public const string VALUE = "ID";
                         }
+                    }
+                }
+                
+                public struct ParetoBIResults
+                {
+                    public struct BusinessIntelligenceFieldNames
+                    {
+                        public const string NAME = "REPORT_PARETO_BI_RESULTS_BUSINESS_INTELLIGENCE_FIELD_NAMES";
                     }
                 }
                 

@@ -1926,10 +1926,14 @@ namespace SCC.Controllers
                         reportAccuracyTrendByAttributeViewModel.AttributeControllable == true,
                         String.Join(",", reportAccuracyTrendByAttributeViewModel.AttributeIDArray));
 
+                    ReportAccuracyTrendByAttributeViewModel requestObject = reportAccuracyTrendByAttributeViewModel;
+                    requestObject.SetDescriptiveData();
+
                     reportResultsAccuracyTrendByAttributeViewModel = 
                         new ViewModels.ReportResultsAccuracyTrendByAttributeViewModel(
                             resultAccuracyTrendByAttribute, 
-                            (SCC_BL.DBValues.Catalog.TIME_INTERVAL)reportAccuracyTrendByAttributeViewModel.IntervalTypeID);
+                            (SCC_BL.DBValues.Catalog.TIME_INTERVAL)reportAccuracyTrendByAttributeViewModel.IntervalTypeID,
+                            requestObject);
                     /*reportAccuracyByAttributeViewModel.ReportResultsAccuracyByAttributeViewModel = reportResultsAccuracyByAttributeViewModel;*/
                 }
             }
@@ -1937,9 +1941,6 @@ namespace SCC.Controllers
             {
                 SaveProcessingInformation<SCC_BL.Results.Report.AccuracyTrendByAttribute.Error>(null, null, reportAccuracyTrendByAttributeViewModel, ex);
             }
-
-            reportResultsAccuracyTrendByAttributeViewModel.RequestObject = reportAccuracyTrendByAttributeViewModel;
-            reportResultsAccuracyTrendByAttributeViewModel.RequestObject.SetDescriptiveData();
 
             return View(nameof(ReportController.AccuracyTrendByAttributeResults), reportResultsAccuracyTrendByAttributeViewModel);
         }
@@ -1979,7 +1980,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult AccuracyTrendByAttributeWithAcurracyTrend(string transactionIDList, int errorTypeID, int intervalTypeID, bool mustBeControllable)
         {
-            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyBySubattribute.IS_CONTROLLABLE] = mustBeControllable;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrendByAttribute.IS_CONTROLLABLE] = mustBeControllable;
 
             List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> resultAccuracyTrendByAttribute = new List<SCC_BL.Reports.Results.AccuracyTrendByAttribute>();
             ViewModels.ReportResultsAccuracyTrendByAttributeViewModel reportResultsAccuracyTrendByAttributeViewModel = new ViewModels.ReportResultsAccuracyTrendByAttributeViewModel();
@@ -2114,6 +2115,23 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult ParetoBI(ViewModels.ReportParetoBIViewModel reportParetoBIViewModel)
         {
+            string biFieldNames = string.Empty;
+
+            for (int i = 0; i < reportParetoBIViewModel.BIFieldIDArray.Length; i++)
+            {
+                using (BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField(reportParetoBIViewModel.BIFieldIDArray[i]))
+                {
+                    businessIntelligenceField.SetDataByID();
+
+                    if (!string.IsNullOrEmpty(biFieldNames))
+                        biFieldNames += ", ";
+
+                    biFieldNames += $"\"{ businessIntelligenceField.Name }\"";
+                }
+            }
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report.ParetoBIResults.BusinessIntelligenceFieldNames.NAME] = biFieldNames;
+
             List<SCC_BL.Reports.Results.OverallAccuracy> resultOverallAccuracy = new List<SCC_BL.Reports.Results.OverallAccuracy>();
             ViewModels.ReportResultsOverallAccuracyViewModel reportResultsOverallAccuracyViewModel = new ViewModels.ReportResultsOverallAccuracyViewModel();
 
@@ -2273,9 +2291,12 @@ namespace SCC.Controllers
             using (SCC_BL.Attribute attribute = new SCC_BL.Attribute())
             {
                 attributeList = 
-                    attribute.SelectByProgramAndErrorTypeID(
-                        String.Join(",", programIDArray),
-                        String.Join(",", errorTypeIDArray));
+                    attribute
+                        .SelectByProgramAndErrorTypeID(
+                            String.Join(",", programIDArray),
+                            String.Join(",", errorTypeIDArray))
+                        .OrderBy(e => e.Name)
+                        .ToList();
             }
 
             return Serialize(attributeList);
@@ -2290,9 +2311,12 @@ namespace SCC.Controllers
             using (SCC_BL.BusinessIntelligenceField businessIntelligenceField = new SCC_BL.BusinessIntelligenceField())
             {
                 businessIntelligenceFieldList =
-                    businessIntelligenceField.SelectByProgramID(
-                        String.Join(",", programIDArray),
-                        true);
+                    businessIntelligenceField
+                        .SelectByProgramID(
+                            String.Join(",", programIDArray),
+                            true)
+                        .OrderBy(e => e.Name)
+                        .ToList();
             }
 
             return Serialize(businessIntelligenceFieldList);

@@ -147,6 +147,7 @@
                 int cont = 1;
                 decimal currentCumulativeAmount = 0;
                 int maxSuccessfulResultCount = 0;
+                int maxFailedResultCount = 0;
 
                 int cumulativeSum = 0;
                 int totalCumulativeSum = 0;
@@ -154,11 +155,11 @@
                 Model.OrderHelperList
                     .ForEach(e =>
                     {
-                        totalCumulativeSum += Model.AccuracyBySubattributeResultList.Where(f => f.AttributeID == e.AttributeID && f.SuccessfulResult).Count();
+                        totalCumulativeSum += Model.AccuracyBySubattributeResultList.Where(f => f.AttributeID == e.AttributeID && !f.SuccessfulResult).Count();
                     });
             }
 
-            @foreach (SCC.ViewModels.ReportResultsAccuracyBySubattributeViewModel.OrderHelper orderHelper in Model.OrderHelperList.Where(e => e.Quantity < Model.TotalTransactions).OrderByDescending(e => e.Quantity))
+            @foreach (SCC.ViewModels.ReportResultsAccuracyBySubattributeViewModel.OrderHelper orderHelper in Model.OrderHelperList.Where(e => e.Quantity <= Model.TotalTransactions && e.Quantity > 0))
             {
                 SCC_BL.Reports.Results.AccuracyBySubattribute accuracyBySubattributeResult =
                     Model.AccuracyBySubattributeResultList
@@ -172,7 +173,7 @@
                 string errorType = string.Empty;
                 currentCumulativeAmount = currentCumulativeAmount + ((Convert.ToDecimal(successfulResultCount) / Model.TotalTransactions) * 100);
 
-                cumulativeSum += successfulResultCount;
+                cumulativeSum += failResultCount;
 
                 switch ((SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE)accuracyBySubattributeResult.ErrorTypeID)
                 {
@@ -203,7 +204,7 @@
                         @failResultCount
                     </td>
                     <td>
-                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(successfulResultCount) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
+                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(failResultCount) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
                     </td>
                     <td>
                         @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(cumulativeSum) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
@@ -211,9 +212,15 @@
                 </tr>
 
                 cont++;
+
                 if (successfulResultCount > maxSuccessfulResultCount)
                 {
                     maxSuccessfulResultCount = successfulResultCount;
+                }
+
+                if (failResultCount > maxFailedResultCount)
+                {
+                    maxFailedResultCount = failResultCount;
                 }
             }
             <tr>
@@ -323,7 +330,14 @@
 
     const ctx = document.getElementById('myChart');
 
-    const DATA_POINTS = [@String.Join(",", Model.ResultBySubattributeList.Select(e => Model.TotalTransactions - e.Quantity))];
+    @{
+        List<SCC.ViewModels.ReportResultsAccuracyBySubattributeViewModel.ResultBySubattribute> resultBySubattributeListForGraph =
+            Model.ResultBySubattributeList
+                .OrderByDescending(e => e.Quantity)
+                .ToList();
+    }
+
+    const DATA_POINTS = [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))];
 
     const REDUCE_ARRAY = ((sum, dataPoint) => sum + dataPoint);
     const TOTAL_SUM =
@@ -346,13 +360,13 @@
     console.log('CUMULATIVE_DATA_POINTS');
     console.log(CUMULATIVE_DATA_POINTS);*/
 
-    const PARETO_DATA_POINTS = [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.Quantity))];
+    const PARETO_DATA_POINTS = [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))];
 
     const DEFAULT_DATA = {
-        labels: [@Html.Raw(String.Join(",", Model.ResultBySubattributeList.Select(e => $"\"{ e.AttributeName }\"")))],
+        labels: [@Html.Raw(String.Join(",", resultBySubattributeListForGraph.Select(e => $"\"{ e.AttributeName }\"")))],
         datasets: [
             {
-                @*data: [@String.Join(",", Model.ResultBySubattributeList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
+                @*data: [@String.Join(",", resultBySubattributeListForGraph.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
                 data: CUMULATIVE_DATA_POINTS,
                 borderColor: [
                     'rgba(0, 0, 0)',
@@ -363,13 +377,13 @@
                 borderWidth: 2,
                 yAxisID: 'y1',
                 customData: {
-                    successCount: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.Quantity))],
-                    transactionAttributeIDList: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.TransactionAttributeID))],
+                    successCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
+                    transactionAttributeIDList: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.TransactionAttributeID))],
                     totalCount: @Model.TotalTransactions,
                 }
             },{
                 data: DATA_POINTS,
-                @*data: [@String.Join(",", Model.ResultBySubattributeList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
+                @*data: [@String.Join(",", resultBySubattributeListForGraph.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
                 borderColor: [
                     'rgba(118, 178, 240)',
                 ],
@@ -380,14 +394,15 @@
                 type: 'bar',
                 barPercentage: 1,
                 customData: {
-                    hasChildren: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.HasChildren.ToString().ToLower()))],
-                    successCount: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.Quantity))],
-                    transactionAttributeIDList: [@String.Join(",", Model.ResultBySubattributeList.Select(e => e.TransactionAttributeID))],
-                    totalCount: @Model.TotalTransactions,
+                    hasChildren: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.HasChildren.ToString().ToLower()))],
+                    successCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
+                    failCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
+                    transactionAttributeIDList: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.TransactionAttributeID))],
+                    totalCount: @failTotalResultCount,
                     currentAttributeID: [
                         @String.Join(
                             ",",
-                            Model.ResultBySubattributeList
+                            resultBySubattributeListForGraph
                                 .Select(e => e.AttributeID))],
                 }
             }
@@ -423,12 +438,8 @@
     Chart.register([ChartDataLabels, chartAreaBorder, backgroundColorPlugin]);
 
     @{
-        int defaultYSteps = 10;
-        int maxAmmount = maxSuccessfulResultCount;
-        int maxYScore =
-            maxAmmount % defaultYSteps > 0
-                ? (Convert.ToInt32(maxAmmount / defaultYSteps) + 1) * defaultYSteps
-                : maxAmmount;
+        int maxAmmount = maxFailedResultCount;
+        double defaultYMax = maxAmmount * 1.5;
     }
 
     let myChart = new Chart(ctx, {
@@ -450,7 +461,7 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
-                    max: @maxYScore,
+                    max: @defaultYMax,
                     offset: true,
                 },
                 y1: {
@@ -558,7 +569,7 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `(${context.dataset.customData.successCount[context.dataIndex]}/${context.dataset.customData.totalCount})`
+                        label: (context) => `(${context.dataset.customData.failCount[context.dataIndex]}/${context.dataset.customData.totalCount})`
                     }
                 },
                 chartAreaBorder: {

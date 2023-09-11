@@ -22,16 +22,23 @@ namespace SCC.Controllers
                 programGroupManagementViewModel.ProgramGroup.SetDataByID();
             }
 
+            List<Program> allProgramList = new List<Program>();
             List<Program> programList = new List<Program>();
 
             using (Program program = new Program())
+            {
+                allProgramList = program.SelectAll();
+
                 programList =
-                    program.SelectAll()
+                    allProgramList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
                         .OrderBy(o => o.Name)
                         .ToList();
+            }
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.ProgramGroup.Manage.AllProgramList.NAME] = allProgramList;
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.ProgramGroup.Manage.ProgramList.NAME] =
                 new MultiSelectList(

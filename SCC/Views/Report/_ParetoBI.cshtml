@@ -402,6 +402,9 @@
         </div>
     }*@
 <script>
+    var customControlByProgramList = @Html.Raw(SCC.Controllers.OverallController.Serialize(Model.CustomControlByProgram.CustomControlByProgramList));
+    var businessIntelligenceFieldByProgramList = @Html.Raw(SCC.Controllers.OverallController.Serialize(Model.BusinessIntelligenceFieldByProgram.BusinessIntelligenceFieldByProgramList));
+
     $(document).ready(function () {
         @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
         {
@@ -420,6 +423,43 @@
             startMultiSelect('.custom-control-chosen-select', data);
         });
     });
+
+    $('#@nameof(Model.ProgramIDArray)').change((e) => {
+        let currentControl = e.currentTarget;
+        let currentValue = $(currentControl).val();
+        updateCustomControlDisplay(currentValue);
+        updateBusinessIntelligenceFieldList(currentValue);
+    });
+
+    function updateCustomControlDisplay(programIDArray) {
+        $('.custom-control-field').removeClass('d-none');
+        $('.custom-control-field').addClass('d-none');
+
+        if (programIDArray == null || programIDArray == '') return;
+
+        let customControlsToShow =
+            customControlByProgramList.filter(e => programIDArray.includes(e.ProgramID.toString()));
+
+        for (let i = 0; i < customControlsToShow.length; i++) {
+            $('.custom-control-field[data-customcontrolid="' + customControlsToShow[i].CustomControlID + '"]').removeClass('d-none');
+        }
+    }
+
+    function updateBusinessIntelligenceFieldList(programIDArray) {
+        $('#@nameof(Model.BIFieldIDArray)').val('').trigger("chosen:updated");
+
+        $('#@nameof(Model.ProgramIDArray) option').removeClass('d-none');
+        $('#@nameof(Model.ProgramIDArray) option').addClass('d-none');
+
+        if (programIDArray == null || programIDArray == '') return;
+
+        let businessIntelligenceFieldsToShow =
+            businessIntelligenceFieldByProgramList.filter(e => programIDArray.includes(e.ProgramID.toString()));
+
+        for (let i = 0; i < businessIntelligenceFieldsToShow.length; i++) {
+            $('#@nameof(Model.ProgramIDArray) option[value="' + businessIntelligenceFieldsToShow[i].BusinessIntelligenceFieldID + '"]').removeClass('d-none');
+        }
+    }
 
     var mustLoadAttributes = true;
 

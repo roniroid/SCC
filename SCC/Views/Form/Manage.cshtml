@@ -13,6 +13,8 @@
     string logsControllerName = OverallController.GetControllerName(typeof(LogController));
     string logsActionName = nameof(LogController.Index);
 
+    List<Catalog> allTypeList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Manage.AllTypeList.NAME];
+
     ViewBag.Title = "Administración de grupos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -69,8 +71,7 @@
                     <td>@form.Name</td>
                     <td>
                         @{
-                            Catalog tempCatalog = new Catalog(form.TypeID);
-                            tempCatalog.SetDataByID();
+                            Catalog tempCatalog = allTypeList.Where(e => e.ID == form.TypeID).FirstOrDefault();
                         }
 
                         @tempCatalog.Description

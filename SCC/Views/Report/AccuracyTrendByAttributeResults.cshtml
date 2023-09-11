@@ -154,6 +154,15 @@
                         @foreach (ReportResultsAccuracyTrendByAttributeViewModel.AccuracyTrendByPeriod accuracyTrendResult in Model.AccuracyTrendByPeriodList)
                         {
                             <td>
+                                @{ 
+                                    int successfulResultCount =
+                                        accuracyTrendResult.AccuracyTrendByAttributeInPeriod
+                                            .Where(e =>
+                                                e.AttributeID == accuracyTrendByAttribute.AttributeID &&
+                                                e.SuccessfulResult)
+                                            .Count();
+                                }
+
                                 @String.Format(
                                     CultureInfo.InvariantCulture,
                                     /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
@@ -161,19 +170,14 @@
                                         ? "{0:0.0#}"
                                         : */"{0:0.##}",
                                     accuracyTrendResult.TransactionCount > 0 
-                                        ? ((Convert.ToDecimal(
-                                            accuracyTrendResult.AccuracyTrendByAttributeInPeriod
-                                                .Where(e => 
-                                                    e.AttributeID == accuracyTrendByAttribute.AttributeID && 
-                                                    accuracyTrendByAttribute.SuccessfulResult)
-                                                .Count()) / accuracyTrendResult.TransactionCount) * 100) 
+                                        ? ((Convert.ToDecimal(successfulResultCount) / accuracyTrendResult.TransactionCount) * 100) 
                                         : 0)%
                             </td>
                         }
                     </tr>
-                }
 
-                processedAttributeID.Add(accuracyTrendByAttribute.AttributeID);
+                    processedAttributeID.Add(accuracyTrendByAttribute.AttributeID);
+                }
             }
         </tbody>
     </table>
@@ -263,15 +267,21 @@
 
                 foreach (ReportResultsAccuracyTrendByAttributeViewModel.AccuracyTrendByPeriod accuracyTrendResult in Model.AccuracyTrendByPeriodList)
                 {
+                    int successfulResultCount =
+                        accuracyTrendResult.AccuracyTrendByAttributeInPeriod
+                            .Where(e => 
+                                e.AttributeID == accuracyTrendByAttribute.AttributeID && 
+                                e.SuccessfulResult).Count();
+
                     dataText +=
                         (!string.IsNullOrEmpty(dataText) ? "," : string.Empty) +
                         String.Format(
                             CultureInfo.InvariantCulture,
-                            /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                            Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                                ? "{0:0.0#}"
-                                : */"{0:0.##}",
-                            accuracyTrendResult.TransactionCount > 0 ? ((Convert.ToDecimal(accuracyTrendResult.AccuracyTrendByAttributeInPeriod.Where(e => e.AttributeID == accuracyTrendByAttribute.AttributeID && accuracyTrendByAttribute.SuccessfulResult).Count()) / accuracyTrendResult.TransactionCount) * 100) : 0);
+                                /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                                Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                    ? "{0:0.0#}"
+                                    : */"{0:0.##}",
+                            accuracyTrendResult.TransactionCount > 0 ? ((Convert.ToDecimal(successfulResultCount) / accuracyTrendResult.TransactionCount) * 100) : 0);
                 }
 
                 @:{

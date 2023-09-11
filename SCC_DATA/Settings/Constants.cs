@@ -23,7 +23,7 @@ namespace SCC_DATA.Settings
         //public const string DEFAULT_CONNECTION = "Data Source=NET-ZPTID002;Initial Catalog=NETCOM_SCC;Integrated Security=True";
 
         //LOCAL PC
-        public const string DEFAULT_CONNECTION = "Data Source=RONIROID;Initial Catalog=NETCOM_SCC_20230905142600;Integrated Security=True;Connect Timeout=30000;";
+        public const string DEFAULT_CONNECTION = "Data Source=RONIROID;Initial Catalog=NETCOM_SCC_20230905142600;Integrated Security=True;Connect Timeout=300000;";
 
         //LOCAL LAPTOP
         //public const string DEFAULT_CONNECTION = "Data Source=RONIROID-LAPTOP;Initial Catalog=NETCOM_SCC_PRODUCTION;Integrated Security=True;Connect Timeout=30000;";

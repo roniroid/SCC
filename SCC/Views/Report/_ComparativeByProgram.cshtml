@@ -463,6 +463,8 @@
     </div>
 }*@
 <script>
+    var customControlByProgramList = @Html.Raw(SCC.Controllers.OverallController.Serialize(Model.CustomControlByProgram.CustomControlByProgramList));
+
     $(document).ready(function () {
         @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
         {
@@ -481,6 +483,26 @@
             startMultiSelect('.custom-control-chosen-select', data);
         });
     });
+
+    $('#@nameof(Model.ProgramIDArray)').change((e) => {
+        let currentControl = e.currentTarget;
+        let currentValue = $(currentControl).val();
+        updateCustomControlDisplay(currentValue);
+    });
+
+    function updateCustomControlDisplay(programIDArray) {
+        $('.custom-control-field').removeClass('d-none');
+        $('.custom-control-field').addClass('d-none');
+
+        if (programIDArray == null || programIDArray == '') return;
+
+        let customControlsToShow =
+            customControlByProgramList.filter(e => programIDArray.includes(e.ProgramID.toString()));
+
+        for (let i = 0; i < customControlsToShow.length; i++) {
+            $('.custom-control-field[data-customcontrolid="' + customControlsToShow[i].CustomControlID + '"]').removeClass('d-none');
+        }
+    }
 
     $('.report-no-constraint').click(() => {
         $('.report-constraint').prop('checked', false);

@@ -27,11 +27,40 @@ namespace SCC_BL.Reports.Results
             this.HasChildren = hasChildren;
             this.ErrorTypeID = errorTypeID;
 
-            //if (mustBeControllable)
-                //this.SetIsControllable();
+            if (mustBeControllable)
+                this.SetIsControllable();
         }
 
         public void SetIsControllable()
+        {
+            List<SCC_BL.Attribute> levelOneAttributeList = new List<SCC_BL.Attribute>();
+            List<int> parentIDArray = new List<int>();
+
+            using (SCC_BL.Attribute attribute = new SCC_BL.Attribute(this.AttributeID))
+            {
+                levelOneAttributeList = attribute.SelectByLevel(1);
+                parentIDArray = attribute.SelectParentIDArrayByID().ToList();
+                parentIDArray.Add(this.AttributeID);
+            }
+
+            for (int i = 0; i < parentIDArray.Count; i++)
+            {
+                if (!levelOneAttributeList.Select(s => s.ID).Contains(parentIDArray[i]))
+                    continue;
+
+                Attribute currentParentAttribute = levelOneAttributeList.Where(e => e.ID == parentIDArray[i]).FirstOrDefault();
+
+                if (!currentParentAttribute.IsControllable)
+                {
+                    this.IsControllable = false;
+                    this.SuccessfulResult = true;
+                }
+
+                break;
+            }
+        }
+
+        /*public void SetIsControllable()
         {
             List<SCC_BL.Attribute> levelOneAttributeList = new List<SCC_BL.Attribute>();
             List<int> parentIDArray = new List<int>();
@@ -77,6 +106,6 @@ namespace SCC_BL.Reports.Results
 
                 break;
             }
-        }
+        }*/
     }
 }

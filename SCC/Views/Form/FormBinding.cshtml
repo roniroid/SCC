@@ -14,6 +14,8 @@
     string logsControllerName = OverallController.GetControllerName(typeof(LogController));
     string logsActionName = nameof(LogController.Index);
 
+    List<Program> allProgramList = (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.FormBinding.AllProgramList.NAME];
+
     ViewBag.Title = "Asignación de formularios a programas";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -160,8 +162,7 @@
                             {
                                 <li>
                                     @{
-                                        Program tempProgram = new Program(programFormCatalog.ProgramID);
-                                        tempProgram.SetDataByID();
+                                        Program tempProgram = allProgramList.Where(e => e.ID == programFormCatalog.ProgramID).FirstOrDefault();
                                     }
 
                                     @tempProgram.Name

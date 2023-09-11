@@ -1,6 +1,10 @@
 ﻿@using SCC_BL;
 @model List<Log>
 
+@{ 
+    List<User> allUserList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.Log._LogList.AllUserList.NAME];
+}
+
 <link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
 
 <table class="display" id="tbInfo">
@@ -32,8 +36,7 @@
 
                         if (log.BasicInfo.CreationUserID != null)
                         {
-                            user = new User(log.BasicInfo.CreationUserID.Value);
-                            user.SetDataByID();
+                            user = allUserList.Where(e => e.ID == log.BasicInfo.CreationUserID.Value).FirstOrDefault();
                         }
                     }
                     @user.Username

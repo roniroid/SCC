@@ -17,6 +17,8 @@
 
     int actualCustomControlID = hasModel ? (int)ViewData[SCC_BL.Settings.AppValues.ViewData.CustomControl.Manage.MODEL_ID] : 0;
 
+    List<Catalog> allModuleList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.CustomControl.Manage.MODULE_LIST];
+
     ViewBag.Title = "Administración de campos personalizados";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -185,9 +187,9 @@
                     </td>
                     <td>
                         @{
-                            Catalog tempCatalog = new Catalog(customControl.ModuleID);
-                            tempCatalog.SetDataByID();
+                            Catalog tempCatalog = allModuleList.Where(e => e.ID == customControl.ModuleID).FirstOrDefault();
                         }
+
                         @tempCatalog.Description
                     </td>
                     <td>

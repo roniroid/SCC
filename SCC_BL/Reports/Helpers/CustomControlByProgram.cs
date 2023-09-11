@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SCC_BL.Settings.AppValues.ViewData.Calibration.Edit;
 
 namespace SCC_BL.Reports.Helpers
 {
@@ -10,9 +11,16 @@ namespace SCC_BL.Reports.Helpers
     {
         public int CustomControlID { get; set; }
         public int ProgramID { get; set; }
-        public List<CustomControlByProgram> CustomControlByProgramList { get; set; }
+        public List<CustomControlByProgram> CustomControlByProgramList { get; set; } = new List<CustomControlByProgram>();
 
-        public CustomControlByProgram() { 
+        public CustomControlByProgram()
+        {
+            this.SetData();
+        }
+
+        public CustomControlByProgram(int customControlID, int programID) {
+            this.CustomControlID = customControlID;
+            this.ProgramID = programID;
         }
 
         public void SetData()
@@ -29,8 +37,26 @@ namespace SCC_BL.Reports.Helpers
             foreach (ProgramFormCatalog programFormCatalog in allProgramFormCatalogList)
             {
                 this.CustomControlByProgramList.AddRange(
-                    );
+                    allCustomFieldList
+                        .Where(e => 
+                            e.FormID == programFormCatalog.FormID)
+                        .Select(e => 
+                            new CustomControlByProgram(
+                                e.CustomControlID, 
+                                programFormCatalog.ProgramID)));
             }
+
+            this.CustomControlByProgramList =
+                this.CustomControlByProgramList
+                    .GroupBy(e =>
+                        new
+                        {
+                            e.CustomControlID,
+                            e.ProgramID,
+                        })
+                    .Select(e =>
+                        e.First())
+                    .ToList();
         }
     }
 }

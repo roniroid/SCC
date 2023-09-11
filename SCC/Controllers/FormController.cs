@@ -16,11 +16,17 @@ namespace SCC.Controllers
         public ActionResult Manage(bool filterActiveElements = false)
         {
             List<Form> formList = new List<Form>();
+            List<Catalog> formTypeList = new List<Catalog>();
 
             using (Form form = new Form())
             {
                 formList = form.SelectAll(true);
             }
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.FORM_TYPE))
+                formTypeList = catalog.SelectByCategoryID();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Manage.AllTypeList.NAME] = formTypeList;
 
             if (filterActiveElements)
                 formList =
@@ -40,6 +46,7 @@ namespace SCC.Controllers
             Form form = new Form();
 
             List<Form> formList = new List<Form>();
+            List<Program> allProgramList = new List<Program>();
             List<Program> programList = new List<Program>();
 
             DateTime startDate = DateTime.Now;
@@ -65,8 +72,10 @@ namespace SCC.Controllers
 
             using (Program program = new Program())
             {
+                allProgramList = program.SelectAll();
+
                 programList =
-                    program.SelectAll()
+                    allProgramList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
@@ -86,6 +95,8 @@ namespace SCC.Controllers
                     nameof(Program.ID),
                     nameof(Program.Name),
                     form.ProgramFormCatalogList.Select(s => s.ProgramID));
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Form.FormBinding.AllProgramList.NAME] = allProgramList;
 
             programFormBindingViewModel.Form = form;
             programFormBindingViewModel.FormList = formList;

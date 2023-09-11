@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Packaging;
 using SCC.ViewModels;
 using SCC_BL;
 using SCC_BL.Tools;
@@ -1081,7 +1082,10 @@ namespace SCC.Controllers
 
         public ActionResult LogIn()
         {
-            return View();
+            if (GetActualUser() == null)
+                return View();
+            else
+                return RedirectToAction(nameof(Index), GetControllerName(typeof(HomeController)));
         }
 
         [HttpPost]

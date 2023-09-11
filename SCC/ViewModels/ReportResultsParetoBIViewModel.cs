@@ -21,7 +21,8 @@ namespace SCC.ViewModels
 
         public ReportResultsParetoBIViewModel(List<SCC_BL.Reports.Results.ParetoBI> paretoBIResultList, int totalTransactions)
         {
-            this.TotalTransactions = totalTransactions;
+            //this.TotalTransactions = totalTransactions;
+            this.TotalTransactions = paretoBIResultList.Count();
             this.ParetoBIResultList = paretoBIResultList;
 
             this.ResultByBIFieldList = new List<ResultByBIField>();
@@ -45,7 +46,7 @@ namespace SCC.ViewModels
             }
 
             this.ParetoBIResultList
-                .Where(e => !e.SuccessfulResult)
+                //.Where(e => !e.SuccessfulResult)
                 .ToList()
                 .ForEach(e => {
                     if (!this.OrderHelperList.Select(f => f.BusinessIntelligenceFieldID).Contains(e.BusinessIntelligenceFieldID))
@@ -59,10 +60,22 @@ namespace SCC.ViewModels
                     }
                 });
 
-            this.ResultByBIFieldList =
+            this.OrderHelperList =
+                this.OrderHelperList
+                    .Where(e => e.Quantity <= this.TotalTransactions)
+                    .OrderByDescending(e => e.Quantity)
+                    .ToList();
+
+            /*this.ResultByBIFieldList =
                 this.ResultByBIFieldList
                     .Where(e => e.Quantity > 0)
                     .OrderBy(e => e.Quantity)
+                    .ToList();*/
+
+            this.ResultByBIFieldList =
+                this.ResultByBIFieldList
+                    .Where(e => e.Quantity <= this.TotalTransactions)
+                    .OrderByDescending(e => e.Quantity)
                     .ToList();
         }
 

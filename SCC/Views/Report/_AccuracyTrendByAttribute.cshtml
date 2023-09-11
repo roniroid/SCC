@@ -501,6 +501,8 @@
         </div>
     }*@
 <script>
+    var customControlByProgramList = @Html.Raw(SCC.Controllers.OverallController.Serialize(Model.CustomControlByProgram.CustomControlByProgramList));
+
     $(document).ready(function () {
         @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
         {
@@ -522,6 +524,26 @@
 
         //updateAttributeList();
     });
+
+    $('#@nameof(Model.ProgramIDArray)').change((e) => {
+        let currentControl = e.currentTarget;
+        let currentValue = $(currentControl).val();
+        updateCustomControlDisplay(currentValue);
+    });
+
+    function updateCustomControlDisplay(programIDArray) {
+        $('.custom-control-field').removeClass('d-none');
+        $('.custom-control-field').addClass('d-none');
+
+        if (programIDArray == null || programIDArray == '') return;
+
+        let customControlsToShow =
+            customControlByProgramList.filter(e => programIDArray.includes(e.ProgramID.toString()));
+
+        for (let i = 0; i < customControlsToShow.length; i++) {
+            $('.custom-control-field[data-customcontrolid="' + customControlsToShow[i].CustomControlID + '"]').removeClass('d-none');
+        }
+    }
 
     var mustLoadAttributes = true;
 
@@ -556,7 +578,7 @@
             'errorTypeIDArray': $('#@nameof(Model.ErrorTypeIDArray)').val()
         };
 
-        showWaitingModal();
+        //showWaitingModal();
 
         let response =
             await fetch(
@@ -579,7 +601,7 @@
 
         $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");
 
-        hideWaitingModal();
+        //hideWaitingModal();
 
         mustLoadAttributes = false;
     }

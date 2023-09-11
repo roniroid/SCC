@@ -44,8 +44,14 @@ namespace SCC.Controllers
         public ActionResult _LogList(int categoryID, int itemID)
         {
             List<Log> logList = new List<Log>();
+            List<User> allUserList = new List<User>();
 
             logList = new Log(categoryID, itemID).SelectByCategoryIDAndItemID();
+
+            using (User user = new User())
+                allUserList = user.SelectAll(true);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Log._LogList.AllUserList.NAME] = allUserList;
 
             return PartialView(logList);
         }

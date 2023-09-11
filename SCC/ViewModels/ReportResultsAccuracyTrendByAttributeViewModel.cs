@@ -31,18 +31,25 @@ namespace SCC.ViewModels
         {
         }
 
-        public ReportResultsAccuracyTrendByAttributeViewModel(List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> accuracyTrendByAttributeResultList, SCC_BL.DBValues.Catalog.TIME_INTERVAL intervalTypeID)
+        public ReportResultsAccuracyTrendByAttributeViewModel(
+            List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> accuracyTrendByAttributeResultList, 
+            SCC_BL.DBValues.Catalog.TIME_INTERVAL intervalTypeID,
+            ReportAccuracyTrendByAttributeViewModel requestObject = null)
         {
             this.IntervalTypeID = intervalTypeID;
             this.AccuracyTrendByAttributeResultList = accuracyTrendByAttributeResultList;
+            this.RequestObject = requestObject;
 
             ProcessData();
         }
 
         public void ProcessData()
         {
-            DateTime minDate = this.AccuracyTrendByAttributeResultList.Min(e => e.TransactionDate);
-            DateTime maxDate = this.AccuracyTrendByAttributeResultList.Max(e => e.TransactionDate);
+            if (RequestObject.TransactionStartDate == null && RequestObject.TransactionEndDate == null)
+                return;
+
+            DateTime minDate = this.AccuracyTrendByAttributeResultList.Count() > 0 ? this.AccuracyTrendByAttributeResultList.Min(e => e.TransactionDate) : RequestObject.TransactionStartDate.Value;
+            DateTime maxDate = this.AccuracyTrendByAttributeResultList.Count() > 0 ? this.AccuracyTrendByAttributeResultList.Max(e => e.TransactionDate) : RequestObject.TransactionStartDate.Value;
 
             switch (this.IntervalTypeID)
             {
