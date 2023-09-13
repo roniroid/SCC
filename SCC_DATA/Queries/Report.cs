@@ -182,6 +182,36 @@ namespace SCC_DATA.Queries
 				}
 			}
 			
+			public struct CalibratorComparisonWithAttributes
+            {
+				public const string NAME = "[dbo].[usp_ReportCalibratorComparisonWithAttributes]";
+
+				public struct Parameters
+				{
+					public const string CALIBRATION_START_DATE = "@calibrationStartDate";
+					public const string CALIBRATION_END_DATE = "@calibrationEndDate";
+					public const string PROGRAM_ID_LIST = "@programIDList";
+					public const string CALIBRATED_USER_ID_LIST = "@calibratedUserIDArray";
+					public const string CALIBRATED_SUPERVISOR_USER_ID_LIST = "@calibratedSupervisorUserIDArray";
+					public const string CALIBRATOR_USER_ID_LIST = "@calibratorUserIDArray";
+					public const string CALIBRATION_TYPE_ID_LIST = "@calibrationTypeIDArray";
+					public const string ERROR_TYPE_ID_LIST = "@errorTypeIDArray";
+				}
+
+				public struct ResultFields
+				{
+					public const string TRANSACTION_ID = "TransactionID";
+
+                    public const string ERROR_TYPE_ID = "ErrorTypeID";
+                    public const string ATTRIBUTE_ID = "AttributeID";
+                    public const string VALUE_ID = "ValueID";
+                    public const string CHECKED = "Checked";
+
+					public const string CALIBRATOR_USER_ID = "CalibratorUserID";
+					public const string IS_EXPERTS_CALIBRATION = "IsExpertsCalibration";
+				}
+			}
+			
 			public struct AccuracyTrend
 			{
 				public const string NAME = "[dbo].[usp_ReportAccuracyTrend]";

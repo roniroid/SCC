@@ -166,6 +166,7 @@
     <Compile Include="ViewModels\ReportAccuracyTrendViewModel.cs" />
     <Compile Include="ViewModels\ReportAccuracyByAttributeViewModel.cs" />
     <Compile Include="ViewModels\ReportCalibratorComparisonViewModel.cs" />
+    <Compile Include="ViewModels\ReportCalibratorComparisonWithAttributesViewModel.cs" />
     <Compile Include="ViewModels\ReportComparativeByProgramViewModel.cs" />
     <Compile Include="ViewModels\ReportComparativeByUserViewModel.cs" />
     <Compile Include="ViewModels\ReportFilterViewModel.cs" />
@@ -176,6 +177,7 @@
     <Compile Include="ViewModels\ReportResultsAccuracyTrendByAttributeViewModel.cs" />
     <Compile Include="ViewModels\ReportResultsAccuracyTrendViewModel.cs" />
     <Compile Include="ViewModels\ReportResultsCalibratorComparisonViewModel.cs" />
+    <Compile Include="ViewModels\ReportResultsCalibratorComparisonWithAttributesViewModel.cs" />
     <Compile Include="ViewModels\ReportResultsComparativeByProgramViewModel.cs" />
     <Compile Include="ViewModels\ReportResultsComparativeByUserViewModel.cs" />
     <Compile Include="ViewModels\ReportResultsOverallAccuracyViewModel.cs" />
@@ -818,6 +820,8 @@
     <Content Include="Views\Log\Index.cshtml" />
     <Content Include="Views\Log\LogFiles.cshtml" />
     <Content Include="Views\Log\_LogList.cshtml" />
+    <Content Include="Views\Report\_CalibratorComparisonWithAttributes.cshtml" />
+    <Content Include="Views\Report\CalibratorComparisonWithAttributesResults.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

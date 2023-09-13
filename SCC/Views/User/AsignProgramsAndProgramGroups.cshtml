@@ -109,7 +109,10 @@
                         </div>
                         <div class="accordion-footer-buttons">
                             <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
-                            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                            @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PROGRAM_GROUPS_TO_USERS))
+                            {
+                                <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+                            }
                         </div>
                     </div>
                 </form>
@@ -191,6 +194,11 @@
 </div>
 <script>
     $(document).ready(function () {
+        @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PROGRAM_GROUPS_TO_USERS))
+        {
+            @:window.open('@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))', '_self');
+        }
+
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
             let fileName = 'Listado de asignaciones de programas' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();

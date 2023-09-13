@@ -964,7 +964,7 @@ namespace SCC_BL
 				{
 					if (!this.CustomFieldList.Select(e => e.ID).Contains(transactionCustomFieldCatalog.ID))
 					{
-                        if (transactionCustomFieldCatalog.ValueID != null || transactionCustomFieldCatalog.CustomFieldID <= 0)
+                        if (transactionCustomFieldCatalog.ValueID != null && transactionCustomFieldCatalog.CustomFieldID > 0)
 						{
                             TransactionCustomFieldCatalog newTransactionCustomFieldCatalog = new TransactionCustomFieldCatalog(
 								this.ID,

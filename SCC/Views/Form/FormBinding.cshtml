@@ -210,6 +210,11 @@
 </div>
 <script>
     $(document).ready(function () {
+        @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_FORMS_TO_PROGRAMS))
+        {
+            @:window.open('@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))', '_self');
+        }
+
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
             let fileName = 'Listado de programas con formularios' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();

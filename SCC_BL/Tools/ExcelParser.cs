@@ -1242,7 +1242,7 @@ namespace SCC_BL.Tools
                                     {
                                         Attribute auxCurrentAttribute = childAttributeList.Where(e => e.ID == childTransactionAttributeCatalog.AttributeID).FirstOrDefault();
 
-                                        attributeSubattributes += $"~~{auxCurrentAttribute.Name}";
+                                        attributeSubattributes += $"~{auxCurrentAttribute.Name}";
 
                                         List<Attribute> auxChildAttributeList = attributeList.Where(e => e.ParentAttributeID == auxCurrentAttribute.ID).ToList();
                                         TransactionAttributeCatalog auxChildTransactionAttributeCatalog = transaction.AttributeList.Where(e => auxChildAttributeList.Select(s => s.ID).Contains(e.AttributeID) && e.Checked).FirstOrDefault();

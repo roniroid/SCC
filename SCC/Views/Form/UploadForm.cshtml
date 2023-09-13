@@ -156,6 +156,11 @@
 </div>
 <script>
     $(document).ready(function () {
+        @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_UPLOAD_FORMS))
+        {
+            @:window.open('@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))', '_self');
+        }
+
         fetchDatatableBasicData().then(response => {
             let data = response;
 

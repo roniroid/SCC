@@ -94,6 +94,14 @@ namespace SCC.Controllers
                         e.EndDate >= DateTime.Now)
                     .ToList();
 
+            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS))
+            {
+                programList =
+                    programList
+                        .Where(e => GetActualUser().CurrentProgramList.Select(s => s.ID).Contains(e.ID))
+                        .ToList();
+            }
+
             ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Edit.ProgramList.NAME] =
                 new SelectList(
                     programList,
@@ -4470,6 +4478,7 @@ namespace SCC.Controllers
             }
         }
 
+        [HttpPost]
         public ActionResult ExportTransactionListToExcel(string transactionIDArray)
         {
             string newFileName = $"Transacciones exportadas { DateTime.Now.ToString("yyyyMMddHHmmss") }.xlsx";

@@ -161,6 +161,44 @@ namespace SCC_BL
 			return calibratorComparisonResultList;
 		}
 		
+		public List<SCC_BL.Reports.Results.CalibratorComparisonWithAttributes> CalibratorComparisonWithAttributes(DateTime? calibrationStartDate, DateTime? calibrationEndDate, string programIDList, string calibratedUserIDArray, string calibratedSupervisorUserIDArray, string calibratorUserIDArray, string calibrationTypeIDArray, string errorTypeIDArray)
+		{
+			List<SCC_BL.Reports.Results.CalibratorComparisonWithAttributes> calibratorComparisonWithAttributesResultList = new List<SCC_BL.Reports.Results.CalibratorComparisonWithAttributes>();
+
+			using (SCC_DATA.Repositories.Report report = new SCC_DATA.Repositories.Report())
+			{
+				DataTable dt = report.CalibratorComparisonWithAttributes(calibrationStartDate, calibrationEndDate, programIDList, calibratedUserIDArray, calibratedSupervisorUserIDArray, calibratorUserIDArray, calibrationTypeIDArray, errorTypeIDArray);
+
+				foreach (DataRow dr in dt.Rows)
+				{
+					int? valueID = null;
+
+					try
+					{
+						valueID = Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.ResultFields.VALUE_ID]);
+                    }
+					catch (Exception ex)
+					{
+					}
+
+					SCC_BL.Reports.Results.CalibratorComparisonWithAttributes calibratorComparisonWithAttributesResult = new SCC_BL.Reports.Results.CalibratorComparisonWithAttributes(
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.ResultFields.TRANSACTION_ID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.ResultFields.ERROR_TYPE_ID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.ResultFields.ATTRIBUTE_ID]),
+                        valueID,
+                        Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.ResultFields.CHECKED]),
+
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.ResultFields.CALIBRATOR_USER_ID]),
+                        Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.ResultFields.IS_EXPERTS_CALIBRATION]));
+
+					calibratorComparisonWithAttributesResultList.Add(calibratorComparisonWithAttributesResult);
+				}
+			}
+
+			return calibratorComparisonWithAttributesResultList;
+		}
+		
 		public List<SCC_BL.Reports.Results.AccuracyTrend> AccuracyTrend(DateTime? transactionStartDate, DateTime? transactionEndDate, DateTime? evaluationStartDate, DateTime? evaluationEndDate, string programIDList, string userIDArray, string supervisorUserIDArray, string evaluatorUserIDArray, string errorTypeIDArray, bool? attributeControllable, bool? attributeKnown, string transactionCustomFieldCatalogList)
 		{
 			List<SCC_BL.Reports.Results.AccuracyTrend> accuracyTrendResultList = new List<SCC_BL.Reports.Results.AccuracyTrend>();

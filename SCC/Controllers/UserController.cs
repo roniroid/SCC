@@ -155,6 +155,17 @@ namespace SCC.Controllers
                     SCC_BL.Settings.AppValues.ViewData.User.Edit.Workspace.SelectList.TEXT,
                     userManagementViewModel.User.UserWorkspaceCatalogList.Select(s => s.WorkspaceID));
 
+            if (
+                !GetActualUser().RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.ADMINISTRATOR) &&
+                !GetActualUser().RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER))
+            {
+                roleList =
+                    roleList
+                        .Where(e => e.ID != (int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER)
+                        .OrderBy(e => e.Name)
+                        .ToList();
+            }
+
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.RoleCatalog.NAME] =
                 new MultiSelectList(
                     roleList,

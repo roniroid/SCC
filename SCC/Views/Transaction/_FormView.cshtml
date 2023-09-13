@@ -627,6 +627,8 @@
                         @switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)customControl.ControlTypeID)
                         {
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-text";
+
                                 htmlAttributes.Add(
                                     "value",
                                     currentTransactionCustomFieldCatalog != null
@@ -641,6 +643,8 @@
                                     htmlAttributes);
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-text";
+
                                 htmlAttributes.Add(
                                     "rows",
                                     customControl.NumberOfRows.ToString());
@@ -663,6 +667,8 @@
                                     htmlAttributes);
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-checkbox";
+
                                 htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
 
                                 <div class="radio-controls d-inline-block">
@@ -681,15 +687,21 @@
                                             }
                                         }
                                         else
-                                        if (currentTransactionCustomFieldCatalog != null)
+                                        if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Select(e => e.ValueID).Contains(customControlValueCatalog.ID))
+                                        {
+                                            isChecked = true;
+                                        }
+
+                                        @*if (currentTransactionCustomFieldCatalog != null)
                                         {
                                             if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
                                             {
                                                 isChecked = true;
                                             }
-                                        }
+                                        }*@
+
                                         <div>
-                                            <input id="customControl_@customControlValueCatalog.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
+                                            <input id="customControl_@customControlValueCatalog.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
                                             <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
                                         </div>
                                         @*<input id="customControl_@customControl.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />*@
@@ -704,6 +716,8 @@
                                     </div>
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.RADIO_BUTTON:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-radio";
+
                                 htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
 
                                 <div class="radio-controls d-inline-block">
@@ -728,7 +742,7 @@
                                         }
 
                                         <div>
-                                            <input id="customControl_@customControlValueCatalog.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="radio" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
+                                            <input id="customControl_@customControlValueCatalog.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="radio" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
                                             <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
                                         </div>
                                         @*htmlAttributes.Remove("label");
@@ -745,7 +759,9 @@
                                 </div>
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
-                                <select class="custom-control-multiple custom-control-chosen-select" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" @(customControl.IsRequired ? "required" : string.Empty) >
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-select";
+
+                                <select class="custom-control-multiple custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" @(customControl.IsRequired ? "required" : string.Empty) >
                                     <option value="">Seleccionar</option>
                                     @{
                                         foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
@@ -1527,7 +1543,10 @@
     }
     else
     {
-        <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+        if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TRANSACTIONS))
+        {
+            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+        }
     }
 </div>
 <div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center d-none">
@@ -2088,9 +2107,9 @@
             //aqui, revisar attributo de nivel cero ya que contiene el iscontrollable
             let auxParentAttributeRow = $('.attribute-row[data-attributeid="' + e + '"]');;
             let auxParentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
-            
+
             if (auxParentAttributeID == parentAttributeID) controllableCEFound = false;
-            
+
             let isControllable = $(auxParentAttributeRow).data('iscontrollable') == 'True';
 
             if (isControllable) controllableCEFound = true;
@@ -2921,7 +2940,7 @@
                 let valueIDArray = [];
                 let comment = '';
 
-                if ($(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').length > 0) {
+                @*if ($(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').length > 0) {
                     comment = $(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').val();
                 }
                 else
@@ -2944,6 +2963,35 @@
                 else
                 if ($(valueContainer).find('select option:selected').length > 0) {
                     valueID = $(valueContainer).find('select option:selected').val();
+                }*@
+
+                if ($(valueContainer).find('.custom-control-value-text').length > 0) {
+                    comment = $(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').val();
+                }
+                else
+                if ($(valueContainer).find('.custom-control-value-radio').length > 0) {
+                    valueID = $(valueContainer).find('input[type="radio"]:checked').val();
+                }
+                else
+                if ($(valueContainer).find('.custom-control-value-checkbox').length > 0) {
+                    let elementList = $(valueContainer).find('input[type="checkbox"]:checked');
+                    if (elementList.length > 0) {
+                        for (let index = 0; index < elementList.length; index++) {
+                            valueIDArray.push(parseInt($(elementList[index]).val()));
+                            /*valueID =
+                                valueID != null && valueID != ''
+                                    ? (valueID + ',' + $(elementList[index]).val())
+                                    : $(elementList[index]).val();*/
+                        }
+                    }
+                }
+                else
+                if ($(valueContainer).find('.custom-control-value-select').length > 0) {
+                    if ($(valueContainer).find('select option:selected').length > 0) {
+                        valueID = $(valueContainer).find('select option:selected').val();
+                    } else {
+                        valueID = null;
+                    }
                 }
 
                 let transactionCustomFieldID = $(e).data('transactioncustomfieldid');

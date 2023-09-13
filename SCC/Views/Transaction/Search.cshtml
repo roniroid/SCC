@@ -984,12 +984,34 @@
         }
     });
 
-    async function exportTransactionsFile() {
+    @*async function exportTransactionsFile() {
         let transactionIDArray = [];
 
         transactionIDArray = await getTransactionIDArray();
 
         window.open('@Url.Action(nameof(TransactionController.ExportTransactionListToExcel), mainControllerName)?transactionIDArray=' + transactionIDArray.join(','), '_blank');
+    }*@
+
+    async function exportTransactionsFile() {
+        let transactionIDArray = await getTransactionIDArray();
+
+        // Create a form element
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '@Url.Action(nameof(TransactionController.ExportTransactionListToExcel), mainControllerName)';
+
+        // Create a hidden input field for transactionIDArray
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'transactionIDArray';
+        input.value = transactionIDArray.join(',');
+
+        // Append the input field to the form
+        form.appendChild(input);
+
+        // Append the form to the document body and submit it
+        document.body.appendChild(form);
+        form.submit();
     }
 
     async function getTransactionIDArray() {

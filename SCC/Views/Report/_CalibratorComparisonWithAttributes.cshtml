@@ -1,0 +1,268 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.ReportCalibratorComparisonWithAttributesViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+
+    //bool hasModel = Model.ReportResultsCalibratorComparisonWithAttributesViewModel != null;
+    bool hasModel = false;
+
+    string reportTitle = "Reporte de comparación por calibradores";
+
+    ViewBag.Title = reportTitle;
+}
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+<link href="~/Content/Custom/Chosen/chosen.min.css" rel="stylesheet" />
+<script src="~/Content/Custom/Chosen/chosen.jquery.min.js"></script>
+
+<div class="panel">
+    <div class="accordion accordion-flush" id="accordionExample">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <strong> @reportTitle</strong>
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse @(!hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
+                 data-bs-parent="#accordionExample">
+                <form id="frmManage" action="@Url.Action(nameof(ReportController.CalibratorComparisonWithAttributes), mainControllerName)" method="post" target="_blank">
+                    <div class="accordion-body">
+                        <div class="row d-block text-center text-danger required-advise d-none m-5">
+                            Por favor, ingrese todos los datos requeridos
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de inicio de la calibración
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem =>
+                                    Model.CalibrationStartDate,
+                                    null,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de inicio de la calibración",
+                                        autocomplete = "off",
+                                        type = "date",
+                                            @Value =
+                                                Model.CalibrationStartDate != null
+                                                    ? (((DateTime)Model.CalibrationStartDate).Year > 2000
+                                                        ? ((DateTime)Model.CalibrationStartDate).ToString("yyyy-MM-dd")
+                                                        : /*DateTime.Now.AddMonths(-4).ToString("yyyy-MM-dd")*/ string.Empty)
+                                                    : /*DateTime.Now.AddMonths(-4).ToString("yyyy-MM-dd")*/ string.Empty
+                                    })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Fecha de finalización de la calibración
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(modelitem =>
+                                    Model.CalibrationEndDate,
+                                    null,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de finalización de la calibración",
+                                        autocomplete = "off",
+                                        type = "date",
+                                            @Value =
+                                                Model.CalibrationEndDate != null
+                                                    ? (((DateTime)Model.CalibrationEndDate).Year > 2000
+                                                        ? ((DateTime)Model.CalibrationEndDate).ToString("yyyy-MM-dd")
+                                                        : /*DateTime.Now.ToString("yyyy-MM-dd")*/ string.Empty)
+                                                    : /*DateTime.Now.ToString("yyyy-MM-dd")*/ string.Empty
+                                    })
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Programas
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.ProgramIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.ProgramList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Programas",
+                                        title = "Programas",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Usuarios calibrados
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.CalibratedUserIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.CalibratedUserList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Usuarios",
+                                        title = "Usuarios",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Supervisores calibrados
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.CalibratedSupervisorUserIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.CalibratedSupervisorList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Supervisores",
+                                        title = "Supervisores",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Evaluadores
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.CalibratorUserIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.CalibratorUserList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Calibradores",
+                                        title = "Calibradores",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Tipos de calibración
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.CalibrationTypeIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.CalibrationTypeList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Tipos de error",
+                                        title = "Tipos de error",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Tipos de error
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(modelitem =>
+                                    Model.ErrorTypeIDArray,
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.ErrorTypeList.NAME] as MultiSelectList),
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Tipos de error",
+                                        title = "Tipos de error",
+                                        multiple = ""
+                                    }
+                                )
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Enviar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@*@if (hasModel)
+    {
+        <div id="resultsContainer">
+            @{
+                string content = OverallController.Serialize(Model.ReportResultsCalibratorComparisonWithAttributesViewModel);
+            }
+            @content
+        </div>
+    }*@
+<script>
+    $(document).ready(function () {
+        @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
+        {
+            @:window.open('@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))', '_self');
+        }
+
+        fetchMultiSelectBasicData('Content/files/multi-select-basic-data.json').then(response => {
+            let data = response;
+
+            startMultiSelect('#@nameof(Model.ProgramIDArray)', data);
+            startMultiSelect('#@nameof(Model.CalibratedUserIDArray)', data);
+            startMultiSelect('#@nameof(Model.CalibratedSupervisorUserIDArray)', data);
+            startMultiSelect('#@nameof(Model.CalibratorUserIDArray)', data);
+            startMultiSelect('#@nameof(Model.CalibrationTypeIDArray)', data);
+            startMultiSelect('#@nameof(Model.ErrorTypeIDArray)', data);
+        });
+    });
+
+    $('.report-no-constraint').click(() => {
+        $('.report-constraint').prop('checked', false);
+    });
+
+    $('.report-constraint').off('change').on('change', function (e) {
+        $('.report-constraint').prop('checked', false);
+        $('.report-no-constraint').prop('checked', false);
+
+        $('.report-no-constraint-no').prop('checked', true);
+
+        $(e.currentTarget).prop('checked', true);
+    });
+
+    $('#btnSubmit').click(() => {
+        let requiredAdviseElement = $('.required-advise');
+
+        /*if (
+            ($('#userToEvaluate').val() == '' || $('#userToEvaluate').val() == null)
+        ) {
+            alert('Por favor, ingrese todos los datos requeridos');
+            $(requiredAdviseElement).removeClass('d-none');
+            window.scrollTo(0, 0);
+            return false;
+        }*/
+
+        let message = '¿Quiere enviar los datos ingresados?';
+
+        if (confirm(message) != true) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>

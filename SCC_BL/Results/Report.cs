@@ -165,6 +165,41 @@ namespace SCC_BL.Results
             };
         }
         
+        public static class CalibratorComparisonWithAttributes
+        {
+            public enum CODE
+            {
+                SUCCESS,
+                ERROR
+            }
+
+            public struct Success
+            {
+                public const Notification.Type TYPE = Notification.Type.SUCCESS;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.INFO;
+                public const string LOCAL_LOG = "Se ha generado el reporte correctamente";
+
+                public const string DATABASE_LOG = "Se ha generado el reporte correctamente";
+
+                public const string MESSAGE_TITLE = "Éxito";
+                public const string MESSAGE_CONTENT = "Se ha generado el reporte correctamente";
+            };
+
+            public struct Error
+            {
+                public const Notification.Type TYPE = Notification.Type.ERROR;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.ERROR;
+                public const string LOCAL_LOG = "Ha ocurrido un error al momento de generar el reporte.\r\n\tDatos del objeto: " + REPLACE_JSON_INFO + "\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                //public const string DATABASE_LOG = "ERROR - Ha ocurrido un error al momento de registrarse en el sistema.\r\n\tDatos del objeto: " + REPLACE_JSON_INFO + "\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                public const string MESSAGE_TITLE = "Error";
+                public const string MESSAGE_CONTENT = "Ha ocurrido un error al momento de generar el reporte.\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+            };
+        }
+        
         public static class AccuracyByAttribute
         {
             public enum CODE
