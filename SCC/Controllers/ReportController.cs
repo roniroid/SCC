@@ -1178,6 +1178,136 @@ namespace SCC.Controllers
             return PartialView(nameof(_CalibratorComparisonWithAttributes), reportCalibratorComparisonWithAttributesViewModel);
         }
 
+        public ActionResult _CalibratorComparisonByError(ViewModels.ReportCalibratorComparisonByErrorViewModel reportCalibratorComparisonByErrorViewModel = null)
+        {
+            bool hasModel = false;
+
+            foreach (System.Reflection.PropertyInfo propertyInfo in reportCalibratorComparisonByErrorViewModel.GetType().GetProperties())
+            {
+                if (propertyInfo.GetValue(reportCalibratorComparisonByErrorViewModel) != null)
+                {
+                    hasModel = true;
+                    break;
+                }
+            }
+
+            List<Program> programList = new List<Program>();
+            List<User> calibratedUserList = new List<User>();
+            List<User> calibratedSupervisorList = new List<User>();
+            List<User> calibratorUserList = new List<User>();
+            List<Catalog> calibrationTypeList = new List<Catalog>();
+            List<Catalog> errorTypeList = new List<Catalog>();
+
+            using (Program program = new Program())
+                programList =
+                    program.SelectAll()
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                        .OrderBy(o => o.Name)
+                        .ToList();
+
+            using (User user = new User())
+                calibratedUserList =
+                    user.SelectAll(true)
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
+                        .OrderBy(o => o.Person.SurName)
+                        .ThenBy(o => o.Person.FirstName)
+                        .ToList();
+
+            using (User user = new User())
+                calibratedSupervisorList =
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR, true)
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
+                        .ToList();
+
+            using (User user = new User())
+                calibratorUserList =
+                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.CALIBRATOR, true)
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
+                        .ToList();
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.CALIBRATION_TYPE))
+                calibrationTypeList =
+                    catalog.SelectByCategoryID()
+                        .Where(e => e.Active)
+                        .ToList();
+
+            errorTypeList = SCC_BL.Attribute.GetAttributeErrorType(true);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.ProgramList.NAME] =
+                new MultiSelectList(
+                    programList,
+                    nameof(Program.ID),
+                    nameof(Program.Name),
+                    debugging
+                        ? programList.Select(e => e.ID)
+                        : hasModel
+                            ? reportCalibratorComparisonByErrorViewModel.ProgramIDArray
+                            : null);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.CalibratedUserList.NAME] =
+                new MultiSelectList(
+                    calibratedUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
+                    "Key",
+                    "Value",
+                    debugging
+                        ? calibratedUserList.Select(e => e.ID)
+                        : hasModel
+                            ? reportCalibratorComparisonByErrorViewModel.CalibratedUserIDArray
+                            : null);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.CalibratedSupervisorList.NAME] =
+                new MultiSelectList(
+                    calibratedSupervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
+                    "Key",
+                    "Value",
+                    debugging
+                        ? calibratedSupervisorList.Select(e => e.ID)
+                        : hasModel
+                            ? reportCalibratorComparisonByErrorViewModel.CalibratedSupervisorUserIDArray
+                            : null);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.CalibratorUserList.NAME] =
+                new MultiSelectList(
+                    calibratorUserList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
+                    "Key",
+                    "Value",
+                    debugging
+                        ? calibratorUserList.Select(e => e.ID)
+                        : hasModel
+                            ? reportCalibratorComparisonByErrorViewModel.CalibratorUserIDArray
+                            : null);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.CalibrationTypeList.NAME] =
+                new MultiSelectList(
+                    calibrationTypeList,
+                    nameof(Catalog.ID),
+                    nameof(Catalog.Description),
+                    debugging
+                        ? calibrationTypeList.Select(e => e.ID)
+                        : hasModel
+                            ? reportCalibratorComparisonByErrorViewModel.CalibrationTypeIDArray
+                            : null);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.ErrorTypeList.NAME] =
+                new MultiSelectList(
+                    errorTypeList,
+                    nameof(Catalog.ID),
+                    nameof(Catalog.Description),
+                    hasModel
+                        ? reportCalibratorComparisonByErrorViewModel.ErrorTypeIDArray
+                        : errorTypeList.Select(e => e.ID));
+
+            return PartialView(nameof(_CalibratorComparisonByError), reportCalibratorComparisonByErrorViewModel);
+        }
+
         public ActionResult _AccuracyTrend(ViewModels.ReportAccuracyTrendViewModel reportAccuracyTrendViewModel = null)
         {
             bool hasModel = false;
@@ -1599,8 +1729,10 @@ namespace SCC.Controllers
                     return RedirectToAction(nameof(_ComparativeByProgram));
                 case (int)SCC_BL.DBValues.Catalog.REPORT_TYPE.PARETO_BI:
                     return RedirectToAction(nameof(_ParetoBI));
-                case (int)SCC_BL.DBValues.Catalog.REPORT_TYPE.CALIBRATOR_COMPARISON_WITH_ATTRIBUTES:
+                case (int)SCC_BL.DBValues.Catalog.REPORT_TYPE.CALIBRATOR_COMPARISON_BY_ATTRIBUTE:
                     return RedirectToAction(nameof(_CalibratorComparisonWithAttributes));
+                case (int)SCC_BL.DBValues.Catalog.REPORT_TYPE.CALIBRATOR_COMPARISON_BY_ERROR:
+                    return RedirectToAction(nameof(_CalibratorComparisonByError));
                 default:
                     break;
             }
@@ -1959,6 +2091,66 @@ namespace SCC.Controllers
             reportResultsCalibratorComparisonWithAttributesViewModel.RequestObject.SetDescriptiveData();
 
             return View(nameof(ReportController.CalibratorComparisonWithAttributesResults), reportResultsCalibratorComparisonWithAttributesViewModel);
+        }
+
+        [HttpPost]
+        public ActionResult CalibratorComparisonByError(ViewModels.ReportCalibratorComparisonByErrorViewModel reportCalibratorComparisonByErrorViewModel)
+        {
+            List<SCC_BL.Reports.Results.CalibratorComparisonByError> resultCalibratorComparisonByError = new List<SCC_BL.Reports.Results.CalibratorComparisonByError>();
+            ViewModels.ReportResultsCalibratorComparisonByErrorViewModel reportResultsCalibratorComparisonByErrorViewModel = new ViewModels.ReportResultsCalibratorComparisonByErrorViewModel();
+
+            ReportCalibratorComparisonByErrorViewModel requestObject = reportCalibratorComparisonByErrorViewModel;
+
+            try
+            {
+                using (Report report = new Report())
+                {
+                    if (reportCalibratorComparisonByErrorViewModel.CalibrationEndDate != null)
+                    {
+                        if (
+                            ((DateTime)reportCalibratorComparisonByErrorViewModel.CalibrationEndDate).Hour == 0 &&
+                            ((DateTime)reportCalibratorComparisonByErrorViewModel.CalibrationEndDate).Minute == 0 &&
+                            ((DateTime)reportCalibratorComparisonByErrorViewModel.CalibrationEndDate).Second == 0)
+                        {
+                            reportCalibratorComparisonByErrorViewModel.CalibrationEndDate = ((DateTime)reportCalibratorComparisonByErrorViewModel.CalibrationEndDate).AddHours(23).AddMinutes(59).AddSeconds(59);
+                        }
+                    }
+
+                    resultCalibratorComparisonByError = report.CalibratorComparisonByError(
+                        reportCalibratorComparisonByErrorViewModel.CalibrationStartDate,
+                        reportCalibratorComparisonByErrorViewModel.CalibrationEndDate,
+                        reportCalibratorComparisonByErrorViewModel.ProgramIDArray != null
+                            ? String.Join(",", reportCalibratorComparisonByErrorViewModel.ProgramIDArray)
+                            : string.Empty,
+                        reportCalibratorComparisonByErrorViewModel.CalibratedUserIDArray != null
+                            ? String.Join(",", reportCalibratorComparisonByErrorViewModel.CalibratedUserIDArray)
+                            : string.Empty,
+                        reportCalibratorComparisonByErrorViewModel.CalibratedSupervisorUserIDArray != null
+                            ? String.Join(",", reportCalibratorComparisonByErrorViewModel.CalibratedSupervisorUserIDArray)
+                            : string.Empty,
+                        reportCalibratorComparisonByErrorViewModel.CalibratorUserIDArray != null
+                            ? String.Join(",", reportCalibratorComparisonByErrorViewModel.CalibratorUserIDArray)
+                            : string.Empty,
+                        reportCalibratorComparisonByErrorViewModel.CalibrationTypeIDArray != null
+                            ? String.Join(",", reportCalibratorComparisonByErrorViewModel.CalibrationTypeIDArray)
+                            : string.Empty,
+                        reportCalibratorComparisonByErrorViewModel.ErrorTypeIDArray != null
+                            ? String.Join(",", reportCalibratorComparisonByErrorViewModel.ErrorTypeIDArray)
+                            : string.Empty);
+
+                    reportResultsCalibratorComparisonByErrorViewModel = new ViewModels.ReportResultsCalibratorComparisonByErrorViewModel(resultCalibratorComparisonByError, requestObject);
+                    /*reportCalibratorComparisonByErrorViewModel.ReportResultsCalibratorComparisonViewModel = reportResultsCalibratorComparisonViewModel;*/
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveProcessingInformation<SCC_BL.Results.Report.CalibratorComparisonByError.Error>(null, null, reportCalibratorComparisonByErrorViewModel, ex);
+            }
+
+            reportResultsCalibratorComparisonByErrorViewModel.RequestObject = requestObject;
+            reportResultsCalibratorComparisonByErrorViewModel.RequestObject.SetDescriptiveData();
+
+            return View(nameof(ReportController.CalibratorComparisonByErrorResults), reportResultsCalibratorComparisonByErrorViewModel);
         }
 
         [HttpPost]
@@ -2449,6 +2641,11 @@ namespace SCC.Controllers
         public ActionResult CalibratorComparisonWithAttributesResults(ViewModels.ReportResultsCalibratorComparisonWithAttributesViewModel reportResultsCalibratorComparisonWithAttributesViewModel)
         {
             return View(reportResultsCalibratorComparisonWithAttributesViewModel);
+        }
+
+        public ActionResult CalibratorComparisonByErrorResults(ViewModels.ReportResultsCalibratorComparisonByErrorViewModel reportResultsCalibratorComparisonByErrorViewModel)
+        {
+            return View(reportResultsCalibratorComparisonByErrorViewModel);
         }
 
         public ActionResult AccuracyTrendResults(ViewModels.ReportResultsAccuracyTrendViewModel reportResultsAccuracyTrendViewModel)

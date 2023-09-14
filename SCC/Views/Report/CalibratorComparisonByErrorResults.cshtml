@@ -2,10 +2,10 @@
 @using SCC_BL;
 @using System.Globalization;
 
-@model SCC.ViewModels.ReportResultsCalibratorComparisonWithAttributesViewModel
+@model SCC.ViewModels.ReportResultsCalibratorComparisonByErrorViewModel
 
 @{
-    ViewBag.Title = "Restultados de comparación de calibradores por atributo";
+    ViewBag.Title = "Restultados de comparación de calibradores";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
@@ -45,10 +45,10 @@
             </span>
         </div>
         <div class="bg-light d-flex justify-content-center text-center p-1">
-            <input class="form-control text-center" id="txtChartTitle" type="text" value="Precisión de calibración por atributo" placeholder="Título" autocomplete="off" />
+            <input class="form-control text-center" id="txtChartTitle" type="text" value="Precisión de calibración" placeholder="Título" autocomplete="off" />
         </div>
         <div class="bg-light d-flex justify-content-center text-center p-1">
-            <input class="form-control text-center" id="txtChartSubtitle" type="text" value="Comparación de calibradores por atributo" placeholder="Subtítulo" autocomplete="off" />
+            <input class="form-control text-center" id="txtChartSubtitle" type="text" value="Comparación de calibrador" placeholder="Subtítulo" autocomplete="off" />
         </div>
         <div class="bg-light d-flex justify-content-center text-center p-1">
             <input class="form-control text-center" id="txtAxisX" type="text" value="" placeholder="Eje X" autocomplete="off" />
@@ -159,7 +159,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (SCC.ViewModels.ReportResultsCalibratorComparisonWithAttributesViewModel.ResultsByCalibrator resultsByCalibrator in Model.ResultsByCalibratortList)
+            @foreach (SCC.ViewModels.ReportResultsCalibratorComparisonByErrorViewModel.ResultsByCalibrator resultsByCalibrator in Model.ResultsByCalibratortList)
             {
                 int totalTransactionsFUCE = resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountSuccess + resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountFail;
                 int totalTransactionsBCE = resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountSuccess + resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountFail;
@@ -258,7 +258,7 @@
     $(document).ready(function () {
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
-            let fileName = 'Resultados de comparación de calibradores por atributo' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+            let fileName = 'Resultados de comparación de calibradores' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
 
             let data = response;
 
@@ -340,7 +340,7 @@
             }
         ],
         datasets: [
-            @foreach (SCC.ViewModels.ReportResultsCalibratorComparisonWithAttributesViewModel.ResultsByCalibrator resultsByCalibrator in Model.ResultsByCalibratortList)
+            @foreach (SCC.ViewModels.ReportResultsCalibratorComparisonByErrorViewModel.ResultsByCalibrator resultsByCalibrator in Model.ResultsByCalibratortList)
             {
                 int totalTransactionsFUCE = resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountSuccess + resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountFail;
                 int totalTransactionsBCE = resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountSuccess + resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountFail;

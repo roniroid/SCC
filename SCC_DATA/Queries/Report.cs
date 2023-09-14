@@ -212,6 +212,49 @@ namespace SCC_DATA.Queries
 				}
 			}
 			
+			public struct CalibratorComparisonByError
+            {
+				public const string NAME = "[dbo].[usp_ReportCalibratorComparisonByError]";
+
+				public struct Parameters
+				{
+					public const string CALIBRATION_START_DATE = "@calibrationStartDate";
+					public const string CALIBRATION_END_DATE = "@calibrationEndDate";
+					public const string PROGRAM_ID_LIST = "@programIDList";
+					public const string CALIBRATED_USER_ID_LIST = "@calibratedUserIDArray";
+					public const string CALIBRATED_SUPERVISOR_USER_ID_LIST = "@calibratedSupervisorUserIDArray";
+					public const string CALIBRATOR_USER_ID_LIST = "@calibratorUserIDArray";
+					public const string CALIBRATION_TYPE_ID_LIST = "@calibrationTypeIDArray";
+					public const string ERROR_TYPE_ID_LIST = "@errorTypeIDArray";
+				}
+
+				public struct ResultFields
+				{
+					public const string TRANSACTION_ID = "TransactionID";
+
+                    public const string GLOBALGENERALRESULTID = "GeneralResultID";
+                    public const string GLOBALGENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
+                    public const string GLOBALGENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
+                    public const string GLOBALGENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
+                    public const string GLOBALGENERALNONCRITICALERRORRESULTID = "GeneralNonCriticalErrorResult";
+
+                    public const string GLOBALACCURATERESULTID = "AccurateResultID";
+                    public const string GLOBALACCURATEFINALUSERCRITICALERRORRESULTID = "AccurateFinalUserCriticalErrorResultID";
+                    public const string GLOBALACCURATEBUSINESSCRITICALERRORRESULTID = "AccurateBusinessCriticalErrorResultID";
+                    public const string GLOBALACCURATEFULFILLMENTCRITICALERRORRESULTID = "AccurateFulfillmentCriticalErrorResultID";
+                    public const string GLOBALACCURATENONCRITICALERRORRESULTID = "AccurateNonCriticalErrorResult";
+
+                    public const string GLOBALCONTROLLABLERESULTID = "ControllableResultID";
+                    public const string GLOBALCONTROLLABLEFINALUSERCRITICALERRORRESULTID = "ControllableFinalUserCriticalErrorResultID";
+                    public const string GLOBALCONTROLLABLEBUSINESSCRITICALERRORRESULTID = "ControllableBusinessCriticalErrorResultID";
+                    public const string GLOBALCONTROLLABLEFULFILLMENTCRITICALERRORRESULTID = "ControllableFulfillmentCriticalErrorResultID";
+                    public const string GLOBALCONTROLLABLENONCRITICALERRORRESULTID = "ControllableNonCriticalErrorResult";
+
+                    public const string CALIBRATOR_USER_ID = "CalibratorUserID";
+					public const string IS_EXPERTS_CALIBRATION = "IsExpertsCalibration";
+				}
+			}
+			
 			public struct AccuracyTrend
 			{
 				public const string NAME = "[dbo].[usp_ReportAccuracyTrend]";

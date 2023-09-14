@@ -72,6 +72,7 @@
     <Compile Include="Log.cs" />
     <Compile Include="Reports\Helpers\BusinessIntelligenceFieldByProgram.cs" />
     <Compile Include="Reports\Helpers\CustomControlByProgram.cs" />
+    <Compile Include="Reports\Results\CalibratorComparisonByError.cs" />
     <Compile Include="Reports\Results\CalibratorComparisonWithAttributes.cs" />
     <Compile Include="Settings\HTML Content\Calibration\CalibrationCreated.cs" />
     <Compile Include="Settings\HTML Content\Transaction\Transaction.cs" />

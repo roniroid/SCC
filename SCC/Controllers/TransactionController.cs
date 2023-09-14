@@ -3265,9 +3265,18 @@ namespace SCC.Controllers
                     currentCellIndex += 3;
                 }
 
+                bool isRepeated = false;
+                int repeatedIndex = 0;
+
                 string attributeName = headerList[(int)currentCellIndex].ToString().Trim();
+
+                isRepeated = attributeName.Contains(SCC_BL.Settings.Overall.ImportTasks.Transaction.REPEATED_COLUMN);
+
+                if (isRepeated)
+                    repeatedIndex = Convert.ToInt32(attributeName.Substring(attributeName.LastIndexOf('_') + 1));
+
                 attributeName =
-                    attributeName.Contains(SCC_BL.Settings.Overall.ImportTasks.Transaction.REPEATED_COLUMN)
+                    isRepeated
                         ? attributeName.Substring(
                             0,
                             attributeName.IndexOf(SCC_BL.Settings.Overall.ImportTasks.Transaction.REPEATED_COLUMN))
@@ -3302,14 +3311,45 @@ namespace SCC.Controllers
 
                 try
                 {
-                    SCC_BL.Attribute attribute = new SCC_BL.Attribute();
+                    SCC_BL.Attribute attribute = null;
 
-                    attribute =
-                        form.AttributeList
-                            .Where(e =>
-                                e.Name.Trim().ToUpper().Equals(attributeName.Trim().ToUpper()) &&
-                                (e.ParentAttributeID == 0 || e.ParentAttributeID == null))
-                            .FirstOrDefault();
+                    if (isRepeated)
+                    {
+                        int repeatedCounter = 0;
+
+                        List<SCC_BL.Attribute> auxList = 
+                            form.AttributeList
+                                .Where(e =>
+                                    e.Name.Trim().ToUpper().Equals(attributeName.Trim().ToUpper()) &&
+                                    (e.ParentAttributeID == 0 || e.ParentAttributeID == null))
+                                .ToList();
+
+                        foreach (SCC_BL.Attribute auxAttribute in auxList)
+                        {
+                            if (repeatedCounter == repeatedIndex)
+                            {
+                                attribute = auxAttribute;
+                                break;
+                            }
+
+                            repeatedCounter++;
+                        }
+                    }
+                    else
+                    {
+                        try
+                        {
+                            attribute =
+                                form.AttributeList
+                                    .Where(e =>
+                                        e.Name.Trim().ToUpper().Equals(attributeName.Trim().ToUpper()) &&
+                                        (e.ParentAttributeID == 0 || e.ParentAttributeID == null))
+                                    .FirstOrDefault();
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
 
                     if (attribute == null)
                     {
@@ -3706,7 +3746,7 @@ namespace SCC.Controllers
 
                 try
                 {
-                    CustomControl customControl = new CustomControl();
+                    CustomControl customControl = null;
 
                     if (isRepeated)
                     {
@@ -4026,12 +4066,12 @@ namespace SCC.Controllers
                             businessIntelligenceFieldName.IndexOf(SCC_BL.Settings.Overall.ImportTasks.Transaction.REPEATED_COLUMN))
                         : businessIntelligenceFieldName;
 
-                businessIntelligenceFieldName =
+                /*businessIntelligenceFieldName =
                     businessIntelligenceFieldName.Contains(SCC_BL.Settings.Overall.ImportTasks.Transaction.REPEATED_COLUMN)
                         ? businessIntelligenceFieldName.Substring(
                             0,
                             businessIntelligenceFieldName.IndexOf(SCC_BL.Settings.Overall.ImportTasks.Transaction.REPEATED_COLUMN))
-                        : businessIntelligenceFieldName;
+                        : businessIntelligenceFieldName;*/
 
                 string businessIntelligenceFieldSubFields = row.ItemArray[(int)currentCellIndex].ToString().Trim();
                 string businessIntelligenceFieldTransactionComment = row.ItemArray[(int)currentCellIndex + 1].ToString().Trim();
@@ -4045,13 +4085,24 @@ namespace SCC.Controllers
 
                 try
                 {
-                    SCC_BL.BusinessIntelligenceField businessIntelligenceField = new SCC_BL.BusinessIntelligenceField();
+                    SCC_BL.BusinessIntelligenceField businessIntelligenceField = null;
 
                     if (isRepeated)
                     {
                         int repeatedCounter = 0;
 
-                        List<SCC_BL.BusinessIntelligenceField> auxList = form.BusinessIntelligenceFieldList.Where(e => e.Name.Trim().ToUpper().Equals(businessIntelligenceFieldName.Trim().ToUpper())).ToList();
+                        List<SCC_BL.BusinessIntelligenceField> auxList = 
+                            form.BusinessIntelligenceFieldList
+                                .Where(e =>
+                                    e.ParentBIFieldID == null &&
+                                    e.Name
+                                        .Trim()
+                                        .ToUpper()
+                                        .Equals(
+                                            businessIntelligenceFieldName
+                                                .Trim()
+                                                .ToUpper()))
+                                .ToList();
 
                         foreach (SCC_BL.BusinessIntelligenceField auxBusinessIntelligenceField in auxList)
                         {
@@ -4070,7 +4121,13 @@ namespace SCC.Controllers
                             form.BusinessIntelligenceFieldList
                                 .Where(e =>
                                     e.ParentBIFieldID == null &&
-                                    e.Name.Trim().ToUpper().Equals(businessIntelligenceFieldName.Trim().ToUpper()))
+                                    e.Name
+                                        .Trim()
+                                        .ToUpper()
+                                        .Equals(
+                                            businessIntelligenceFieldName
+                                                .Trim()
+                                                .ToUpper()))
                                 .FirstOrDefault();
                     }
 

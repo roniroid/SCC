@@ -199,6 +199,47 @@ namespace SCC_BL
 			return calibratorComparisonWithAttributesResultList;
 		}
 		
+		public List<SCC_BL.Reports.Results.CalibratorComparisonByError> CalibratorComparisonByError(DateTime? calibrationStartDate, DateTime? calibrationEndDate, string programIDList, string calibratedUserIDArray, string calibratedSupervisorUserIDArray, string calibratorUserIDArray, string calibrationTypeIDArray, string errorTypeIDArray)
+		{
+			List<SCC_BL.Reports.Results.CalibratorComparisonByError> calibratorComparisonByErrorResultList = new List<SCC_BL.Reports.Results.CalibratorComparisonByError>();
+
+			using (SCC_DATA.Repositories.Report report = new SCC_DATA.Repositories.Report())
+			{
+				DataTable dt = report.CalibratorComparisonByError(calibrationStartDate, calibrationEndDate, programIDList, calibratedUserIDArray, calibratedSupervisorUserIDArray, calibratorUserIDArray, calibrationTypeIDArray, errorTypeIDArray);
+
+				foreach (DataRow dr in dt.Rows)
+				{
+					SCC_BL.Reports.Results.CalibratorComparisonByError calibratorComparisonByErrorResult = new SCC_BL.Reports.Results.CalibratorComparisonByError(
+						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.TRANSACTION_ID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALGENERALRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALGENERALFINALUSERCRITICALERRORRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALGENERALBUSINESSCRITICALERRORRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALGENERALFULFILLMENTCRITICALERRORRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALGENERALNONCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALACCURATERESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALACCURATEFINALUSERCRITICALERRORRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALACCURATEBUSINESSCRITICALERRORRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALACCURATEFULFILLMENTCRITICALERRORRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALACCURATENONCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALCONTROLLABLERESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALCONTROLLABLEFINALUSERCRITICALERRORRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALCONTROLLABLEBUSINESSCRITICALERRORRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALCONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.GLOBALCONTROLLABLENONCRITICALERRORRESULTID]),
+
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.CALIBRATOR_USER_ID]),
+                        Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.CalibratorComparisonByError.ResultFields.IS_EXPERTS_CALIBRATION]));
+
+					calibratorComparisonByErrorResultList.Add(calibratorComparisonByErrorResult);
+				}
+			}
+
+			return calibratorComparisonByErrorResultList;
+		}
+		
 		public List<SCC_BL.Reports.Results.AccuracyTrend> AccuracyTrend(DateTime? transactionStartDate, DateTime? transactionEndDate, DateTime? evaluationStartDate, DateTime? evaluationEndDate, string programIDList, string userIDArray, string supervisorUserIDArray, string evaluatorUserIDArray, string errorTypeIDArray, bool? attributeControllable, bool? attributeKnown, string transactionCustomFieldCatalogList)
 		{
 			List<SCC_BL.Reports.Results.AccuracyTrend> accuracyTrendResultList = new List<SCC_BL.Reports.Results.AccuracyTrend>();

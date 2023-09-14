@@ -1499,6 +1499,75 @@ namespace SCC_BL.Settings
                     }
                 }
 
+                public struct _CalibratorComparisonByError
+                {
+                    public struct ProgramList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_PROGRAM_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "Name";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibratedUserList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_CALIBRATED_USER_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibratedSupervisorList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_CALIBRATED_SUPERVISOR_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibratorUserList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_CALIBRATOR_USER_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibrationTypeList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_CALIBRATION_TYPE_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct ErrorTypeList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_ERROR_TYPE_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+                }
+
                 public struct _AccuracyTrend
                 {
                     public struct ProgramList

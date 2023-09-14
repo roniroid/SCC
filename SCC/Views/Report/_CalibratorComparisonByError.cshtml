@@ -1,17 +1,17 @@
 ﻿@using SCC.Controllers;
 @using SCC_BL;
 
-@model SCC.ViewModels.ReportCalibratorComparisonWithAttributesViewModel
+@model SCC.ViewModels.ReportCalibratorComparisonByErrorViewModel
 
 @{
     User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
 
-    //bool hasModel = Model.ReportResultsCalibratorComparisonWithAttributesViewModel != null;
+    //bool hasModel = Model.ReportResultsCalibratorComparisonByErrorViewModel != null;
     bool hasModel = false;
 
-    string reportTitle = "Reporte de comparación por calibradores por atributo";
+    string reportTitle = "Reporte de comparación por calibradores";
 
     ViewBag.Title = reportTitle;
 }
@@ -32,7 +32,7 @@
             </h2>
             <div id="collapseOne" class="accordion-collapse collapse @(!hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
                  data-bs-parent="#accordionExample">
-                <form id="frmManage" action="@Url.Action(nameof(ReportController.CalibratorComparisonWithAttributes), mainControllerName)" method="post" target="_blank">
+                <form id="frmManage" action="@Url.Action(nameof(ReportController.CalibratorComparisonByError), mainControllerName)" method="post" target="_blank">
                     <div class="accordion-body">
                         <div class="row d-block text-center text-danger required-advise d-none m-5">
                             Por favor, ingrese todos los datos requeridos
@@ -90,7 +90,7 @@
                             <div class="col-7">
                                 @Html.DropDownListFor(modelitem =>
                                     Model.ProgramIDArray,
-                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.ProgramList.NAME] as MultiSelectList),
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.ProgramList.NAME] as MultiSelectList),
                                     new
                                     {
                                         @class = "property-field-control",
@@ -108,7 +108,7 @@
                             <div class="col-7">
                                 @Html.DropDownListFor(modelitem =>
                                     Model.CalibratedUserIDArray,
-                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.CalibratedUserList.NAME] as MultiSelectList),
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.CalibratedUserList.NAME] as MultiSelectList),
                                     new
                                     {
                                         @class = "property-field-control",
@@ -126,7 +126,7 @@
                             <div class="col-7">
                                 @Html.DropDownListFor(modelitem =>
                                     Model.CalibratedSupervisorUserIDArray,
-                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.CalibratedSupervisorList.NAME] as MultiSelectList),
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.CalibratedSupervisorList.NAME] as MultiSelectList),
                                     new
                                     {
                                         @class = "property-field-control",
@@ -144,7 +144,7 @@
                             <div class="col-7">
                                 @Html.DropDownListFor(modelitem =>
                                     Model.CalibratorUserIDArray,
-                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.CalibratorUserList.NAME] as MultiSelectList),
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.CalibratorUserList.NAME] as MultiSelectList),
                                     new
                                     {
                                         @class = "property-field-control",
@@ -162,7 +162,7 @@
                             <div class="col-7">
                                 @Html.DropDownListFor(modelitem =>
                                     Model.CalibrationTypeIDArray,
-                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.CalibrationTypeList.NAME] as MultiSelectList),
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.CalibrationTypeList.NAME] as MultiSelectList),
                                     new
                                     {
                                         @class = "property-field-control",
@@ -180,7 +180,7 @@
                             <div class="col-7">
                                 @Html.DropDownListFor(modelitem =>
                                     Model.ErrorTypeIDArray,
-                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.ErrorTypeList.NAME] as MultiSelectList),
+                                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.ErrorTypeList.NAME] as MultiSelectList),
                                     new
                                     {
                                         @class = "property-field-control",
@@ -209,7 +209,7 @@
     {
         <div id="resultsContainer">
             @{
-                string content = OverallController.Serialize(Model.ReportResultsCalibratorComparisonWithAttributesViewModel);
+                string content = OverallController.Serialize(Model.ReportResultsCalibratorComparisonByErrorViewModel);
             }
             @content
         </div>
