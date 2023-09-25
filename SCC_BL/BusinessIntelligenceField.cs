@@ -284,6 +284,46 @@ namespace SCC_BL
             return businessIntelligenceFieldList;
         }
 
+        public List<BusinessIntelligenceField> SelectHierarchyByFormID(int formID, bool simplifiedInfo = false)
+        {
+            List<BusinessIntelligenceField> businessIntelligenceFieldList = new List<BusinessIntelligenceField>();
+
+            using (SCC_DATA.Repositories.BusinessIntelligenceField repoBusinessIntelligenceField = new SCC_DATA.Repositories.BusinessIntelligenceField())
+            {
+                DataTable dt = repoBusinessIntelligenceField.SelectHierarchyByFormID(formID);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    int? parentBIFieldID = null;
+
+                    try { parentBIFieldID = Convert.ToInt32(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.ResultFields.PARENTBIFIELDID]); } catch (Exception) { }
+
+                    BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField(
+                        Convert.ToInt32(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.ResultFields.ID]),
+                        Convert.ToString(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.ResultFields.NAME]),
+                        Convert.ToString(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.ResultFields.DESCRIPTION]),
+                        parentBIFieldID,
+                        Convert.ToBoolean(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.ResultFields.HASFORCEDCOMMENT]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.ResultFields.BASICINFOID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.ResultFields.ORDER])
+                    );
+
+                    businessIntelligenceField.BasicInfo = new BasicInfo(businessIntelligenceField.BasicInfoID);
+                    businessIntelligenceField.BasicInfo.SetDataByID();
+
+                    if (!simplifiedInfo)
+                    {
+                        //businessIntelligenceField.SetValueList();
+                        businessIntelligenceField.SetChildList();
+                    }
+
+                    businessIntelligenceFieldList.Add(businessIntelligenceField);
+                }
+            }
+
+            return businessIntelligenceFieldList;
+        }
+
         public int DeleteByID()
 		{
 			using (SCC_DATA.Repositories.BusinessIntelligenceField repoBusinessIntelligenceField = new SCC_DATA.Repositories.BusinessIntelligenceField())

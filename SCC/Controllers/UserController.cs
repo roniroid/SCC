@@ -1322,28 +1322,38 @@ namespace SCC.Controllers
 
         public ActionResult MassivePasswordChange()
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
+            List<User> userList = new List<User>();
+
+            /*if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
             {
                 SaveProcessingInformation<SCC_BL.Results.User.PasswordChange.NotAllowedToChangeOtherUsersPasswords>();
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
-            }
-
-            List<User> userList = new List<User>();
-
-            using (User user = new User())
+            }*/
+            
+            if (GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
             {
-                userList =
-                    user.SelectAll(true)
-                        .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.FirstName)
-                        .ToList();
+                using (User user = new User())
+                {
+                    userList =
+                        user.SelectAll(true)
+                            .OrderBy(o => o.Person.SurName)
+                            .ThenBy(o => o.Person.FirstName)
+                            .ToList();
+                }
+            }
+            else
+            {
+                userList.Add(GetActualUser());
             }
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.MassivePasswordChange.User.NAME] =
                 new MultiSelectList(
                     userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
-                    "Value");
+                    "Value",
+                    !GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS)
+                        ? new int[] { GetActualUser().ID }
+                        : null);
             
             /*Dictionary<int, string> userListDictionary = new Dictionary<int, string>();
 
@@ -1377,7 +1387,7 @@ namespace SCC.Controllers
                 switch (user.ProcessPasswordRecovery(password, GetActualUser().ID, user.BasicInfo.StatusID))
                 {
                     case SCC_BL.Results.User.PasswordRecovery.CODE.SUCCESS:
-                        SendMail(SCC_BL.Settings.AppValues.MailTopic.CHANGE_PASSWORD, user, password);
+                        //SendMail(SCC_BL.Settings.AppValues.MailTopic.CHANGE_PASSWORD, user, password);
                         SaveProcessingInformation<SCC_BL.Results.User.PasswordChange.Success>(user.ID, user.BasicInfo.StatusID, user);
                         break;
                     case SCC_BL.Results.User.PasswordRecovery.CODE.ERROR:

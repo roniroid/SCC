@@ -87,11 +87,14 @@
                         {
                             <li><a href="@Url.Action(nameof(UserController.MassiveImport), OverallController.GetControllerName(typeof(UserController)))">Importar usuarios</a></li>
                         }
-                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
-                        {
-                            <li class="with-separator"></li>
-                            <li><a href="@Url.Action(nameof(UserController.MassivePasswordChange), OverallController.GetControllerName(typeof(UserController)))">Cambio masivo de contraseña</a></li>
-                        }
+                        <li class="with-separator"></li>
+                        <li>
+                            <a href="@Url.Action(nameof(UserController.MassivePasswordChange), OverallController.GetControllerName(typeof(UserController)))">
+                                @(actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS)
+                                    ? "Cambio masivo de contraseña"
+                                    : "Cambiar contraseña")
+                            </a>
+                        </li>
 
                         @*<li><a href="#">Mi cuenta</a></li>*@
                         @*<li><a href="#">Cambiar contraseña</a></li>*@
@@ -138,7 +141,7 @@
                             actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_WORKSPACES))
                         {
                             <li class="with-separator"></li>
-                            <li><a href="@Url.Action(nameof(WorkspaceController.Manage), OverallController.GetControllerName(typeof(WorkspaceController)))">Puestos de trabajo</a></li>
+                            <li><a href="@Url.Action(nameof(WorkspaceController.Manage), OverallController.GetControllerName(typeof(WorkspaceController)), new { filterActiveElements = "true" })">Puestos de trabajo</a></li>
                         }
                         @if (
                             actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_GROUPS))

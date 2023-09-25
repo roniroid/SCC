@@ -177,6 +177,29 @@ namespace SCC_DATA.Repositories
             }
         }
 
+        public System.Data.DataTable SelectHierarchyByFormID(int formID)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.Parameters.FORMID, formID, System.Data.SqlDbType.Int)
+                    };
+
+                    return
+                        db.Select(
+                            Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public int Update(int id, string name, string description, int? parentBIFieldID, bool hasForcedComment, int order)
 		{
 			try

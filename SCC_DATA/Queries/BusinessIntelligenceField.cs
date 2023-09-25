@@ -150,7 +150,28 @@ namespace SCC_DATA.Queries
                 }
             }
 
-			public struct Update
+            public struct SelectHierarchyByFormID
+            {
+                public const string NAME = "[dbo].[usp_BusinessIntelligenceFieldSelectHierarchyByFormID]";
+
+                public struct Parameters
+                {
+                    public const string FORMID = "@formID";
+                }
+
+                public struct ResultFields
+                {
+                    public const string ID = "ID";
+                    public const string NAME = "Name";
+                    public const string DESCRIPTION = "Description";
+                    public const string PARENTBIFIELDID = "ParentBIFieldID";
+                    public const string HASFORCEDCOMMENT = "HasForcedComment";
+                    public const string BASICINFOID = "BasicInfoID";
+                    public const string ORDER = "Order";
+                }
+            }
+
+            public struct Update
 			{
 				public const string NAME = "[dbo].[usp_BusinessIntelligenceFieldUpdate]";
 

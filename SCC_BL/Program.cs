@@ -147,9 +147,23 @@ namespace SCC_BL
 				}
 			}
 
+			UpdateProgramListStatus(programList);
+
 			return programList
 				.OrderBy(o => o.Name)
 				.ToList();
+		}
+
+		void UpdateProgramListStatus(List<Program> programList)
+		{
+			foreach (Program program in programList)
+			{
+				if (DateTime.Now > program.EndDate && program.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+				{
+					program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED;
+					program.BasicInfo.Update();
+                }
+			}
 		}
 
 		public List<Program> SelectWithForm()
@@ -187,9 +201,11 @@ namespace SCC_BL
 
                     programList.Add(program);
 				}
-			}
+            }
 
-			return programList
+            UpdateProgramListStatus(programList);
+
+            return programList
 				.OrderBy(o => o.Name)
 				.ToList();
 		}

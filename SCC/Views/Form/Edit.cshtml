@@ -565,8 +565,12 @@
 
                                 SCC_BL.Attribute auxAttribute = attribute;
 
+                                bool hasChildren = Model.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() > 0;
+
                                 while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
                                 {
+
+
                                     auxAttribute = Model.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
                                     /*auxAttribute = new SCC_BL.Attribute(auxAttribute.ParentAttributeID.Value);
                                     auxAttribute.SetDataByID();*/
@@ -574,7 +578,7 @@
                                     spaceCounter++;
                                 }
 
-                                <tr class="attribute-table-row" data-attributeorder="@attribute.Order" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-attributedeleted="@(attribute.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED)" data-attributeghostid="@attributeCounter" data-haschanged="false" title="@attribute.Description">
+                                <tr class="attribute-table-row" data-attributeorder="@attribute.Order" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-haschildren="@hasChildren.ToString().ToLower()" data-attributedeleted="@(attribute.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE_VALUE_CATALOG.DELETED)" data-attributeghostid="@attributeCounter" data-haschanged="false" title="@attribute.Description">
                                     <td class="td-name">
                                         <div class="attribute-container">
                                             @for (int i = 0; i < spaceCounter; i++)
@@ -586,6 +590,19 @@
                                                         <i class='bx bx-move'></i>
                                                     </button>
                                                 </span>*@
+                                            @if (hasChildren)
+                                            {
+                                                <span class="attribute-show-children d-none m-2">
+                                                    <button class="btn-element-action btn-element-action-primary btn-attribute-show-children" title="Mostrar causales">
+                                                        <i class='bx bxs-plus-square'></i>
+                                                    </button>
+                                                </span>
+                                                <span class="attribute-hide-children m-2">
+                                                    <button class="btn-element-action btn-element-action-danger btn-attribute-hide-children" title="Ocultar causales">
+                                                        <i class='bx bxs-minus-square'></i>
+                                                    </button>
+                                                </span>
+                                            }
                                             @if (attribute.ErrorTypeID != (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
                                             {
                                                 <span class="attribute-taker-out">
@@ -1105,6 +1122,59 @@
                 $(actualRow).data('haschanged', 'true');
             }
         });
+
+        $('.btn-attribute-show-children').off('click').on('click', function (e) {
+            let currentButton = $(e.currentTarget).parent();
+            let currentButtonContainer = $(currentButton).parent();
+            let actualRow = $(currentButtonContainer).parent().parent();
+            let currentAttributeID = $(actualRow).data('attributeid');
+
+            showChildren(currentAttributeID);
+
+            $(currentButton).addClass('d-none');
+            $(currentButtonContainer).find('.attribute-hide-children').removeClass('d-none');
+        });
+
+        $('.btn-attribute-hide-children').off('click').on('click', function (e) {
+            let currentButton = $(e.currentTarget).parent();
+            let currentButtonContainer = $(currentButton).parent();
+            let actualRow = $(currentButtonContainer).parent().parent();
+            let currentAttributeID = $(actualRow).data('attributeid');
+
+            showChildren(currentAttributeID, false);
+
+            $(currentButton).addClass('d-none');
+            $(currentButtonContainer).find('.attribute-show-children').removeClass('d-none');
+        });
+    }
+
+    function showChildren(attributeID, show = true) {
+        let elements = $('.attribute-table-row[data-parentattributeid="' + attributeID + '"]');
+
+        for (let i = 0; i < elements.length; i++) {
+            let currentElement = elements[i];
+
+            let currentShowButtonContainer = $(currentElement).find('.attribute-show-children');
+            let currentShowButton = $(currentShowButtonContainer).find('.btn-attribute-show-children');
+
+            let currentHideButtonContainer = $(currentElement).find('.attribute-hide-children');
+            let currentHideButton = $(currentHideButtonContainer).find('.btn-attribute-hide-children');
+
+            let currentAttributeID = $(currentElement).data('attributeid');
+
+            if (show) {
+                $(currentElement).removeClass('d-none');
+            } else {
+                if (!$(currentElement).hasClass('d-none')) {
+                    $(currentElement).addClass('d-none');
+                }
+
+                $(currentHideButtonContainer).addClass('d-none');
+                $(currentShowButtonContainer).removeClass('d-none');
+
+                showChildren(currentAttributeID, show);
+            }
+        }
     }
 
     $('.attribute-input-container .attribute-value-container').off('change').on('change', function (e) {

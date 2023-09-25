@@ -1380,6 +1380,11 @@
         <div class="bifield-container">
             @foreach (FormBIFieldCatalog formBIField in Model.Form.FormBIFieldCatalogList)
             {
+                if (formBIField.BIFieldID == 1015)
+                {
+
+                }
+
                 if (!Model.Form.BusinessIntelligenceFieldList.Select(e => e.ID).Contains(formBIField.BIFieldID))
                 {
                     continue;

@@ -126,9 +126,19 @@ namespace SCC_BL
 
 		void SetBusinessIntelligenceFieldList()
         {
-			this.BusinessIntelligenceFieldList = new List<BusinessIntelligenceField>();
+            this.BusinessIntelligenceFieldList = new List<BusinessIntelligenceField>();
 
-            foreach (FormBIFieldCatalog formBIFieldCatalog in this.FormBIFieldCatalogList)
+            using (BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField())
+                this.BusinessIntelligenceFieldList = businessIntelligenceField.SelectHierarchyByFormID(this.ID, true);
+
+			this.BusinessIntelligenceFieldList =
+				this.BusinessIntelligenceFieldList
+					.Where(e =>
+						e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED &&
+						e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DISABLED)
+					.ToList();
+
+            /*foreach (FormBIFieldCatalog formBIFieldCatalog in this.FormBIFieldCatalogList)
             {
                 using (BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField(formBIFieldCatalog.BIFieldID))
                 {
@@ -144,7 +154,7 @@ namespace SCC_BL
 
                     this.BusinessIntelligenceFieldList.Add(businessIntelligenceField);
                 }
-            }
+            }*/
 		}
 
 		public void SetDataByID(bool simpleData = false)
