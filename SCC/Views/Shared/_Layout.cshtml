@@ -186,8 +186,7 @@
                 actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_TRANSACTIONS) ||
                 actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS) ||
                 actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_SESSIONS) ||
-                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS) ||
-                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_CALIBRATION_SESSIONS)
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS)
             )
             {
                 <li>
@@ -252,9 +251,7 @@
                         {
                             <li><a href="@Url.Action(nameof(CalibrationController.Search), OverallController.GetControllerName(typeof(CalibrationController)))">Crear sesión</a></li>
                         }
-                        @if (
-                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS) ||
-                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_CALIBRATION_SESSIONS))
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
                         {
                             <li><a href="@Url.Action(nameof(CalibrationController.Manage), OverallController.GetControllerName(typeof(CalibrationController)))">Sesiones de calibración</a></li>
                         }

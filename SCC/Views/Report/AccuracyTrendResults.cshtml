@@ -284,31 +284,31 @@
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                     {
                         <td>
-                            @percentageControllableFUCE%
+                            @(isControllable ? percentageControllableFUCE : percentageAccurateFUCE)%
                         </td>
                     }
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
                     {
                         <td>
-                            @percentageControllableBCE%
+                            @(isControllable ? percentageControllableBCE : percentageAccurateBCE)%
                         </td>
                     }
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
                     {
                         <td>
-                            @percentageControllableFCE%
+                            @(isControllable ? percentageControllableFCE : percentageAccurateFCE)%
                         </td>
                     }
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
                     {
                         <td>
-                            @percentageControllableNCE%
+                            @(isControllable ? percentageControllableNCE : percentageAccurateNCE)%
                         </td>
                     }
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
                     {
                         <td>
-                            @percentageControllableGCE%
+                            @(isControllable ? percentageControllableGCE : percentageAccurateGCE)%
                         </td>
                     }
                     <td>
@@ -391,7 +391,7 @@
             {
                 @:{
                     @:label: 'Error Crítico de Usuario Final',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableFinalUserCriticalErrorPercentage : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableFinalUserCriticalErrorPercentage : e.AccurateFinalUserCriticalErrorPercentage : 0))))],
                     @:borderColor: 'rgba(117, 178, 239)',
                     @:backgroundColor: 'rgba(117, 178, 239, 0.8)',
                     @:borderWidth: 3,
@@ -404,7 +404,7 @@
             {
                 @:{
                     @:label: 'Error Crítico de Negocio',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableBusinessCriticalErrorPercentage : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableBusinessCriticalErrorPercentage : e.AccurateBusinessCriticalErrorPercentage : 0))))],
                     @:borderColor: 'rgba(67, 66, 71)',
                     @:backgroundColor: 'rgb(67, 66, 71, 0.8)',
                     @:borderWidth: 3,
@@ -417,7 +417,7 @@
             {
                 @:{
                     @:label: 'Error Crítico de Cumplimiento',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableFulfillmentCriticalErrorPercentage : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableFulfillmentCriticalErrorPercentage : e.AccurateFulfillmentCriticalErrorPercentage : 0))))],
                     @:borderColor: 'rgba(137, 222, 122)',
                     @:backgroundColor: 'rgb(137, 222, 122, 0.8)',
                     @:borderWidth: 3,
@@ -430,7 +430,7 @@
             {
                 @:{
                     @:label: 'Error No Crítico',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableNonCriticalErrorAverageResult : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableNonCriticalErrorAverageResult : e.AccurateNonCriticalErrorAverageResult : 0))))],
                     @:borderColor: 'rgba(255, 190, 113)',
                     @:backgroundColor: 'rgb(255, 190, 113, 0.8)',
                     @:borderWidth: 3,
@@ -443,9 +443,9 @@
             {
                 @:{
                     @:label: 'Error Crítico Global',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableCriticalErrorPercentage : 0))))],
-                    @:borderColor: 'rgba(255, 190, 113)',
-                    @:backgroundColor: 'rgb(255, 190, 113, 0.8)',
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableCriticalErrorPercentage : e.AccurateCriticalErrorPercentage : 0))))],
+                    @:borderColor: 'rgb(128, 133, 233)',
+                    @:backgroundColor: 'rgb(128, 133, 233, 0.8)',
                     @:borderWidth: 3,
                     @*successCount: [@Model.ControllableFinalUserCriticalErrorCountSuccess, @Model.ControllableBusinessCriticalErrorCountSuccess, @Model.ControllableFulfillmentCriticalErrorCountSuccess, @Model.ControllableResultCountSuccess],
                     errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],

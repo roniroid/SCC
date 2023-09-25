@@ -1465,11 +1465,17 @@ namespace SCC.Controllers
                 //if (_transactionImportErrorList.Count() > 0)
                 if (true)
                 {
-                    _transactionImportErrorList =
-                        _transactionImportErrorList
-                            .Where(e => 
-                                e.Type != SCC_BL.Settings.Notification.Type.INFO)
-                            .ToList();
+                    if (_transactionImportErrorList != null)
+                    {
+                        if (_transactionImportErrorList.Where(e => e.Type == SCC_BL.Settings.Notification.Type.INFO).Count() > 0)
+                        {
+                            _transactionImportErrorList =
+                                _transactionImportErrorList
+                                    .Where(e =>
+                                        e.Type != SCC_BL.Settings.Notification.Type.INFO)
+                                    .ToList();
+                        }
+                    }
 
                     if (_transactionImportErrorList != null)
                     {
@@ -1744,7 +1750,10 @@ namespace SCC.Controllers
                 SaveProcessingInformation<SCC_BL.Results.UploadedFile.FormUpload.Error>(ex);
             }
 
-            bool hasNonInfoErrors = _transactionImportErrorList.Any(e => e.Type != SCC_BL.Settings.Notification.Type.INFO);
+            bool hasNonInfoErrors = 
+                _transactionImportErrorList != null 
+                    ? _transactionImportErrorList.Any(e => e.Type != SCC_BL.Settings.Notification.Type.INFO)
+                    : false;
 
             if (hasNonInfoErrors)
             {

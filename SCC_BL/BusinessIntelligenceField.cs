@@ -295,6 +295,17 @@ namespace SCC_BL
 			}
 		}
 
+        public int Deactivate()
+		{
+			int result = 0;
+
+            this.BasicInfo.SetDataByID();
+            this.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED;
+            result = this.BasicInfo.Update();
+
+            return result;
+        }
+
 		public int Insert()
 		{
 			this.BasicInfoID = this.BasicInfo.Insert();
@@ -392,13 +403,10 @@ namespace SCC_BL
                 //Delete old ones
                 this.ChildList
                     .ForEach(e => {
-                        if (!biFieldChildList
-                            .Where(w =>
-                                w.ID != null &&
-                                w.ID > 0)
-                            .Select(s => s.ID)
-                            .Contains(e.ID))
-                            e.DeleteByID();
+                        if (!biFieldChildList.Where(w => w.ID != null && w.ID > 0).Select(s => s.ID).Contains(e.ID))
+                        {
+                            e.Deactivate();
+                        }
                     });
 
                 //Create new ones

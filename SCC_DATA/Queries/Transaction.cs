@@ -132,6 +132,21 @@ namespace SCC_DATA.Queries
 				}
 			}
 
+			public struct GetProgramID
+			{
+				public const string NAME = "[dbo].[usp_TransactionGetProgramID]";
+
+				public struct Parameters
+				{
+					public const string TRANSACTION_ID = "@transactionID";
+				}
+
+				public struct ResultFields
+				{
+					public const string PROGRAM_ID = "ProgramID";
+				}
+			}
+
 			public struct SelectByIdentifier
 			{
 				public const string NAME = "[dbo].[usp_TransactionSelectByIdentifier]";

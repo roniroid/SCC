@@ -103,6 +103,29 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
+		public System.Data.DataRow GetProgramID(int transactionID)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					SqlParameter[] parameters = new SqlParameter[] {
+						db.CreateParameter(Queries.Transaction.StoredProcedures.GetProgramID.Parameters.TRANSACTION_ID, transactionID, System.Data.SqlDbType.Int)
+					};
+
+					return
+						db.Select(
+							Queries.Transaction.StoredProcedures.GetProgramID.NAME,
+							parameters
+						).Rows[0];
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
 		public System.Data.DataRow SelectByIdentifier(string identifier)
 		{
 			try

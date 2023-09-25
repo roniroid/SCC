@@ -1450,6 +1450,20 @@ namespace SCC_BL
 			}
 		}
 
+		public int GetProgramID()
+		{
+			int programID = 0;
+
+            using (SCC_DATA.Repositories.Transaction repoTransaction = new SCC_DATA.Repositories.Transaction())
+            {
+                DataRow dr = repoTransaction.GetProgramID(this.ID);
+
+				programID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.GetProgramID.ResultFields.PROGRAM_ID]);
+            }
+
+			return programID;
+		}
+
 		public void Dispose()
 		{
 		}

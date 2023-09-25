@@ -187,7 +187,7 @@
                                                 }
                                             }
 
-                                            <tr class="option-table-row" data-bifieldorder="@businessIntelligenceField.Order" data-bifieldid="@businessIntelligenceField.ID" data-bifielddeleted="@(businessIntelligenceField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)" data-bifieldghostid="@biFieldCounter">
+                                            <tr class="option-table-row" data-bifieldorder="@businessIntelligenceField.Order" data-bifieldid="@businessIntelligenceField.ID" data-bifieldbasicinfoid="@businessIntelligenceField.BasicInfoID" data-bifielddeleted="@(businessIntelligenceField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)" data-bifieldghostid="@biFieldCounter">
                                                 <td class="td-name">
                                                     <div class="bifield-container">
                                                         @for (int i = 0; i < spaceCounter; i++)
@@ -215,7 +215,7 @@
                                                             </button>
                                                         </span>
                                                         <div class="bifield-input-container">
-                                                            <input data-bifieldid="@businessIntelligenceField.ID" class="bifield-property-field-control bifield-value-container option-control multi-line" type="text" value="@businessIntelligenceField.Name" placeholder="Escriba el texto de la respuesta">
+                                                            <input data-bifieldid="@businessIntelligenceField.ID" data-bifieldbasicinfoid="@businessIntelligenceField.BasicInfoID" class="bifield-property-field-control bifield-value-container option-control multi-line" type="text" value="@businessIntelligenceField.Name" placeholder="Escriba el texto de la respuesta">
                                                         </div>
                                                     </div>
                                                 </td>
@@ -367,7 +367,7 @@
 
                 bool hasChildren = Model.BIFieldList.Where(e => e.ParentBIFieldID == biField.ID).Count() > 0;
 
-                <tr class="@tableRowClass @(biField.ParentBIFieldID != null && biField.ParentBIFieldID > 0 ? "has-parent" : string.Empty)" data-bifieldorder="@biField.Order" data-bifieldid="@biField.ID" data-parentbifieldid="@biField.ParentBIFieldID">
+                <tr class="@tableRowClass @(biField.ParentBIFieldID != null && biField.ParentBIFieldID > 0 ? "has-parent" : string.Empty)" data-bifieldorder="@biField.Order" data-bifieldid="@biField.ID" data-bifieldbasicinfoid="@biField.BasicInfoID" data-parentbifieldid="@biField.ParentBIFieldID">
                     <td>
                         @for (int i = 0; i < spaceCounter; i++)
                         {
@@ -919,6 +919,7 @@
                     let parentBIFieldGhostID = null;
                     let parentBIFieldID = @Model.BusinessIntelligenceField.ID;
                     let hasForcedComment = $(e).find('.has-forced-comment-yes').is(':checked');
+                    let biFieldBasicInfoID = parseInt($(e).attr('data-bifieldbasicinfoid'));
 
                     if ($(e).find('td.td-name .bifield-container .bifield-marginator').length > 0) {
                         let foundMarginatorCount = $(e).find('td.td-name .bifield-container .bifield-marginator').length;
@@ -949,7 +950,7 @@
                             "Description": description,
                             "ParentBIFieldID": parentBIFieldID,
                             "HasForcedComment": hasForcedComment,
-                            "BasicInfoID": 0,
+                            "BasicInfoID": biFieldBasicInfoID,
                             "Order": biFieldOrderNumber,
                             "BasicInfo": null,
                             "BIFieldGhostID": biFieldGhostID,

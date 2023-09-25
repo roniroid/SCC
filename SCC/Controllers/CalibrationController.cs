@@ -21,12 +21,30 @@ namespace SCC.Controllers
 
             if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_CALIBRATION_SESSIONS))
             {
-                calibrationList = 
+                List<Calibration> newCalibrationList = new List<Calibration>();
+                int[] allowedProgramIDArray = GetActualUser().CurrentProgramList.Select(s => s.ID).ToArray();
+
+                /*allowedProgramIDArray =
+                    allowedProgramIDArray
+                        .GroupBy(e => e)
+                        .Select(e => e.First())
+                        .ToArray();*/
+
+                for (int i = 0; i < allowedProgramIDArray.Length; i++)
+                {
+                    int currentProgramID = allowedProgramIDArray[i];
+
+                    newCalibrationList.AddRange(
+                        calibrationList
+                            .Where(e => e.ProgramIDArray.Contains(currentProgramID)));
+                }
+
+                calibrationList = newCalibrationList;
+
+                calibrationList =
                     calibrationList
-                        .Where(e =>
-                            e.GetUserList()
-                                .Select(s => s.ID)
-                                .Contains(GetActualUser().ID))
+                        .GroupBy(e => e.ID)
+                        .Select(e => e.First())
                         .ToList();
             }
 
