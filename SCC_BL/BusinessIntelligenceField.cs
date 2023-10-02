@@ -55,12 +55,13 @@ namespace SCC_BL
 		}
 
 		//For Insert
-		public BusinessIntelligenceField(string name, string description, int? parentBIFieldID, bool hasForcedComment, int creationUserID, int statusID)
+		public BusinessIntelligenceField(string name, string description, int? parentBIFieldID, bool hasForcedComment, int order, int creationUserID, int statusID)
 		{
 			this.Name = name;
 			this.Description = description;
 			this.ParentBIFieldID = parentBIFieldID;
 			this.HasForcedComment = hasForcedComment;
+			this.Order = order;
 
 			this.BasicInfo = new BasicInfo(creationUserID, statusID);
 		}
@@ -352,7 +353,14 @@ namespace SCC_BL
 
 			using (SCC_DATA.Repositories.BusinessIntelligenceField repoBusinessIntelligenceField = new SCC_DATA.Repositories.BusinessIntelligenceField())
 			{
-				this.ID = repoBusinessIntelligenceField.Insert(this.Name, this.Description, this.ParentBIFieldID <= 0 ? null : this.ParentBIFieldID, this.HasForcedComment, this.BasicInfoID);
+				this.ID = 
+					repoBusinessIntelligenceField.Insert(
+						this.Name, 
+						this.Description, 
+						this.ParentBIFieldID <= 0 ? null : this.ParentBIFieldID, 
+						this.HasForcedComment, 
+						this.BasicInfoID, 
+						this.Order);
 
 				return this.ID;
 			}
@@ -368,7 +376,7 @@ namespace SCC_BL
 			}
 		}
 
-        /*public Results.BusinessIntelligenceField.UpdateBIFieldValueCatalogList.CODE UpdateBIFieldValueCatalogList(List<BusinessIntelligenceValueCatalog> biFieldValueCatalogList, int creationUserID)
+		/*public Results.BusinessIntelligenceField.UpdateBIFieldValueCatalogList.CODE UpdateBIFieldValueCatalogList(List<BusinessIntelligenceValueCatalog> biFieldValueCatalogList, int creationUserID)
 		{
 			try
 			{
@@ -432,7 +440,7 @@ namespace SCC_BL
 			}
 		}*/
 
-        public Results.BusinessIntelligenceField.UpdateBIFieldChildList.CODE UpdateBIFieldChildList(List<BusinessIntelligenceField> biFieldChildList, int creationUserID)
+		public Results.BusinessIntelligenceField.UpdateBIFieldChildList.CODE UpdateBIFieldChildList(List<BusinessIntelligenceField> biFieldChildList, BusinessIntelligenceField parentBusinessIntelligenceField, int creationUserID)
         {
             try
             {
@@ -482,6 +490,7 @@ namespace SCC_BL
                             businessIntelligenceField.Description,
 							finalParentID,
                             businessIntelligenceField.HasForcedComment,
+                            Convert.ToInt32($"{parentBusinessIntelligenceField.ID}{businessIntelligenceField.Order}"),
                             creationUserID,
                             (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.CREATED);
 
@@ -567,7 +576,7 @@ namespace SCC_BL
                                     .FirstOrDefault()
                                     .ID,
                             businessIntelligenceField.HasForcedComment,
-                            businessIntelligenceField.Order,
+                            Convert.ToInt32($"{parentBusinessIntelligenceField.ID}{businessIntelligenceField.Order}"),
                             currentBasicInfoID,
                             creationUserID,
                             (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.UPDATED);

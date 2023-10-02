@@ -28,9 +28,11 @@ namespace SCC.Controllers
         {
             bool hasModel = false;
 
+            string[] fieldsToIgnore = { "CustomControlByProgram" };
+
             foreach (System.Reflection.PropertyInfo propertyInfo in reportOverallAccuracyViewModel.GetType().GetProperties())
             {
-                if (propertyInfo.GetValue(reportOverallAccuracyViewModel) != null)
+                if (propertyInfo.GetValue(reportOverallAccuracyViewModel) != null && !fieldsToIgnore.Contains(propertyInfo.Name))
                 {
                     hasModel = true;
                     break;
@@ -173,7 +175,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._OverallAccuracy.ErrorTypeList.NAME] =
                 new MultiSelectList(
-                    errorTypeList,
+                    errorTypeList.Select(e => new { ID = e.ID, Description = "P" + e.Description }),
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     hasModel
@@ -192,9 +194,11 @@ namespace SCC.Controllers
         {
             bool hasModel = false;
 
+            string[] fieldsToIgnore = { "CustomControlByProgram" };
+
             foreach (System.Reflection.PropertyInfo propertyInfo in reportParetoBIViewModel.GetType().GetProperties())
             {
-                if (propertyInfo.GetValue(reportParetoBIViewModel) != null)
+                if (propertyInfo.GetValue(reportParetoBIViewModel) != null && !fieldsToIgnore.Contains(propertyInfo.Name))
                 {
                     hasModel = true;
                     break;
@@ -539,7 +543,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByUser.ErrorTypeList.NAME] =
                 new MultiSelectList(
-                    errorTypeList,
+                    errorTypeList.Select(e => new { ID = e.ID, Description = "P" + e.Description }),
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     hasModel
@@ -719,7 +723,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByProgram.ErrorTypeList.NAME] =
                 new MultiSelectList(
-                    errorTypeList,
+                    errorTypeList.Select(e => new { ID = e.ID, Description = "P" + e.Description }),
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     hasModel
@@ -899,7 +903,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.ErrorTypeList.NAME] =
                 new MultiSelectList(
-                    errorTypeList,
+                    errorTypeList.Select(e => new { ID = e.ID, Description = "P" + e.Description }),
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     hasModel
@@ -1038,7 +1042,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparison.ErrorTypeList.NAME] =
                 new MultiSelectList(
-                    errorTypeList,
+                    errorTypeList.Select(e => new { ID = e.ID, Description = "P" + e.Description }),
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     hasModel
@@ -1168,7 +1172,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonWithAttributes.ErrorTypeList.NAME] =
                 new MultiSelectList(
-                    errorTypeList,
+                    errorTypeList.Select(e => new { ID = e.ID, Description = "P" + e.Description }),
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     hasModel
@@ -1298,7 +1302,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._CalibratorComparisonByError.ErrorTypeList.NAME] =
                 new MultiSelectList(
-                    errorTypeList,
+                    errorTypeList.Select(e => new { ID = e.ID, Description = "P" + e.Description }),
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     hasModel
@@ -1480,7 +1484,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrend.ErrorTypeList.NAME] =
                 new MultiSelectList(
-                    errorTypeList,
+                    errorTypeList.Select(e => new { ID = e.ID, Description = "P" + e.Description }),
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     hasModel
@@ -1678,7 +1682,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrendByAttribute.ErrorTypeList.NAME] =
                 new MultiSelectList(
-                    errorTypeList,
+                    errorTypeList.Select(e => new { ID = e.ID, Description = "P" + e.Description }),
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     hasModel

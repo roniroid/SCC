@@ -40,7 +40,7 @@
     <div class="sidebar close">
         <div class="logo-details">
             <!--<i class='bx bxl-c-plus-plus'></i>-->
-            <img src="~/Content/img/simple-logo.png" alt="">
+            <img src="~/Content/img/logo.png" alt="">
             <span class="logo_name"></span>
         </div>
         <ul class="nav-links">
@@ -59,7 +59,8 @@
                 actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS) ||
                 actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MASSIVELY_IMPORT_USERS) ||
                 actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS) ||
-                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CHANGE_NOTIFICATION_ALARMS)
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CHANGE_NOTIFICATION_ALARMS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS)
             )
             {
                 <li>
@@ -309,7 +310,7 @@
         <div class="home-content">
             <div class="d-inline-block">
                 <i class='bx bx-menu'></i>
-                <span class="text">SCC</span>
+                <span class="text"></span>
             </div>
             <span class="name-label">
                 @actualUser.Person.FirstName @actualUser.Person.SurName

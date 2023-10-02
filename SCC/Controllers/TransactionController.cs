@@ -1467,13 +1467,19 @@ namespace SCC.Controllers
                 {
                     if (_transactionImportErrorList != null)
                     {
-                        if (_transactionImportErrorList.Where(e => e.Type == SCC_BL.Settings.Notification.Type.INFO).Count() > 0)
+                        try
                         {
-                            _transactionImportErrorList =
-                                _transactionImportErrorList
-                                    .Where(e =>
-                                        e.Type != SCC_BL.Settings.Notification.Type.INFO)
-                                    .ToList();
+                            if (_transactionImportErrorList.Where(e => e.Type == SCC_BL.Settings.Notification.Type.INFO).Count() > 0)
+                            {
+                                _transactionImportErrorList =
+                                    _transactionImportErrorList
+                                        .Where(e =>
+                                            e.Type != SCC_BL.Settings.Notification.Type.INFO)
+                                        .ToList();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
                         }
                     }
 

@@ -817,9 +817,12 @@
                         <td>
                             @if (user.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED)
                             {
-                                <button data-elementid="@user.ID" class="btn-element-action btn-element-action-primary btn-user-edit" title="Editar">
-                                    <i class='bx bxs-pencil'></i>
-                                </button>
+                                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
+                                {
+                                    <button data-elementid="@user.ID" class="btn-element-action btn-element-action-primary btn-user-edit" title="Editar">
+                                        <i class='bx bxs-pencil'></i>
+                                    </button>
+                                }
                                 if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_USERS))
                                 {
                                     <form class="d-inline frm-activate" action="@Url.Action(nameof(UserController.Activate), mainControllerName)" method="post">

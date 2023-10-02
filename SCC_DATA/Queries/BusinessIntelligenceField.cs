@@ -41,6 +41,7 @@ namespace SCC_DATA.Queries
 					public const string PARENTBIFIELDID = "@parentBIFieldID";
 					public const string HASFORCEDCOMMENT = "@hasForcedComment";
 					public const string BASICINFOID = "@basicInfoID";
+					public const string ORDER = "@order";
 				}
 
 				public struct ResultFields

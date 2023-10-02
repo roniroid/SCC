@@ -32,7 +32,7 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public int Insert(string name, string description, int? parentBIFieldID, bool hasForcedComment, int basicInfoID)
+		public int Insert(string name, string description, int? parentBIFieldID, bool hasForcedComment, int basicInfoID, int order)
 		{
 			try
 			{
@@ -43,7 +43,8 @@ namespace SCC_DATA.Repositories
 						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.DESCRIPTION, description, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.PARENTBIFIELDID, parentBIFieldID, System.Data.SqlDbType.Int),
 						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.HASFORCEDCOMMENT, hasForcedComment, System.Data.SqlDbType.Bit),
-						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.BASICINFOID, basicInfoID, System.Data.SqlDbType.Int)
+						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.BASICINFOID, basicInfoID, System.Data.SqlDbType.Int),
+						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.ORDER, order, System.Data.SqlDbType.Int)
 					};
 
 					return

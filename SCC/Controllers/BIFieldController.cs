@@ -95,7 +95,7 @@ namespace SCC.Controllers
 
                     try
                     {
-                        response = newBIField.UpdateBIFieldChildList(childList, GetActualUser().ID);
+                        response = newBIField.UpdateBIFieldChildList(childList, newBIField, GetActualUser().ID);
                     }
                     catch (Exception ex)
                     {
@@ -138,6 +138,7 @@ namespace SCC.Controllers
                 businessIntelligenceField.Description, 
                 businessIntelligenceField.ParentBIFieldID, 
                 businessIntelligenceField.HasForcedComment, 
+                businessIntelligenceField.ID, 
                 GetActualUser().ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.CREATED);
 
@@ -163,7 +164,7 @@ namespace SCC.Controllers
 
                     try
                     {
-                        response = newBIField.UpdateBIFieldChildList(childList, GetActualUser().ID);
+                        response = newBIField.UpdateBIFieldChildList(childList, newBIField, GetActualUser().ID);
                     }
                     catch (Exception ex)
                     {

@@ -677,8 +677,9 @@
     <Content Include="Content\DataTables\SearchPanes-2.1.0\js\searchPanes.semanticui.min.js" />
     <Content Include="Content\dragula.min.css" />
     <Content Include="Content\horizontal-menu.css" />
+    <Content Include="Content\img\logo-colored-titled.png" />
+    <Content Include="Content\img\logo-titled.png" />
     <Content Include="Content\img\logo.png" />
-    <Content Include="Content\img\simple-logo.png" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
@@ -786,9 +787,9 @@
     <Content Include="Views\Form\_AttributeOptionList.cshtml" />
     <Content Include="Views\Form\UploadForm.cshtml" />
     <Content Include="Views\Form\Manage.cshtml" />
-    <Content Include="Views\BIField\Manage.cshtml" />
+    <Content Include="Views\BIField\Manage.bak.cshtml" />
     <Content Include="Views\Form\FormBinding.cshtml" />
-    <Content Include="Views\Transaction\_FormView.cshtml" />
+    <Content Include="Views\Transaction\_FormView_bf_bifield.cshtml" />
     <Content Include="Views\Transaction\Edit.cshtml" />
     <Content Include="Views\Transaction\Search.cshtml" />
     <Content Include="Views\Calibration\Search.cshtml" />
@@ -826,6 +827,8 @@
     <Content Include="Views\Report\CalibratorComparisonWithAttributesResults.cshtml" />
     <Content Include="Views\Report\_CalibratorComparisonByError.cshtml" />
     <Content Include="Views\Report\CalibratorComparisonByErrorResults.cshtml" />
+    <Content Include="Views\BIField\Manage.cshtml" />
+    <Content Include="Views\Transaction\_FormView.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

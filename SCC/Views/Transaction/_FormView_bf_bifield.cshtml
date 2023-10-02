@@ -1378,49 +1378,31 @@
             </h3>
         </div>
         <div class="bifield-container">
-            @{
-                List<BusinessIntelligenceField> parentBusinessIntelligenceFieldList = new List<BusinessIntelligenceField>();
-                List<FormBIFieldCatalog> orderedFormBIFieldCatalogList = new List<FormBIFieldCatalog>();
-
-                parentBusinessIntelligenceFieldList =
-                    Model.Form.BusinessIntelligenceFieldList
-                        .Where(w => w.ParentBIFieldID == null || w.ParentBIFieldID == 0)
-                        .ToList();
-
-                orderedFormBIFieldCatalogList =
-                    Model.Form.FormBIFieldCatalogList
-                        .Where(e => parentBusinessIntelligenceFieldList.Select(s => s.ID).Contains(e.BIFieldID))
-                        .OrderBy(e => e.Order)
-                        .ToList();
-
-                List<BusinessIntelligenceField> GetDescendants(int parentBIFieldID, List<BusinessIntelligenceField> allFields)
-                {
-                    List<BusinessIntelligenceField> descendants = new List<BusinessIntelligenceField>();
-
-                    var children = allFields.Where(field => field.ParentBIFieldID == parentBIFieldID).ToList();
-
-                    foreach (var child in children)
-                    {
-                        descendants.Add(child);
-                        descendants.AddRange(GetDescendants(child.ID, allFields));
-                    }
-
-                    return descendants;
-                }
-            }
-            @foreach (FormBIFieldCatalog formBIField in orderedFormBIFieldCatalogList)
+            @foreach (FormBIFieldCatalog formBIField in Model.Form.FormBIFieldCatalogList)
             {
                 if (!Model.Form.BusinessIntelligenceFieldList.Select(e => e.ID).Contains(formBIField.BIFieldID))
                 {
                     continue;
                 }
 
-                List<BusinessIntelligenceField> childList = new List<BusinessIntelligenceField>();
+                int spaceCounter = 0;
 
-                childList =
-                    GetDescendants(formBIField.BIFieldID, Model.Form.BusinessIntelligenceFieldList)
-                        .OrderBy(e => e.Order)
-                        .ToList();
+                SCC_BL.BusinessIntelligenceField auxBusinessIntelligenceField =
+                    Model.Form.BusinessIntelligenceFieldList
+                        .Where(e =>
+                            e.ID == formBIField.BIFieldID)
+                        .FirstOrDefault();
+
+                while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
+                {
+                    auxBusinessIntelligenceField =
+                        Model.Form.BusinessIntelligenceFieldList
+                            .Where(e =>
+                                e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value)
+                            .FirstOrDefault();
+
+                    spaceCounter++;
+                }
 
                 BusinessIntelligenceField currentBusinessIntelligenceField =
                     Model.Form.BusinessIntelligenceFieldList
@@ -1434,31 +1416,20 @@
                             e.BIFieldID == currentBusinessIntelligenceField.ID)
                         .FirstOrDefault();
 
-                <div class="
-                        row
-                        bg-secondary-light
-                        text-dark
-                        border
-                        border-secondary
-                        mt-1
-                        bifield-row
-                        @(Model.Form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == formBIField.BIFieldID).Count() == 0 ? "no-children" : string.Empty)
-                        @(currentBusinessIntelligenceField.ParentBIFieldID == null || currentBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty)
-                        @(currentBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)"
-                     data-hasforcedcomment="@currentBusinessIntelligenceField.HasForcedComment"
-                     data-basicinfoid="@currentBusinessIntelligenceField.BasicInfoID"
-                     data-bifieldid="@currentBusinessIntelligenceField.ID"
-                     data-parentbifieldid="@currentBusinessIntelligenceField.ParentBIFieldID"
-                     data-order="@formBIField.Order">
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 bifield-row @(Model.Form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == formBIField.BIFieldID).Count() == 0 ? "no-children" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID == null || currentBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)" data-hasforcedcomment="@currentBusinessIntelligenceField.HasForcedComment" data-basicinfoid="@currentBusinessIntelligenceField.BasicInfoID" data-bifieldid="@currentBusinessIntelligenceField.ID" data-parentbifieldid="@currentBusinessIntelligenceField.ParentBIFieldID" data-order="@formBIField.Order">
                     <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(currentBusinessIntelligenceField.Description) ? currentBusinessIntelligenceField.Description : currentBusinessIntelligenceField.Name)">
+                        @for (int i = 0; i < spaceCounter; i++)
+                        {
+                            <div class="bifield-marginator px-4 d-inline-block"></div>
+                        }
                         @*@if (currentBusinessIntelligenceField.ParentBIFieldID > 0)
-                    {
-                    }*@
+                        {
+                        }*@
                         <div class="d-flex justify-content-center align-content-center">
                             <input class="bifield-checked me-3" type="checkbox" value="true" @(currentTransactionBIFieldCatalog != null ? currentTransactionBIFieldCatalog.Checked ? "checked" : string.Empty : string.Empty) />
                         </div>
                         @*<span>ID-@currentBusinessIntelligenceField.ID-</span>
-                    <span>@(currentBusinessIntelligenceField.ParentBIFieldID == null || @currentBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + currentBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
+                        <span>@(currentBusinessIntelligenceField.ParentBIFieldID == null || @currentBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + currentBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
                         <span>@currentBusinessIntelligenceField.Name</span>
                     </div>
                     <div class="col-4 bifield-comment-container">
@@ -1543,144 +1514,6 @@
                         </div>
                     </div>
                 </div>
-
-                foreach (BusinessIntelligenceField childBusinessIntelligenceField in childList)
-                {
-                    int spaceCounter = 0;
-
-                    SCC_BL.BusinessIntelligenceField auxBusinessIntelligenceField = childBusinessIntelligenceField;
-
-                    while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
-                    {
-                        auxBusinessIntelligenceField =
-                            Model.Form.BusinessIntelligenceFieldList
-                                .Where(e =>
-                                    e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value)
-                                .FirstOrDefault();
-
-                        spaceCounter++;
-                    }
-
-                    TransactionBIFieldCatalog currentChildTransactionBIFieldCatalog =
-                        Model.Transaction.BIFieldList
-                            .Where(e =>
-                                e.BIFieldID == childBusinessIntelligenceField.ID)
-                            .FirstOrDefault();
-
-                    <div class="
-                        row
-                        bg-secondary-light
-                        text-dark
-                        border
-                        border-secondary
-                        mt-1
-                        bifield-row
-                        @(Model.Form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == childBusinessIntelligenceField.ID).Count() == 0 ? "no-children" : string.Empty)
-                        @(childBusinessIntelligenceField.ParentBIFieldID == null || childBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty)
-                        @(childBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)"
-                         data-hasforcedcomment="@childBusinessIntelligenceField.HasForcedComment"
-                         data-basicinfoid="@childBusinessIntelligenceField.BasicInfoID"
-                         data-bifieldid="@childBusinessIntelligenceField.ID"
-                         data-parentbifieldid="@childBusinessIntelligenceField.ParentBIFieldID"
-                         data-order="@childBusinessIntelligenceField.Order">
-                        <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(childBusinessIntelligenceField.Description) ? childBusinessIntelligenceField.Description : childBusinessIntelligenceField.Name)">
-                            @for (int i = 0; i < spaceCounter; i++)
-                            {
-                                <div class="bifield-marginator px-4 d-inline-block"></div>
-                            }
-                            @*@if (childBusinessIntelligenceField.ParentBIFieldID > 0)
-                        {
-                        }*@
-                            <div class="d-flex justify-content-center align-content-center">
-                                <input class="bifield-checked me-3" type="checkbox" value="true" @(currentChildTransactionBIFieldCatalog != null ? currentChildTransactionBIFieldCatalog.Checked ? "checked" : string.Empty : string.Empty) />
-                            </div>
-                            @*<span>ID-@childBusinessIntelligenceField.ID-</span>
-                        <span>@(childBusinessIntelligenceField.ParentBIFieldID == null || @childBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + childBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
-                            <span>@childBusinessIntelligenceField.Name</span>
-                        </div>
-                        <div class="col-4 bifield-comment-container">
-                            <div class="row property-field">
-                                @if (currentChildTransactionBIFieldCatalog != null)
-                                {
-                                    if (childBusinessIntelligenceField.HasForcedComment)
-                                    {
-                                        <div class="col-1 property-field-label button-container">
-                                            <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
-                                                <i class='bx bx-traffic-cone'></i>
-                                            </button>
-                                        </div>
-                                        <div class="col-11 comment-container">
-                                            <div class="d-flex align-items-start">
-                                                <span class="required">*</span>
-                                            </div>
-                                            <textarea class="w-100 min-w-100" rows="4" required>@currentChildTransactionBIFieldCatalog.Comment</textarea>
-                                        </div>
-                                    }
-                                    else
-                                    if (!string.IsNullOrEmpty(currentChildTransactionBIFieldCatalog.Comment))
-                                    {
-                                        <div class="col-1 property-field-label button-container">
-                                            <button class="btn-element-action btn-element-action-primary btn-bifield-comment-on d-none" title="Editar comentario">
-                                                <i class='bx bxs-message-add'></i>
-                                            </button>
-                                            <button class="btn-element-action btn-element-action-dark btn-bifield-comment-off" title="Ocultar comentario">
-                                                <i class='bx bxs-message-minus'></i>
-                                            </button>
-                                        </div>
-                                        <div class="col-11 comment-container">
-                                            <textarea class="w-100 min-w-100" rows="4">@currentChildTransactionBIFieldCatalog.Comment</textarea>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="col-1 property-field-label button-container">
-                                            <button class="btn-element-action btn-element-action-primary btn-bifield-comment-on" title="Editar comentario">
-                                                <i class='bx bxs-message-add'></i>
-                                            </button>
-                                            <button class="btn-element-action btn-element-action-dark btn-bifield-comment-off d-none" title="Ocultar comentario">
-                                                <i class='bx bxs-message-minus'></i>
-                                            </button>
-                                        </div>
-                                        <div class="col-11 comment-container d-none">
-                                            <textarea class="w-100 min-w-100" rows="4"></textarea>
-                                        </div>
-                                    }
-                                }
-                                else
-                                {
-                                    if (childBusinessIntelligenceField.HasForcedComment)
-                                    {
-                                        <div class="col-1 property-field-label button-container">
-                                            <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
-                                                <i class='bx bx-traffic-cone'></i>
-                                            </button>
-                                        </div>
-                                        <div class="col-11 comment-container">
-                                            <div class="d-flex align-items-start">
-                                                <span class="required">*</span>
-                                            </div>
-                                            <textarea class="w-100 min-w-100" rows="4" required></textarea>
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <div class="col-1 property-field-label button-container">
-                                            <button class="btn-element-action btn-element-action-primary btn-bifield-comment-on" title="Editar comentario">
-                                                <i class='bx bxs-message-add'></i>
-                                            </button>
-                                            <button class="btn-element-action btn-element-action-dark btn-bifield-comment-off d-none" title="Ocultar comentario">
-                                                <i class='bx bxs-message-minus'></i>
-                                            </button>
-                                        </div>
-                                        <div class="col-11 comment-container d-none">
-                                            <textarea class="w-100 min-w-100" rows="4"></textarea>
-                                        </div>
-                                    }
-                                }
-                            </div>
-                        </div>
-                    </div>
-                }
             }
         </div>
     </div>
