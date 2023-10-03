@@ -505,12 +505,13 @@ namespace SCC_BL
 				//Delete old ones
 				this.AttributeList
 					.ForEach(e => {
-						if (!attributeList
+                        if (!attributeList
 							.Where(w => 
 								w.ID != null && 
 								w.ID > 0)
 							.Select(s => s.ID)
 							.Contains(e.ID))
+						{
                             try
                             {
                                 e.DeleteByID();
@@ -521,24 +522,37 @@ namespace SCC_BL
                                 e.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.DELETED;
                                 e.BasicInfo.Update();
                             }
+                        }
 					});
 
 				//Update existing ones
 				List<Attribute> updatedAttributeList = new List<Attribute>();
 
 				foreach (Attribute attribute in attributeList.Where(e => e.HasChanged))
-				{
-					if (this.AttributeList.Select(e => e.ID).Contains(attribute.ID))
-					{
-						int currentBasicInfoID = 0;
+                {
+                    if (this.AttributeList.Select(e => e.ID).Contains(attribute.ID))
+                    {
+                        int currentBasicInfoID = 0;
 
 						using (Attribute auxAttribute = new Attribute(attribute.ID))
 						{
 							auxAttribute.SetDataByID();
 							currentBasicInfoID = auxAttribute.BasicInfoID;
-						}
+                        }
 
-						Attribute newAttribute = new Attribute(
+                        /*int parentID = 0;
+
+                        if (attribute.ParentAttributeGhostID >= SCC_BL.Settings.Overall.MIN_EXISTING_ATTRIBUTE_GHOST_ID)
+                        {
+                            parentID = attributeList.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID).First().ID;
+                        }
+                        else
+                        if (attribute.ParentAttributeGhostID >= SCC_BL.Settings.Overall.MIN_NON_EXISTING_ATTRIBUTE_GHOST_ID)
+                        {
+                            parentID = updatedAttributeList.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID).First().ID;
+                        }*/
+
+                        Attribute newAttribute = new Attribute(
 							attribute.ID,
 							this.ID, 
 							attribute.Name, 
@@ -556,7 +570,8 @@ namespace SCC_BL
 							creationUserID,
 							(int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.UPDATED);
 
-						int result = newAttribute.Update();
+
+                        int result = newAttribute.Update();
 
                         if (result > 0)
 						{
@@ -580,18 +595,25 @@ namespace SCC_BL
 				foreach (Attribute attribute in attributeList.Where(e => e.HasChanged))
 				{
 					if (!this.AttributeList.Select(e => e.ID).Contains(attribute.ID))
-					{
-						Attribute newAttribute = new Attribute(
+                    {
+						int parentID = 0;
+
+						if (attribute.ParentAttributeGhostID >= SCC_BL.Settings.Overall.MIN_EXISTING_ATTRIBUTE_GHOST_ID)
+						{
+							parentID = attributeList.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID).First().ID;
+						}
+                        else
+                        if (attribute.ParentAttributeGhostID >= SCC_BL.Settings.Overall.MIN_NON_EXISTING_ATTRIBUTE_GHOST_ID)
+                        {
+                            parentID = insertedAttributeList.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID).First().ID;
+                        }
+
+                        Attribute newAttribute = new Attribute(
 							this.ID, 
 							attribute.Name, 
 							attribute.Description, 
-							attribute.ErrorTypeID, 
-							attribute.ParentAttributeGhostID > 0 
-								? insertedAttributeList
-									.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID)
-									.Select(e => e.ID)
-									.FirstOrDefault()
-								: new int?(),
+							attribute.ErrorTypeID,
+                            parentID,
 							attribute.MaxScore,
 							attribute.TopDownScore,
 							attribute.HasForcedComment,
@@ -602,7 +624,7 @@ namespace SCC_BL
 							creationUserID,
 							(int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.CREATED);
 
-						int result = newAttribute.Insert();
+                        int result = newAttribute.Insert();
 
                         if (result > 0)
 						{

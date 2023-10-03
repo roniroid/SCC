@@ -112,7 +112,7 @@
                 transactionEvaluationDateAttributes.Add("placeholder", "Fecha de la evaluación");
                 transactionEvaluationDateAttributes.Add("title", "Fecha de la evaluación");
                 transactionEvaluationDateAttributes.Add("autocomplete", "off");
-                transactionEvaluationDateAttributes.Add("type", "date");
+                transactionEvaluationDateAttributes.Add("type", "datetime-local");
                 transactionEvaluationDateAttributes.Add("Value", evaluationDate.ToString("yyyy-MM-dd"));
                 transactionEvaluationDateAttributes.Add("required", "");
 
@@ -131,7 +131,7 @@
             @*if (hasModel)*@
             @if (true)
             {
-                <span>@evaluationDate.ToString("dd MMM yyyy")</span>
+                <span>@evaluationDate.ToString("dd MMM yyyy hh:mm:ss tt")</span>
             }
 
             @Html.TextBox(
@@ -153,21 +153,35 @@
                             ? Model.Transaction.TransactionDate
                             : DateTime.Now)
                         : DateTime.Now;
+
+                Dictionary<string, object> transactionTransactionDateAttributes = new Dictionary<string, object>();
+                transactionTransactionDateAttributes.Add("placeholder", "Fecha de la transacción");
+                transactionTransactionDateAttributes.Add("title", "Fecha de la transacción");
+                transactionTransactionDateAttributes.Add("autocomplete", "off");
+                transactionTransactionDateAttributes.Add("type", "datetime-local");
+                transactionTransactionDateAttributes.Add("Value", transactionDate.ToString("yyyy-MM-dd"));
+                transactionTransactionDateAttributes.Add("required", "");
+
+                if (hasModel)
+                {
+                    transactionTransactionDateAttributes.Add("class", "property-field-control d-none");
+                    transactionTransactionDateAttributes.Add("disabled", "");
+                }
+                else
+                {
+                    transactionTransactionDateAttributes.Add("class", "property-field-control");
+                }
+            }
+
+            @if (hasModel)
+            {
+                <span>@transactionDate.ToString("dd MMM yyyy hh:mm:ss tt")</span>
             }
 
             @Html.TextBox(
                 "transactionTransactionDate",
                 null,
-                new
-                {
-                    @class = "property-field-control",
-                    placeholder = "Fecha de la transacción",
-                    title = "Fecha de la transacción",
-                    autocomplete = "off",
-                    type = "date",
-                    @Value = transactionDate.ToString("yyyy-MM-dd"),
-                    required = ""
-                }
+                transactionTransactionDateAttributes
             )
         </div>
     </div>

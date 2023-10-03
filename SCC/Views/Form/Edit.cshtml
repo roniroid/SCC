@@ -553,7 +553,7 @@
                         </thead>
                         <tbody id="attributeTableBody">
                             @{
-                                int attributeCounter = 4000;
+                                int attributeCounter = SCC_BL.Settings.Overall.MIN_EXISTING_ATTRIBUTE_GHOST_ID;
                                 List<Catalog> errotTypeCatalogListTemp = SCC_BL.Attribute.GetAttributeErrorType();
                             }
 
@@ -714,7 +714,7 @@
         string jsonDefineAnswerTypeList = OverallController.Serialize(defineAnswerTypeList);
     }
 
-    let attributeCounter = 1000;
+    let attributeCounter = @SCC_BL.Settings.Overall.MIN_NON_EXISTING_ATTRIBUTE_GHOST_ID;
 
     let customFieldSelectedArray = [];
     let biFieldSelectedArray = [];
@@ -1915,19 +1915,23 @@
         return new Promise((resolve, reject) => {
             try {
                 let optionList = [];
+                let elements = $('.attribute-table-row');
 
-                $('.attribute-table-row').each((index, e) => {
-                    let attributeID = parseInt($(e).data('attributeid'));
-                    let attributeGhostID = parseInt($(e).data('attributeghostid'));
-                    let orderNumber = parseInt($(e).data('attributeorder'));
-                    let valueDeleted = $(e).data('attributedeleted') == 'True';
+                for (let i = 0; i < elements.length; i++) {
+                    let currentElement = elements[i];
+
+                    let attributeID = parseInt($(currentElement).data('attributeid'));
+                    let attributeGhostID = parseInt($(currentElement).data('attributeghostid'));
+                    //let orderNumber = parseInt($(currentElement).data('attributeorder'));
+                    let orderNumber = i + 1;
+                    let valueDeleted = $(currentElement).data('attributedeleted') == 'True';
                     let parentAttributeGhostID = 0;//Procesar
                     let parentAttributeID = 0;//Procesar
 
-                    if ($(e).find('td.td-name .attribute-container .attribute-marginator').length > 0) {
-                        let foundMarginatorCount = $(e).find('td.td-name .attribute-container .attribute-marginator').length;
+                    if ($(currentElement).find('td.td-name .attribute-container .attribute-marginator').length > 0) {
+                        let foundMarginatorCount = $(currentElement).find('td.td-name .attribute-container .attribute-marginator').length;
 
-                        let auxControl = $(e);
+                        let auxControl = $(currentElement);
                         while ($(auxControl).find('td.td-name .attribute-container .attribute-marginator').length >= foundMarginatorCount) {
                             auxControl = $(auxControl).prev();
                         }
@@ -1936,17 +1940,17 @@
                         parentAttributeID = parseInt($(auxControl).data('attributeid'));
                     }
 
-                    let name = $(e).find('td.td-name').find('input.attribute-control').first().val();
-                    let description = $(e).find('td.td-name').find('input.attribute-control').first().val();
-                    let errorType = $(e).find('td.td-error-type').find('select.attribute-control').first().val();
-                    let maxScore = $(e).find('td.td-max-score').find('input.attribute-control').first().val();
-                    let topDownScore = $(e).find('td.td-top-down-score').find('input.attribute-control').first().is(':checked');
-                    let forceComment = $(e).find('td.td-force-comment').find('input.attribute-control').first().is(':checked');
-                    let isKnown = $(e).find('td.td-is-known').find('input.attribute-control').first().is(':checked');
-                    let isControllable = $(e).find('td.td-is-controllable').find('input.attribute-control').first().is(':checked');
-                    let isScorable = $(e).find('td.td-is-scorable').find('input.attribute-control').first().is(':checked');
+                    let name = $(currentElement).find('td.td-name').find('input.attribute-control').first().val();
+                    let description = $(currentElement).find('td.td-name').find('input.attribute-control').first().val();
+                    let errorType = $(currentElement).find('td.td-error-type').find('select.attribute-control').first().val();
+                    let maxScore = $(currentElement).find('td.td-max-score').find('input.attribute-control').first().val();
+                    let topDownScore = $(currentElement).find('td.td-top-down-score').find('input.attribute-control').first().is(':checked');
+                    let forceComment = $(currentElement).find('td.td-force-comment').find('input.attribute-control').first().is(':checked');
+                    let isKnown = $(currentElement).find('td.td-is-known').find('input.attribute-control').first().is(':checked');
+                    let isControllable = $(currentElement).find('td.td-is-controllable').find('input.attribute-control').first().is(':checked');
+                    let isScorable = $(currentElement).find('td.td-is-scorable').find('input.attribute-control').first().is(':checked');
 
-                    let hasChanged = $(e).data('haschanged') == 'true';
+                    let hasChanged = $(currentElement).data('haschanged') == 'true';
 
                     if
                     (
@@ -1956,6 +1960,10 @@
                         valueDeleted != true
                     )
                     {
+                        let orderString = orderNumber.toString().padStart(5, '0');
+                        orderString = "@Model.ID" + orderString;
+                        orderNumber = parseInt(orderString);
+
                         let jsonOption =
                         {
                             "ID": attributeID,
@@ -1975,12 +1983,13 @@
                             "BasicInfoID": null,
                             "AttributeGhostID": attributeGhostID,
                             "ParentAttributeID": parentAttributeID,
-                            "HasChanged": hasChanged
+                            "HasChanged": true
+                            /*"HasChanged": hasChanged*/
                         };
 
                         optionList.push(jsonOption);
                     }
-                });
+                }
 
                 resolve(optionList);
             } catch (e) {
