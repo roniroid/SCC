@@ -768,6 +768,7 @@ namespace SCC.Controllers
                 transaction.EvaluatorUserID,
                 transaction.EvaluationDate,
                 transaction.TransactionDate,
+                DateTime.Now,
                 transaction.FormID,
                 transaction.Comment,
                 transaction.GeneralResultID,
@@ -1039,6 +1040,7 @@ namespace SCC.Controllers
                 transaction.EvaluatorUserID,
                 transaction.EvaluationDate,
                 transaction.TransactionDate,
+                transaction.LoadDate,
                 transaction.FormID,
                 transaction.Comment,
                 transaction.GeneralResultID,
@@ -2651,6 +2653,7 @@ namespace SCC.Controllers
 
             string excelFieldEvaluationDate = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.EVALUATION_DATE].ToString().Trim();
             string excelFieldTransactionDate = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.TRANSACTION_DATE].ToString().Trim();
+            string excelFieldLoadDate = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.LOAD_DATE].ToString().Trim();
 
             if (string.IsNullOrEmpty(excelFieldEvaluationDate))
             {
@@ -2676,8 +2679,21 @@ namespace SCC.Controllers
                 hasError = true;
             }
 
+            if (string.IsNullOrEmpty(excelFieldLoadDate))
+            {
+                _transactionImportErrorList.Add(
+                    new SCC_BL.Helpers.Transaction.Import.Error(
+                        transactionImportErrorElementName,
+                        SCC_BL.Results.Transaction.ImportData.ErrorList.Transaction.NO_LOAD_DATE_ENTERED,
+                        currentRowCount,
+                        (int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.LOAD_DATE));
+
+                hasError = true;
+            }
+
             DateTime evaluationDate = DateTime.Now;
             DateTime transactionDate = DateTime.Now;
+            DateTime loadDate = DateTime.Now;
 
             if (!string.IsNullOrEmpty(excelFieldEvaluationDate))
             {
@@ -2689,6 +2705,12 @@ namespace SCC.Controllers
             {
                 using (ExcelParser excelParser = new ExcelParser())
                     transactionDate = Convert.ToDateTime(excelParser.FormatDate(excelFieldTransactionDate));
+            }
+
+            if (!string.IsNullOrEmpty(excelFieldLoadDate))
+            {
+                using (ExcelParser excelParser = new ExcelParser())
+                    loadDate = Convert.ToDateTime(excelParser.FormatDate(excelFieldLoadDate));
             }
 
             string comment = row.ItemArray[(int)SCC_BL.Settings.AppValues.ExcelTasks.Transaction.ImportData.Transaction.ExcelFields.BaseInfo.COMMENT].ToString().Trim();
@@ -3167,7 +3189,35 @@ namespace SCC.Controllers
                 hasError = true;
             }
 
-            Transaction transaction = new Transaction(identifier, userToEvaluateID, evaluatorUserID, evaluationDate, transactionDate, formID, comment, generalResultID, generalFUCEResultID, generalBCEResultID, generalFCEResultID, generalNCEResultValue, accurateResultID, accurateFUCEResultID, accurateBCEResultID, accurateFCEResultID, accurateNCEResultValue, controllableResultID, controllableFUCEResultID, controllableBCEResultID, controllableFCEResultID, controllableNCEResultValue, timeElapsedValue, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION.CREATED, (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.EVALUATION, null);
+            Transaction transaction = new Transaction(
+                identifier, 
+                userToEvaluateID, 
+                evaluatorUserID, 
+                evaluationDate, 
+                transactionDate, 
+                loadDate, 
+                formID, 
+                comment, 
+                generalResultID, 
+                generalFUCEResultID, 
+                generalBCEResultID, 
+                generalFCEResultID, 
+                generalNCEResultValue, 
+                accurateResultID, 
+                accurateFUCEResultID, 
+                accurateBCEResultID, 
+                accurateFCEResultID, 
+                accurateNCEResultValue, 
+                controllableResultID, 
+                controllableFUCEResultID, 
+                controllableBCEResultID, 
+                controllableFCEResultID,
+                controllableNCEResultValue, 
+                timeElapsedValue, 
+                GetActualUser().ID, 
+                (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION.CREATED, 
+                (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.EVALUATION, 
+                null);
 
             return hasError ? null : transaction;
         }

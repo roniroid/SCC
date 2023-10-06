@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Office2016.Excel;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Office2016.Excel;
 using SCC.ViewModels;
 using SCC_BL;
 using System;
@@ -57,7 +58,7 @@ namespace SCC.Controllers
                 form.SetDataByID(true);
 
                 using (ProgramFormCatalog programFormCatalog = ProgramFormCatalog.ProgramFormCatalogWithFormID(form.ID))
-                    startDate = programFormCatalog.SelectByFormID().FirstOrDefault().StartDate;
+                    startDate = programFormCatalog.SelectByFormID().LastOrDefault().StartDate;
             }
 
             using (Form auxForm = new Form())
@@ -286,7 +287,7 @@ namespace SCC.Controllers
             for (int i = 0; i < formIDArray.Length; i++)
             {
                 Form form = new Form(formIDArray[i]);
-                form.SetDataByID();
+                form.SetDataByID(true);
 
                 List<ProgramFormCatalog> programFormCatalogList = new List<ProgramFormCatalog>();
 
@@ -320,6 +321,24 @@ namespace SCC.Controllers
             {
                 SaveProcessingInformation<SCC_BL.Results.Form.Insert.NotAllowedToCreateTemplateForms>();
                 return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+            }
+
+            SCC_BL.Results.Form.CheckNCEScore.CODE resultCheckNCEScore = SCC_BL.Results.Form.CheckNCEScore.CODE.SUCCESS;
+
+            List<SCC_BL.Attribute> nonCriticalErrorAttributes = attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).ToList();
+
+            resultCheckNCEScore = Form.CheckNCEScore(nonCriticalErrorAttributes);
+
+            switch (resultCheckNCEScore)
+            {
+                case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100:
+                    SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorLessThan100>(null, null, nonCriticalErrorAttributes);
+                    return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+                case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100:
+                    SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorGreaterThan100>(null, null, nonCriticalErrorAttributes);
+                    return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+                default:
+                    break;
             }
 
             Form newForm = new Form(form.Name, form.TypeID, form.Comment, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_FORM.CREATED);
@@ -368,6 +387,24 @@ namespace SCC.Controllers
             {
                 SaveProcessingInformation<SCC_BL.Results.Form.Insert.NotAllowedToCreateTemplateForms>();
                 return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+            }
+
+            SCC_BL.Results.Form.CheckNCEScore.CODE resultCheckNCEScore = SCC_BL.Results.Form.CheckNCEScore.CODE.SUCCESS;
+
+            List<SCC_BL.Attribute> nonCriticalErrorAttributes = attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).ToList();
+
+            resultCheckNCEScore = Form.CheckNCEScore(nonCriticalErrorAttributes);
+
+            switch (resultCheckNCEScore)
+            {
+                case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100:
+                    SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorLessThan100>(null, null, nonCriticalErrorAttributes);
+                    return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+                case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100:
+                    SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorGreaterThan100>(null, null, nonCriticalErrorAttributes);
+                    return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+                default:
+                    break;
             }
 
             Form oldForm = new Form(form.ID);
@@ -504,39 +541,76 @@ namespace SCC.Controllers
         public SCC_BL.Results.UploadedFile.FormUpload.CODE ProcessImportExcel(Form form, string filePath)
         {
             List<SCC_BL.Attribute> attributeList = new List<SCC_BL.Attribute>();
+            List<SCC_BL.AttributeValueCatalog> attributeValueCatalogList = new List<SCC_BL.AttributeValueCatalog>();
 
             using (SCC_BL.Tools.ExcelParser excelParser = new SCC_BL.Tools.ExcelParser())
             {
-                attributeList = ProcessExcelForFormUpload(form, filePath);
+                (List<SCC_BL.Attribute>, List<SCC_BL.AttributeValueCatalog>) elements = ProcessExcelForFormUpload(filePath);
+
+                attributeList = elements.Item1;
+                attributeValueCatalogList = elements.Item2;
+
+                SCC_BL.Results.Form.CheckNCEScore.CODE resultCheckNCEScore = SCC_BL.Results.Form.CheckNCEScore.CODE.SUCCESS;
+
+                List<SCC_BL.Attribute> nonCriticalErrorAttributes = attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).ToList();
+
+                resultCheckNCEScore = Form.CheckNCEScore(nonCriticalErrorAttributes);
+
+                switch (resultCheckNCEScore)
+                {
+                    case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100:
+                        SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorLessThan100>(null, null, nonCriticalErrorAttributes);
+
+                        return SCC_BL.Results.UploadedFile.FormUpload.CODE.ERROR;
+                    case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100:
+                        SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorGreaterThan100>(null, null, nonCriticalErrorAttributes);
+
+                        return SCC_BL.Results.UploadedFile.FormUpload.CODE.ERROR;
+                    default:
+                        break;
+                }
+
+                int formInsertResultCode = form.Insert();
+
+                if (formInsertResultCode <= 0)
+                {
+                    switch ((SCC_BL.Results.Form.Insert.CODE)formInsertResultCode)
+                    {
+                        case SCC_BL.Results.Form.Insert.CODE.ALREADY_EXISTS_NAME:
+                            SaveProcessingInformation<SCC_BL.Results.Form.Insert.ALREADY_EXISTS_NAME>(null, null, form);
+
+                            return SCC_BL.Results.UploadedFile.FormUpload.CODE.ERROR;
+                        case SCC_BL.Results.Form.Insert.CODE.ERROR:
+                            SaveProcessingInformation<SCC_BL.Results.Form.Insert.Error>(null, null, form);
+
+                            return SCC_BL.Results.UploadedFile.FormUpload.CODE.ERROR;
+                        default:
+                            break;
+                    }
+                }
+
+                form.SetDataByID();
+
+                attributeList
+                    .ForEach(e => {
+                        string newOrder = e.Order.ToString().PadLeft(SCC_BL.Settings.Overall.DEFAULT_ORDER_LENGTH, '0');
+                        newOrder = form.ID.ToString() + newOrder;
+                        int orderNumber = Convert.ToInt32(newOrder);
+
+                        e.FormID = form.ID;
+                        e.Order = orderNumber;
+                    });
+
+                UpdateAttributeList(form, attributeList, attributeValueCatalogList);
             }
 
             return SCC_BL.Results.UploadedFile.FormUpload.CODE.SUCCESS;
         }
 
-        public List<SCC_BL.Attribute> ProcessExcelForFormUpload(Form form, string filePath)
+        public (List<SCC_BL.Attribute>, List<SCC_BL.AttributeValueCatalog>) ProcessExcelForFormUpload(string filePath)
         {
             List<SCC_BL.Attribute> elementList = new List<SCC_BL.Attribute>();
-
-            int formInsertResultCode = form.Insert();
-
-            if (formInsertResultCode <= 0)
-            {
-                switch ((SCC_BL.Results.Form.Insert.CODE)formInsertResultCode)
-                {
-                    case SCC_BL.Results.Form.Insert.CODE.ALREADY_EXISTS_NAME:
-                        SaveProcessingInformation<SCC_BL.Results.Form.Insert.ALREADY_EXISTS_NAME>(null, null, form);
-                        break;
-                    case SCC_BL.Results.Form.Insert.CODE.ERROR:
-                        SaveProcessingInformation<SCC_BL.Results.Form.Insert.Error>(null, null, form);
-                        break;
-                    default:
-                        break;
-                }
-
-                return elementList;
-            }
-
-            form.SetDataByID();
+            List<SCC_BL.AttributeValueCatalog> attributeValueCatalogList = new List<SCC_BL.AttributeValueCatalog>();
 
             List<int> linesWithErrors = new List<int>();
 
@@ -556,23 +630,18 @@ namespace SCC.Controllers
                         SCC_BL.CustomTools.FormUploadInfo formUploadInfo = new SCC_BL.CustomTools.FormUploadInfo();
                         formUploadInfo.FillErrorTypeInfo(rows.Skip(1), headersCount);
 
-                        List<SCC_BL.Attribute> attributeList = new List<SCC_BL.Attribute>();
-                        List<SCC_BL.AttributeValueCatalog> attributeValueCatalogList = new List<SCC_BL.AttributeValueCatalog>();
-
                         using (SCC_BL.Attribute attribute = new SCC_BL.Attribute())
                         {
-                            attributeList = attribute.GetAttributeListFromExcel(rows.Skip(1), formUploadInfo, headersCount, form.ID, GetActualUser().ID);
+                            elementList = attribute.GetAttributeListFromExcel(rows.Skip(1), formUploadInfo, headersCount, GetActualUser().ID);
                         }
 
-                        foreach (SCC_BL.Attribute attribute in attributeList)
+                        foreach (SCC_BL.Attribute attribute in elementList)
                         {
                             attributeValueCatalogList =
                                 attributeValueCatalogList
                                     .Concat(attribute.ValueList)
                                     .ToList();
                         }
-
-                        UpdateAttributeList(form, attributeList, attributeValueCatalogList);
 
                         /*foreach (SCC_BL.Attribute attribute in attributeList)
                         {
@@ -617,7 +686,7 @@ namespace SCC.Controllers
                 Session[SCC_BL.Settings.AppValues.Session.ERROR_COUNT] = null;
             }
 
-            return elementList;
+            return (elementList, attributeValueCatalogList);
         }
 
         [HttpPost]

@@ -773,7 +773,7 @@ namespace SCC_BL
 			}
 		}
 
-		public List<Attribute> GetAttributeListFromExcel(IEnumerable<DocumentFormat.OpenXml.Spreadsheet.Row> rows, SCC_BL.CustomTools.FormUploadInfo formUploadInfo, int headersCount, int formID, int creationUserID)
+		public List<Attribute> GetAttributeListFromExcel(IEnumerable<DocumentFormat.OpenXml.Spreadsheet.Row> rows, SCC_BL.CustomTools.FormUploadInfo formUploadInfo, int headersCount, int creationUserID)
 		{
 			List<Attribute> attributeList = new List<Attribute>();
 
@@ -808,7 +808,18 @@ namespace SCC_BL
 					{
 						DocumentFormat.OpenXml.Spreadsheet.Cell[] auxCurrentCells = excelParser.GetRowCells(rows.ElementAt(attributeInfo.RowIndex), headersCount).ToArray();
 
-						Attribute attribute = new Attribute(auxCurrentCells, errorTypeInfo.ErrorTypeEnum, formID, attributeInfo.ColumnIndex, errorTypeInfo.DescriptionIndex, ghostIDCount, parentList.Count > 0 ? parentList.Last().AttributeGhostID : 0, order, creationUserID);
+                        Attribute attribute = new Attribute(
+							auxCurrentCells, 
+							errorTypeInfo.ErrorTypeEnum, 
+							0, 
+							attributeInfo.ColumnIndex, 
+							errorTypeInfo.DescriptionIndex, 
+							ghostIDCount, 
+							parentList.Count > 0 
+								? parentList.Last().AttributeGhostID 
+								: 0, 
+							order, 
+							creationUserID);
 
 						attributeList.Add(attribute);
 

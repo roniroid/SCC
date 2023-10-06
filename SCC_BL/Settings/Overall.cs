@@ -21,6 +21,8 @@ namespace SCC_BL.Settings
         public const string DEFAULT_PASSWORD = ".Mu5T.ch4Ng3.p455W0rD.";
         public const int DEFAULT_PASSWORD_LENGTH = 15;
 
+        public const int DEFAULT_ORDER_LENGTH = 5;
+
         public const int MIN_NON_EXISTING_ATTRIBUTE_GHOST_ID = 1000;
         public const int MIN_EXISTING_ATTRIBUTE_GHOST_ID = 4000;
 

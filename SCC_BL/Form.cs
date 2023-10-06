@@ -212,6 +212,11 @@ namespace SCC_BL
 
             using (Attribute attribute = Attribute.AttributeWithFormID(this.ID))
                 this.AttributeList = attribute.SelectHierarchyByFormID(true);
+
+			this.AttributeList =
+				this.AttributeList
+					.OrderBy(e => e.Order)
+					.ToList();
         }
 
         /*void SetAttributeList()
@@ -592,11 +597,11 @@ namespace SCC_BL
 				//Create new ones
 				List<Attribute> insertedAttributeList = new List<Attribute>();
 
-				foreach (Attribute attribute in attributeList.Where(e => e.HasChanged))
+				foreach (Attribute attribute in attributeList/*.Where(e => e.HasChanged)*/)
 				{
 					if (!this.AttributeList.Select(e => e.ID).Contains(attribute.ID))
                     {
-						int parentID = 0;
+						int? parentID = attribute.ParentAttributeID;
 
 						if (attribute.ParentAttributeGhostID >= SCC_BL.Settings.Overall.MIN_EXISTING_ATTRIBUTE_GHOST_ID)
 						{
@@ -744,6 +749,22 @@ namespace SCC_BL
 				throw ex;
 			}
 		}
+
+		public static Results.Form.CheckNCEScore.CODE CheckNCEScore(List<Attribute> attributeList)
+		{
+			Results.Form.CheckNCEScore.CODE result = Results.Form.CheckNCEScore.CODE.SUCCESS;
+
+			if (attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).Sum(e => e.MaxScore) > 100)
+			{
+				result = Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100;
+            }
+			else if (attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).Sum(e => e.MaxScore) < 100)
+            {
+                result = Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100;
+            }
+
+			return result;
+        }
 
 		public void Dispose()
 		{

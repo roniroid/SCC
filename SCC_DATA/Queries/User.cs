@@ -24,8 +24,23 @@ namespace SCC_DATA.Queries
 		}
 
 		public struct StoredProcedures
-		{
-			public struct GetEmailByUsername
+        {
+            public struct CheckExistence
+            {
+                public const string NAME = "[dbo].[usp_UserCustomCheckExistence]";
+
+                public struct Parameters
+                {
+                    public const string USERNAME = "@username";
+                }
+
+                public struct ResultFields
+                {
+                    public const string ID = "ID";
+                }
+            }
+
+            public struct GetEmailByUsername
 			{
 				public const string NAME = "[dbo].[usp_UserCustomGetEmailByUsername]";
 

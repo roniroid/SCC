@@ -91,7 +91,7 @@
 
             List<ProgramFormCatalog> programFormCatalogList = (List<ProgramFormCatalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Edit.ProgramFormList.NAME];
 
-            programID = programFormCatalogList.FirstOrDefault().ProgramID;
+            programID = programFormCatalogList.LastOrDefault().ProgramID;
 
             @:loadFormWindow(@programID);
         }

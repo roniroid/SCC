@@ -16,6 +16,7 @@ namespace SCC_BL
 		public int EvaluatorUserID { get; set; }
 		public DateTime EvaluationDate { get; set; }
 		public DateTime TransactionDate { get; set; }
+		public DateTime LoadDate { get; set; }
 		public int FormID { get; set; }
 		public string Comment { get; set; }
 
@@ -112,13 +113,42 @@ namespace SCC_BL
 		}
 
 		//For Insert
-		public Transaction(string identifier, int userToEvaluateID, int evaluatorUserID, DateTime evaluationDate, DateTime transactionDate, int formID, string comment, int generalResultID, int generalFinalUserCriticalErrorResultID, int generalBusinessCriticalErrorResultID, int generalFulfillmentCriticalErrorResultID, int generalNonCriticalErrorResult, int accurateResultID, int accurateFinalUserCriticalErrorResultID, int accurateBusinessCriticalErrorResultID, int accurateFulfillmentCriticalErrorResultID, int accurateNonCriticalErrorResult, int controllableResultID, int controllableFinalUserCriticalErrorResultID, int controllableBusinessCriticalErrorResultID, int controllableFulfillmentCriticalErrorResultID, int controllableNonCriticalErrorResult, TimeSpan timeElapsed, int creationUserID, int statusID, int typeID, int? calibratedTransactionID)
+		public Transaction(
+			string identifier, 
+			int userToEvaluateID, 
+			int evaluatorUserID, 
+			DateTime evaluationDate, 
+			DateTime transactionDate, 
+			DateTime loadDate, 
+			int formID, 
+			string comment, 
+			int generalResultID, 
+			int generalFinalUserCriticalErrorResultID, 
+			int generalBusinessCriticalErrorResultID, 
+			int generalFulfillmentCriticalErrorResultID, 
+			int generalNonCriticalErrorResult, 
+			int accurateResultID, 
+			int accurateFinalUserCriticalErrorResultID, 
+			int accurateBusinessCriticalErrorResultID, 
+			int accurateFulfillmentCriticalErrorResultID, 
+			int accurateNonCriticalErrorResult, 
+			int controllableResultID, 
+			int controllableFinalUserCriticalErrorResultID, 
+			int controllableBusinessCriticalErrorResultID, 
+			int controllableFulfillmentCriticalErrorResultID, 
+			int controllableNonCriticalErrorResult, 
+			TimeSpan timeElapsed, 
+			int creationUserID, 
+			int statusID, 
+			int typeID, 
+			int? calibratedTransactionID)
 		{
 			this.Identifier = identifier;
 			this.UserToEvaluateID = userToEvaluateID;
 			this.EvaluatorUserID = evaluatorUserID;
 			this.EvaluationDate = evaluationDate;
 			this.TransactionDate = transactionDate;
+			this.LoadDate = loadDate;
 			this.FormID = formID;
 			this.Comment = comment;
 			this.GeneralResultID = generalResultID;
@@ -144,7 +174,35 @@ namespace SCC_BL
 		}
 
 		//For Update
-		public Transaction(int id, string identifier, int userToEvaluateID, int evaluatorUserID, DateTime evaluationDate, DateTime transactionDate, int formID, string comment, int generalResultID, int generalFinalUserCriticalErrorResultID, int generalBusinessCriticalErrorResultID, int generalFulfillmentCriticalErrorResultID, int generalNonCriticalErrorResult, int accurateResultID, int accurateFinalUserCriticalErrorResultID, int accurateBusinessCriticalErrorResultID, int accurateFulfillmentCriticalErrorResultID, int accurateNonCriticalErrorResult, int controllableResultID, int controllableFinalUserCriticalErrorResultID, int controllableBusinessCriticalErrorResultID, int controllableFulfillmentCriticalErrorResultID, int controllableNonCriticalErrorResult, TimeSpan timeElapsed, int basicInfoID, int modificationUserID, int statusID)
+		public Transaction(
+			int id, 
+			string identifier, 
+			int userToEvaluateID, 
+			int evaluatorUserID, 
+			DateTime evaluationDate, 
+			DateTime transactionDate, 
+			DateTime loadDate, 
+			int formID, 
+			string comment, 
+			int generalResultID, 
+			int generalFinalUserCriticalErrorResultID, 
+			int generalBusinessCriticalErrorResultID, 
+			int generalFulfillmentCriticalErrorResultID, 
+			int generalNonCriticalErrorResult, 
+			int accurateResultID, 
+			int accurateFinalUserCriticalErrorResultID, 
+			int accurateBusinessCriticalErrorResultID, 
+			int accurateFulfillmentCriticalErrorResultID, 
+			int accurateNonCriticalErrorResult, 
+			int controllableResultID, 
+			int controllableFinalUserCriticalErrorResultID, 
+			int controllableBusinessCriticalErrorResultID, 
+			int controllableFulfillmentCriticalErrorResultID, 
+			int controllableNonCriticalErrorResult, 
+			TimeSpan timeElapsed, 
+			int basicInfoID, 
+			int modificationUserID, 
+			int statusID)
 		{
 			this.ID = id;
 			this.Identifier = identifier;
@@ -152,6 +210,7 @@ namespace SCC_BL
 			this.EvaluatorUserID = evaluatorUserID;
 			this.EvaluationDate = evaluationDate;
 			this.TransactionDate = transactionDate;
+			this.LoadDate = loadDate;
 			this.FormID = formID;
 			this.Comment = comment;
 			this.GeneralResultID = generalResultID;
@@ -175,7 +234,35 @@ namespace SCC_BL
 		}
 
 		//For SelectByID (RESULT)
-		public Transaction(int id, string identifier, int userToEvaluateID, int evaluatorUserID, DateTime evaluationDate, DateTime transactionDate, int formID, string comment, int generalResultID, int generalFinalUserCriticalErrorResultID, int generalBusinessCriticalErrorResultID, int generalFulfillmentCriticalErrorResultID, int generalNonCriticalErrorResult, int accurateResultID, int accurateFinalUserCriticalErrorResultID, int accurateBusinessCriticalErrorResultID, int accurateFulfillmentCriticalErrorResultID, int accurateNonCriticalErrorResult, int controllableResultID, int controllableFinalUserCriticalErrorResultID, int controllableBusinessCriticalErrorResultID, int controllableFulfillmentCriticalErrorResultID, int controllableNonCriticalErrorResult, TimeSpan timeElapsed, int basicInfoID, int typeID, int? calibratedTransactionID)
+		public Transaction(
+			int id, 
+			string identifier, 
+			int userToEvaluateID, 
+			int evaluatorUserID, 
+			DateTime evaluationDate, 
+			DateTime transactionDate, 
+			DateTime loadDate, 
+			int formID, 
+			string comment, 
+			int generalResultID, 
+			int generalFinalUserCriticalErrorResultID, 
+			int generalBusinessCriticalErrorResultID, 
+			int generalFulfillmentCriticalErrorResultID, 
+			int generalNonCriticalErrorResult, 
+			int accurateResultID, 
+			int accurateFinalUserCriticalErrorResultID, 
+			int accurateBusinessCriticalErrorResultID, 
+			int accurateFulfillmentCriticalErrorResultID, 
+			int accurateNonCriticalErrorResult, 
+			int controllableResultID, 
+			int controllableFinalUserCriticalErrorResultID, 
+			int controllableBusinessCriticalErrorResultID, 
+			int controllableFulfillmentCriticalErrorResultID, 
+			int controllableNonCriticalErrorResult, 
+			TimeSpan timeElapsed, 
+			int basicInfoID, 
+			int typeID, 
+			int? calibratedTransactionID)
 		{
 			this.ID = id;
 			this.Identifier = identifier;
@@ -183,6 +270,7 @@ namespace SCC_BL
 			this.EvaluatorUserID = evaluatorUserID;
 			this.EvaluationDate = evaluationDate;
 			this.TransactionDate = transactionDate;
+			this.LoadDate = loadDate;
 			this.FormID = formID;
 			this.Comment = comment;
 			this.GeneralResultID = generalResultID;
@@ -236,6 +324,7 @@ namespace SCC_BL
 				this.EvaluatorUserID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.EVALUATORUSERID]);
 				this.EvaluationDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.EVALUATIONDATE]);
 				this.TransactionDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.TRANSACTIONDATE]);
+				this.LoadDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.LOAD_DATE]);
 				this.FormID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.FORMID]);
 				this.Comment = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.COMMENT]);
 				this.GeneralResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALRESULTID]);
@@ -316,6 +405,7 @@ namespace SCC_BL
 				this.EvaluatorUserID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.EVALUATORUSERID]);
 				this.EvaluationDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.EVALUATIONDATE]);
 				this.TransactionDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.TRANSACTIONDATE]);
+				this.LoadDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.LOAD_DATE]);
 				this.FormID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.FORMID]);
 				this.Comment = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.COMMENT]);
 				this.GeneralResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALRESULTID]);
@@ -566,6 +656,7 @@ namespace SCC_BL
 				this.EvaluatorUserID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.EVALUATORUSERID]);
 				this.EvaluationDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.EVALUATIONDATE]);
 				this.TransactionDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.TRANSACTIONDATE]);
+				this.LoadDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.LOAD_DATE]);
 				this.FormID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.FORMID]);
 				this.Comment = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.COMMENT]);
 				this.GeneralResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALRESULTID]);
@@ -651,6 +742,7 @@ namespace SCC_BL
 						Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByCalibratedTransactionID.ResultFields.EVALUATORUSERID]),
 						Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByCalibratedTransactionID.ResultFields.EVALUATIONDATE]),
 						Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByCalibratedTransactionID.ResultFields.TRANSACTIONDATE]),
+						Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByCalibratedTransactionID.ResultFields.LOAD_DATE]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByCalibratedTransactionID.ResultFields.FORMID]),
 						Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByCalibratedTransactionID.ResultFields.COMMENT]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByCalibratedTransactionID.ResultFields.GENERALRESULTID]),
@@ -794,7 +886,34 @@ namespace SCC_BL
 
 			using (SCC_DATA.Repositories.Transaction repoTransaction = new SCC_DATA.Repositories.Transaction())
 			{
-				this.ID = repoTransaction.Insert(this.Identifier, this.UserToEvaluateID, this.EvaluatorUserID, this.EvaluationDate, this.TransactionDate, this.FormID, this.Comment, this.GeneralResultID, this.GeneralFinalUserCriticalErrorResultID, this.GeneralBusinessCriticalErrorResultID, this.GeneralFulfillmentCriticalErrorResultID, this.GeneralNonCriticalErrorResult, this.AccurateResultID, this.AccurateFinalUserCriticalErrorResultID, this.AccurateBusinessCriticalErrorResultID, this.AccurateFulfillmentCriticalErrorResultID, this.AccurateNonCriticalErrorResult, this.ControllableResultID, this.ControllableFinalUserCriticalErrorResultID, this.ControllableBusinessCriticalErrorResultID, this.ControllableFulfillmentCriticalErrorResultID, this.ControllableNonCriticalErrorResult, this.TimeElapsed, this.BasicInfoID, this.TypeID, this.CalibratedTransactionID);
+				this.ID = repoTransaction.Insert(
+					this.Identifier, 
+					this.UserToEvaluateID, 
+					this.EvaluatorUserID, 
+					this.EvaluationDate, 
+					this.TransactionDate, 
+					this.LoadDate, 
+					this.FormID, 
+					this.Comment, 
+					this.GeneralResultID, 
+					this.GeneralFinalUserCriticalErrorResultID, 
+					this.GeneralBusinessCriticalErrorResultID, 
+					this.GeneralFulfillmentCriticalErrorResultID, 
+					this.GeneralNonCriticalErrorResult, 
+					this.AccurateResultID, 
+					this.AccurateFinalUserCriticalErrorResultID, 
+					this.AccurateBusinessCriticalErrorResultID, 
+					this.AccurateFulfillmentCriticalErrorResultID, 
+					this.AccurateNonCriticalErrorResult, 
+					this.ControllableResultID, 
+					this.ControllableFinalUserCriticalErrorResultID, 
+					this.ControllableBusinessCriticalErrorResultID, 
+					this.ControllableFulfillmentCriticalErrorResultID, 
+					this.ControllableNonCriticalErrorResult, 
+					this.TimeElapsed, 
+					this.BasicInfoID, 
+					this.TypeID, 
+					this.CalibratedTransactionID);
 
 				return this.ID;
 			}
@@ -806,7 +925,32 @@ namespace SCC_BL
 
 			using (SCC_DATA.Repositories.Transaction repoTransaction = new SCC_DATA.Repositories.Transaction())
 			{
-				return repoTransaction.Update(this.ID, this.Identifier, this.UserToEvaluateID, this.EvaluatorUserID, this.EvaluationDate, this.TransactionDate, this.FormID, this.Comment, this.GeneralResultID, this.GeneralFinalUserCriticalErrorResultID, this.GeneralBusinessCriticalErrorResultID, this.GeneralFulfillmentCriticalErrorResultID, this.GeneralNonCriticalErrorResult, this.AccurateResultID, this.AccurateFinalUserCriticalErrorResultID, this.AccurateBusinessCriticalErrorResultID, this.AccurateFulfillmentCriticalErrorResultID, this.AccurateNonCriticalErrorResult, this.ControllableResultID, this.ControllableFinalUserCriticalErrorResultID, this.ControllableBusinessCriticalErrorResultID, this.ControllableFulfillmentCriticalErrorResultID, this.ControllableNonCriticalErrorResult, this.TimeElapsed);
+				return repoTransaction.Update(
+					this.ID, 
+					this.Identifier, 
+					this.UserToEvaluateID, 
+					this.EvaluatorUserID, 
+					this.EvaluationDate, 
+					this.TransactionDate, 
+					this.LoadDate, 
+					this.FormID, 
+					this.Comment, 
+					this.GeneralResultID, 
+					this.GeneralFinalUserCriticalErrorResultID, 
+					this.GeneralBusinessCriticalErrorResultID, 
+					this.GeneralFulfillmentCriticalErrorResultID, 
+					this.GeneralNonCriticalErrorResult, 
+					this.AccurateResultID, 
+					this.AccurateFinalUserCriticalErrorResultID, 
+					this.AccurateBusinessCriticalErrorResultID, 
+					this.AccurateFulfillmentCriticalErrorResultID, 
+					this.AccurateNonCriticalErrorResult, 
+					this.ControllableResultID, 
+					this.ControllableFinalUserCriticalErrorResultID, 
+					this.ControllableBusinessCriticalErrorResultID, 
+					this.ControllableFulfillmentCriticalErrorResultID, 
+					this.ControllableNonCriticalErrorResult, 
+					this.TimeElapsed);
 			}
 		}
 

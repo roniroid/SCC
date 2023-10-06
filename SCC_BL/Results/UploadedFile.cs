@@ -230,8 +230,12 @@ namespace SCC_BL.Results
 				public const string MESSAGE_CONTENT = "Ha ocurrido un error al encapsular los datos del usuario";
 
 				public const string CUSTOM_ERROR_EXCEL_LINES = "Se encontraron errores en las líneas:" + REPLACE_CUSTOM_CONTENT;
-				public const string CUSTOM_ERROR_USER_NOT_INSERTED = "Ocurrió un error al tratar de ingresar al usuario. La persona ingresada se eliminará del sistema.\r\nDatos del objeto: " + REPLACE_JSON_INFO;
+
+                public const string CUSTOM_ERROR_USER_NOT_UPDATED = "Ocurrió un error al tratar de ingresar al usuario. La persona ingresada se eliminará del sistema.\r\nDatos del objeto: " + REPLACE_JSON_INFO;
+                public const string CUSTOM_ERROR_USER_NOT_INSERTED = "Ocurrió un error al tratar de modificar al usuario.\r\nDatos del objeto: " + REPLACE_JSON_INFO;
+
 				public const string CUSTOM_ERROR_PERSON_NOT_INSERTED = "Ocurrió un error al tratar de ingresar a la persona.\r\nDatos del objeto: " + REPLACE_JSON_INFO;
+				public const string CUSTOM_ERROR_PERSON_NOT_UPDATED = "Ocurrió un error al tratar de modificar a la persona.\r\nDatos del objeto: " + REPLACE_JSON_INFO;
 			};
 		}
 

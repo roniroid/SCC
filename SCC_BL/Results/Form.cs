@@ -311,6 +311,63 @@ namespace SCC_BL.Results
 			};
 		}
 
+		public static class CheckNCEScore
+        {
+			public enum CODE
+			{
+				SUCCESS,
+				ERROR_LESS_THAN_100,
+                ERROR_GREATER_THAN_100
+            }
+
+			public struct Success
+			{
+				public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+				public const Notification.Type TYPE = Notification.Type.SUCCESS;
+
+				public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.INFO;
+				public const string LOCAL_LOG = "La suma de las puntuaciones de los errores no críticos es igual a 100";
+
+				public const string DATABASE_LOG = "La suma de las puntuaciones de los errores no críticos es igual a 100";
+
+				public const string MESSAGE_TITLE = "Éxito";
+				public const string MESSAGE_CONTENT = "La suma de las puntuaciones de los errores no críticos es igual a 100";
+			};
+
+			public struct ErrorGreaterThan100
+			{
+				public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+				public const Notification.Type TYPE = Notification.Type.ERROR;
+
+				public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.ERROR;
+				public const string LOCAL_LOG = "La suma de las puntuaciones de los errores no críticos es mayor a 100";
+
+				public const string DATABASE_LOG = "La suma de las puntuaciones de los errores no críticos es mayor a 100";
+
+
+                public const string MESSAGE_TITLE = "Error";
+				public const string MESSAGE_CONTENT = "La suma de las puntuaciones de los errores no críticos es mayor a 100";
+			};
+
+			public struct ErrorLessThan100
+			{
+				public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+				public const Notification.Type TYPE = Notification.Type.ERROR;
+
+				public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.ERROR;
+				public const string LOCAL_LOG = "La suma de las puntuaciones de los errores no críticos es menor a 100";
+
+				public const string DATABASE_LOG = "La suma de las puntuaciones de los errores no críticos es menor a 100";
+
+
+                public const string MESSAGE_TITLE = "Error";
+				public const string MESSAGE_CONTENT = "La suma de las puntuaciones de los errores no críticos es menor a 100";
+			};
+		}
+
 		public static class UpdateAttributeList
 		{
 			public enum CODE

@@ -24,8 +24,8 @@ namespace SCC_BL
 		public bool HasPassPermission { get; set; }
 		public DateTime LastLoginDate { get; set; }
 		public int BasicInfoID { get; set; }
-		//----------------------------------------------------
-		public BasicInfo BasicInfo { get; set; }
+        //--------------------------------------------------------------------------------------------------------
+        public BasicInfo BasicInfo { get; set; }
 		public string Token { get; set; }
 		public Person Person { get; set; }
 		public List<UserWorkspaceCatalog> UserWorkspaceCatalogList { get; set; } = new List<UserWorkspaceCatalog>();
@@ -35,11 +35,13 @@ namespace SCC_BL
 		public List<UserGroupCatalog> GroupList { get; set; } = new List<UserGroupCatalog>();
 		public List<UserProgramCatalog> ProgramList { get; set; } = new List<UserProgramCatalog>();
 		public List<UserProgramGroupCatalog> ProgramGroupList { get; set; } = new List<UserProgramGroupCatalog>();
-		//----------------------------------------------------
-		public List<Permission> TotalPermissionList { get; set; } = new List<Permission>();
+        //--------------------------------------------------------------------------------------------------------
+        public List<Permission> TotalPermissionList { get; set; } = new List<Permission>();
 		public string RawPassword { get; set; }
 		public List<Program> CurrentProgramList { get; set; } = new List<Program>();
         public List<Workspace> WorkspaceList { get; set; } = new List<Workspace>();
+		//--------------------------------------------------------------------------------------------------------
+		public int ExcelRowCount { get; set; } = 0;
 
         public User()
 		{
@@ -594,9 +596,11 @@ namespace SCC_BL
 			return true;
 		}
 
-		public User(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, int actualUserID)
-		{
-			SCC_BL.Tools.ExcelParser excelParser = new Tools.ExcelParser();
+		public User(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, int currentRowCount, int actualUserID)
+        {
+            this.ExcelRowCount = currentRowCount;
+
+            SCC_BL.Tools.ExcelParser excelParser = new Tools.ExcelParser();
 
 			string excelFieldIdentification = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.IDENTIFICATION]).ToString().Trim();
 			string excelFieldFirstName = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.FIRST_NAME]).ToString().Trim();
@@ -617,127 +621,124 @@ namespace SCC_BL
 			{
 				Person person = new Person(excelFieldIdentification);
 
-				if (person.CheckExistence() <= 0)
-				{
-					int defaultCountryID = (int)SCC_BL.DBValues.Catalog.PERSON_COUNTRY.COSTA_RICA;
+                int defaultCountryID = (int)SCC_BL.DBValues.Catalog.PERSON_COUNTRY.COSTA_RICA;
 
-					Person newPerson = new Person(excelFieldIdentification, excelFieldFirstName, excelFieldSurName, defaultCountryID, actualUserID, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
+                Person newPerson = new Person(excelFieldIdentification, excelFieldFirstName, excelFieldSurName, defaultCountryID, actualUserID, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
 
-					this.Person = newPerson;
+                this.Person = newPerson;
 
-					byte[] salt = SCC_BL.Tools.Cryptographic.GenerateSalt();
+                byte[] salt = SCC_BL.Tools.Cryptographic.GenerateSalt();
 
-					//this.RawPassword = SCC_BL.Settings.Overall.DEFAULT_PASSWORD;
-					this.RawPassword = SCC_BL.Tools.Utils.GenerateRandomString();
+                //this.RawPassword = SCC_BL.Settings.Overall.DEFAULT_PASSWORD;
+                this.RawPassword = SCC_BL.Tools.Utils.GenerateRandomString();
 
-                    byte[] hashedPassword = SCC_BL.Tools.Cryptographic.HashPasswordWithSalt(System.Text.Encoding.UTF8.GetBytes(this.RawPassword), salt);
+                byte[] hashedPassword = SCC_BL.Tools.Cryptographic.HashPasswordWithSalt(System.Text.Encoding.UTF8.GetBytes(this.RawPassword), salt);
 
-					Catalog languageCatalog = new Catalog(excelFieldLanguage);
-					languageCatalog.SetDataByDescription();
+                Catalog languageCatalog = new Catalog(excelFieldLanguage);
+                languageCatalog.SetDataByDescription();
 
-					this.Username = newPerson.Identification;
-					this.Password = hashedPassword;
-					this.Salt = salt;
-					this.Email = excelFieldEmail;
-					this.StartDate = !string.IsNullOrEmpty(excelFieldStartDate) ? Convert.ToDateTime(excelParser.FormatDate(excelFieldStartDate)) : DateTime.Now;
-					this.LanguageID = languageCatalog.ID > 0 ? languageCatalog.ID : (int)SCC_BL.DBValues.Catalog.USER_LANGUAGE.SPANISH;
-					this.HasPassPermission = SCC_BL.Settings.AppValues.POSITIVE_ANSWERS.Contains(excelFieldHasPassPermission);
-					this.LastLoginDate = DateTime.Now;
+                this.Username = newPerson.Identification;
+                this.Password = hashedPassword;
+                this.Salt = salt;
+                this.Email = excelFieldEmail;
+                this.StartDate = !string.IsNullOrEmpty(excelFieldStartDate) ? Convert.ToDateTime(excelParser.FormatDate(excelFieldStartDate)) : DateTime.Now;
+                this.LanguageID = languageCatalog.ID > 0 ? languageCatalog.ID : (int)SCC_BL.DBValues.Catalog.USER_LANGUAGE.SPANISH;
+                this.HasPassPermission = SCC_BL.Settings.AppValues.POSITIVE_ANSWERS.Contains(excelFieldHasPassPermission);
+                this.LastLoginDate = DateTime.Now;
 
-					this.BasicInfo = new BasicInfo(actualUserID, (int)SCC_BL.DBValues.Catalog.STATUS_USER.CREATED);
+                this.BasicInfo = new BasicInfo(actualUserID, (int)SCC_BL.DBValues.Catalog.STATUS_USER.CREATED);
 
-					string[] supervisorIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldSupervisor, /*Environment.NewLine*/ "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
-					string[] workspaceIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldWorkspace, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
-					string[] roleIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldRole, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
-					string[] groupIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldGroup, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
-					string[] programIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldProgram, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
+                string[] supervisorIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldSupervisor, /*Environment.NewLine*/ "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
+                string[] workspaceIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldWorkspace, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
+                string[] roleIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldRole, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
+                string[] groupIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldGroup, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
+                string[] programIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldProgram, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
 
-					List<User> supervisorList = new List<User>();
+                List<User> supervisorList = new List<User>();
 
-					using (User user = new User())
-						supervisorList =
-							user.SelectAll(true)
-								.Where(e =>
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
-									supervisorIdentifierList.Contains(e.Person.Identification))
-								.ToList();
+                using (User user = new User())
+                    supervisorList =
+                        user.SelectAll(true)
+                            .Where(e =>
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
+                                supervisorIdentifierList.Contains(e.Person.Identification))
+                            .ToList();
 
-					List<Workspace> workspaceList = new List<Workspace>();
+                List<Workspace> workspaceList = new List<Workspace>();
 
-					using (Workspace workspace = new Workspace())
-						workspaceList =
-							workspace.SelectAll()
-								.Where(e =>
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED &&
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DISABLED &&
-									workspaceIdentifierList.Contains(e.Identifier))
-								.ToList();
+                using (Workspace workspace = new Workspace())
+                    workspaceList =
+                        workspace.SelectAll()
+                            .Where(e =>
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DISABLED &&
+                                workspaceIdentifierList.Contains(e.Identifier))
+                            .ToList();
 
-					List<Role> roleList = new List<Role>();
+                List<Role> roleList = new List<Role>();
 
-					using (Role role = new Role())
-						roleList =
-							role.SelectAll()
-								.Where(e =>
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED &&
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DISABLED &&
-									roleIdentifierList.Contains(e.Identifier))
-								.ToList();
+                using (Role role = new Role())
+                    roleList =
+                        role.SelectAll()
+                            .Where(e =>
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DISABLED &&
+                                roleIdentifierList.Contains(e.Identifier))
+                            .ToList();
 
-					List<Group> groupList = new List<Group>();
+                List<Group> groupList = new List<Group>();
 
-					using (Group group = new Group())
-						groupList =
-							group.SelectAll()
-								.Where(e =>
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DELETED &&
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DISABLED &&
-									groupIdentifierList.Contains(e.Name))
-								.ToList();
+                using (Group group = new Group())
+                    groupList =
+                        group.SelectAll()
+                            .Where(e =>
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DELETED &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DISABLED &&
+                                groupIdentifierList.Contains(e.Name))
+                            .ToList();
 
-					List<Program> programList = new List<Program>();
+                List<Program> programList = new List<Program>();
 
-					using (Program program = new Program())
-						programList =
-							program.SelectAll()
-								.Where(e =>
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
-									e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED &&
-									programIdentifierList.Contains(e.Name))
-								.ToList();
+                using (Program program = new Program())
+                    programList =
+                        program.SelectAll()
+                            .Where(e =>
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED &&
+                                programIdentifierList.Contains(e.Name))
+                            .ToList();
 
-					this.SupervisorList =
-						supervisorList
-							.Select(e =>
-								new UserSupervisorCatalog(this.ID, e.ID, this.StartDate, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_SUPERVISOR_CATALOG.CREATED))
-							.ToList();
+                this.SupervisorList =
+                    supervisorList
+                        .Select(e =>
+                            new UserSupervisorCatalog(this.ID, e.ID, this.StartDate, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_SUPERVISOR_CATALOG.CREATED))
+                        .ToList();
 
-					this.UserWorkspaceCatalogList =
-						workspaceList
-							.Select(e =>
-								new UserWorkspaceCatalog(this.ID, e.ID, this.StartDate, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_WORKSPACE_CATALOG.CREATED))
-							.ToList();
+                this.UserWorkspaceCatalogList =
+                    workspaceList
+                        .Select(e =>
+                            new UserWorkspaceCatalog(this.ID, e.ID, this.StartDate, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_WORKSPACE_CATALOG.CREATED))
+                        .ToList();
 
-					this.RoleList =
-						roleList
-							.Select(e =>
-								UserRoleCatalog.UserRoleCatalogForInsert(this.ID, e.ID, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_ROLE_CATALOG.CREATED))
-							.ToList();
+                this.RoleList =
+                    roleList
+                        .Select(e =>
+                            UserRoleCatalog.UserRoleCatalogForInsert(this.ID, e.ID, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_ROLE_CATALOG.CREATED))
+                        .ToList();
 
-					this.GroupList =
-						groupList
-							.Select(e =>
-								UserGroupCatalog.UserGroupCatalogForInsert(this.ID, e.ID, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_GROUP_CATALOG.CREATED))
-							.ToList();
+                this.GroupList =
+                    groupList
+                        .Select(e =>
+                            UserGroupCatalog.UserGroupCatalogForInsert(this.ID, e.ID, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_GROUP_CATALOG.CREATED))
+                        .ToList();
 
-					this.ProgramList =
-						programList
-							.Select(e =>
-								UserProgramCatalog.UserProgramCatalogForInsert(this.ID, e.ID, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_PROGRAM_CATALOG.CREATED))
-							.ToList();
-				}
-			}
+                this.ProgramList =
+                    programList
+                        .Select(e =>
+                            UserProgramCatalog.UserProgramCatalogForInsert(this.ID, e.ID, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_PROGRAM_CATALOG.CREATED))
+                        .ToList();
+            }
 		}
 
 		public string GetEmailByUsername()
@@ -1135,7 +1136,17 @@ namespace SCC_BL
 			}
         }
 
-		public void Dispose()
+        public int CheckExistence()
+        {
+            using (SCC_DATA.Repositories.User repoUser = new SCC_DATA.Repositories.User())
+            {
+                int response = repoUser.CheckExistence(this.Username);
+
+                return response;
+            }
+        }
+
+        public void Dispose()
 		{
 		}
 

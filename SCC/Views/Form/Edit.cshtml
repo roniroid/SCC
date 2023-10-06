@@ -725,6 +725,12 @@
     let jsonDefineAnswerTypeList = [];
 
     $('#btnSubmit').click(async () => {
+        if (!validateNCEAttributeScore()) {
+            return false;
+        }
+
+        console.log("llega")
+
         await getAttributeList()
             .then((response) => {
                 attributeList = response;
@@ -735,6 +741,37 @@
 
         $('#frmForm').submit();
     });
+
+    function validateNCEAttributeScore() {
+        let result = true;
+        let elements = $('.attribute-table-row .td-max-score .attribute-max-score');
+        let sum = 0;
+
+        for (let i = 0; i < elements.length; i++) {
+            let currentValue = $(elements[i]).val();
+
+            if (currentValue == '' || currentValue == null) {
+                alert("Existen atributos de error no crítico sin puntuación máxima");
+                result = false;
+            }
+            else
+            {
+                sum += parseInt(currentValue);
+            }
+        }
+
+        if (sum < 100) {
+            alert("La suma de las puntuaciones de los atributos de error no crítico es menor a 100");
+            result = false;
+        }
+        else
+        if (sum > 100){
+            alert("La suma de las puntuaciones de los atributos de error no crítico es mayor a 100");
+            result = false;
+        }
+
+        return result;
+    }
 
     $('#btnSaveAttributeValueCatalog').click(() => {
         getAttributeOptionList()
@@ -1960,7 +1997,7 @@
                         valueDeleted != true
                     )
                     {
-                        let orderString = orderNumber.toString().padStart(5, '0');
+                        let orderString = orderNumber.toString().padStart(@SCC_BL.Settings.Overall.DEFAULT_ORDER_LENGTH, '0');
                         orderString = "@Model.ID" + orderString;
                         orderNumber = parseInt(orderString);
 

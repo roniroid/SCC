@@ -62,6 +62,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "@evaluatorUserID";
 					public const string EVALUATIONDATE = "@evaluationDate";
 					public const string TRANSACTIONDATE = "@transactionDate";
+					public const string LOAD_DATE = "@loadDate";
 					public const string FORMID = "@formID";
 					public const string COMMENT = "@comment";
 					public const string GENERALRESULTID = "@generalResultID";
@@ -108,6 +109,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "EvaluatorUserID";
 					public const string EVALUATIONDATE = "EvaluationDate";
 					public const string TRANSACTIONDATE = "TransactionDate";
+					public const string LOAD_DATE = "LoadDate";
 					public const string FORMID = "FormID";
 					public const string COMMENT = "Comment";
 					public const string GENERALRESULTID = "GeneralResultID";
@@ -164,6 +166,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "EvaluatorUserID";
 					public const string EVALUATIONDATE = "EvaluationDate";
 					public const string TRANSACTIONDATE = "TransactionDate";
+					public const string LOAD_DATE = "LoadDate";
 					public const string FORMID = "FormID";
 					public const string COMMENT = "Comment";
 					public const string GENERALRESULTID = "GeneralResultID";
@@ -205,6 +208,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "EvaluatorUserID";
 					public const string EVALUATIONDATE = "EvaluationDate";
 					public const string TRANSACTIONDATE = "TransactionDate";
+					public const string LOAD_DATE = "LoadDate";
 					public const string FORMID = "FormID";
 					public const string COMMENT = "Comment";
 					public const string GENERALRESULTID = "GeneralResultID";
@@ -241,6 +245,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "@evaluatorUserID";
 					public const string EVALUATIONDATE = "@evaluationDate";
 					public const string TRANSACTIONDATE = "@transactionDate";
+					public const string LOAD_DATE = "@loadDate";
 					public const string FORMID = "@formID";
 					public const string COMMENT = "@comment";
 					public const string GENERALRESULTID = "@generalResultID";

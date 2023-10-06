@@ -1084,7 +1084,7 @@ namespace SCC_BL.Tools
                     dataRow.Append(CreateCell(String.Join(",", transaction.TransactionLabelList.Select(e => e.Description))));
                     dataRow.Append(CreateCell(transaction.TransactionDate.ToString("dd/MM/yyyy HH:mm")));
                     dataRow.Append(CreateCell(transaction.EvaluationDate.ToString("dd/MM/yyyy HH:mm")));
-                    dataRow.Append(CreateCell(string.Empty));
+                    dataRow.Append(CreateCell(transaction.LoadDate.ToString("dd/MM/yyyy HH:mm")));
                     dataRow.Append(CreateCell(string.Empty));
                     dataRow.Append(CreateCell(string.Empty));
                     dataRow.Append(CreateCell(transaction.TimeElapsed.ToString(@"hh\:mm\:ss")));
@@ -1164,6 +1164,8 @@ namespace SCC_BL.Tools
                                     customControlType == SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA ||
                                     customControlType == SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX)
                                 {
+                                    customControlValue = currentTransactionCustomFieldCatalog.Comment;
+
                                     switch (currentCustomControl.Mask)
                                     {
                                         case SCC_BL.Settings.AppValues.Masks.Alphanumeric1.MASK:
@@ -1183,7 +1185,6 @@ namespace SCC_BL.Tools
                                         case SCC_BL.Settings.AppValues.Masks.Time1.MASK:
                                             break;
                                         default:
-                                            customControlValue = currentTransactionCustomFieldCatalog.Comment;
                                             break;
                                     }
                                 }

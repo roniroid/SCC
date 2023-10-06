@@ -32,7 +32,34 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public int Insert(string identifier, int userToEvaluateID, int evaluatorUserID, DateTime evaluationDate, DateTime transactionDate, int formID, string comment, int generalResultID, int generalFinalUserCriticalErrorResultID, int generalBusinessCriticalErrorResultID, int generalFulfillmentCriticalErrorResultID, int generalNonCriticalErrorResult, int accurateResultID, int accurateFinalUserCriticalErrorResultID, int accurateBusinessCriticalErrorResultID, int accurateFulfillmentCriticalErrorResultID, int accurateNonCriticalErrorResult, int controllableResultID, int controllableFinalUserCriticalErrorResultID, int controllableBusinessCriticalErrorResultID, int controllableFulfillmentCriticalErrorResultID, int controllableNonCriticalErrorResult, TimeSpan timeElapsed, int basicInfoID, int typeID, int? calibratedTransactionID)
+		public int Insert(
+			string identifier, 
+			int userToEvaluateID, 
+			int evaluatorUserID, 
+			DateTime evaluationDate, 
+			DateTime transactionDate, 
+			DateTime loadDate, 
+			int formID, 
+			string comment, 
+			int generalResultID, 
+			int generalFinalUserCriticalErrorResultID, 
+			int generalBusinessCriticalErrorResultID, 
+			int generalFulfillmentCriticalErrorResultID, 
+			int generalNonCriticalErrorResult, 
+			int accurateResultID, 
+			int accurateFinalUserCriticalErrorResultID, 
+			int accurateBusinessCriticalErrorResultID, 
+			int accurateFulfillmentCriticalErrorResultID, 
+			int accurateNonCriticalErrorResult, 
+			int controllableResultID, 
+			int controllableFinalUserCriticalErrorResultID, 
+			int controllableBusinessCriticalErrorResultID, 
+			int controllableFulfillmentCriticalErrorResultID, 
+			int controllableNonCriticalErrorResult, 
+			TimeSpan timeElapsed, 
+			int basicInfoID,
+			int typeID, 
+			int? calibratedTransactionID)
 		{
 			try
 			{
@@ -44,6 +71,7 @@ namespace SCC_DATA.Repositories
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Insert.Parameters.EVALUATORUSERID, evaluatorUserID, System.Data.SqlDbType.Int),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Insert.Parameters.EVALUATIONDATE, evaluationDate, System.Data.SqlDbType.DateTime),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Insert.Parameters.TRANSACTIONDATE, transactionDate, System.Data.SqlDbType.DateTime),
+						db.CreateParameter(Queries.Transaction.StoredProcedures.Insert.Parameters.LOAD_DATE, loadDate, System.Data.SqlDbType.DateTime),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Insert.Parameters.FORMID, formID, System.Data.SqlDbType.Int),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Insert.Parameters.COMMENT, comment, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Insert.Parameters.GENERALRESULTID, generalResultID, System.Data.SqlDbType.Int),
@@ -261,7 +289,32 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public int Update(int id, string identifier, int userToEvaluateID, int evaluatorUserID, DateTime evaluationDate, DateTime transactionDate, int formID, string comment, int generalResultID, int generalFinalUserCriticalErrorResultID, int generalBusinessCriticalErrorResultID, int generalFulfillmentCriticalErrorResultID, int generalNonCriticalErrorResult, int accurateResultID, int accurateFinalUserCriticalErrorResultID, int accurateBusinessCriticalErrorResultID, int accurateFulfillmentCriticalErrorResultID, int accurateNonCriticalErrorResult, int controllableResultID, int controllableFinalUserCriticalErrorResultID, int controllableBusinessCriticalErrorResultID, int controllableFulfillmentCriticalErrorResultID, int controllableNonCriticalErrorResult, TimeSpan timeElapsed)
+		public int Update(
+			int id, 
+			string identifier, 
+			int userToEvaluateID, 
+			int evaluatorUserID, 
+			DateTime evaluationDate, 
+			DateTime transactionDate, 
+			DateTime loadDate, 
+			int formID, 
+			string comment, 
+			int generalResultID, 
+			int generalFinalUserCriticalErrorResultID, 
+			int generalBusinessCriticalErrorResultID, 
+			int generalFulfillmentCriticalErrorResultID, 
+			int generalNonCriticalErrorResult, 
+			int accurateResultID, 
+			int accurateFinalUserCriticalErrorResultID, 
+			int accurateBusinessCriticalErrorResultID, 
+			int accurateFulfillmentCriticalErrorResultID, 
+			int accurateNonCriticalErrorResult, 
+			int controllableResultID, 
+			int controllableFinalUserCriticalErrorResultID, 
+			int controllableBusinessCriticalErrorResultID, 
+			int controllableFulfillmentCriticalErrorResultID, 
+			int controllableNonCriticalErrorResult, 
+			TimeSpan timeElapsed)
 		{
 			try
 			{
@@ -274,6 +327,7 @@ namespace SCC_DATA.Repositories
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Update.Parameters.EVALUATORUSERID, evaluatorUserID, System.Data.SqlDbType.Int),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Update.Parameters.EVALUATIONDATE, evaluationDate, System.Data.SqlDbType.DateTime),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Update.Parameters.TRANSACTIONDATE, transactionDate, System.Data.SqlDbType.DateTime),
+						db.CreateParameter(Queries.Transaction.StoredProcedures.Update.Parameters.LOAD_DATE, loadDate, System.Data.SqlDbType.DateTime),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Update.Parameters.FORMID, formID, System.Data.SqlDbType.Int),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Update.Parameters.COMMENT, comment, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.Transaction.StoredProcedures.Update.Parameters.GENERALRESULTID, generalResultID, System.Data.SqlDbType.Int),

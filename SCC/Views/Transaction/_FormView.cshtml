@@ -113,7 +113,7 @@
                 transactionEvaluationDateAttributes.Add("title", "Fecha de la evaluación");
                 transactionEvaluationDateAttributes.Add("autocomplete", "off");
                 transactionEvaluationDateAttributes.Add("type", "datetime-local");
-                transactionEvaluationDateAttributes.Add("Value", evaluationDate.ToString("yyyy-MM-dd"));
+                transactionEvaluationDateAttributes.Add("Value", evaluationDate.ToString("yyyy-MM-ddTHH:mm"));
                 transactionEvaluationDateAttributes.Add("required", "");
 
                 @*if (hasModel)*@
@@ -159,7 +159,7 @@
                 transactionTransactionDateAttributes.Add("title", "Fecha de la transacción");
                 transactionTransactionDateAttributes.Add("autocomplete", "off");
                 transactionTransactionDateAttributes.Add("type", "datetime-local");
-                transactionTransactionDateAttributes.Add("Value", transactionDate.ToString("yyyy-MM-dd"));
+                transactionTransactionDateAttributes.Add("Value", transactionDate.ToString("yyyy-MM-ddTHH:mm"));
                 transactionTransactionDateAttributes.Add("required", "");
 
                 if (hasModel)
@@ -3026,6 +3026,7 @@
                 "UserToEvaluateID": $('#userToEvaluate').val(),
                 "EvaluatorUserID": @Model.Transaction.EvaluatorUserID,
                 "EvaluationDate": $('#transactionEvaluationDate').val(),
+                "LoadDate": '@Model.Transaction.LoadDate.ToString("yyyy-MM-ddTHH:mm")',
                 "TransactionDate": $('#transactionTransactionDate').val(),
                 "FormID": @Model.Form.ID,
                 "Comment": $('#transactionComments').val() ? $('#transactionComments').val() : '',

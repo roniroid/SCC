@@ -1012,6 +1012,21 @@ namespace SCC_BL.Results
                 public const string MESSAGE_TITLE = "Aviso";
                 public const string MESSAGE_CONTENT = "Usted no cuenta con los permisos para crear usuarios";
             }
+
+            public struct UsernameNotSet
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.WARNING;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.INFO;
+                public const string LOCAL_LOG = "No se indicó un nombre de usuario.";
+
+                public const string DATABASE_LOG = "No se indicó un nombre de usuario.";
+
+                public const string MESSAGE_TITLE = "Error";
+                public const string MESSAGE_CONTENT = "No se indicó un nombre de usuario.";
+            }
         }
 
         public static class Delete

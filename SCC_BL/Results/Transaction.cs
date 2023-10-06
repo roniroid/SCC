@@ -839,6 +839,7 @@ namespace SCC_BL.Results
 					public const string NO_IDENTIFIER_ENTERED = "No se ha encontrado el identificador en el archivo para la " + ELEMENT_NAME;
 					public const string NO_EVALUATION_DATE_ENTERED = "No se ha encontrado la fecha de evaluación en el archivo para la " + ELEMENT_NAME;
 					public const string NO_TRANSACTION_DATE_ENTERED = "No se ha encontrado la fecha de transacción en el archivo para la " + ELEMENT_NAME;
+					public const string NO_LOAD_DATE_ENTERED = "No se ha encontrado la fecha de carga en el archivo para la " + ELEMENT_NAME;
 					public const string NO_COMMENT_ENTERED = "No se ha encontrado el comentario en el archivo para la " + ELEMENT_NAME;
 					public const string NO_TIME_ELAPSED_ENTERED = "No se ha encontrado el tiempo transcurrido en el archivo para la " + ELEMENT_NAME;
 					public const string BAD_FORMAT_TIME_ELAPSED = "Se encontró un formato erróneo en el tiempo transcurrido en el archivo para la " + ELEMENT_NAME + ". Formato correcto: {horas}:{minutos}:{segundos}";

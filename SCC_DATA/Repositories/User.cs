@@ -348,9 +348,32 @@ namespace SCC_DATA.Repositories
 			{
 				throw ex;
 			}
-		}
+        }
 
-		public void Dispose()
+        public int CheckExistence(string username)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.User.StoredProcedures.CheckExistence.Parameters.USERNAME, username, System.Data.SqlDbType.VarChar)
+                    };
+
+                    return
+                        (int)db.ReadFirstColumn(
+                            Queries.User.StoredProcedures.CheckExistence.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void Dispose()
 		{
 		}
 	}
