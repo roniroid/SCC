@@ -84,16 +84,64 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (SCC_BL.Helpers.Transaction.Import.Error error in Model.TransactionImportErrorList)
+            @if (Model.TransactionImportErrorList != null)
             {
-                <tr>
-                    <td>@error.ElementName</td>
-                    <td>@error.CellReference</td>
-                    <td>@error.RowNumber</td>
-                    <td>@error.ColumnNumber</td>
-                    <td>@error.Type</td>
-                    <td>@error.Content</td>
-                </tr>
+                if (Model.TransactionImportErrorList.Count() > 0)
+                {
+                    foreach (SCC_BL.Helpers.Transaction.Import.Error error in Model.TransactionImportErrorList)
+                    {
+                        <tr>
+                            @try
+                            {
+                                <td>@error.ElementName</td>
+                            }
+                            catch (Exception ex)
+                            {
+                                <td></td>
+                            }
+                            @try
+                            {
+                                <td>@error.CellReference</td>
+                            }
+                            catch (Exception ex)
+                            {
+                                <td></td>
+                            }
+                            @try
+                            {
+                                <td>@error.RowNumber</td>
+                            }
+                            catch (Exception ex)
+                            {
+                                <td></td>
+                            }
+                            @try
+                            {
+                                <td>@error.ColumnNumber</td>
+                            }
+                            catch (Exception ex)
+                            {
+                                <td></td>
+                            }
+                            @try
+                            {
+                                <td>@error.Type</td>
+                            }
+                            catch (Exception ex)
+                            {
+                                <td></td>
+                            }
+                            @try
+                            {
+                                <td>@error.Content</td>
+                            }
+                            catch (Exception ex)
+                            {
+                                <td></td>
+                            }
+                        </tr>
+                    }
+                }
             }
         </tbody>
     </table>

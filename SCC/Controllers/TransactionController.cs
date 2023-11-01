@@ -1276,6 +1276,14 @@ namespace SCC.Controllers
                             e.First())
                         .ToList();
 
+            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS))
+            {
+                programList =
+                    programList
+                        .Where(e => GetActualUser().CurrentProgramList.Select(s => s.ID).Contains(e.ID))
+                        .ToList();
+            }
+
             using (User user = new User())
                 userList =
                     user.SelectAll(true)
@@ -1487,17 +1495,42 @@ namespace SCC.Controllers
 
                     if (_transactionImportErrorList != null)
                     {
-                        _transactionImportErrorList =
-                            _transactionImportErrorList
-                                .OrderBy(e => e.RowNumber)
-                                .ThenBy(e => e.ColumnNumber)
-                                .ToList();
+                        try
+                        {
+                            _transactionImportErrorList =
+                                _transactionImportErrorList
+                                    .OrderBy(e => e.RowNumber)
+                                    .ThenBy(e => e.ColumnNumber)
+                                    .ToList();
+                        }
+                        catch (Exception ex)
+                        {
+                            try
+                            {
+                                _transactionImportErrorList =
+                                    _transactionImportErrorList
+                                        .OrderBy(e => e.ColumnNumber)
+                                        .ToList();
+                            }
+                            catch (Exception ex1)
+                            {
+                            }
+                        }
                     }
 
-                    _transactionImportSuccessList =
-                        _transactionImportSuccessList
-                            .OrderBy(e => e.RowIndex)
-                            .ToList();
+                    if (_transactionImportSuccessList != null)
+                    {
+                        try
+                        {
+                            _transactionImportSuccessList =
+                                _transactionImportSuccessList
+                                    .OrderBy(e => e.RowIndex)
+                                    .ToList();
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
 
                     System.Data.DataTable nonProcessedData = new System.Data.DataTable();
                     nonProcessedData = dt.Clone();

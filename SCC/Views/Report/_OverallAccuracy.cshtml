@@ -663,7 +663,9 @@
                     "BasicInfoID": 0
                 };
 
-                transactionCustomFieldList.push(transactionCustomField);
+                if ((transactionCustomField.ValueID > 0) || (transactionCustomField.Comment != '')) {
+                    transactionCustomFieldList.push(transactionCustomField);
+                }
             }
         });
 

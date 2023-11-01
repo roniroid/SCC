@@ -215,6 +215,7 @@ namespace SCC_BL
 
 			this.AttributeList =
 				this.AttributeList
+					.Where(e => e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.DELETED)
 					.OrderBy(e => e.Order)
 					.ToList();
         }

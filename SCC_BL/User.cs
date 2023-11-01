@@ -596,7 +596,7 @@ namespace SCC_BL
 			return true;
 		}
 
-		public User(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, int currentRowCount, int actualUserID)
+		public User(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, int currentRowCount, int actualUserID, List<User> allUserList, List<Workspace> allWorkspaceList, List<Role> allRoleList, List<Group> allGroupList, List<Program> allProgramList)
         {
             this.ExcelRowCount = currentRowCount;
 
@@ -656,58 +656,55 @@ namespace SCC_BL
 
                 List<User> supervisorList = new List<User>();
 
-                using (User user = new User())
-                    supervisorList =
-                        user.SelectAll(true)
-                            .Where(e =>
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
-                                supervisorIdentifierList.Contains(e.Person.Identification))
-                            .ToList();
+                supervisorList =
+                    allUserList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
+                            supervisorIdentifierList.Contains(e.Person.Identification))
+                        .ToList();
 
                 List<Workspace> workspaceList = new List<Workspace>();
 
-                using (Workspace workspace = new Workspace())
-                    workspaceList =
-                        workspace.SelectAll()
-                            .Where(e =>
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DISABLED &&
-                                workspaceIdentifierList.Contains(e.Identifier))
-                            .ToList();
+                workspaceList =
+                    allWorkspaceList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DISABLED &&
+                            (workspaceIdentifierList.Contains(e.Identifier) ||
+                            workspaceIdentifierList.Contains(e.Name)))
+                        .ToList();
 
                 List<Role> roleList = new List<Role>();
 
-                using (Role role = new Role())
-                    roleList =
-                        role.SelectAll()
-                            .Where(e =>
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DISABLED &&
-                                roleIdentifierList.Contains(e.Identifier))
-                            .ToList();
+                roleList =
+                    allRoleList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DISABLED &&
+                            (roleIdentifierList.Contains(e.Identifier) ||
+                            roleIdentifierList.Contains(e.Name)))
+                        .ToList();
 
                 List<Group> groupList = new List<Group>();
 
-                using (Group group = new Group())
-                    groupList =
-                        group.SelectAll()
-                            .Where(e =>
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DELETED &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DISABLED &&
-                                groupIdentifierList.Contains(e.Name))
-                            .ToList();
+                groupList =
+                    allGroupList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DISABLED &&
+                            groupIdentifierList.Contains(e.Name))
+                        .ToList();
 
                 List<Program> programList = new List<Program>();
 
-                using (Program program = new Program())
-                    programList =
-                        program.SelectAll()
-                            .Where(e =>
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED &&
-                                programIdentifierList.Contains(e.Name))
-                            .ToList();
+                programList =
+                    allProgramList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED &&
+                            programIdentifierList.Contains(e.Name))
+                        .ToList();
 
                 this.SupervisorList =
                     supervisorList

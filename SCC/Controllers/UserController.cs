@@ -1853,6 +1853,31 @@ namespace SCC.Controllers
         {
             List<User> elementList = new List<User>();
 
+            List<User> allUserList = new List<User>();
+
+            using (User user = new User())
+                allUserList = user.SelectAll(true);
+
+            List<Workspace> allWorkspaceList = new List<Workspace>();
+
+            using (Workspace workspace = new Workspace())
+                allWorkspaceList = workspace.SelectAll();
+
+            List<Role> allRoleList = new List<Role>();
+
+            using (Role role = new Role())
+                allRoleList = role.SelectAll();
+
+            List<Group> allGroupList = new List<Group>();
+
+            using (Group group = new Group())
+                allGroupList = group.SelectAll();
+
+            List<Program> allProgramList = new List<Program>();
+
+            using (Program program = new Program())
+                allProgramList = program.SelectAll();
+
             try
             {
                 using (SpreadsheetDocument document = SpreadsheetDocument.Open(filePath, false))
@@ -1873,7 +1898,7 @@ namespace SCC.Controllers
                             {
                                 var newRow = excelParser.GetRowCells(row, headersCount).ToArray();
 
-                                User user = new User(newRow, rowCount, GetActualUser().ID);
+                                User user = new User(newRow, rowCount, GetActualUser().ID, allUserList, allWorkspaceList, allRoleList, allGroupList, allProgramList);
 
                                 elementList.Add(user);
                             }

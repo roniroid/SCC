@@ -18,7 +18,7 @@ namespace SCC_BL
 		//----------------------------------------------------
 		public BasicInfo BasicInfo { get; set; }
 
-		public CustomField()
+        public CustomField()
 		{
 		}
 

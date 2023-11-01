@@ -33,7 +33,8 @@
             <div id="collapseOne" class="accordion-collapse collapse @(!hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
                  data-bs-parent="#accordionExample">
                 <form id="frmSubmit" action="@Url.Action(nameof(ReportController.AccuracyByAttribute), mainControllerName)" method="post" target="_blank">
-                    @Html.Hidden("TransactionCustomFieldCatalog")
+                    @Html.HiddenFor(modelItem => Model.AttributeIDArray)
+                    @Html.HiddenFor(modelItem => Model.TransactionCustomFieldCatalog)
 
                     <div class="accordion-body">
                         <div class="row d-block text-center text-danger required-advise d-none m-5">
@@ -226,8 +227,8 @@
                                 Atributos <span class="required">*</span>
                             </div>
                             <div class="col-7">
-                                @Html.DropDownListFor(modelitem =>
-                                    Model.AttributeIDArray,
+                                @Html.DropDownList(
+                                    "selectAttributeList",
                                     (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.AttributeList.NAME] as MultiSelectList),
                                     new
                                     {
@@ -500,7 +501,8 @@
             startMultiSelect('#@nameof(Model.SupervisorUserIDArray)', data);
             startMultiSelect('#@nameof(Model.EvaluatorUserIDArray)', data);
             startMultiSelect('#@nameof(Model.ErrorTypeIDArray)', data);
-            startMultiSelect('#@nameof(Model.AttributeIDArray)', data);
+            @*startMultiSelect('#@nameof(Model.AttributeIDArray)', data);*@
+            startMultiSelect('#selectAttributeList', data);
 
             startMultiSelect('.custom-control-chosen-select', data);
         });
@@ -538,7 +540,13 @@
         mustLoadAttributes = true;
     })
 
-    $('#@nameof(Model.AttributeIDArray)').on('chosen:showing_dropdown', function (event, chosen) {
+    @*$('#@nameof(Model.AttributeIDArray)').on('chosen:showing_dropdown', function (event, chosen) {
+        if (mustLoadAttributes) {
+            updateAttributeList();
+        }
+    });*@
+
+    $('#selectAttributeList').on('chosen:showing_dropdown', function (event, chosen) {
         if (mustLoadAttributes) {
             updateAttributeList();
         }
@@ -548,8 +556,10 @@
         if (
             ($('#@nameof(Model.ProgramIDArray)').val() == null || $('#@nameof(Model.ProgramIDArray)').val().length == 0) ||
             ($('#@nameof(Model.ErrorTypeIDArray)').val() == null || $('#@nameof(Model.ErrorTypeIDArray)').val().length == 0)) {
-            $('#@nameof(Model.AttributeIDArray)').html('');
-            $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");
+            @*$('#@nameof(Model.AttributeIDArray)').html('');
+            $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");*@
+            $('#selectAttributeList').html('');
+            $('#selectAttributeList').val('').trigger("chosen:updated");
             //alert('Por favor, seleccione los programas y los tipos de error para obtener los atributos');
             return false;
         }
@@ -576,13 +586,18 @@
 
         response = await response.json();
 
-        $('#@nameof(Model.AttributeIDArray)').html('');
+        @*$('#@nameof(Model.AttributeIDArray)').html('');*@
+        $('#selectAttributeList').html('');
+
+        @*for (let i = 0; i < response.length; i++) {
+            $('#@nameof(Model.AttributeIDArray)').append(`<option value="${ response[i].ID }">${ response[i].Name }</option>`);
+        }*@
 
         for (let i = 0; i < response.length; i++) {
-            $('#@nameof(Model.AttributeIDArray)').append(`<option value="${ response[i].ID }">${ response[i].Name }</option>`);
+            $('#selectAttributeList').append(`<option value="${ response[i].Item1 }">${ response[i].Item2 }</option>`);
         }
 
-        $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");
+        $('#selectAttributeList').val('').trigger("chosen:updated");
 
         //hideWaitingModal();
 
@@ -604,7 +619,8 @@
 
     $('#frmSubmit').submit((e) => {
         if (
-            ($('#@nameof(Model.AttributeIDArray)').val() == null || $('#@nameof(Model.AttributeIDArray)').val().length == 0)) {
+            @*($('#@nameof(Model.AttributeIDArray)').val() == null || $('#@nameof(Model.AttributeIDArray)').val().length == 0)) {*@
+            ($('#selectAttributeList').val() == null || $('#selectAttributeList').val().length == 0)) {
             alert('Por favor, seleccione los programas, tipos de error y atributos deseados');
             e.preventDefault();
         }
@@ -633,7 +649,8 @@
         let requiredAdviseElement = $('.required-advise');
 
         if (
-            ($('#AttributeIDArray').val() == '' || $('#AttributeIDArray').val() == null)
+            @*($('#AttributeIDArray').val() == '' || $('#AttributeIDArray').val() == null)*@
+            ($('#selectAttributeList').val() == '' || $('#selectAttributeList').val() == null)
         ) {
             e.preventDefault();
             alert('Por favor, ingrese todos los datos requeridos');
@@ -649,9 +666,18 @@
             return false;
         }
 
+        let finalAttributeList = [];
+        let auxAttributeList = $('#selectAttributeList').val();
+
+        for (var i = 0; i < auxAttributeList.length; i++) {
+            auxAttributeList[i].split(',').map(e => finalAttributeList.push(parseInt(e)));
+        }
+
+        $('#@nameof(Model.AttributeIDArray)').val(finalAttributeList);
+
         let transactionCustomFieldList = [];
         transactionCustomFieldList = await getTransactionCustomFieldCatalog();
-        $('#TransactionCustomFieldCatalog').val(JSON.stringify(transactionCustomFieldList));
+        $('#@nameof(Model.TransactionCustomFieldCatalog)').val(JSON.stringify(transactionCustomFieldList));
     });
 
     function getTransactionCustomFieldCatalog() {

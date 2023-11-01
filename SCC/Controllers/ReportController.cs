@@ -2595,7 +2595,7 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult AccuracyBySubattribute(int selectedAttributeID, string transactionIDList, int totalTransactions, bool mustBeControllable = false)
+        public ActionResult AccuracyBySubattribute(string selectedAttributeID, string transactionIDList, int totalTransactions, bool mustBeControllable = false)
         {
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyBySubattribute.IS_CONTROLLABLE] = mustBeControllable;
 
@@ -2677,7 +2677,7 @@ namespace SCC.Controllers
             return View(reportResultsParetoBIViewModel);
         }
 
-        public string AttributesByProgramAndErrorID(int[] programIDArray, int[] errorTypeIDArray)
+        /*public string AttributesByProgramAndErrorID(int[] programIDArray, int[] errorTypeIDArray)
         {
             if (programIDArray == null) return string.Empty;
             if (errorTypeIDArray == null) return string.Empty;
@@ -2696,6 +2696,39 @@ namespace SCC.Controllers
             }
 
             return Serialize(attributeList);
+        }*/
+
+        public string AttributesByProgramAndErrorID(int[] programIDArray, int[] errorTypeIDArray)
+        {
+            if (programIDArray == null) return string.Empty;
+            if (errorTypeIDArray == null) return string.Empty;
+
+            List<SCC_BL.Attribute> attributeList = new List<SCC_BL.Attribute>();
+
+            using (SCC_BL.Attribute attribute = new SCC_BL.Attribute())
+            {
+                attributeList = 
+                    attribute
+                        .SelectByProgramAndErrorTypeID(
+                            String.Join(",", programIDArray),
+                            String.Join(",", errorTypeIDArray))
+                        .OrderBy(e => e.Name)
+                        .ToList();
+            }
+
+            List<(int[], string)> newAttributeList = new List<(int[], string)>();
+
+            foreach (SCC_BL.Attribute auxAttribute in attributeList)
+            {
+                if (newAttributeList.Select(e => e.Item2).Contains(auxAttribute.Name))
+                {
+                    continue;
+                }
+
+                newAttributeList.Add((attributeList.Where(e => e.Name.Equals(auxAttribute.Name)).Select(e => e.ID).ToArray(), auxAttribute.Name));
+            }
+
+            return Serialize(newAttributeList);
         }
 
         public string BIFieldByProgramID(int[] programIDArray)

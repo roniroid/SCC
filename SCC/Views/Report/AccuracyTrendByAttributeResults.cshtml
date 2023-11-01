@@ -141,11 +141,11 @@
             </thead>
         <tbody>
             @{
-                List<int> processedAttributeID = new List<int>();
+                List<string> processedAttributeNames = new List<string>();
             }
             @foreach (SCC_BL.Reports.Results.AccuracyTrendByAttribute accuracyTrendByAttribute in Model.AccuracyTrendByAttributeResultList)
             {
-                if (!processedAttributeID.Contains(accuracyTrendByAttribute.AttributeID))
+                if (!processedAttributeNames.Contains(accuracyTrendByAttribute.AttributeName))
                 {
                     <tr>
                         <td>
@@ -158,7 +158,7 @@
                                     int successfulResultCount =
                                         accuracyTrendResult.AccuracyTrendByAttributeInPeriod
                                             .Where(e =>
-                                                e.AttributeID == accuracyTrendByAttribute.AttributeID &&
+                                                e.AttributeName.Equals(accuracyTrendByAttribute.AttributeName) &&
                                                 e.SuccessfulResult)
                                             .Count();
                                 }
@@ -176,7 +176,7 @@
                         }
                     </tr>
 
-                    processedAttributeID.Add(accuracyTrendByAttribute.AttributeID);
+                    processedAttributeNames.Add(accuracyTrendByAttribute.AttributeName);
                 }
             }
         </tbody>
@@ -251,14 +251,14 @@
         labels: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => $"\"{ e.Period.ToString("MMM dd, yyyy") }\"")))],
         datasets: [
             @{
-                processedAttributeID = new List<int>();
+                processedAttributeNames = new List<string>();
 
                 string[] colorList = new string[5]{ "rgba(117, 178, 239)", "rgba(67, 66, 71)", "rgba(137, 222, 122)", "rgba(255, 190, 113)", "rgb(128, 133, 233)" };
                 int currentColor = 0;
             }
             @foreach (SCC_BL.Reports.Results.AccuracyTrendByAttribute accuracyTrendByAttribute in Model.AccuracyTrendByAttributeResultList)
             {
-                if (processedAttributeID.Contains(accuracyTrendByAttribute.AttributeID))
+                if (processedAttributeNames.Contains(accuracyTrendByAttribute.AttributeName))
                 {
                     continue;
                 }
@@ -270,7 +270,7 @@
                     int successfulResultCount =
                         accuracyTrendResult.AccuracyTrendByAttributeInPeriod
                             .Where(e => 
-                                e.AttributeID == accuracyTrendByAttribute.AttributeID && 
+                                e.AttributeName.Equals(accuracyTrendByAttribute.AttributeName) && 
                                 e.SuccessfulResult).Count();
 
                     dataText +=
@@ -295,7 +295,7 @@
                     totalCount: @Model.TotalTransactions,*@
                 @:},
 
-                processedAttributeID.Add(accuracyTrendByAttribute.AttributeID);
+                processedAttributeNames.Add(accuracyTrendByAttribute.AttributeName);
 
                 currentColor++;
 

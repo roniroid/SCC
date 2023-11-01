@@ -19,7 +19,7 @@ namespace SCC.ViewModels
         {
         }
 
-        public ReportResultsAccuracyByAttributeViewModel(List<SCC_BL.Reports.Results.AccuracyByAttribute> accuracyByAttributeResultList, int totalTransactions)
+        /*public ReportResultsAccuracyByAttributeViewModel(List<SCC_BL.Reports.Results.AccuracyByAttribute> accuracyByAttributeResultList, int totalTransactions)
         {
             this.TotalTransactions = totalTransactions;
             this.AccuracyByAttributeResultList = accuracyByAttributeResultList;
@@ -55,6 +55,56 @@ namespace SCC.ViewModels
             public int AttributeID { get; set;}
             public string AttributeName { get; set;}
             public int Quantity { get; set;}
+        }*/
+
+        public ReportResultsAccuracyByAttributeViewModel(List<SCC_BL.Reports.Results.AccuracyByAttribute> accuracyByAttributeResultList, int totalTransactions)
+        {
+            this.TotalTransactions = totalTransactions;
+            this.AccuracyByAttributeResultList = accuracyByAttributeResultList;
+
+            this.ResultByAttributeList = new List<ResultByAttribute>();
+
+            foreach (SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult in this.AccuracyByAttributeResultList.OrderBy(e => e.AttributeName))
+            {
+                if (this.ResultByAttributeList.Select(e => e.AttributeName).Where(e => e.Equals(accuracyByAttributeResult.AttributeName)).Count() <= 0)
+                {
+                    int successfulResultCount =
+                        this.AccuracyByAttributeResultList
+                            .Where(e =>
+                                e.AttributeName == accuracyByAttributeResult.AttributeName &&
+                                e.SuccessFulResult)
+                            .Count();
+
+                    ResultByAttribute resultByAttribute = new ResultByAttribute();
+
+                    resultByAttribute.TransactionAttributeID = 
+                        this.AccuracyByAttributeResultList
+                            .Where(e => 
+                                e.AttributeName.Equals(accuracyByAttributeResult.AttributeName))
+                            .Select(e => e.TransactionAttributeID)
+                            .ToArray();
+
+                    resultByAttribute.AttributeID = 
+                        this.AccuracyByAttributeResultList
+                            .Where(e => 
+                                e.AttributeName.Equals(accuracyByAttributeResult.AttributeName))
+                            .Select(e => e.AttributeID)
+                            .ToArray();
+
+                    resultByAttribute.AttributeName = accuracyByAttributeResult.AttributeName;
+                    resultByAttribute.Quantity = successfulResultCount;
+
+                    this.ResultByAttributeList.Add(resultByAttribute);
+                }
+            }
+        }
+
+        public class ResultByAttribute
+        {
+            public int[] TransactionAttributeID { get; set; }
+            public int[] AttributeID { get; set; }
+            public string AttributeName { get; set; }
+            public int Quantity { get; set; }
         }
     }
 }

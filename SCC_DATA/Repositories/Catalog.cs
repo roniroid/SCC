@@ -101,9 +101,32 @@ namespace SCC_DATA.Repositories
 			{
 				throw ex;
 			}
-		}
+        }
 
-		public System.Data.DataTable SelectAll()
+        public System.Data.DataTable SelectByCategoryID(int? categoryID)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.Catalog.StoredProcedures.SelectByCategoryID.Parameters.CATEGORYID, categoryID, System.Data.SqlDbType.Int)
+                    };
+
+                    return
+                        db.Select(
+                            Queries.Catalog.StoredProcedures.SelectByCategoryID.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public System.Data.DataTable SelectAll()
 		{
 			try
 			{
@@ -112,29 +135,6 @@ namespace SCC_DATA.Repositories
 					return
 						db.Select(
 							Queries.Catalog.StoredProcedures.SelectAll.NAME
-						);
-				}
-			}
-			catch (Exception ex)
-			{
-				throw ex;
-			}
-		}
-
-		public System.Data.DataTable SelectByCategoryID(int? categoryID)
-		{
-			try
-			{
-				using (DBDriver db = new DBDriver())
-				{
-					SqlParameter[] parameters = new SqlParameter[] {
-						db.CreateParameter(Queries.Catalog.StoredProcedures.SelectByCategoryID.Parameters.CATEGORYID, categoryID, System.Data.SqlDbType.Int)
-					};
-
-					return
-						db.Select(
-							Queries.Catalog.StoredProcedures.SelectByCategoryID.NAME,
-							parameters
 						);
 				}
 			}

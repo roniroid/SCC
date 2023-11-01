@@ -38,6 +38,11 @@
     <div class="row d-block text-center m-5">
         <h3>
             Detalles del monitoreo
+            <br />
+            @if (hasModel)
+            {
+                <button class="h6 p-1 d-none" id="generate-pdf">Exportar a PDF</button>
+            }
         </h3>
         <p><b>Programa: </b>@Model.Form.ProgramName</p>
     </div>
@@ -1281,7 +1286,7 @@
 
                 TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
 
-                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : "has-children") @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? string.Empty : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
                     <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
                         @for (int i = 0; i < spaceCounter; i++)
                         {
@@ -1294,7 +1299,10 @@
                     </div>
                     <div class="col-1 d-flex align-items-center attribute-value-container text-center">
                         <input class="attribute-property-field-control attribute-nce text-center d-none" min="0" max="@attribute.MaxScore" title="Escriba un valor" type="number" name="name" value="@(currentTransactionAttributeCatalog != null ? /*currentTransactionAttributeCatalog.ScoreValue*/ attribute.MaxScore : attribute.MaxScore)" disabled />
-                        <b><i>@attribute.MaxScore pts</i></b>
+                        @if (Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0)
+                        {
+                            <b><i>@attribute.MaxScore pts</i></b>
+                        }
                         <!--Agregar controles y funcionalidades de max score-->
                     </div>
                     <div class="col-4 attribute-comment-container">
@@ -1898,7 +1906,7 @@
         </div>
     </div>
 </div>
-
+<script src="~/Scripts/html2pdf_0.9.2.bundle.min.js"></script>
 <script>
     let loadedData = false;
 
@@ -2005,6 +2013,33 @@
 
         LoadTransactionCommentaries();
     });
+
+    const hasModel = @hasModel.ToString().ToLower();
+
+    if (hasModel) {
+        document.getElementById('generate-pdf').addEventListener('click', function () {
+            const element = document.body; // You can change this to the specific element you want to convert to PDF
+
+            // Define the PDF options
+            const options = {
+                margin: 10,
+                filename: 'webpage.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Use html2pdf.js to generate the PDF
+            html2pdf()
+                .from(element)
+                .set(options)
+                .outputPdf()
+                .then(function (pdf) {
+                    // Save the PDF or display it in a new window
+                    pdf.save();
+                });
+        });
+    }
 
     function LoadTransactionCommentaries() {
         console.log('@Request["hasDisputation"]');
@@ -2644,7 +2679,7 @@
         let accurateNceMinimumScore = @SCC_BL.Settings.AppValues.TRANSACTION_MINIMUM_NCE_SCORE;
         let accurateNceFailAttributeCount = 0;
 
-        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].level-zero-attribute');
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].no-children');
 
         if (elements.length <= 0) return result;
 
@@ -2804,7 +2839,7 @@
         let controllableNceMinimumScore = @SCC_BL.Settings.AppValues.TRANSACTION_MINIMUM_NCE_SCORE;
         let controllableNceFailAttributeCount = 0;
 
-        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].level-zero-attribute');
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].no-children');
 
         if (elements.length <= 0) return result;
 

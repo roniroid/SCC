@@ -155,7 +155,7 @@
                 Model.OrderHelperList
                     .ForEach(e =>
                     {
-                        totalCumulativeSum += Model.AccuracyBySubattributeResultList.Where(f => f.AttributeName.Equals(e.AttributeName) && !f.SuccessfulResult).Count();
+                        totalCumulativeSum += Model.AccuracyBySubattributeResultList.Where(f => f.AttributeID == e.AttributeID && !f.SuccessfulResult).Count();
                     });
             }
 
@@ -164,11 +164,11 @@
                 SCC_BL.Reports.Results.AccuracyBySubattribute accuracyBySubattributeResult =
                     Model.AccuracyBySubattributeResultList
                         .Where(e =>
-                            e.AttributeName.Equals(orderHelper.AttributeName))
+                            e.AttributeID == orderHelper.AttributeID)
                         .FirstOrDefault();
 
-                int successfulResultCount = Model.AccuracyBySubattributeResultList.Where(e => e.AttributeName.Equals(accuracyBySubattributeResult.AttributeName) && e.SuccessfulResult).Count();
-                int failResultCount = Model.AccuracyBySubattributeResultList.Where(e => e.AttributeName.Equals(accuracyBySubattributeResult.AttributeName) && !e.SuccessfulResult).Count();
+                int successfulResultCount = Model.AccuracyBySubattributeResultList.Where(e => e.AttributeID == accuracyBySubattributeResult.AttributeID && e.SuccessfulResult).Count();
+                int failResultCount = Model.AccuracyBySubattributeResultList.Where(e => e.AttributeID == accuracyBySubattributeResult.AttributeID && !e.SuccessfulResult).Count();
 
                 string errorType = string.Empty;
                 currentCumulativeAmount = currentCumulativeAmount + ((Convert.ToDecimal(successfulResultCount) / Model.TotalTransactions) * 100);
@@ -335,12 +335,6 @@
             Model.ResultBySubattributeList
                 .OrderByDescending(e => e.Quantity)
                 .ToList();
-
-        string currentAttributeIDArray = string.Empty;
-        string currentTransactionAttributeIDArray = string.Empty;
-
-        currentAttributeIDArray = String.Join(",", Model.ResultBySubattributeList.Select(e => "[" + String.Join(",", e.AttributeID) + "]"));
-        currentTransactionAttributeIDArray = String.Join(",", Model.ResultBySubattributeList.Select(e => "[" + String.Join(",", e.TransactionAttributeID) + "]"));
     }
 
     const DATA_POINTS = [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))];
@@ -384,7 +378,7 @@
                 yAxisID: 'y1',
                 customData: {
                     successCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
-                    transactionAttributeIDList: [@currentTransactionAttributeIDArray],
+                    transactionAttributeIDList: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.TransactionAttributeID))],
                     totalCount: @Model.TotalTransactions,
                 }
             },{
@@ -403,9 +397,13 @@
                     hasChildren: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.HasChildren.ToString().ToLower()))],
                     successCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
                     failCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
+                    transactionAttributeIDList: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.TransactionAttributeID))],
                     totalCount: @failTotalResultCount,
-                    currentAttributeID: [@currentAttributeIDArray],
-                    transactionAttributeIDList: [@currentTransactionAttributeIDArray],
+                    currentAttributeID: [
+                        @String.Join(
+                            ",",
+                            resultBySubattributeListForGraph
+                                .Select(e => e.AttributeID))],
                 }
             }
         ]
@@ -627,15 +625,13 @@
 
             if (hasChildren) {
                 const selectedAttributeID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
-                const selectedTransactionAttributeID = myChart.data.datasets[datasetIndex].customData.transactionAttributeIDList[dataIndex];
 
                 const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
 
                 const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
 
-                $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedAttributeID.join() + '" /> ');
-                $($form).append('<input type="hidden" name="transactionIDList" value="' + selectedTransactionAttributeID.join() + '" /> ');
-                @*$($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyBySubattributeResultList.Select(e => e.TransactionAttributeID))" /> ');*@
+                $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedAttributeID + '" /> ');
+                $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyBySubattributeResultList.Select(e => e.TransactionAttributeID))" /> ');
                 $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
                 $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');
 

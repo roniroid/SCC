@@ -215,7 +215,7 @@ namespace SCC.Controllers
             List<Catalog> catalogCalibrationTypeList = new List<Catalog>();
             List<Transaction> transactionList = new List<Transaction>();
 
-            using (User user = new User())
+            /*using (User user = new User())
             {
                 expertUserList.AddRange(
                     user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.MONITOR, true)
@@ -248,9 +248,60 @@ namespace SCC.Controllers
                         .Select(e =>
                             e.First())
                         .ToList();
+            }*/
+
+            List<Role> calibratorRoleList = new List<Role>();
+
+            using (Role auxRole = new Role())
+                calibratorRoleList = auxRole.SelectAll();
+
+            calibratorRoleList =
+                calibratorRoleList
+                    .Where(e => 
+                        e.PermissionList
+                            .Select(s => s.PermissionID)
+                            .Contains((int)SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
+                    .ToList();
+
+            foreach (Role auxRole in calibratorRoleList)
+            {
+                using (User user = new User())
+                {
+                    calibratorUserList.AddRange(
+                        user.SelectByRoleID(auxRole.ID, true)
+                            .Where(e =>
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
+                                !calibratorUserList.Select(s => s.ID).Contains(e.ID))
+                            .ToList());
+
+                    expertUserList.AddRange(
+                        user.SelectByRoleID(auxRole.ID, true)
+                            .Where(e =>
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
+                                !expertUserList.Select(s => s.ID).Contains(e.ID))
+                            .ToList());
+                }
             }
 
-            using (User user = new User())
+            calibratorUserList =
+                calibratorUserList
+                    .GroupBy(e =>
+                        e.ID)
+                    .Select(e =>
+                        e.First())
+                    .ToList();
+
+            expertUserList =
+                expertUserList
+                    .GroupBy(e =>
+                        e.ID)
+                    .Select(e =>
+                        e.First())
+                    .ToList();
+
+            /*using (User user = new User())
             {
                 calibratorUserList.AddRange(
                     user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.CALIBRATOR, true)
@@ -291,7 +342,7 @@ namespace SCC.Controllers
                         .Select(e =>
                             e.First())
                         .ToList();
-            }
+            }*/
 
             using (Group group = new Group())
                 calibratorUserGroupList =
@@ -789,6 +840,14 @@ namespace SCC.Controllers
                         .Select(e =>
                             e.First())
                         .ToList();
+
+            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS))
+            {
+                programList =
+                    programList
+                        .Where(e => GetActualUser().CurrentProgramList.Select(s => s.ID).Contains(e.ID))
+                        .ToList();
+            }
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Search.StringTypeID.NAME] =
                 new SelectList(

@@ -18,8 +18,10 @@ namespace SCC_BL
 		public int BasicInfoID { get; set; }
 		//----------------------------------------------------
 		public BasicInfo BasicInfo { get; set; }
+		//----------------------------------------------------
+		public CustomField CustomField { get; set; } = null;
 
-		public TransactionCustomFieldCatalog()
+        public TransactionCustomFieldCatalog()
 		{
 		}
 
@@ -170,6 +172,15 @@ namespace SCC_BL
 				return repoTransactionCustomFieldCatalog.Update(this.ID, this.TransactionID, this.CustomFieldID, this.Comment, this.ValueID);
 			}
 		}
+
+		public void SetCustomField()
+        {
+            using (CustomField customField = new CustomField(this.CustomFieldID))
+            {
+                customField.SetDataByID();
+                this.CustomField = customField;
+            }
+        }
 
 		public void Dispose()
 		{

@@ -605,17 +605,17 @@
                                             }
                                             @if (attribute.ErrorTypeID != (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
                                             {
-                                                <span class="attribute-taker-out">
-                                                    <button class="btn-element-action btn-element-action-secondary btn-attribute-taker-out" title="Sacar">
-                                                        <i class='bx bxs-left-arrow'></i>
-                                                    </button>
-                                                </span>
-                                                <span class="attribute-tabber">
-                                                    <button class="btn-element-action btn-element-action-secondary btn-attribute-tabber" title="Anidar">
-                                                        <i class='bx bxs-right-arrow'></i>
-                                                    </button>
-                                                </span>
                                             }
+                                            <span class="attribute-taker-out">
+                                                <button class="btn-element-action btn-element-action-secondary btn-attribute-taker-out" title="Sacar">
+                                                    <i class='bx bxs-left-arrow'></i>
+                                                </button>
+                                            </span>
+                                            <span class="attribute-tabber">
+                                                <button class="btn-element-action btn-element-action-secondary btn-attribute-tabber" title="Anidar">
+                                                    <i class='bx bxs-right-arrow'></i>
+                                                </button>
+                                            </span>
                                             <span class="attribute-climb-up">
                                                 <button class="btn-element-action btn-element-action-secondary btn-attribute-climb-up" title="Subir">
                                                     <i class='bx bxs-up-arrow'></i>
@@ -725,11 +725,9 @@
     let jsonDefineAnswerTypeList = [];
 
     $('#btnSubmit').click(async () => {
-        if (!validateNCEAttributeScore()) {
+        /*if (!validateNCEAttributeScore()) {
             return false;
-        }
-
-        console.log("llega")
+        }*/
 
         await getAttributeList()
             .then((response) => {
@@ -744,30 +742,36 @@
 
     function validateNCEAttributeScore() {
         let result = true;
-        let elements = $('.attribute-table-row .td-max-score .attribute-max-score');
-        let sum = 0;
+        let elements = $('.attribute-table-row');
 
-        for (let i = 0; i < elements.length; i++) {
-            let currentValue = $(elements[i]).val();
+        elements = elements.filter(e => $(e).find('.select-error-type-select').val() == @SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE);
 
-            if (currentValue == '' || currentValue == null) {
-                alert("Existen atributos de error no crítico sin puntuación máxima");
+        if (elements.length > 0) {
+            elements = $(elements).find('.td-max-score .attribute-max-score');
+
+            let sum = 0;
+
+            for (let i = 0; i < elements.length; i++) {
+                let currentValue = $(elements[i]).val();
+
+                if (currentValue == '' || currentValue == null) {
+                    alert("Existen atributos de error no crítico sin puntuación máxima");
+                    result = false;
+                }
+                else {
+                    sum += parseInt(currentValue);
+                }
+            }
+
+            if (sum < 100) {
+                alert("La suma de las puntuaciones de los atributos de error no crítico es menor a 100");
                 result = false;
             }
             else
-            {
-                sum += parseInt(currentValue);
-            }
-        }
-
-        if (sum < 100) {
-            alert("La suma de las puntuaciones de los atributos de error no crítico es menor a 100");
-            result = false;
-        }
-        else
-        if (sum > 100){
-            alert("La suma de las puntuaciones de los atributos de error no crítico es mayor a 100");
-            result = false;
+                if (sum > 100) {
+                    alert("La suma de las puntuaciones de los atributos de error no crítico es mayor a 100");
+                    result = false;
+                }
         }
 
         return result;

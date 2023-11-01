@@ -180,6 +180,12 @@
                     'Mostrar sólo activos'
                 );
 
+            toolbarControls +=
+                getControlForToolbar(
+                    '<div class="radio-control d-inline-block"><input label="NO" name="filterBoundForms" onchange="onChangeFilterBoundFormsEvent(this);" type="radio" value="false" @(Request["filterBoundForms"] == null || Request["filterBoundForms"] == "false" ? "checked" : string.Empty ) /><input label="SI" name="filterBoundForms" onchange="onChangeFilterBoundFormsEvent(this);" type="radio" value="true" @(Request["filterBoundForms"] == "true" ? "checked" : string.Empty ) /></div>',
+                    'Mostrar sólo asignados'
+                );
+
             $('div.toolbar').html(toolbarControls);
         });
 
@@ -206,20 +212,34 @@
     }
 
     function onChangefilterActiveElementsEvent(element) {
-        let url = '@Url.Action(nameof(ProgramController.Manage), mainControllerName)';
+        let url = '@Html.Raw(Url.Action(nameof(FormController.Manage), mainControllerName, new { filterBoundForms = Request["filterBoundForms"] == "true" ? "true" : "false", filterActiveElements = Request["filterActiveElements"] == "true" ? "true" : "false" }, Request.Url.Scheme))';
 
-        if (element.value == 'true') {
-            url += '?filterActiveElements=' + element.value;
+        let urlObject = new URL(url);
+
+        urlObject.searchParams.set('filterActiveElements', (element.value == 'true').toString().toLowerCase());
+
+        let modifiedUrl = urlObject.toString();
+
+        let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+
+        if (confirm(message) == true) {
+            window.open(modifiedUrl, '_self');
         }
+    }
 
-        if ($('#identification').val()) {
-            let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+    function onChangeFilterBoundFormsEvent(element) {
+        let url = '@Html.Raw(Url.Action(nameof(FormController.Manage), mainControllerName, new { filterBoundForms = Request["filterBoundForms"] == "true" ? "true" : "false", filterActiveElements = Request["filterActiveElements"] == "true" ? "true" : "false" }, Request.Url.Scheme))';
 
-            if (confirm(message) == true) {
-                window.open(url, '_self');
-            }
-        } else {
-            window.open(url, '_self');
+        let urlObject = new URL(url);
+
+        urlObject.searchParams.set('filterBoundForms', (element.value == 'true').toString().toLowerCase());
+
+        let modifiedUrl = urlObject.toString();
+
+        let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+
+        if (confirm(message) == true) {
+            window.open(modifiedUrl, '_self');
         }
     }
 

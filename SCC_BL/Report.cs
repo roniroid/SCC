@@ -337,7 +337,7 @@ namespace SCC_BL
 			return accuracyTrendByAttributeResultList;
 		}
 		
-		public List<SCC_BL.Reports.Results.AccuracyBySubattribute> AccuracyBySubattribute(int selectedAttributeID, string transactionAttributeIDList, bool mustBeControllable)
+		public List<SCC_BL.Reports.Results.AccuracyBySubattribute> AccuracyBySubattribute(string selectedAttributeID, string transactionAttributeIDList, bool mustBeControllable)
 		{
 			List<SCC_BL.Reports.Results.AccuracyBySubattribute> accuracyBySubattributeResultList = new List<SCC_BL.Reports.Results.AccuracyBySubattribute>();
 

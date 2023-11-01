@@ -14,7 +14,7 @@ namespace SCC.Controllers
     {
         string _mainControllerName = GetControllerName(typeof(FormController));
 
-        public ActionResult Manage(bool filterActiveElements = false)
+        public ActionResult Manage(bool filterActiveElements = false, bool filterBoundForms = false)
         {
             List<Form> formList = new List<Form>();
             List<Catalog> formTypeList = new List<Catalog>();
@@ -27,6 +27,13 @@ namespace SCC.Controllers
             using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.FORM_TYPE))
                 formTypeList = catalog.SelectByCategoryID();
 
+            List<ProgramFormCatalog> programFormCatalogList = new List<ProgramFormCatalog>();
+
+            using (ProgramFormCatalog programFormCatalog = new ProgramFormCatalog())
+            {
+                programFormCatalogList = programFormCatalog.SelectAll();
+            }
+
             ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Manage.AllTypeList.NAME] = formTypeList;
 
             if (filterActiveElements)
@@ -35,6 +42,15 @@ namespace SCC.Controllers
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_FORM.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_FORM.DISABLED)
+                        .ToList();
+
+            if (filterBoundForms)
+                formList =
+                    formList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_FORM.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_FORM.DISABLED &&
+                            programFormCatalogList.Select(s => s.FormID).Contains(e.ID))
                         .ToList();
 
             return View(formList);
@@ -323,22 +339,25 @@ namespace SCC.Controllers
                 return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
             }
 
-            SCC_BL.Results.Form.CheckNCEScore.CODE resultCheckNCEScore = SCC_BL.Results.Form.CheckNCEScore.CODE.SUCCESS;
-
             List<SCC_BL.Attribute> nonCriticalErrorAttributes = attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).ToList();
 
-            resultCheckNCEScore = Form.CheckNCEScore(nonCriticalErrorAttributes);
-
-            switch (resultCheckNCEScore)
+            if (nonCriticalErrorAttributes.Count() > 0)
             {
-                case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100:
-                    SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorLessThan100>(null, null, nonCriticalErrorAttributes);
-                    return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
-                case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100:
-                    SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorGreaterThan100>(null, null, nonCriticalErrorAttributes);
-                    return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
-                default:
-                    break;
+                SCC_BL.Results.Form.CheckNCEScore.CODE resultCheckNCEScore = SCC_BL.Results.Form.CheckNCEScore.CODE.SUCCESS;
+
+                resultCheckNCEScore = Form.CheckNCEScore(nonCriticalErrorAttributes);
+
+                switch (resultCheckNCEScore)
+                {
+                    case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100:
+                        SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorLessThan100>(null, null, nonCriticalErrorAttributes);
+                        return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+                    case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100:
+                        SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorGreaterThan100>(null, null, nonCriticalErrorAttributes);
+                        return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+                    default:
+                        break;
+                }
             }
 
             Form newForm = new Form(form.Name, form.TypeID, form.Comment, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_FORM.CREATED);
@@ -389,22 +408,25 @@ namespace SCC.Controllers
                 return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
             }
 
-            SCC_BL.Results.Form.CheckNCEScore.CODE resultCheckNCEScore = SCC_BL.Results.Form.CheckNCEScore.CODE.SUCCESS;
-
             List<SCC_BL.Attribute> nonCriticalErrorAttributes = attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).ToList();
 
-            resultCheckNCEScore = Form.CheckNCEScore(nonCriticalErrorAttributes);
-
-            switch (resultCheckNCEScore)
+            if (nonCriticalErrorAttributes.Count() > 0)
             {
-                case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100:
-                    SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorLessThan100>(null, null, nonCriticalErrorAttributes);
-                    return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
-                case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100:
-                    SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorGreaterThan100>(null, null, nonCriticalErrorAttributes);
-                    return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
-                default:
-                    break;
+                SCC_BL.Results.Form.CheckNCEScore.CODE resultCheckNCEScore = SCC_BL.Results.Form.CheckNCEScore.CODE.SUCCESS;
+
+                resultCheckNCEScore = Form.CheckNCEScore(nonCriticalErrorAttributes);
+
+                switch (resultCheckNCEScore)
+                {
+                    case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100:
+                        SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorLessThan100>(null, null, nonCriticalErrorAttributes);
+                        return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+                    case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100:
+                        SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorGreaterThan100>(null, null, nonCriticalErrorAttributes);
+                        return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
+                    default:
+                        break;
+                }
             }
 
             Form oldForm = new Form(form.ID);
@@ -554,20 +576,23 @@ namespace SCC.Controllers
 
                 List<SCC_BL.Attribute> nonCriticalErrorAttributes = attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).ToList();
 
-                resultCheckNCEScore = Form.CheckNCEScore(nonCriticalErrorAttributes);
-
-                switch (resultCheckNCEScore)
+                if (nonCriticalErrorAttributes.Count() > 0)
                 {
-                    case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100:
-                        SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorLessThan100>(null, null, nonCriticalErrorAttributes);
+                    resultCheckNCEScore = Form.CheckNCEScore(nonCriticalErrorAttributes);
 
-                        return SCC_BL.Results.UploadedFile.FormUpload.CODE.ERROR;
-                    case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100:
-                        SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorGreaterThan100>(null, null, nonCriticalErrorAttributes);
+                    switch (resultCheckNCEScore)
+                    {
+                        case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100:
+                            SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorLessThan100>(null, null, nonCriticalErrorAttributes);
 
-                        return SCC_BL.Results.UploadedFile.FormUpload.CODE.ERROR;
-                    default:
-                        break;
+                            return SCC_BL.Results.UploadedFile.FormUpload.CODE.ERROR;
+                        case SCC_BL.Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100:
+                            SaveProcessingInformation<SCC_BL.Results.Form.CheckNCEScore.ErrorGreaterThan100>(null, null, nonCriticalErrorAttributes);
+
+                            return SCC_BL.Results.UploadedFile.FormUpload.CODE.ERROR;
+                        default:
+                            break;
+                    }
                 }
 
                 int formInsertResultCode = form.Insert();

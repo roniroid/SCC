@@ -1,13 +1,19 @@
 ﻿@using SCC.Controllers;
+@using SCC.ViewModels;
 @using System.Globalization;
 
-@model SCC.ViewModels.ReportResultsAccuracyByAttributeViewModel
+@model SCC.ViewModels.ReportResultsAccuracyTrendByAttributeViewModel
 
 @{
-    ViewBag.Title = "Restultados por atributo";
+    ViewBag.Title = "Restultados de tendencia de precisión por atributo";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+
+    bool isControllable =
+        Model.RequestObject.AttributeControllable != null
+            ? Model.RequestObject.AttributeControllable.Value
+            : false;
 }
 
 <link href="~/Content/Custom/radio.css" rel="stylesheet" />
@@ -44,10 +50,10 @@
             </span>
         </div>
         <div class="bg-light d-flex justify-content-center text-center p-1">
-            <input class="form-control text-center" id="txtChartTitle" type="text" value="Resultados de calidad mensual por atributo" placeholder="Título" autocomplete="off" />
+            <input class="form-control text-center" id="txtChartTitle" type="text" value="Tendencia de precisión por atributo" placeholder="Título" autocomplete="off" />
         </div>
         <div class="bg-light d-flex justify-content-center text-center p-1">
-            <input class="form-control text-center" id="txtChartSubtitle" type="text" value="Resultados por atributo" placeholder="Subtítulo" autocomplete="off" />
+            <input class="form-control text-center" id="txtChartSubtitle" type="text" value="Resultados de tendencia de precisión por atributo" placeholder="Subtítulo" autocomplete="off" />
         </div>
         <div class="bg-light d-flex justify-content-center text-center p-1">
             <input class="form-control text-center" id="txtAxisX" type="text" value="" placeholder="Eje X" autocomplete="off" />
@@ -118,10 +124,6 @@
     </div>
 </div>
 
-@{
-    bool isControllable = (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.IS_CONTROLLABLE];
-}
-
 <div class="tableContainer mt-4">
     <table class="display cell-border text-center" id="tbInfo">
         <thead>
@@ -129,50 +131,53 @@
                 <th class="text-center">
                     Atributo
                 </th>
-                <th class="text-center">
-                    Cantidad
-                </th>
-                <th class="text-center">
-                    Total
-                </th>
-                <th class="text-center">
-                    Porcentaje
-                </th>
+                @foreach (ReportResultsAccuracyTrendByAttributeViewModel.AccuracyTrendByPeriod accuracyTrendResult in Model.AccuracyTrendByPeriodList)
+                {
+                    <th class="text-center">
+                        @accuracyTrendResult.Period.ToString("dd MMM. yyyy")
+                    </th>
+                }
             </tr>
-        </thead>
+            </thead>
         <tbody>
             @{
-                List<string> processedNames = new List<string>();
+                List<int> processedAttributeID = new List<int>();
             }
-
-            @foreach (SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult in Model.AccuracyByAttributeResultList.OrderBy(e => e.AttributeName))
+            @foreach (SCC_BL.Reports.Results.AccuracyTrendByAttribute accuracyTrendByAttribute in Model.AccuracyTrendByAttributeResultList)
             {
-                if (processedNames.Where(e => e == accuracyByAttributeResult.AttributeName).Count() <= 0)
+                if (!processedAttributeID.Contains(accuracyTrendByAttribute.AttributeID))
                 {
-                    int successfulResultCount =
-                        Model.AccuracyByAttributeResultList
-                            .Where(e =>
-                                e.AttributeName == accuracyByAttributeResult.AttributeName &&
-                                e.SuccessFulResult)
-                            .Count();
-
                     <tr>
-                        <td class="text-start">
-                            @accuracyByAttributeResult.AttributeName
-                        </td>
                         <td>
-                            @successfulResultCount
+                            @accuracyTrendByAttribute.AttributeName
                         </td>
-                        <td>
-                            @Model.TotalTransactions
-                        </td>
-                        <td>
-                            @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(successfulResultCount) / Model.TotalTransactions) * 100)).Replace('.', ',')%
-                        </td>
-                    </tr>
-                }
+                        @foreach (ReportResultsAccuracyTrendByAttributeViewModel.AccuracyTrendByPeriod accuracyTrendResult in Model.AccuracyTrendByPeriodList)
+                        {
+                            <td>
+                                @{ 
+                                    int successfulResultCount =
+                                        accuracyTrendResult.AccuracyTrendByAttributeInPeriod
+                                            .Where(e =>
+                                                e.AttributeID == accuracyTrendByAttribute.AttributeID &&
+                                                e.SuccessfulResult)
+                                            .Count();
+                                }
 
-                processedNames.Add(accuracyByAttributeResult.AttributeName);
+                                @String.Format(
+                                    CultureInfo.InvariantCulture,
+                                    /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                                    Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                        ? "{0:0.0#}"
+                                        : */"{0:0.##}",
+                                    accuracyTrendResult.TransactionCount > 0 
+                                        ? ((Convert.ToDecimal(successfulResultCount) / accuracyTrendResult.TransactionCount) * 100) 
+                                        : 0)%
+                            </td>
+                        }
+                    </tr>
+
+                    processedAttributeID.Add(accuracyTrendByAttribute.AttributeID);
+                }
             }
         </tbody>
     </table>
@@ -184,7 +189,7 @@
     $(document).ready(function () {
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
-            let fileName = 'Resultados de precisión por atributo' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+            let fileName = 'Resultados de tendencia por atributo' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
 
             let data = response;
 
@@ -242,53 +247,61 @@
 
     const ctx = document.getElementById('myChart');
 
-    @{ 
-        string currentAttributeIDArray = string.Empty;
-        string currentTransactionAttributeIDArray = string.Empty;
-
-        currentAttributeIDArray = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.AttributeID) + "]"));
-        currentTransactionAttributeIDArray = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.TransactionAttributeID) + "]"));
-    }
-
     const DEFAULT_DATA = {
-        labels: [
-            @Html.Raw(
-                String.Join(
-                    ",",
-                    Model.ResultByAttributeList
-                        .Select(e => $"\"{ e.AttributeName }\"")))],
+        labels: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => $"\"{ e.Period.ToString("MMM dd, yyyy") }\"")))],
         datasets: [
+            @{
+                processedAttributeID = new List<int>();
+
+                string[] colorList = new string[5]{ "rgba(117, 178, 239)", "rgba(67, 66, 71)", "rgba(137, 222, 122)", "rgba(255, 190, 113)", "rgb(128, 133, 233)" };
+                int currentColor = 0;
+            }
+            @foreach (SCC_BL.Reports.Results.AccuracyTrendByAttribute accuracyTrendByAttribute in Model.AccuracyTrendByAttributeResultList)
             {
-                data: [
-                    @String.Join(",",
-                        Model.ResultByAttributeList
-                            .Select(e =>
-                                String.Format(
-                                    CultureInfo.InvariantCulture,
-                                    "{0:0.##}",
-                                    ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100))))],
-                borderColor: [
-                    'rgba(117, 178, 239)',
-                    'rgba(67, 66, 71)',
-                    'rgba(137, 222, 122)',
-                    'rgba(255, 190, 113)'
-                ],
-                backgroundColor: [
-                    'rgba(117, 178, 239, 0.8)',
-                    'rgb(67, 66, 71, 0.8)',
-                    'rgb(137, 222, 122, 0.8)',
-                    'rgb(255, 190, 113, 0.8)'
-                ],
-                borderWidth: 1,
-                customData: {
-                    successCount: [
-                        @String.Join(
-                            ",",
-                            Model.ResultByAttributeList
-                                .Select(e => e.Quantity))],
-                    totalCount: @Model.TotalTransactions,
-                    currentAttributeID: [@currentAttributeIDArray],
-                    currentTransactionAttributeID: [@currentTransactionAttributeIDArray],
+                if (processedAttributeID.Contains(accuracyTrendByAttribute.AttributeID))
+                {
+                    continue;
+                }
+
+                string dataText = string.Empty;
+
+                foreach (ReportResultsAccuracyTrendByAttributeViewModel.AccuracyTrendByPeriod accuracyTrendResult in Model.AccuracyTrendByPeriodList)
+                {
+                    int successfulResultCount =
+                        accuracyTrendResult.AccuracyTrendByAttributeInPeriod
+                            .Where(e => 
+                                e.AttributeID == accuracyTrendByAttribute.AttributeID && 
+                                e.SuccessfulResult).Count();
+
+                    dataText +=
+                        (!string.IsNullOrEmpty(dataText) ? "," : string.Empty) +
+                        String.Format(
+                            CultureInfo.InvariantCulture,
+                                /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                                Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                    ? "{0:0.0#}"
+                                    : */"{0:0.##}",
+                            accuracyTrendResult.TransactionCount > 0 ? ((Convert.ToDecimal(successfulResultCount) / accuracyTrendResult.TransactionCount) * 100) : 0);
+                }
+
+                @:{
+                @:label: '@Html.Raw(accuracyTrendByAttribute.AttributeName)',
+                    @:data: [@Html.Raw(dataText)],
+                    @:borderColor: '@colorList[currentColor]',
+                    @:backgroundColor: '@colorList[currentColor]',
+                    @:borderWidth: 3,
+                    @*successCount: [@Model.GeneralFinalUserCriticalErrorCountSuccess, @Model.GeneralBusinessCriticalErrorCountSuccess, @Model.GeneralFulfillmentCriticalErrorCountSuccess, @Model.GeneralResultCountSuccess],
+                    errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
+                    totalCount: @Model.TotalTransactions,*@
+                @:},
+
+                processedAttributeID.Add(accuracyTrendByAttribute.AttributeID);
+
+                currentColor++;
+
+                if (currentColor == colorList.Length)
+                {
+                    currentColor = 0;
                 }
             }
         ]
@@ -322,10 +335,17 @@
 
     Chart.register([ChartDataLabels, chartAreaBorder, backgroundColorPlugin]);
 
+    let minScale = 0;
+
     let myChart = new Chart(ctx, {
-        type: 'bar',
+        type: 'line',
         data: DEFAULT_DATA,
         options: {
+            elements: {
+                line: {
+                    tension: 0.4
+                }
+            },
             responsive: true,
             scales: {
                 y: {
@@ -341,13 +361,15 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
+                    min: minScale,
                     max: 100,
                     ticks: {
-                        stepSize: 25,
+                        stepSize: minScale < 50 ? 25 : 10,
                         callback: function (value) {
                             return value + '%';
                         }
-                    }
+                    },
+                    offset: true,
                 },
                 x: {
                     title: {
@@ -360,8 +382,10 @@
                     },
                     grid: {
                         display: $('input[name="rdHorizontal"]:checked').val()
-                    }
-                }
+                    },
+                    offset: true,
+                    position: 20,
+                },
             },
             plugins:
             {
@@ -382,7 +406,7 @@
                     text: $('#txtChartSubtitle').val(),
                     padding: {
                         top: 5,
-                        bottom: 20
+                        bottom: 70
                     },
                     font: {
                         size: 16,
@@ -390,17 +414,17 @@
                     }
                 },
                 legend: {
-                    display: false,
+                    display: true,
                     position: 'bottom'
                 },
                 datalabels: {
-                    backgroundColor: 'rgb(238, 244, 204)',
+                    /*backgroundColor: 'rgb(238, 244, 204)',
                     borderColor: 'rgb(238, 244, 204)',
                     borderRadius: 5,
-                    borderWidth: 1,
+                    borderWidth: 1,*/
                     display: true,
-                    anchor: 'end',
-                    align: 'start',
+                    anchor: 'start',
+                    align: 'end',
                     offset: 20,
                     color: '#000000',
                     labels: {
@@ -417,7 +441,9 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `${context.formattedValue.replace(',', '.')}% (${context.dataset.customData.successCount[context.dataIndex]}/${context.dataset.customData.totalCount})`
+                        label: (context) => {
+                            return `${context.label}: ${context.formattedValue.replace(',', '.')}%`;
+                        }
                     }
                 },
                 chartAreaBorder: {
@@ -450,24 +476,17 @@
 
         if (points.length) {
             const firstPoint = points[0];
-            const datasetIndex = firstPoint.datasetIndex;
-            const dataIndex = firstPoint.index;
-
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
+            let errorTypeID = myChart.data.datasets[firstPoint.datasetIndex].errorTypeIDs[firstPoint.index];
 
-            const selectedAttributeID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
-            const selectedTransactionAttributeID = myChart.data.datasets[datasetIndex].customData.currentTransactionAttributeID[dataIndex];
-
-            const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
+            const url = '@Url.Action(nameof(ReportController.AccuracyByAttribute), mainControllerName)';
 
             const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
 
-            $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedAttributeID.join() + '" /> ');
-            @*$($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyByAttributeResultList.Select(e => e.TransactionAttributeID))" /> ');*@
-            $($form).append('<input type="hidden" name="transactionIDList" value="' + selectedTransactionAttributeID.join() + '" /> ');
-            $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
-            $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');
+            @*$($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.OverallAccuracyResultList.Select(e => e.TransactionID))" /> ');
+            $($form).append('<input type="hidden" name="errorTypeID" value="' + errorTypeID + '" /> ');
+            $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');*@
 
             $(document.body).append($form);
 
@@ -619,6 +638,7 @@
             SupervisorNamesArray: "Supervisores",
             EvaluatorUserNamesArray: "Evaluadores",
             ErrorTypeNamesArray: "Tipos de error",
+            IntervalTypeName: "Intervalo",
             AttributeNamesArray: "Atributos",
             TransactionCustomFieldCatalogNamesAndValues: "Campos personalizados"
         };
@@ -635,7 +655,8 @@
             UserNamesArray: JSON.stringify(data.UserNamesArray),
             SupervisorNamesArray: JSON.stringify(data.SupervisorNamesArray),
             EvaluatorUserNamesArray: JSON.stringify(data.EvaluatorUserNamesArray),
-            ErrorTypeNamesArray: JSON.stringify(data.ErrorTypeNamesArray)
+            ErrorTypeNamesArray: JSON.stringify(data.ErrorTypeNamesArray),
+            AttributeNamesArray: JSON.stringify(data.AttributeNamesArray),
         };*/
 
         const separator = '\n';
@@ -757,6 +778,10 @@
                     ? Html.Raw(OverallController.Serialize(Model.RequestObject.ErrorTypeIDArray))
                     : Html.Raw("null")
                 : Html.Raw("null")),
+        IntervalTypeID:
+            @(Model.RequestObject.AttributeIDArray != null
+                ? Html.Raw(Model.RequestObject.AttributeIDArray)
+                : Html.Raw("null")),
         AttributeIDArray:
             @(Model.RequestObject.AttributeIDArray != null
                 ? Model.RequestObject.AttributeIDArray.Length > 0
@@ -810,6 +835,10 @@
                 ? Model.RequestObject.ErrorTypeNamesArray.Length > 0
                     ? Html.Raw(OverallController.Serialize(Model.RequestObject.ErrorTypeNamesArray))
                     : Html.Raw("null")
+                : Html.Raw("null")),
+        IntervalTypeName:
+            @(Model.RequestObject.IntervalTypeName != null
+                ? Html.Raw($"'{Model.RequestObject.IntervalTypeName}'")
                 : Html.Raw("null")),
         AttributeNamesArray:
             @(Model.RequestObject.AttributeNamesArray != null

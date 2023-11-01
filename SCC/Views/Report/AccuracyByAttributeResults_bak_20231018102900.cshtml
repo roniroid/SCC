@@ -142,17 +142,17 @@
         </thead>
         <tbody>
             @{
-                List<string> processedNames = new List<string>();
+                List<int> processedID = new List<int>();
             }
 
-            @foreach (SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult in Model.AccuracyByAttributeResultList.OrderBy(e => e.AttributeName))
+            @foreach (SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult in Model.AccuracyByAttributeResultList.OrderBy(e => e.AttributeID))
             {
-                if (processedNames.Where(e => e == accuracyByAttributeResult.AttributeName).Count() <= 0)
+                if (processedID.Where(e => e == accuracyByAttributeResult.AttributeID).Count() <= 0)
                 {
                     int successfulResultCount =
                         Model.AccuracyByAttributeResultList
                             .Where(e =>
-                                e.AttributeName == accuracyByAttributeResult.AttributeName &&
+                                e.AttributeID == accuracyByAttributeResult.AttributeID &&
                                 e.SuccessFulResult)
                             .Count();
 
@@ -172,7 +172,7 @@
                     </tr>
                 }
 
-                processedNames.Add(accuracyByAttributeResult.AttributeName);
+                processedID.Add(accuracyByAttributeResult.AttributeID);
             }
         </tbody>
     </table>
@@ -242,14 +242,6 @@
 
     const ctx = document.getElementById('myChart');
 
-    @{ 
-        string currentAttributeIDArray = string.Empty;
-        string currentTransactionAttributeIDArray = string.Empty;
-
-        currentAttributeIDArray = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.AttributeID) + "]"));
-        currentTransactionAttributeIDArray = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.TransactionAttributeID) + "]"));
-    }
-
     const DEFAULT_DATA = {
         labels: [
             @Html.Raw(
@@ -287,8 +279,11 @@
                             Model.ResultByAttributeList
                                 .Select(e => e.Quantity))],
                     totalCount: @Model.TotalTransactions,
-                    currentAttributeID: [@currentAttributeIDArray],
-                    currentTransactionAttributeID: [@currentTransactionAttributeIDArray],
+                    currentAttributeID: [
+                        @String.Join(
+                            ",",
+                            Model.ResultByAttributeList
+                                .Select(e => e.AttributeID))],
                 }
             }
         ]
@@ -456,16 +451,14 @@
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
 
-            const selectedAttributeID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
-            const selectedTransactionAttributeID = myChart.data.datasets[datasetIndex].customData.currentTransactionAttributeID[dataIndex];
+            const selectedTransactionID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
 
             const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
 
             const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
 
-            $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedAttributeID.join() + '" /> ');
-            @*$($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyByAttributeResultList.Select(e => e.TransactionAttributeID))" /> ');*@
-            $($form).append('<input type="hidden" name="transactionIDList" value="' + selectedTransactionAttributeID.join() + '" /> ');
+            $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedTransactionID + '" /> ');
+            $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyByAttributeResultList.Select(e => e.TransactionAttributeID))" /> ');
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
             $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');
 
