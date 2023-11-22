@@ -11,6 +11,7 @@ namespace SCC.ViewModels
     public class CalibrationResultsByTransactionViewModel
     {
         public SCC_BL.Calibration CalibrationSession { get; set; } = new SCC_BL.Calibration();
+        public List<SCC_BL.Transaction> CalibratedTransactionList { get; set; } = new List<SCC_BL.Transaction>();
         public List<SCC_BL.Transaction> CalibrationList { get; set; } = new List<SCC_BL.Transaction>();
         public List<SCC_BL.Transaction> ExpertEvaluationList { get; set; } = new List<SCC_BL.Transaction>();
 
@@ -31,10 +32,11 @@ namespace SCC.ViewModels
         public List<CalibrationResultsByTransactionViewModel.ResultByBIField> ResultByBIFieldList { get; set; } = new List<CalibrationResultsByTransactionViewModel.ResultByBIField>();
         public Form Form { get; set; }
 
-        public CalibrationResultsByTransactionViewModel(Calibration calibrationSession/*, List<SCC_BL.Transaction> calibrationList*/)
+        public CalibrationResultsByTransactionViewModel(Calibration calibrationSession/*, List<SCC_BL.Transaction> calibrationList*/, List<SCC_BL.Transaction> calibratedTransactionList)
         {
             this.CalibrationSession = calibrationSession;
             /*this.CalibrationList = calibrationList;*/
+            this.CalibratedTransactionList = calibratedTransactionList;
 
             this.ExpertEvaluationList =
                 this.CalibrationSession.CalibrationList

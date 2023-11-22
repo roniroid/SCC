@@ -1878,6 +1878,11 @@ namespace SCC.Controllers
             using (Program program = new Program())
                 allProgramList = program.SelectAll();
 
+            List<Catalog> allCountryList = new List<Catalog>();
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
+                allCountryList = catalog.SelectByCategoryID();
+
             try
             {
                 using (SpreadsheetDocument document = SpreadsheetDocument.Open(filePath, false))
@@ -1898,7 +1903,7 @@ namespace SCC.Controllers
                             {
                                 var newRow = excelParser.GetRowCells(row, headersCount).ToArray();
 
-                                User user = new User(newRow, rowCount, GetActualUser().ID, allUserList, allWorkspaceList, allRoleList, allGroupList, allProgramList);
+                                User user = new User(newRow, rowCount, GetActualUser().ID, allUserList, allWorkspaceList, allRoleList, allGroupList, allProgramList, allCountryList);
 
                                 elementList.Add(user);
                             }

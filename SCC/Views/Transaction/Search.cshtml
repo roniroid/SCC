@@ -800,6 +800,8 @@
         <tbody>
             @foreach (Transaction transaction in Model.TransactionList)
             {
+                bool hasInvalidation = transaction.InvalidationCommentaries.Count() > 0;
+
                 string tableRowClass = string.Empty;
                 if (transaction.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION.DELETED)
                 {
@@ -809,7 +811,7 @@
                             " strikethrough";
                 }
 
-                <tr class="@tableRowClass" data-transactionid="@transaction.ID">
+                <tr class="@tableRowClass @(hasInvalidation ? "has-invalidation" : string.Empty)" data-transactionid="@transaction.ID">
                     <td class="d-flex justify-content-center align-content-center">
                         <input class="transaction-selected" type="checkbox" />
                     </td>
@@ -892,6 +894,8 @@
     </table>
 </div>
 <script>
+    let infoTable = null;
+
     $(document).ready(function () {
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
@@ -910,7 +914,7 @@
                 "exportOptions": {
                     "columns": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                     //"rows": getSelectedTransactionIndex(),
-                    "rows": ":not('.strikethrough')",
+                    "rows": ":not('.strikethrough,.d-none')",
                 }
             };
 
@@ -925,7 +929,7 @@
                 "exportOptions": {
                     "columns": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                     //"rows": getSelectedTransactionIndex(),
-                    "rows": ":not('.strikethrough')",
+                    "rows": ":not('.strikethrough,.d-none')",
                 }
             };
 
@@ -942,7 +946,7 @@
                     },
                     "columns": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                     //"rows": getSelectedTransactionIndex(),
-                    "rows": ":not('.strikethrough')",
+                    "rows": ":not('.strikethrough,.d-none')",
                 }
             };
 
@@ -960,7 +964,17 @@
             data["buttons"].push(copyButton);
             data["buttons"].push(customButton);
 
-            startDataTable('#tbInfo', data);
+            infoTable = startDataTable('#tbInfo', data);
+
+            let toolbarControls = '';
+
+            toolbarControls +=
+                getControlForToolbar(
+                    '<div class="radio-control d-inline-block"><input label="NO" id="filterActiveElements_NO" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="false" /><input label="SI" id="filterActiveElements_YES" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="true" checked /></div>',
+                    'Mostrar invalidadas'
+                );
+
+            $('div.toolbar').html(toolbarControls);
         });
 
         fetchMultiSelectBasicData().then(response => {
@@ -982,7 +996,49 @@
         {
             @:window.location.href = '#tbInfo';
         }
+
+        $('#filterActiveElements_YES').change();
     });
+
+    function getControlForToolbar(content, label) {
+        let result = '';
+
+        const divPropertyField = '<div class="row property-field m-3">%replaceContent%</div>';
+
+        const divPropertyFieldLabel = '<div class="col-5 property-field-label">' + label + '</div>';
+        const contentContainer = '<div class="col-7">' + content + '</div>';
+
+        result =
+            divPropertyField
+                .replace('%replaceContent%', divPropertyFieldLabel + contentContainer);
+
+        return result;
+    }
+
+    function onChangefilterActiveElementsEvent(element) {
+        let show = false;
+        show = element.value == 'true';
+
+        @*let elements = $('table#tbInfo tbody tr.has-invalidation');
+
+        if (show) {
+            $(elements).removeClass('d-none');
+        } else {
+            $(elements).addClass('d-none');
+        }*@
+
+        infoTable.rows().every(function () {
+            if ($(this.node()).hasClass('has-invalidation')) {
+                if (show) {
+                    $(this.node()).removeClass('d-none');
+                } else {
+                    $(this.node()).addClass('d-none');
+                }
+            }
+        });
+
+        infoTable.draw();
+    }
 
     @*async function exportTransactionsFile() {
         let transactionIDArray = [];
@@ -995,23 +1051,26 @@
     async function exportTransactionsFile() {
         let transactionIDArray = await getTransactionIDArray();
 
-        // Create a form element
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '@Url.Action(nameof(TransactionController.ExportTransactionListToExcel), mainControllerName)';
+        if (transactionIDArray.length > 0) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action(nameof(TransactionController.ExportTransactionListToExcel), mainControllerName)';
 
-        // Create a hidden input field for transactionIDArray
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'transactionIDArray';
-        input.value = transactionIDArray.join(',');
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'transactionIDArray';
+            input.value = transactionIDArray.join(',');
 
-        // Append the input field to the form
-        form.appendChild(input);
+            form.appendChild(input);
 
-        // Append the form to the document body and submit it
-        document.body.appendChild(form);
-        form.submit();
+            document.body.appendChild(form);
+
+            //console.log(transactionIDArray);
+            form.submit();
+        }
+        else {
+            alert('No se han seleccionado transacciones para exportar');
+        }
     }
 
     async function getTransactionIDArray() {
@@ -1019,10 +1078,30 @@
 
         let currentPage = $('#tbInfo').DataTable().page.info().page;
         let currentSearch = $('#tbInfo').DataTable().search();
+
         $('#tbInfo').DataTable().page.len(-1).draw();
         $('#tbInfo').DataTable().search('', false, false).draw();
 
-        response = $('#tbInfo').find('tbody tr').map((index, e) => $(e).data('transactionid')).get();
+        //response = $('#tbInfo').find('tbody tr').map((index, e) => $(e).data('transactionid')).get();
+        response =
+            $('#tbInfo')
+                .find('tbody tr')
+            .map((index, e) => {
+                let hasInvalidation = $(e).hasClass('has-invalidation');
+                let includeInvalidationTransactions = $('#filterActiveElements_YES').is(':checked');
+
+                if (includeInvalidationTransactions) {
+                    if ($(e).find('td input.transaction-selected:checked').length > 0) {
+                        return $(e).data('transactionid');
+                    }
+                } else {
+                    if (!hasInvalidation) {
+                        if ($(e).find('td input.transaction-selected:checked').length > 0) {
+                            return $(e).data('transactionid');
+                        }
+                    }
+                }
+            }).get();
 
         $('#tbInfo').DataTable().page.len(10).draw();
         $('#tbInfo').DataTable().page(currentPage).draw('page');
@@ -1080,9 +1159,19 @@
     });
 
     $('.transaction-selected-all').change((e) => {
+        let currentPage = $('#tbInfo').DataTable().page.info().page;
+        let currentSearch = $('#tbInfo').DataTable().search();
+
+        $('#tbInfo').DataTable().page.len(-1).draw();
+        $('#tbInfo').DataTable().search('', false, false).draw();
+
         $('.transaction-selected').each((index, f) => {
             $(f)[0].checked = $(e.currentTarget)[0].checked;
         });
+
+        $('#tbInfo').DataTable().page.len(10).draw();
+        $('#tbInfo').DataTable().page(currentPage).draw('page');
+        $('#tbInfo').DataTable().search(currentSearch, false, false).draw();
     });
 
     function getSelectedTransactionIndex() {

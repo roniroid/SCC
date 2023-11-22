@@ -87,6 +87,8 @@ namespace SCC_BL.Settings
                         GROUP = 11,
                         PROGRAM = 12,
                         HAS_PASS_PERMISSION = 13,
+                        COUNTRY = 14,
+                        WORKSPACE_START_DATES = 15,
                     }
                 }
             }

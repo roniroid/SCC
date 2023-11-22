@@ -453,7 +453,10 @@ namespace SCC.ViewModels
                     this.Form,
                     totalTransactionCount);
 
-                this.ResultsByCalibratorList.Add(resultsByCalibrator);
+                if (resultsByCalibrator.CalibrationList.Count() > 0)
+                {
+                    this.ResultsByCalibratorList.Add(resultsByCalibrator);
+                }
             }
 
             this.FUCE = new Result(SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE, this.CalibrationList, this.ExpertEvaluationList, totalExpected, this.Form);

@@ -423,8 +423,8 @@
                                                         case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
                                                             htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-select";
 
-                                                            <select class="custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description">
-                                                                <option value="">Seleccionar</option>
+                                                            <select class="custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" multiple>
+                                                                @*<option value="">Seleccionar</option>*@
                                                                 @{
                                                                     foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
                                                                     {
@@ -625,10 +625,21 @@
             }
             else
             if ($(valueContainer).find('.custom-control-value-select').length > 0) {
-                if ($(valueContainer).find('select option:selected').length > 0) {
+                @*if ($(valueContainer).find('select option:selected').length > 0) {
                     valueID = $(valueContainer).find('select option:selected').val();
                 } else {
                     valueID = null;
+                }*@
+
+                let elementList = $(valueContainer).find('select option:selected');
+                if (elementList.length > 0) {
+                    for (let index = 0; index < elementList.length; index++) {
+                        valueIDArray.push(parseInt($(elementList[index]).val()));
+                        /*valueID =
+                            valueID != null && valueID != ''
+                                ? (valueID + ',' + $(elementList[index]).val())
+                                : $(elementList[index]).val();*/
+                    }
                 }
             }
 
@@ -669,6 +680,8 @@
             }
         });
 
+        console.log(transactionCustomFieldList);
+        console.table(transactionCustomFieldList);
         return transactionCustomFieldList;
     }
 

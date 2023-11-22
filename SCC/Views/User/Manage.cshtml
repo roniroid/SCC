@@ -455,6 +455,12 @@
                     <th>
                         Can Login?
                     </th>
+                    <th>
+                        Country
+                    </th>
+                    <th>
+                        Workspace start dates
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -508,7 +514,7 @@
                                     using (Workspace workspace = allWorkspaceList.Where(e => e.ID == userWorkspaceCatalog.WorkspaceID).FirstOrDefault())
                                     {
                                         workspaceNameList += string.IsNullOrEmpty(workspaceNameList)
-                                            ? workspace.Name
+                                            ? workspace.Identifier
                                             : $",{workspace.Identifier}";
                                     }
                                 }
@@ -602,6 +608,32 @@
                             @(user.HasPassPermission
                                 ? "Yes"
                                 : "No")
+                        </td>
+                        <td>
+                            @{
+                                string countryName = string.Empty;
+
+                                using (Catalog catalog = allCountryList.Where(e => e.ID == user.Person.CountryID).FirstOrDefault())
+                                {
+                                    countryName = catalog.Description;
+                                }
+                            }
+
+                            @countryName
+                        </td>
+                        <td>
+                            @{
+                                string workspaceStartDateList = string.Empty;
+
+                                foreach (UserWorkspaceCatalog userWorkspaceCatalog in user.UserWorkspaceCatalogList)
+                                {
+                                    workspaceStartDateList += string.IsNullOrEmpty(workspaceStartDateList)
+                                        ? userWorkspaceCatalog.StartDate.ToString("dd/MM/yyyy HH:mm:ss")
+                                        : $",{userWorkspaceCatalog.StartDate.ToString("dd/MM/yyyy HH:mm:ss")}";
+                                }
+                            }
+
+                            @workspaceStartDateList
                         </td>
                     </tr>
                 }
@@ -996,7 +1028,7 @@
                     "extend": "excel",
                     "className": "btn-sm tb-export-btn-excel",
                     "exportOptions": {
-                        "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+                        "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
                         "rows": ":not('.strikethrough')"
                     }
                 };

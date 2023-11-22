@@ -17,29 +17,49 @@ namespace SCC.Controllers
 
         public ActionResult Manage()
         {
-            List<Calibration> calibrationList = new Calibration().SelectAll();
+            List<Calibration> calibrationList = new List<Calibration>();
 
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_CALIBRATION_SESSIONS))
+            if (GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_CALIBRATION_SESSIONS))
             {
-                List<Calibration> newCalibrationList = new List<Calibration>();
+                calibrationList = new Calibration().SelectAll();
+            }
+            else 
+            if (GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_THEIR_PROGRAMS_CALIBRATION_SESSIONS))
+            {
                 int[] allowedProgramIDArray = GetActualUser().CurrentProgramList.Select(s => s.ID).ToArray();
-
-                /*allowedProgramIDArray =
-                    allowedProgramIDArray
-                        .GroupBy(e => e)
-                        .Select(e => e.First())
-                        .ToArray();*/
 
                 for (int i = 0; i < allowedProgramIDArray.Length; i++)
                 {
+                    List<Calibration> newCalibrationList = new List<Calibration>();
+
                     int currentProgramID = allowedProgramIDArray[i];
 
-                    newCalibrationList.AddRange(
-                        calibrationList
-                            .Where(e => e.ProgramIDArray.Contains(currentProgramID)));
+                    using (Calibration auxCalibration = new Calibration())
+                    {
+                        newCalibrationList =
+                            auxCalibration.SelectByProgramID(currentProgramID);
+                    }
+
+                    calibrationList.AddRange(newCalibrationList);
                 }
 
-                calibrationList = newCalibrationList;
+                calibrationList =
+                    calibrationList
+                        .GroupBy(e => e.ID)
+                        .Select(e => e.First())
+                        .ToList();
+            }
+            else
+            {
+                List<Calibration> newCalibrationList = new List<Calibration>();
+
+                using (Calibration auxCalibration = new Calibration())
+                {
+                    newCalibrationList =
+                        auxCalibration.SelectByUserID(GetActualUser().ID);
+                }
+
+                calibrationList.AddRange(newCalibrationList);
 
                 calibrationList =
                     calibrationList
@@ -164,17 +184,17 @@ namespace SCC.Controllers
                 calibrationSession.SetDataByID();
 
                 List<SCC_BL.Transaction> calibrationList = new List<SCC_BL.Transaction>();
-                /*List<SCC_BL.Transaction> calibratedTransactionList = new List<SCC_BL.Transaction>();*/
+                List<SCC_BL.Transaction> calibratedTransactionList = new List<SCC_BL.Transaction>();
 
                 foreach (CalibrationTransactionCatalog calibrationTransactionCatalog in calibrationSession.TransactionList)
                 {
                     using (Transaction transaction = new Transaction(calibrationTransactionCatalog.TransactionID))
                     {
-                        /*if (calibratedTransactionList.Select(e => e.ID).Contains(calibrationTransactionCatalog.TransactionID))
+                        if (calibratedTransactionList.Select(e => e.ID).Contains(calibrationTransactionCatalog.TransactionID))
                             continue;
 
                         transaction.SetDataByID();
-                        calibratedTransactionList.Add(transaction);*/
+                        calibratedTransactionList.Add(transaction);
 
                         calibrationList.AddRange(
                             calibrationSession.CalibrationList
@@ -187,7 +207,7 @@ namespace SCC.Controllers
                 }
 
                 CalibrationResultsByTransactionViewModel calibrationResultsByTransactionViewModel =
-                    new CalibrationResultsByTransactionViewModel(calibrationSession/*, calibrationList*/);
+                    new CalibrationResultsByTransactionViewModel(calibrationSession/*, calibrationList*/, calibratedTransactionList);
 
                 return View(calibrationResultsByTransactionViewModel);
             }

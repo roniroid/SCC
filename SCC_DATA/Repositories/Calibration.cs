@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -94,6 +95,52 @@ namespace SCC_DATA.Repositories
 						db.Select(
 							Queries.Calibration.StoredProcedures.SelectAll.NAME
 						);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
+		public System.Data.DataTable SelectByProgramID(int programID)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.Calibration.StoredProcedures.SelectByProgramID.Parameters.PROGRAM_ID, programID, System.Data.SqlDbType.Int)
+                    };
+
+                    return
+                        db.Select(
+							Queries.Calibration.StoredProcedures.SelectByProgramID.NAME, 
+							parameters
+                        );
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
+		public System.Data.DataTable SelectByUserID(int userID)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.Calibration.StoredProcedures.SelectByUserID.Parameters.USER_ID, userID, System.Data.SqlDbType.Int)
+                    };
+
+                    return
+                        db.Select(
+							Queries.Calibration.StoredProcedures.SelectByUserID.NAME, 
+							parameters
+                        );
 				}
 			}
 			catch (Exception ex)

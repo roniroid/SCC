@@ -862,7 +862,7 @@ namespace SCC.Controllers
             }
             catch (Exception ex)
             {
-                SaveProcessingInformation<SCC_BL.Results.Transaction.Insert.Error>(null, null, null, ex);
+                SaveProcessingInformation<SCC_BL.Results.Transaction.Insert.Error>(null, null, newTransaction, ex);
             }
 
             if (transaction.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION)
@@ -1157,10 +1157,6 @@ namespace SCC.Controllers
 
             foreach (System.Reflection.PropertyInfo propertyInfo in transactionSearchHelper.GetType().GetProperties())
             {
-                if (propertyInfo.Name.Equals("TransactionIdentifier"))
-                {
-
-                }
                 if (propertyInfo.GetValue(transactionSearchHelper) != null)
                 {
                     hasHelper = true;

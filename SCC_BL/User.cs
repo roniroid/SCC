@@ -596,7 +596,7 @@ namespace SCC_BL
 			return true;
 		}
 
-		public User(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, int currentRowCount, int actualUserID, List<User> allUserList, List<Workspace> allWorkspaceList, List<Role> allRoleList, List<Group> allGroupList, List<Program> allProgramList)
+		public User(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, int currentRowCount, int actualUserID, List<User> allUserList, List<Workspace> allWorkspaceList, List<Role> allRoleList, List<Group> allGroupList, List<Program> allProgramList, List<Catalog> allCountryList)
         {
             this.ExcelRowCount = currentRowCount;
 
@@ -616,14 +616,36 @@ namespace SCC_BL
 			string excelFieldGroup = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.GROUP]).ToString().Trim();
 			string excelFieldProgram = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.PROGRAM]).ToString().Trim();
 			string excelFieldHasPassPermission = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.HAS_PASS_PERMISSION]).ToString().Trim();
+			string excelFieldCountry = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.COUNTRY]).ToString().Trim();
+			string excelFieldWorkspaceStartDates = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.WORKSPACE_START_DATES]).ToString().Trim();
 
             if (ValidateExcelData(cells))
-			{
-				Person person = new Person(excelFieldIdentification);
-
+            {
+				int personCountryID = 0;
                 int defaultCountryID = (int)SCC_BL.DBValues.Catalog.PERSON_COUNTRY.COSTA_RICA;
 
-                Person newPerson = new Person(excelFieldIdentification, excelFieldFirstName, excelFieldSurName, defaultCountryID, actualUserID, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
+                Catalog countryCatalogItem = new Catalog();
+
+                try
+                {
+                    countryCatalogItem = allCountryList.Where(e => e.Description.Equals(excelFieldCountry)).FirstOrDefault();
+					personCountryID = countryCatalogItem.ID;
+                }
+				catch (Exception ex)
+				{
+					personCountryID = defaultCountryID;
+                }
+
+                Person person = new Person(excelFieldIdentification);
+
+                Person newPerson = 
+					new Person(
+						excelFieldIdentification, 
+						excelFieldFirstName, 
+						excelFieldSurName, 
+						personCountryID, 
+						actualUserID, 
+						(int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
 
                 this.Person = newPerson;
 
@@ -641,7 +663,29 @@ namespace SCC_BL
                 this.Password = hashedPassword;
                 this.Salt = salt;
                 this.Email = excelFieldEmail;
-                this.StartDate = !string.IsNullOrEmpty(excelFieldStartDate) ? Convert.ToDateTime(excelParser.FormatDate(excelFieldStartDate)) : DateTime.Now;
+
+                DateTime currentUserStartDate = DateTime.Now;
+
+                try
+                {
+                    string date = excelFieldStartDate.Split(' ')[0];
+                    //string time = excelFieldStartDate.Split(' ')[1];
+
+                    int year = Convert.ToInt32(date.Split('/')[2]);
+                    int month = Convert.ToInt32(date.Split('/')[1]);
+                    int day = Convert.ToInt32(date.Split('/')[0]);
+
+                    /*int hour = Convert.ToInt32(time.Split(':')[0]);
+                    int minute = Convert.ToInt32(time.Split(':')[1]);
+                    int second = Convert.ToInt32(time.Split(':')[2]);*/
+
+                    currentUserStartDate = new DateTime(year, month, day/*, hour, minute, second*/);
+                }
+                catch (Exception ex)
+                {
+                }
+
+                this.StartDate = currentUserStartDate;
                 this.LanguageID = languageCatalog.ID > 0 ? languageCatalog.ID : (int)SCC_BL.DBValues.Catalog.USER_LANGUAGE.SPANISH;
                 this.HasPassPermission = SCC_BL.Settings.AppValues.POSITIVE_ANSWERS.Contains(excelFieldHasPassPermission);
                 this.LastLoginDate = DateTime.Now;
@@ -653,6 +697,7 @@ namespace SCC_BL
                 string[] roleIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldRole, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
                 string[] groupIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldGroup, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
                 string[] programIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldProgram, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
+                string[] workspaceStartDateList = System.Text.RegularExpressions.Regex.Split(excelFieldWorkspaceStartDates, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
 
                 List<User> supervisorList = new List<User>();
 
@@ -712,11 +757,51 @@ namespace SCC_BL
                             new UserSupervisorCatalog(this.ID, e.ID, this.StartDate, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_SUPERVISOR_CATALOG.CREATED))
                         .ToList();
 
-                this.UserWorkspaceCatalogList =
-                    workspaceList
-                        .Select(e =>
-                            new UserWorkspaceCatalog(this.ID, e.ID, this.StartDate, this.BasicInfo.CreationUserID.Value, (int)SCC_BL.DBValues.Catalog.STATUS_USER_WORKSPACE_CATALOG.CREATED))
-                        .ToList();
+				this.UserWorkspaceCatalogList = new List<UserWorkspaceCatalog>();
+
+				for (int i = 0; i < workspaceIdentifierList.Length; i++)
+				{
+					string currentWorkspaceIdentifier = workspaceIdentifierList[i];
+					DateTime currentWorkspaceStartDate = this.StartDate;
+
+					try
+					{
+						string date = workspaceStartDateList[i].Split(' ')[0];
+						string time = workspaceStartDateList[i].Split(' ')[1];
+
+                        int year = Convert.ToInt32(date.Split('/')[2]);
+                        int month = Convert.ToInt32(date.Split('/')[1]);
+                        int day = Convert.ToInt32(date.Split('/')[0]);
+
+                        int hour = Convert.ToInt32(time.Split(':')[0]);
+                        int minute = Convert.ToInt32(time.Split(':')[1]);
+                        int second = Convert.ToInt32(time.Split(':')[2]);
+
+                        currentWorkspaceStartDate = new DateTime(year, month, day, hour, minute, second);
+                    }
+					catch (Exception ex)
+					{
+                    }
+
+					Workspace auxWorkspace =
+						workspaceList
+							.Where(e =>
+								e.Identifier.Equals(currentWorkspaceIdentifier) ||
+								e.Name.Equals(currentWorkspaceIdentifier))
+							.FirstOrDefault();
+
+                    if (auxWorkspace != null)
+					{
+						this.UserWorkspaceCatalogList.Add(
+							new UserWorkspaceCatalog(
+								this.ID, 
+								auxWorkspace.ID,
+                                currentWorkspaceStartDate, 
+								this.BasicInfo.CreationUserID.Value, 
+								(int)SCC_BL.DBValues.Catalog.STATUS_USER_WORKSPACE_CATALOG.CREATED)
+						);
+                    }
+				}
 
                 this.RoleList =
                     roleList

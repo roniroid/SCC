@@ -62,17 +62,17 @@
             border-bottom-color: #6379B4;
         }
 
-        #tbInfoAttributes tbody tr td {
+        .tb-info tbody tr td {
             border-width: 1px;
             border-style: solid;
             border-color: #d5d5d5;
         }
 
-            #tbInfoAttributes tbody tr td .table-head {
-                border-width: 0px;
-            }
+        .tb-info tbody tr td .table-head {
+            border-width: 0px;
+        }
 
-        #tbInfoAttributes tbody tr:hover {
+        .tb-info tbody tr:hover {
             background-color: #d5d5d5;
         }
 
@@ -405,7 +405,7 @@
             </tr>
         </tbody>
     </table>
-    <table class="mt-3" id="tbInfoAttributes">
+    <table class="mt-3 tb-info" id="tbInfoAttributes">
         <thead>
             <tr>
                 <th class="text-start">
@@ -862,6 +862,97 @@
             }
         </tbody>
     </table>
+    <table class="mt-3 tb-info" id="tbInfoCustomControl">
+        <thead>
+            <tr>
+                <td class="text-start bg-custom-error-title text-light my-2 p-3 table-head">
+                    Controles personalizados
+                </td>
+                @{
+                    int calibratedTransactionCount = 1;
+                }
+                @foreach (Transaction calibratedTransaction in Model.CalibratedTransactionList)
+                {
+                    <td class="text-start bg-custom-error-title text-light my-2 p-3 table-head">
+                        Transacción #@calibratedTransactionCount (@calibratedTransaction.Identifier)
+                    </td>
+
+                    calibratedTransactionCount++;
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (CustomControl auxCustomControl in Model.Form.CustomControlList)
+            {
+                CustomField currentCustomField = null;
+
+                currentCustomField =
+                    Model.Form.CustomFieldList
+                        .Where(e =>
+                            e.CustomControlID == auxCustomControl.ID)
+                        .FirstOrDefault();
+
+                <tr>
+                    <td>
+                        @auxCustomControl.Label
+                    </td>
+                    @foreach (Transaction calibratedTransaction in Model.CalibratedTransactionList)
+                    {
+                        if (currentCustomField == null)
+                        {
+                            <td></td>
+                        }
+                        else
+                        {
+                            TransactionCustomFieldCatalog currentTransactionCustomFieldCatalog = null;
+
+                            currentTransactionCustomFieldCatalog =
+                                calibratedTransaction.CustomFieldList
+                                    .Where(e =>
+                                        e.CustomFieldID == currentCustomField.ID)
+                                    .FirstOrDefault();
+
+                            if (currentTransactionCustomFieldCatalog == null)
+                            {
+                                <td></td>
+                            }
+                            else
+                            {
+                                if (currentTransactionCustomFieldCatalog.ValueID == null || currentTransactionCustomFieldCatalog.ValueID == 0)
+                                {
+                                    <td>
+                                        @currentTransactionCustomFieldCatalog.Comment
+                                    </td>
+                                }
+                                else
+                                {
+                                    CustomControlValueCatalog currentCustomControlValueCatalog = null;
+
+                                    currentCustomControlValueCatalog =
+                                        auxCustomControl.ValueList
+                                            .Where(e =>
+                                                e.ID == currentTransactionCustomFieldCatalog.ValueID)
+                                            .FirstOrDefault();
+
+                                    if (currentCustomControlValueCatalog == null)
+                                    {
+                                        <td>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <td>
+                                            @currentCustomControlValueCatalog.Value
+                                        </td>
+                                    }
+                                }
+                            }
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
     <script>
         $(document).ready(function () {
             $('#tbInfo').DataTable({
@@ -872,6 +963,13 @@
             });
 
             $('#tbInfoAttributes').DataTable({
+                paging: false,
+                ordering: false,
+                info: false,
+                searching: false,
+            });
+
+            $('#tbInfoCustomControl').DataTable({
                 paging: false,
                 ordering: false,
                 info: false,
