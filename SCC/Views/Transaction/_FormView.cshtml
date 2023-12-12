@@ -183,11 +183,19 @@
                 <span>@transactionDate.ToString("dd MMM yyyy hh:mm:ss tt")</span>
             }
 
-            @Html.TextBox(
-                "transactionTransactionDate",
-                null,
-                transactionTransactionDateAttributes
-            )
+
+            <div class="mb-3">
+                <div class="input-group">
+                    @Html.TextBox(
+                        "transactionTransactionDate",
+                        null,
+                        transactionTransactionDateAttributes
+                    )
+                    <button class="btn btn-outline-secondary" type="button" id="btnPasteTransactionDate">
+                        <i class='bx bx-paste'></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row property-field">
@@ -2889,12 +2897,72 @@
         }
 
         if (firstMissingElement) {
+            console.log(firstMissingElement);
             firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
 
         return true;
     }
+
+    function validateFormRadioButtons() {
+        const formContainer = document.querySelector('#formContainer');
+        const requiredRadios = formContainer.querySelectorAll('[type="radio"][required]');
+        let firstMissingElement = null;
+
+        requiredRadios.forEach(radio => {
+            const groupName = radio.getAttribute('name');
+            const radiosInGroup = formContainer.querySelectorAll(`[name="${groupName}"]`);
+            const isChecked = Array.from(radiosInGroup).some(radio => radio.checked);
+
+            if (!isChecked) {
+                if (!firstMissingElement) {
+                    firstMissingElement = radio;
+                }
+                radiosInGroup.forEach(radio => radio.classList.add('missing'));
+            } else {
+                radiosInGroup.forEach(radio => radio.classList.remove('missing'));
+            }
+        });
+
+        if (firstMissingElement) {
+            console.log(firstMissingElement);
+            firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateFormCheckboxes() {
+        const formContainer = document.querySelector('#formContainer');
+        const requiredCheckboxes = formContainer.querySelectorAll('[type="checkbox"][required]');
+        let firstMissingElement = null;
+
+        requiredCheckboxes.forEach(checkbox => {
+            const checkboxName = checkbox.getAttribute('name');
+            const checkboxesInGroup = formContainer.querySelectorAll(`[name="${checkboxName}"]`);
+            const isChecked = Array.from(checkboxesInGroup).some(checkbox => checkbox.checked);
+
+            if (!isChecked) {
+                if (!firstMissingElement) {
+                    firstMissingElement = checkbox;
+                }
+                checkboxesInGroup.forEach(checkbox => checkbox.classList.add('missing'));
+            } else {
+                checkboxesInGroup.forEach(checkbox => checkbox.classList.remove('missing'));
+            }
+        });
+
+        if (firstMissingElement) {
+            console.log(firstMissingElement);
+            firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        return true;
+    }
+
 
     $('#btnSubmit').click((e) => {
         let requiredAdviseElement = $('.required-advise');
@@ -2920,6 +2988,16 @@
             return false;
         }
 
+        if (!validateFormRadioButtons()) {
+            alert('Por favor, ingrese todos los campos requeridos');
+            return false;
+        }
+
+        if (!validateFormCheckboxes()) {
+            alert('Por favor, ingrese todos los campos requeridos');
+            return false;
+        }
+
         /*const customControlMultipleElements = $('.custom-control-multiple[required]');
 
         for (let i = 0; i < customControlMultipleElements.length; i++) {
@@ -2938,15 +3016,16 @@
             return false;
         }
 
+        $('#btnSubmit').prop('disabled', true);
+
         showWaitingModal();
 
         StopTimer();
 
         getFormObject()
             .then((response) => {
-                $('#btnSubmit').prop('disabled', true);
-                //console.log(response);
-                //return false;
+                /*console.log(response);
+                return false;*/
                 $.ajax({
                     "url": '@formAction',
                     "contentType": 'application/json',
@@ -2969,7 +3048,7 @@
                 console.error(reject);
             })
             .finally(() => {
-                $('#btnSubmit').prop('disabled', false);
+                $('#btnSubmit').removeProp('disabled');
                 hideWaitingModal();
             });
 
@@ -3324,6 +3403,16 @@
             formObject['transactionBIFieldList'] = transactionBIFieldList;
             formObject['transactionCommentaryList'] = transactionCommentaryList;
             formObject['transactionLabelArray'] = transactionLabelArray;
+
+            let customControlElements = $('.custom-control-field');
+
+            for (let i = 0; i < customControlElements.length; i++) {
+                let currentCustomControlElement = customControlElements[i];
+                let customFieldID = $(currentCustomControlElement).data('customfieldid');
+
+                console.log(customFieldID);
+                console.log(transactionCustomFieldIDList.filter(x => x.CustomFieldID == customFieldID));
+            }
 
             resolve(formObject);
         });

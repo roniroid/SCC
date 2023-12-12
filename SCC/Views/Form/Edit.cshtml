@@ -1771,13 +1771,14 @@
             return false;
         }
 
+        $('#btnSubmit').prop('disabled', true);
+
         showWaitingModal();
 
         getFormObject()
             .then((response) => {
-                //console.log(response);
+                console.log(response);
 
-                $('#btnSubmit').prop('disabled', true);
                 $.ajax({
                     "url": '@formAction',
                     "contentType": 'application/json',
