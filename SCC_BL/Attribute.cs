@@ -143,7 +143,7 @@ namespace SCC_BL
 			}
 		}
 
-		public Attribute(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE attributeErrorType, int formID, int attributeNameIndex, int attributeDataStartIndex, int actualGhostID, int parentAttributeGhostID, int order, int creationUserID)
+		public Attribute (DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE attributeErrorType, int formID, int attributeNameIndex, int attributeDataStartIndex, int actualGhostID, int parentAttributeGhostID, int order, int creationUserID)
         {
 			this.ErrorTypeID = (int)attributeErrorType;
 

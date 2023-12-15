@@ -287,8 +287,10 @@ namespace SCC.Controllers
             {
                 using (User user = new User())
                 {
+                    List<User> currentUserList = user.SelectByRoleID(auxRole.ID, true);
+
                     calibratorUserList.AddRange(
-                        user.SelectByRoleID(auxRole.ID, true)
+                        currentUserList
                             .Where(e =>
                                 e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                                 e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
@@ -296,13 +298,37 @@ namespace SCC.Controllers
                             .ToList());
 
                     expertUserList.AddRange(
-                        user.SelectByRoleID(auxRole.ID, true)
+                        currentUserList
                             .Where(e =>
                                 e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                                 e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
                                 !expertUserList.Select(s => s.ID).Contains(e.ID))
                             .ToList());
                 }
+            }
+
+            using (User user = new SCC_BL.User())
+            {
+                int canCalibratePermissionID = (int)SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS;
+                List<User> allowedUserList = new List<User>();
+
+                allowedUserList = user.SelectByPermissionID(canCalibratePermissionID, true);
+
+                calibratorUserList.AddRange(
+                    allowedUserList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
+                            !calibratorUserList.Select(s => s.ID).Contains(e.ID))
+                        .ToList());
+
+                expertUserList.AddRange(
+                    allowedUserList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED &&
+                            !expertUserList.Select(s => s.ID).Contains(e.ID))
+                        .ToList());
             }
 
             calibratorUserList =

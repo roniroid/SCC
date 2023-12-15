@@ -476,6 +476,21 @@ namespace SCC_BL.Settings
                     {
                         public const string NAME = "EDIT_TRANSACTION_HAS_DEVOLUTION";
                     }
+
+                    public struct CustomControlList
+                    {
+                        public struct CallID
+                        {
+                            public struct CustomControlID
+                            {
+                                public const string NAME = "EDIT_TRANSACTION_CUSTOM_CONTROL_LIST_CALL_ID_CUSTOM_CONTROL_ID";
+                            }
+                            public struct Content
+                            {
+                                public const string NAME = "EDIT_TRANSACTION_CUSTOM_CONTROL_LIST_CALL_ID_CONTENT";
+                            }
+                        }
+                    }
                 }
 
                 public struct Search

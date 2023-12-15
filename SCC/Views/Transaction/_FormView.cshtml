@@ -14,9 +14,21 @@
         !hasModel ?
             @Url.Action(nameof(TransactionController.Create), mainControllerName) :
             @Url.Action(nameof(TransactionController.Edit), mainControllerName);
+
+    int? calibratedTransactionCallIDCustomControlID = null;
+    string calibratedTransactionCallID = string.Empty;
+
+    if (Model.Transaction.CalibratedTransactionID != null)
+    {
+        calibratedTransactionCallIDCustomControlID = (int)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.CustomControlID.NAME];
+        calibratedTransactionCallID = ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.Content.NAME].ToString();
+    }
 }
 
 @Styles.Render("~/Content/radio")
+@Scripts.Render("~/bundles/moment")
+
+<meta http-equiv="Permissions-Policy" content="clipboard-read=*">
 
 <style>
     .comment-container textarea {
@@ -76,7 +88,7 @@
             Usuario a monitorear <span class="required">*</span>
         </div>
         <div class="col-7">
-            @{ 
+            @{
                 bool hasUserToEvaluate = Model.Transaction.UserToEvaluateID > 0;
             }
 
@@ -183,15 +195,16 @@
                 <span>@transactionDate.ToString("dd MMM yyyy hh:mm:ss tt")</span>
             }
 
-
-            <div class="mb-3">
+            <div class="mb-3 @(hasModel ? "d-none" : string.Empty)">
                 <div class="input-group">
-                    @Html.TextBox(
-                        "transactionTransactionDate",
-                        null,
-                        transactionTransactionDateAttributes
-                    )
-                    <button class="btn btn-outline-secondary" type="button" id="btnPasteTransactionDate">
+                    <div class="col-11">
+                        @Html.TextBox(
+                            "transactionTransactionDate",
+                            null,
+                            transactionTransactionDateAttributes
+                        )
+                    </div>
+                    <button class="btn btn-outline-secondary pointer-copy" type="button" id="btnPasteTransactionDate">
                         <i class='bx bx-paste'></i>
                     </button>
                 </div>
@@ -646,11 +659,26 @@
                 htmlAttributes.Add("title", customControl.Description);
                 htmlAttributes.Add("class", currentControlClass);
 
-                <div class="row property-field custom-control-field" data-customcontrolid="@customControl.ID" data-customfieldid="@customField.ID" data-transactioncustomfieldid="@(currentTransactionCustomFieldCatalog != null ? currentTransactionCustomFieldCatalog.ID : 0)" >
+                <div class="row property-field custom-control-field" data-customcontrolid="@customControl.ID" data-customfieldid="@customField.ID" data-transactioncustomfieldid="@(currentTransactionCustomFieldCatalog != null ? currentTransactionCustomFieldCatalog.ID : 0)">
                     <div class="col-5 property-field-label">
                         @customControl.Label @Html.Raw(customControl.IsRequired ? "<span class=\"required\">*</span>" : string.Empty)
                     </div>
                     <div class="col-7 value-container">
+                        @{
+                            string valueToDisplay =
+                                currentTransactionCustomFieldCatalog != null
+                                    ? currentTransactionCustomFieldCatalog.Comment
+                                    : customControl.DefaultValue;
+
+                            if (customControl.ID == calibratedTransactionCallIDCustomControlID)
+                            {
+                                if (string.IsNullOrEmpty(valueToDisplay))
+                                {
+                                    valueToDisplay = calibratedTransactionCallID;
+                                }
+                            }
+                        }
+
                         @switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)customControl.ControlTypeID)
                         {
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
@@ -658,15 +686,11 @@
 
                                 htmlAttributes.Add(
                                     "value",
-                                    currentTransactionCustomFieldCatalog != null
-                                        ? currentTransactionCustomFieldCatalog.Comment
-                                        : customControl.DefaultValue);
+                                    valueToDisplay);
 
                                 @Html.TextBox(
                                     "customControl_" + customControl.ID,
-                                    currentTransactionCustomFieldCatalog != null
-                                        ? currentTransactionCustomFieldCatalog.Comment
-                                        : customControl.DefaultValue,
+                                    valueToDisplay,
                                     htmlAttributes);
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
@@ -682,15 +706,11 @@
 
                                 htmlAttributes.Add(
                                     "value",
-                                    currentTransactionCustomFieldCatalog != null
-                                        ? currentTransactionCustomFieldCatalog.Comment
-                                        : customControl.DefaultValue);
+                                    valueToDisplay);
 
                                 @Html.TextArea(
                                     "customControl_" + customControl.ID,
-                                    currentTransactionCustomFieldCatalog != null
-                                        ? currentTransactionCustomFieldCatalog.Comment
-                                        : customControl.DefaultValue,
+                                    valueToDisplay,
                                     htmlAttributes);
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
@@ -734,13 +754,13 @@
                                         @*<input id="customControl_@customControl.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />*@
 
                                         @*@Html.CheckBox(
-                                            "customControl_" + customControl.ID,
-                                            currentTransactionCustomFieldCatalog != null
-                                                ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
-                                                : customControlValueCatalog.IsDefaultValue,
-                                            htmlAttributes)*@
+                                        "customControl_" + customControl.ID,
+                                        currentTransactionCustomFieldCatalog != null
+                                            ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
+                                            : customControlValueCatalog.IsDefaultValue,
+                                        htmlAttributes)*@
                                     }
-                                    </div>
+                                </div>
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.RADIO_BUTTON:
                                 htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-radio";
@@ -788,7 +808,7 @@
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
                                 htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-select";
 
-                                <select class="custom-control-multiple custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" @(customControl.IsRequired ? "required" : string.Empty) >
+                                <select class="custom-control-multiple custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" @(customControl.IsRequired ? "required" : string.Empty)>
                                     <option value="">Seleccionar</option>
                                     @{
                                         foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
@@ -828,7 +848,7 @@
         </div>
     </div>
 
-    @{ 
+    @{
         int[] levelZeroAttributeIDArray = Model.Form.AttributeList.Where(e => e.ParentAttributeID == null || e.ParentAttributeID <= 0).Select(e => e.ID).ToArray();
     }
 
@@ -1482,13 +1502,13 @@
                      data-order="@formBIField.Order">
                     <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(currentBusinessIntelligenceField.Description) ? currentBusinessIntelligenceField.Description : currentBusinessIntelligenceField.Name)">
                         @*@if (currentBusinessIntelligenceField.ParentBIFieldID > 0)
-                    {
-                    }*@
+                            {
+                            }*@
                         <div class="d-flex justify-content-center align-content-center">
                             <input class="bifield-checked me-3" type="checkbox" value="true" @(currentTransactionBIFieldCatalog != null ? currentTransactionBIFieldCatalog.Checked ? "checked" : string.Empty : string.Empty) />
                         </div>
                         @*<span>ID-@currentBusinessIntelligenceField.ID-</span>
-                    <span>@(currentBusinessIntelligenceField.ParentBIFieldID == null || @currentBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + currentBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
+                            <span>@(currentBusinessIntelligenceField.ParentBIFieldID == null || @currentBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + currentBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
                         <span>@currentBusinessIntelligenceField.Name</span>
                     </div>
                     <div class="col-4 bifield-comment-container">
@@ -1619,13 +1639,13 @@
                                 <div class="bifield-marginator px-4 d-inline-block"></div>
                             }
                             @*@if (childBusinessIntelligenceField.ParentBIFieldID > 0)
-                        {
-                        }*@
+                                {
+                                }*@
                             <div class="d-flex justify-content-center align-content-center">
                                 <input class="bifield-checked me-3" type="checkbox" value="true" @(currentChildTransactionBIFieldCatalog != null ? currentChildTransactionBIFieldCatalog.Checked ? "checked" : string.Empty : string.Empty) />
                             </div>
                             @*<span>ID-@childBusinessIntelligenceField.ID-</span>
-                        <span>@(childBusinessIntelligenceField.ParentBIFieldID == null || @childBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + childBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
+                                <span>@(childBusinessIntelligenceField.ParentBIFieldID == null || @childBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + childBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
                             <span>@childBusinessIntelligenceField.Name</span>
                         </div>
                         <div class="col-4 bifield-comment-container">
@@ -2885,7 +2905,7 @@
 
         let firstMissingElement = null;
 
-        for (var i = 0; i < requiredElements.length; i++) {
+        for (let i = 0; i < requiredElements.length; i++) {
             if (!requiredElements[i].value) {
                 if (!firstMissingElement) {
                     firstMissingElement = requiredElements[i];
@@ -3296,7 +3316,7 @@
                 let transactionCustomField = {};
 
                 if (valueIDArray.length > 0) {
-                    for (var i = 0; i < valueIDArray.length; i++) {
+                    for (let i = 0; i < valueIDArray.length; i++) {
                         transactionCustomField =
                         {
                             "ID": transactionCustomFieldID ?? 0,
@@ -3374,7 +3394,7 @@
 
             const attributesToCheck = transactionAttributeList.filter(e => e.ValueID != null || e.Checked);
 
-            for (var i = 0; i < attributesToCheck.length; i++) {
+            for (let i = 0; i < attributesToCheck.length; i++) {
                 const currentAttribute = attributesToCheck[i];
 
                 if (hasChildren(currentAttribute.AttributeID)) {
@@ -3429,7 +3449,7 @@
 
             const elements = $('.transaction-comment-disputation');
 
-            for (var i = 0; i < elements.length; i++) {
+            for (let i = 0; i < elements.length; i++) {
                 const currentElement = elements[i];
 
                 const currentComment = {
@@ -3478,7 +3498,7 @@
 
             const elements = $('.transaction-comment-invalidation');
 
-            for (var i = 0; i < elements.length; i++) {
+            for (let i = 0; i < elements.length; i++) {
                 const currentElement = elements[i];
 
                 const currentComment = {
@@ -3527,7 +3547,7 @@
 
             const elements = $('.transaction-comment-devolution, .transaction-comment-devolution-improvement-steps, .transaction-comment-devolution-user-strengths');
 
-            for (var i = 0; i < elements.length; i++) {
+            for (let i = 0; i < elements.length; i++) {
                 const currentElement = elements[i];
 
                 const currentComment = {
@@ -3564,4 +3584,50 @@
             });
         }
     });
+
+    $('#btnPasteTransactionDate').on('click', function () {
+        handlePaste();
+    });
+
+    async function handlePaste() {
+        const datetimeInput = $('input[name="transactionTransactionDate"]');
+
+        try {
+            const clipboardItems = await navigator.clipboard.read();
+
+            if (clipboardItems.length > 0) {
+                // Convert the Blob to text
+                let pastedText = await clipboardItems[0].getType('text/plain').then(textBlob => textBlob.text());
+                pastedText = pastedText.trim();
+
+                const dateFormats = ['DD/MM/YYYY HH:mm:ss', 'DD/MM/YY HH:mm:ss'];
+                let parsedDate;
+
+                for (const format of dateFormats) {
+                    console.log('Test 1: ' + pastedText);
+                    console.log('Test 2: ' + format);
+                    parsedDate = await parseDateString(pastedText, format);
+                    console.log('Test 3: ' + parsedDate);
+                    if (parsedDate.isValid()) {
+                        break;
+                    }
+                }
+
+                if (parsedDate.isValid()) {
+                    const formattedDate = parsedDate.format('YYYY-MM-DDTHH:mm');
+                    datetimeInput.val(formattedDate);
+                } else {
+                    alert('No se recibió un formato de fecha aceptable por el campo de la fecha de transacción.');
+                }
+            } else {
+                alert('El portapapeles está vacío.');
+            }
+        } catch (error) {
+            console.error('Error al leer el portapapeles:', error);
+        }
+    }
+
+    function parseDateString(dateString, format) {
+        return moment(dateString, format, true);
+    }
 </script>

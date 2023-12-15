@@ -165,6 +165,31 @@ namespace SCC_DATA.Queries
 				}
 			}
 
+			public struct SelectByPermissionID
+			{
+				public const string NAME = "[dbo].[usp_UserSelectByPermissionID]";
+
+				public struct Parameters
+				{
+					public const string ROLE_ID = "@permissionID";
+				}
+
+				public struct ResultFields
+				{
+					public const string ID = "ID";
+					public const string PERSONID = "PersonID";
+					public const string USERNAME = "Username";
+					public const string PASSWORD = "Password";
+					public const string SALT = "Salt";
+					public const string EMAIL = "Email";
+					public const string STARTDATE = "StartDate";
+					public const string LANGUAGEID = "LanguageID";
+					public const string HASPASSPERMISSION = "HasPassPermission";
+					public const string LASTLOGINDATE = "LastLoginDate";
+					public const string BASICINFOID = "BasicInfoID";
+				}
+			}
+
 			public struct SelectEvaluatorList
 			{
 				public const string NAME = "[dbo].[usp_UserEvaluatorSelect]";

@@ -150,13 +150,14 @@ namespace SCC.Controllers
                 transactionFormViewModel.Transaction.CalibratedTransactionID = calibratedTransactionID;
                 transactionFormViewModel.Transaction.TypeID = typeID;
 
+                Transaction currentCalibratedTransaction = null;
+
                 if (calibratedTransactionID != null && calibratedTransactionID > 0)
                 {
-                    using (Transaction currentCalibratedTransaction = new Transaction(calibratedTransactionID.Value))
-                    {
-                        currentCalibratedTransaction.SetDataByID(true);
-                        transactionFormViewModel.Transaction.UserToEvaluateID = currentCalibratedTransaction.UserToEvaluateID;
-                    }
+                    currentCalibratedTransaction = new Transaction(calibratedTransactionID.Value);
+
+                    currentCalibratedTransaction.SetDataByID(true);
+                    transactionFormViewModel.Transaction.UserToEvaluateID = currentCalibratedTransaction.UserToEvaluateID;
                 }
 
                 if (transactionID != null)
@@ -202,6 +203,35 @@ namespace SCC.Controllers
                         transactionFormViewModel.Form.SetDataByID();
                         return PartialView(transactionFormViewModel);
                     }
+                }
+
+                if (calibratedTransactionID != null)
+                {
+                    string callID = string.Empty;
+
+                    int callIDCustomControlID =
+                        transactionFormViewModel.Form.CustomControlList
+                            .Where(e =>
+                                e.Label.Trim().Substring(0, 2).ToUpper().Equals("ID") &&
+                                e.Label.ToLower().Contains("llamada") &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DISABLED)
+                            .FirstOrDefault().ID;
+
+                    int callIDCustomFieldID =
+                        transactionFormViewModel.Form.CustomFieldList
+                            .Where(e =>
+                                e.CustomControlID == callIDCustomControlID &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED &&
+                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED)
+                            .FirstOrDefault().ID;
+
+                    callID = currentCalibratedTransaction.CustomFieldList
+                        .Where(e => e.CustomFieldID == callIDCustomFieldID)
+                        .FirstOrDefault().Comment;
+
+                    ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.CustomControlID.NAME] = callIDCustomControlID;
+                    ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.Content.NAME] = callID;
                 }
 
                 SaveProcessingInformation<SCC_BL.Results.Transaction.FormView.Error>();

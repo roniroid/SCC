@@ -723,7 +723,7 @@
     <table class="display cell-border" id="tbInfo">
         <thead>
             <tr>
-                <th class="d-flex justify-content-center align-content-center">
+                <th class="@*d-flex justify-content-center align-content-center*@">
                     <input class="transaction-selected-all" type="checkbox" />
                 </th>
                 <th>
@@ -795,7 +795,9 @@
                             List<Program> allProgramList = (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Search.AllProgramList.NAME];
 
                             ProgramFormCatalog programFormCatalog = programFormCatalogList.Where(e => e.FormID == transaction.FormID).LastOrDefault();
-                            programID = programFormCatalogList.FirstOrDefault().ProgramID; 
+
+                            //programID = programFormCatalogList.FirstOrDefault().ProgramID; 
+                            programID = programFormCatalog.ProgramID; 
                             
                             Program program = allProgramList.Where(e => e.ID == programID.Value).FirstOrDefault();
                         }

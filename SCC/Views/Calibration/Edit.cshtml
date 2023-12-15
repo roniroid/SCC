@@ -70,6 +70,7 @@
                                         title = "Fecha de inicio",
                                         autocomplete = "off",
                                         type = "datetime-local",
+                                        min = $"{DateTime.Now.Year:0000}-{DateTime.Now.Month:00}-{DateTime.Now.Day:00}T{DateTime.Now.Hour:00}:{DateTime.Now.Minute:00}",
                                         @Value =
                                             Model.Calibration.StartDate != null
                                                 ? (Model.Calibration.StartDate.Year > 2000
@@ -95,6 +96,7 @@
                                         title = "Fecha de finalización",
                                         autocomplete = "off",
                                         type = "datetime-local",
+                                        min = $"{DateTime.Now.Year:0000}-{DateTime.Now.Month:00}-{DateTime.Now.Day:00}T{DateTime.Now.Hour:00}:{DateTime.Now.Minute:00}",
                                         @Value =
                                             Model.Calibration.EndDate != null
                                                 ? (Model.Calibration.EndDate.Year > 2000
@@ -163,7 +165,7 @@
                         </div>
                         <div class="row property-field">
                             <div class="col-5 property-field-label">
-                                Calibradores
+                                Calibradores <span class="possibly-required pointer-question" title="Requerido si no existen grupos seleccionados">*</span>
                             </div>
                             <div class="col-7">
                                 @Html.DropDownList(
@@ -183,7 +185,7 @@
                         </div>
                         <div class="row property-field">
                             <div class="col-5 property-field-label">
-                                Grupos de calibradores
+                                Grupos de calibradores <span class="possibly-required pointer-question" title="Requerido si no existen calibradores seleccionados">*</span>
                             </div>
                             <div class="col-7">
                                 @Html.DropDownList(

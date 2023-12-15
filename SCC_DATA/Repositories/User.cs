@@ -229,6 +229,29 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
+		public System.Data.DataTable SelectByPermissionID(int permissionID)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					SqlParameter[] parameters = new SqlParameter[] {
+						db.CreateParameter(Queries.User.StoredProcedures.SelectByPermissionID.Parameters.ROLE_ID, permissionID, System.Data.SqlDbType.Int)
+					};
+
+					return
+						db.Select(
+							Queries.User.StoredProcedures.SelectByPermissionID.NAME,
+							parameters
+						);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
 		public System.Data.DataTable SelectEvaluatorList()
 		{
 			try

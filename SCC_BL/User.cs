@@ -183,6 +183,90 @@ namespace SCC_BL
 				.ToList();
 		}
 
+		public List<User> SelectByPermissionID(int permissionID, bool simplifiedData = false)
+		{
+			List<User> userList = new List<User>();
+
+			using (SCC_DATA.Repositories.User repoUser = new SCC_DATA.Repositories.User())
+			{
+				DataTable dt = repoUser.SelectByPermissionID(permissionID);
+
+				foreach (DataRow dr in dt.Rows)
+				{
+					User user = new User(
+						Convert.ToInt32(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.ID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.PERSONID]),
+						Convert.ToString(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.USERNAME]),
+                        /*(byte[])(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.PASSWORD]),
+						(byte[])(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.SALT]),*/
+                        Convert.ToString(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.EMAIL]),
+						Convert.ToDateTime(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.STARTDATE]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.LANGUAGEID]),
+						Convert.ToBoolean(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.HASPASSPERMISSION]),
+						Convert.ToDateTime(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.LASTLOGINDATE]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByPermissionID.ResultFields.BASICINFOID])
+					);
+
+					user.BasicInfo = new BasicInfo(user.BasicInfoID);
+					user.BasicInfo.SetDataByID();
+
+					user.Person = new Person(user.PersonID);
+					user.Person.SetDataByID();
+
+					if (!simplifiedData)
+                    {
+                        user.UserWorkspaceCatalogList = SCC_BL.UserWorkspaceCatalog.UserWorkspaceCatalogWithUserID(user.ID).SelectByUserID();
+
+                        user.SupervisorList = UserSupervisorCatalog.UserSupervisorCatalogWithUserID(user.ID).SelectByUserID();
+
+                        user.RoleList = UserRoleCatalog.UserRoleCatalogWithUserID(user.ID).SelectByUserID();
+
+                        user.PermissionList = UserPermissionCatalog.UserPermissionCatalogWithUserID(user.ID).SelectByUserID();
+
+                        user.GroupList = UserGroupCatalog.UserGroupCatalogWithUserID(user.ID).SelectByUserID();
+
+                        user.ProgramList = UserProgramCatalog.UserProgramCatalogWithUserID(user.ID).SelectByUserID();
+
+                        user.ProgramGroupList = UserProgramGroupCatalog.UserProgramGroupCatalogWithUserID(user.ID).SelectByUserID();
+
+                        user.SetCurrentProgramList();
+
+                        user.SetWorkspaceList();
+                    }
+
+                    userList.Add(user);
+				}
+			}
+
+			/*return userList
+				.OrderBy(o => new { o.Person.SurName, o.Person.FirstName })
+				.ToList();*/
+
+			return userList
+				.OrderBy(o => o.Person.SurName)
+				.ThenBy(o => o.Person.FirstName)
+				.ToList();
+		}
+
+		public int[] SelectIDArrayByPermissionID(int permissionID)
+		{
+            int[] userIDArray = new int[0];
+
+			using (SCC_DATA.Repositories.User repoUser = new SCC_DATA.Repositories.User())
+			{
+				DataTable dt = repoUser.SelectByPermissionID(permissionID);
+                userIDArray = new int[dt.Rows.Count];
+
+				for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    int userID = Convert.ToInt32(dt.Rows[i][SCC_DATA.Queries.User.StoredProcedures.SelectByRoleID.ResultFields.ID]);
+                    userIDArray[i] = userID;
+                }
+			}
+
+			return userIDArray;
+		}
+
 		void SetWorkspaceList()
 		{
 			this.WorkspaceList = new List<Workspace>();
