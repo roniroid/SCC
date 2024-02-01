@@ -1,9 +1,11 @@
-﻿using DocumentFormat.OpenXml.Packaging;
+﻿using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Packaging;
 using SCC.ViewModels;
 using SCC_BL;
 using SCC_BL.Tools;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -35,53 +37,92 @@ namespace SCC.Controllers
             List<Group> groupList = new List<Group>();
             List<Program> programList = new List<Program>();
 
+            //Starts filling all data
+
             using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.USER_LANGUAGE))
-                languageList = 
-                    catalog.SelectByCategoryID()
+                languageList = catalog.SelectByCategoryID();
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
+                countryList = catalog.SelectByCategoryID();
+
+            using (User user = new User())
+                supervisorList = user.SelectAll(true);
+
+            using (Workspace workspace = new Workspace())
+                workspaceList = workspace.SelectAll();
+
+            using (Role role = new Role())
+                roleList = role.SelectAll();
+
+            using (Group group = new Group())
+                groupList = group.SelectAll();
+
+            using (Program program = new Program())
+                programList = program.SelectAll();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.LanguageCatalog.NAME] = languageList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.CountryCatalog.NAME] = countryList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Supervisor.NAME] = supervisorList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Workspace.NAME] = workspaceList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.RoleCatalog.NAME] = roleList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Group.NAME] = groupList;
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Program.NAME] = programList;
+
+            //Ends filling all data
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.USER_LANGUAGE))
+                languageList =
+                    languageList
                         .Where(e => e.Active)
                         .ToList();
 
             using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
-                countryList = 
-                    catalog.SelectByCategoryID()
+                countryList =
+                    countryList
                         .Where(e => e.Active)
                         .ToList();
 
             using (User user = new User())
-                supervisorList = 
-                    user.SelectByRoleID((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERVISOR)
+                supervisorList =
+                    supervisorList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .ToList();
 
             using (Workspace workspace = new Workspace())
-                workspaceList = 
-                    workspace.SelectAll()
+                workspaceList =
+                    workspaceList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DISABLED)
                         .ToList();
 
             using (Role role = new Role())
-                roleList = 
-                    role.SelectAll()
+                roleList =
+                    roleList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DISABLED)
                         .ToList();
 
             using (Group group = new Group())
-                groupList = 
-                    group.SelectAll()
+                groupList =
+                    groupList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DISABLED)
                         .ToList();
 
             using (Program program = new Program())
-                programList = 
-                    program.SelectAll()
+                programList =
+                    programList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
@@ -103,7 +144,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Supervisor.NAME] =
                 new MultiSelectList(
-                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    supervisorList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     userManagementViewModel.User.SupervisorList.Select(s => s.SupervisorID));
@@ -114,6 +155,17 @@ namespace SCC.Controllers
                     SCC_BL.Settings.AppValues.ViewData.User.Edit.Workspace.SelectList.VALUE,
                     SCC_BL.Settings.AppValues.ViewData.User.Edit.Workspace.SelectList.TEXT,
                     userManagementViewModel.User.UserWorkspaceCatalogList.Select(s => s.WorkspaceID));
+
+            if (
+                !GetActualUser().RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.ADMINISTRATOR) &&
+                !GetActualUser().RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER))
+            {
+                roleList =
+                    roleList
+                        .Where(e => e.ID != (int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER)
+                        .OrderBy(e => e.Name)
+                        .ToList();
+            }
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.RoleCatalog.NAME] =
                 new MultiSelectList(
@@ -183,12 +235,11 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -208,7 +259,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignRolesAndPermissions.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     userID != null
@@ -314,12 +365,11 @@ namespace SCC.Controllers
 
             using (User user = new User())
                 userList =
-                    user.SelectAll()
+                    user.SelectAll(true)
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
                         .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
@@ -339,7 +389,7 @@ namespace SCC.Controllers
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.UserList.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
                     userID != null
@@ -754,7 +804,15 @@ namespace SCC.Controllers
             Person oldPerson = new Person(userPerson.Person.ID);
             oldPerson.SetDataByID();
 
-            Person newPerson = new Person(userPerson.Person.ID, userPerson.Person.Identification, userPerson.Person.FirstName, userPerson.Person.SurName, userPerson.Person.LastName, userPerson.Person.CountryID, userPerson.Person.BasicInfoID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.UPDATED);
+            Person newPerson = new Person(
+                userPerson.Person.ID, 
+                userPerson.Person.Identification, 
+                userPerson.Person.FirstName, 
+                userPerson.Person.SurName,
+                userPerson.Person.CountryID, 
+                userPerson.Person.BasicInfoID, 
+                GetActualUser().ID, 
+                (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.UPDATED);
             try
             {
                 int result = newPerson.Update();
@@ -935,7 +993,13 @@ namespace SCC.Controllers
             if (supervisorStartDate == null) supervisorStartDate = DateTime.Now;
             if (workspaceStartDate == null) workspaceStartDate = DateTime.Now;
 
-            Person newPerson = new Person(userPerson.Person.Identification, userPerson.Person.FirstName, userPerson.Person.SurName, userPerson.Person.LastName, userPerson.Person.CountryID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
+            Person newPerson = new Person(
+                userPerson.Person.Identification, 
+                userPerson.Person.FirstName, 
+                userPerson.Person.SurName, 
+                userPerson.Person.CountryID, 
+                GetActualUser().ID, 
+                (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
 
             try
             {
@@ -1016,13 +1080,13 @@ namespace SCC.Controllers
                     }
                     catch (Exception ex)
                     {
-                        SaveProcessingInformation<SCC_BL.Results.User.Insert.Error>(ex);
+                        SaveProcessingInformation<SCC_BL.Results.User.Insert.Error>(null, null, newUser, ex);
                     }
                 }
             }
             catch (Exception ex)
             {
-                SaveProcessingInformation<SCC_BL.Results.Person.Insert.Error>(ex);
+                SaveProcessingInformation<SCC_BL.Results.Person.Insert.Error>(null, null, newPerson, ex);
             }
 
             return RedirectToAction(nameof(UserController.Manage), _mainControllerName);
@@ -1030,7 +1094,10 @@ namespace SCC.Controllers
 
         public ActionResult LogIn()
         {
-            return View();
+            if (GetActualUser() == null)
+                return View();
+            else
+                return RedirectToAction(nameof(Index), GetControllerName(typeof(HomeController)));
         }
 
         [HttpPost]
@@ -1150,7 +1217,7 @@ namespace SCC.Controllers
                     return RedirectToAction(nameof(UserController.SignIn), _mainControllerName);
                 }
 
-                person = new Person(userPerson.Person.Identification, userPerson.Person.FirstName, userPerson.Person.SurName, userPerson.Person.LastName, userPerson.Person.CountryID, null, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
+                person = new Person(userPerson.Person.Identification, userPerson.Person.FirstName, userPerson.Person.SurName, userPerson.Person.CountryID, null, (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
 
                 int result = person.CheckExistence();
 
@@ -1256,35 +1323,44 @@ namespace SCC.Controllers
 
         public ActionResult MassivePasswordChange()
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
+            List<User> userList = new List<User>();
+
+            /*if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
             {
                 SaveProcessingInformation<SCC_BL.Results.User.PasswordChange.NotAllowedToChangeOtherUsersPasswords>();
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
-            }
-
-            List<User> userList = new List<User>();
-
-            using (User user = new User())
+            }*/
+            
+            if (GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
             {
-                userList =
-                    user.SelectAll()
-                        .OrderBy(o => o.Person.SurName)
-                        .ThenBy(o => o.Person.LastName)
-                        .ThenBy(o => o.Person.FirstName)
-                        .ToList();
+                using (User user = new User())
+                {
+                    userList =
+                        user.SelectAll(true)
+                            .OrderBy(o => o.Person.SurName)
+                            .ThenBy(o => o.Person.FirstName)
+                            .ToList();
+                }
+            }
+            else
+            {
+                userList.Add(GetActualUser());
             }
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.MassivePasswordChange.User.NAME] =
                 new MultiSelectList(
-                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }" }),
+                    userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
-                    "Value");
+                    "Value",
+                    !GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS)
+                        ? new int[] { GetActualUser().ID }
+                        : null);
             
             /*Dictionary<int, string> userListDictionary = new Dictionary<int, string>();
 
             userList
                 .ForEach(e => {
-                    userListDictionary.Add(e.ID, $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.LastName } { e.Person.FirstName }");
+                    userListDictionary.Add(e.ID, $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }");
                 });
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.MassivePasswordChange.User.NAME] =
@@ -1312,7 +1388,7 @@ namespace SCC.Controllers
                 switch (user.ProcessPasswordRecovery(password, GetActualUser().ID, user.BasicInfo.StatusID))
                 {
                     case SCC_BL.Results.User.PasswordRecovery.CODE.SUCCESS:
-                        SendMail(SCC_BL.Settings.AppValues.MailTopic.CHANGE_PASSWORD, user, password);
+                        //SendMail(SCC_BL.Settings.AppValues.MailTopic.CHANGE_PASSWORD, user, password);
                         SaveProcessingInformation<SCC_BL.Results.User.PasswordChange.Success>(user.ID, user.BasicInfo.StatusID, user);
                         break;
                     case SCC_BL.Results.User.PasswordRecovery.CODE.ERROR:
@@ -1357,7 +1433,7 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult MassiveImport(HttpPostedFileBase file)
+        public ActionResult MassiveImport(HttpPostedFileBase file, bool modifyExistingOnes = false)
         {
             string filePath = SaveUploadedFile(file, SCC_BL.Settings.Paths.User.MASSIVE_IMPORT_FOLDER);
 
@@ -1376,7 +1452,7 @@ namespace SCC.Controllers
                         SaveProcessingInformation<SCC_BL.Results.UploadedFile.Insert.Success>(uploadedFile.ID, uploadedFile.BasicInfo.StatusID, uploadedFile);
                     }
 
-                    SCC_BL.Results.UploadedFile.UserMassiveImport.CODE result = ProcessImportExcel(filePath);
+                    SCC_BL.Results.UploadedFile.UserMassiveImport.CODE result = ProcessImportExcel(filePath, modifyExistingOnes);
 
                     switch (result)
                     {
@@ -1399,7 +1475,7 @@ namespace SCC.Controllers
             return RedirectToAction(nameof(UserController.MassiveImport));
         }
 
-        public SCC_BL.Results.UploadedFile.UserMassiveImport.CODE ProcessImportExcel(string filePath)
+        public SCC_BL.Results.UploadedFile.UserMassiveImport.CODE ProcessImportExcel(string filePath, bool modifyExistingOnes = false)
         {
             List<User> userList = new List<User>();
 
@@ -1407,138 +1483,343 @@ namespace SCC.Controllers
 
             using (SCC_BL.Tools.ExcelParser excelParser = new ExcelParser())
             {
-                linesWithErrors = ProcessExcelForMassiveImport(filePath);
+                userList = ProcessExcelForMassiveImport(filePath, modifyExistingOnes);
             }
 
-            if (linesWithErrors.Count() > 0)
-                return SCC_BL.Results.UploadedFile.UserMassiveImport.CODE.ERROR;
-            else
-                return SCC_BL.Results.UploadedFile.UserMassiveImport.CODE.SUCCESS;
-        }
-
-        public List<int> ProcessExcelForMassiveImport(string filePath)
-        {
-            List<User> elementList = new List<User>();
-
-            List<int> linesWithErrors = new List<int>();
-
-            try
+            foreach (User user in userList)
             {
-                using (SpreadsheetDocument document = SpreadsheetDocument.Open(filePath, false))
+                try
                 {
-                    WorkbookPart wbPart = document.WorkbookPart;
-                    var workSheet = wbPart.Workbook.Descendants<DocumentFormat.OpenXml.Spreadsheet.Sheet>().FirstOrDefault();
-                    if (workSheet != null)
+                    if (string.IsNullOrEmpty(user.Username))
                     {
-                        WorksheetPart wsPart = (WorksheetPart)(wbPart.GetPartById(workSheet.Id));
-                        IEnumerable<DocumentFormat.OpenXml.Spreadsheet.Row> rows = wsPart.Worksheet.Descendants<DocumentFormat.OpenXml.Spreadsheet.Row>();
-                        var headersCount = rows.ElementAt(0).Count();
+                        SaveProcessingInformation<SCC_BL.Results.User.Insert.UsernameNotSet>(null, null, user);
 
-                        int rowCount = 1;
+                        linesWithErrors.Add(user.ExcelRowCount);
 
-                        foreach (DocumentFormat.OpenXml.Spreadsheet.Row row in rows.Skip(1))
+                        continue;
+                    }
+
+                    int existingPersonID = 0;
+
+                    using (SCC_BL.Person auxPerson = new SCC_BL.Person(user.Person.Identification))
+                    {
+                        existingPersonID = auxPerson.CheckExistence();
+                    }
+
+                    if (existingPersonID <= 0)
+                    {
+                        int resultPersonInserted = 0;
+                        int resultUserInserted = 0;
+
+                        try
                         {
-                            using (SCC_BL.Tools.ExcelParser excelParser = new ExcelParser())
+                            resultPersonInserted = user.Person.Insert();
+                        }
+                        catch (Exception ex)
+                        {
+                            SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(
+                                null, 
+                                null, 
+                                user.Person, 
+                                new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_PERSON_NOT_INSERTED
+                                    .Replace(SCC_BL.Results.CommonElements.REPLACE_JSON_INFO , ex.ToString())));
+
+                            linesWithErrors.Add(user.ExcelRowCount);
+
+                            continue;
+                        }
+
+                        if (resultPersonInserted > 0)
+                        {
+                            user.PersonID = user.Person.ID;
+
+                            try
                             {
-                                var newRow = excelParser.GetRowCells(row, headersCount).ToArray();
+                                resultUserInserted = user.Insert();
+                            }
+                            catch (Exception ex)
+                            {
+                                SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(
+                                    null,
+                                    null,
+                                    user,
+                                    new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_USER_NOT_INSERTED
+                                        .Replace(SCC_BL.Results.CommonElements.REPLACE_JSON_INFO, ex.ToString())));
 
-                                try
-                                {
-                                    User user = new User(newRow, GetActualUser().ID);
+                                user.Person.DeleteByID();
 
-                                    if (!string.IsNullOrEmpty(user.Username))
-                                    {
-                                        int result = user.Person.Insert();
+                                linesWithErrors.Add(user.ExcelRowCount);
 
-                                        if (result > 0)
-                                        {
-                                            user.PersonID = user.Person.ID;
-
-                                            result = user.Insert();
-
-                                            SendMail(SCC_BL.Settings.AppValues.MailTopic.USER_CREATION, user, user.RawPassword);
-
-                                            if (result > 0)
-                                            {
-                                                using (User auxUser = new User(user.ID))
-                                                {
-                                                    auxUser.SetDataByID();
-
-                                                    if (user.SupervisorList.Count > 0)
-                                                        auxUser.UpdateSupervisorList(
-                                                            user.SupervisorList.Select(e => e.SupervisorID).ToArray(),
-                                                            user.SupervisorList.FirstOrDefault().StartDate,
-                                                            user.BasicInfo.CreationUserID.Value
-                                                        );
-
-                                                    if (user.UserWorkspaceCatalogList.Count > 0)
-                                                        auxUser.UpdateWorkspaceList(
-                                                            user.UserWorkspaceCatalogList.Select(e => e.WorkspaceID).ToArray(),
-                                                            user.UserWorkspaceCatalogList.FirstOrDefault().StartDate,
-                                                            user.BasicInfo.CreationUserID.Value
-                                                        );
-
-                                                    if (user.RoleList.Count > 0)
-                                                        auxUser.UpdateRoleList(
-                                                            user.RoleList.Select(e => e.RoleID).ToArray(),
-                                                            user.BasicInfo.CreationUserID.Value
-                                                        );
-
-                                                    if (user.GroupList.Count > 0)
-                                                        auxUser.UpdateGroupList(
-                                                            user.GroupList.Select(e => e.GroupID).ToArray(),
-                                                            user.BasicInfo.CreationUserID.Value
-                                                        );
-
-                                                    if (user.ProgramList.Count > 0)
-                                                        auxUser.UpdateProgramList(
-                                                            user.ProgramList.Select(e => e.ProgramID).ToArray(),
-                                                            user.BasicInfo.CreationUserID.Value
-                                                        );
-                                                }
-
-                                                elementList.Add(user);
-                                            }
-                                            else
-                                            {
-                                                user.Person.DeleteByID();
-
-                                                SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(null, null, user, new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_USER_NOT_INSERTED));
-                                            }
-                                        }
-                                        else
-                                        {
-                                            switch ((SCC_BL.Results.Person.Insert.CODE)result)
-                                            {
-                                                case SCC_BL.Results.Person.Insert.CODE.ALREADY_EXISTS:
-                                                    Person foundPerson = new Person(user.Person.Identification);
-                                                    foundPerson.SetDataByIdentification();
-
-                                                    SaveProcessingInformation<SCC_BL.Results.Person.Insert.AlreadyExists>(foundPerson.ID, foundPerson.BasicInfo.StatusID, user.Person);
-                                                    break;
-                                                default:
-                                                    SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(null, null, user.Person, new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_PERSON_NOT_INSERTED));
-                                                    break;
-                                            }
-                                        }
-                                    }
-                                }
-                                catch (Exception ex)
-                                {
-                                    linesWithErrors.Add(rowCount);
-                                    Session[SCC_BL.Settings.AppValues.Session.ERROR_COUNT] = linesWithErrors;
-                                    SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(null, null, newRow, ex);
-                                }
+                                continue;
                             }
 
-                            rowCount++;
+                            SendMail(SCC_BL.Settings.AppValues.MailTopic.USER_CREATION, user, user.RawPassword);
+
+                            if (resultUserInserted > 0)
+                            {
+                                using (User auxUser = new User(user.ID))
+                                {
+                                    auxUser.SetDataByID();
+
+                                    if (user.SupervisorList.Count > 0)
+                                        auxUser.UpdateSupervisorList(
+                                            user.SupervisorList.Select(e => e.SupervisorID).ToArray(),
+                                            user.SupervisorList.FirstOrDefault().StartDate,
+                                            user.BasicInfo.CreationUserID.Value
+                                        );
+
+                                    if (user.UserWorkspaceCatalogList.Count > 0)
+                                        auxUser.UpdateWorkspaceList(
+                                            user.UserWorkspaceCatalogList.Select(e => e.WorkspaceID).ToArray(),
+                                            user.UserWorkspaceCatalogList.FirstOrDefault().StartDate,
+                                            user.BasicInfo.CreationUserID.Value
+                                        );
+
+                                    if (user.RoleList.Count > 0)
+                                        auxUser.UpdateRoleList(
+                                            user.RoleList.Select(e => e.RoleID).ToArray(),
+                                            user.BasicInfo.CreationUserID.Value
+                                        );
+
+                                    if (user.GroupList.Count > 0)
+                                        auxUser.UpdateGroupList(
+                                            user.GroupList.Select(e => e.GroupID).ToArray(),
+                                            user.BasicInfo.CreationUserID.Value
+                                        );
+
+                                    if (user.ProgramList.Count > 0)
+                                        auxUser.UpdateProgramList(
+                                            user.ProgramList.Select(e => e.ProgramID).ToArray(),
+                                            user.BasicInfo.CreationUserID.Value
+                                        );
+                                }
+                            }
+                            else
+                            {
+                                SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(null, null, user, new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_USER_NOT_INSERTED));
+
+                                user.Person.DeleteByID();
+
+                                linesWithErrors.Add(user.ExcelRowCount);
+
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(
+                                null,
+                                null,
+                                user.Person,
+                                new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_PERSON_NOT_INSERTED));
+
+                            linesWithErrors.Add(user.ExcelRowCount);
+
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (!modifyExistingOnes)
+                        {
+                            Person foundPerson = new Person(user.Person.Identification);
+                            foundPerson.SetDataByIdentification();
+
+                            SaveProcessingInformation<SCC_BL.Results.Person.Insert.AlreadyExists>(
+                                foundPerson.ID, 
+                                foundPerson.BasicInfo.StatusID, 
+                                user.Person, 
+                                new Exception(
+                                    SCC_BL.Results.Person.Insert.AlreadyExists.MESSAGE_CONTENT
+                                        .Replace(SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE, Serialize(foundPerson))));
+
+                            linesWithErrors.Add(user.ExcelRowCount);
+
+                            continue;
+                        }
+                        else
+                        {
+                            int resultPersonUpdated = 0;
+                            int resultUserUpdated = 0;
+
+                            try
+                            {
+                                Person existingPerson = new Person(existingPersonID);
+                                existingPerson.SetDataByID();
+
+                                Person newModifiedPerson = new Person(
+                                    existingPersonID, 
+                                    user.Person.Identification,
+                                    user.Person.FirstName,
+                                    user.Person.SurName,
+                                    user.Person.CountryID,
+                                    existingPerson.BasicInfoID,
+                                    GetActualUser().ID,
+                                    (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.UPDATED);
+
+                                user.Person.ID = existingPersonID;
+
+                                resultPersonUpdated = newModifiedPerson.Update();
+                                //resultPersonUpdated = user.Person.Update();
+                            }
+                            catch (Exception ex)
+                            {
+                                SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(
+                                    null,
+                                    null,
+                                    user.Person,
+                                    new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_PERSON_NOT_UPDATED
+                                        .Replace(SCC_BL.Results.CommonElements.REPLACE_JSON_INFO, ex.ToString())));
+
+                                linesWithErrors.Add(user.ExcelRowCount);
+
+                                continue;
+                            }
+
+                            if (resultPersonUpdated > 0)
+                            {
+                                int existingUserID = 0;
+
+                                using (SCC_BL.User auxUser = new SCC_BL.User(user.Username))
+                                {
+                                    existingUserID = auxUser.CheckExistence();
+                                }
+
+                                user.PersonID = user.Person.ID;
+
+                                if (existingUserID <= 0)
+                                {
+                                    try
+                                    {
+                                        resultUserUpdated = user.Insert();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(
+                                            null,
+                                            null,
+                                            user,
+                                            new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_USER_NOT_INSERTED
+                                                .Replace(SCC_BL.Results.CommonElements.REPLACE_JSON_INFO, ex.ToString())));
+
+                                        linesWithErrors.Add(user.ExcelRowCount);
+
+                                        continue;
+                                    }
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        User existingUser = new User(existingUserID);
+                                        existingUser.SetDataByID();
+
+                                        //int id, string username, string email, DateTime startDate, int languageID, bool hasPassPermission, int basicInfoID, int modificationUserID, int statusID
+                                        User newModifiedUser = new User(
+                                            existingUserID,
+                                            user.Username,
+                                            user.Email,
+                                            user.StartDate,
+                                            user.LanguageID,
+                                            user.HasPassPermission,
+                                            existingUser.BasicInfoID,
+                                            GetActualUser().ID,
+                                            (int)SCC_BL.DBValues.Catalog.STATUS_USER.UPDATED);
+
+                                        user.ID = existingUserID;
+
+                                        resultUserUpdated = newModifiedUser.Update();
+                                        //resultUserUpdated = user.Update();
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(
+                                            null,
+                                            null,
+                                            user,
+                                            new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_USER_NOT_UPDATED
+                                                .Replace(SCC_BL.Results.CommonElements.REPLACE_JSON_INFO, ex.ToString())));
+
+                                        linesWithErrors.Add(user.ExcelRowCount);
+
+                                        continue;
+                                    }
+                                }
+
+                                SendMail(SCC_BL.Settings.AppValues.MailTopic.USER_CREATION, user, user.RawPassword);
+
+                                if (resultUserUpdated > 0)
+                                {
+                                    using (User auxUser = new User(user.ID))
+                                    {
+                                        auxUser.SetDataByID();
+
+                                        if (user.SupervisorList.Count > 0)
+                                            auxUser.UpdateSupervisorList(
+                                                user.SupervisorList.Select(e => e.SupervisorID).ToArray(),
+                                                user.SupervisorList.FirstOrDefault().StartDate,
+                                                user.BasicInfo.CreationUserID.Value
+                                            );
+
+                                        if (user.UserWorkspaceCatalogList.Count > 0)
+                                            auxUser.UpdateWorkspaceList(
+                                                user.UserWorkspaceCatalogList.Select(e => e.WorkspaceID).ToArray(),
+                                                user.UserWorkspaceCatalogList.FirstOrDefault().StartDate,
+                                                user.BasicInfo.CreationUserID.Value
+                                            );
+
+                                        if (user.RoleList.Count > 0)
+                                            auxUser.UpdateRoleList(
+                                                user.RoleList.Select(e => e.RoleID).ToArray(),
+                                                user.BasicInfo.CreationUserID.Value
+                                            );
+
+                                        if (user.GroupList.Count > 0)
+                                            auxUser.UpdateGroupList(
+                                                user.GroupList.Select(e => e.GroupID).ToArray(),
+                                                user.BasicInfo.CreationUserID.Value
+                                            );
+
+                                        if (user.ProgramList.Count > 0)
+                                            auxUser.UpdateProgramList(
+                                                user.ProgramList.Select(e => e.ProgramID).ToArray(),
+                                                user.BasicInfo.CreationUserID.Value
+                                            );
+                                    }
+                                }
+                                else
+                                {
+                                    SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(null, null, user, new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_USER_NOT_UPDATED));
+
+                                    linesWithErrors.Add(user.ExcelRowCount);
+
+                                    continue;
+                                }
+                            }
+                            else
+                            {
+                                SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(
+                                    null,
+                                    null,
+                                    user.Person,
+                                    new Exception(SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow.CUSTOM_ERROR_PERSON_NOT_UPDATED));
+
+                                linesWithErrors.Add(user.ExcelRowCount);
+
+                                continue;
+                            }
                         }
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.Error>(ex);
+                catch (Exception ex)
+                {
+                    linesWithErrors.Add(user.ExcelRowCount);
+
+                    Session[SCC_BL.Settings.AppValues.Session.ERROR_COUNT] = linesWithErrors;
+                    SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.ErrorSingleRow>(null, null, user.ExcelRowCount, ex);
+
+                    continue;
+                }
             }
 
             if (linesWithErrors.Count() > 0)
@@ -1563,7 +1844,82 @@ namespace SCC.Controllers
                 Session[SCC_BL.Settings.AppValues.Session.ERROR_COUNT] = null;
             }
 
-            return linesWithErrors;
+            if (linesWithErrors.Count() > 0)
+                return SCC_BL.Results.UploadedFile.UserMassiveImport.CODE.ERROR;
+            else
+                return SCC_BL.Results.UploadedFile.UserMassiveImport.CODE.SUCCESS;
+        }
+
+        public List<User> ProcessExcelForMassiveImport(string filePath, bool modifyExistingOnes = false)
+        {
+            List<User> elementList = new List<User>();
+
+            List<User> allUserList = new List<User>();
+
+            using (User user = new User())
+                allUserList = user.SelectAll(true);
+
+            List<Workspace> allWorkspaceList = new List<Workspace>();
+
+            using (Workspace workspace = new Workspace())
+                allWorkspaceList = workspace.SelectAll();
+
+            List<Role> allRoleList = new List<Role>();
+
+            using (Role role = new Role())
+                allRoleList = role.SelectAll();
+
+            List<Group> allGroupList = new List<Group>();
+
+            using (Group group = new Group())
+                allGroupList = group.SelectAll();
+
+            List<Program> allProgramList = new List<Program>();
+
+            using (Program program = new Program())
+                allProgramList = program.SelectAll();
+
+            List<Catalog> allCountryList = new List<Catalog>();
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
+                allCountryList = catalog.SelectByCategoryID();
+
+            try
+            {
+                using (SpreadsheetDocument document = SpreadsheetDocument.Open(filePath, false))
+                {
+                    WorkbookPart wbPart = document.WorkbookPart;
+                    var workSheet = wbPart.Workbook.Descendants<DocumentFormat.OpenXml.Spreadsheet.Sheet>().FirstOrDefault();
+                    if (workSheet != null)
+                    {
+                        WorksheetPart wsPart = (WorksheetPart)(wbPart.GetPartById(workSheet.Id));
+                        IEnumerable<DocumentFormat.OpenXml.Spreadsheet.Row> rows = wsPart.Worksheet.Descendants<DocumentFormat.OpenXml.Spreadsheet.Row>();
+                        var headersCount = rows.ElementAt(0).Count();
+
+                        int rowCount = 2;
+
+                        foreach (DocumentFormat.OpenXml.Spreadsheet.Row row in rows.Skip(1))
+                        {
+                            using (SCC_BL.Tools.ExcelParser excelParser = new ExcelParser())
+                            {
+                                var newRow = excelParser.GetRowCells(row, headersCount).ToArray();
+
+                                User user = new User(newRow, rowCount, GetActualUser().ID, allUserList, allWorkspaceList, allRoleList, allGroupList, allProgramList, allCountryList);
+
+                                elementList.Add(user);
+                            }
+
+                            rowCount++;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveProcessingInformation<SCC_BL.Results.UploadedFile.UserMassiveImport.Error>(ex);
+            }
+
+            return elementList;
         }
 
         public ActionResult PasswordRecovery()
@@ -1629,7 +1985,7 @@ namespace SCC.Controllers
             }
 
             User user = new User(userID);
-            user.SetDataByID();
+            user.SetDataByID(true);
 
             try
             {
@@ -1659,7 +2015,7 @@ namespace SCC.Controllers
         public ActionResult Activate(int userID, bool activate)
         {
             User user = new User(userID);
-            user.SetDataByID();
+            user.SetDataByID(true);
 
             try
             {

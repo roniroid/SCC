@@ -27,7 +27,9 @@ namespace SCC.ViewModels
         public string[] SupervisorNamesArray { get; set; }
         public string[] EvaluatorUserNamesArray { get; set; }
         public string[] BIFieldNamesArray { get; set; }
-        public Dictionary<string, string> TransactionCustomFieldCatalogNamesAndValues { get; set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> TransactionCustomFieldCatalogNamesAndValues { get; set; } = null;
+        public SCC_BL.Reports.Helpers.CustomControlByProgram CustomControlByProgram { get; set; } = new SCC_BL.Reports.Helpers.CustomControlByProgram();
+        public SCC_BL.Reports.Helpers.BusinessIntelligenceFieldByProgram BusinessIntelligenceFieldByProgram { get; set; } = new SCC_BL.Reports.Helpers.BusinessIntelligenceFieldByProgram();
 
         public class CustomControlHelper
         {
@@ -60,7 +62,7 @@ namespace SCC.ViewModels
                 using (User user = new User(this.UserIDArray[i]))
                 {
                     user.SetDataByID();
-                    this.UserNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.LastName} {user.Person.FirstName}";
+                    this.UserNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.FirstName}";
                 }
             }
 
@@ -72,7 +74,7 @@ namespace SCC.ViewModels
                 using (User user = new User(this.SupervisorUserIDArray[i]))
                 {
                     user.SetDataByID();
-                    this.SupervisorNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.LastName} {user.Person.FirstName}";
+                    this.SupervisorNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.FirstName}";
                 }
             }
 
@@ -84,7 +86,7 @@ namespace SCC.ViewModels
                 using (User user = new User(this.EvaluatorUserIDArray[i]))
                 {
                     user.SetDataByID();
-                    this.EvaluatorUserNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.LastName} {user.Person.FirstName}";
+                    this.EvaluatorUserNamesArray[i] = $"{user.Person.Identification} - {user.Person.SurName} {user.Person.FirstName}";
                 }
             }
 
@@ -105,6 +107,8 @@ namespace SCC.ViewModels
 
         void SetTransactionCustomFieldCatalogList()
         {
+            this.TransactionCustomFieldCatalogNamesAndValues = new Dictionary<string, string>();
+
             try
             {
                 List<TransactionCustomFieldCatalog> currentTransactionCustomFieldCatalogList = Controllers.OverallController.Deserialize<List<TransactionCustomFieldCatalog>>(this.TransactionCustomFieldCatalog);

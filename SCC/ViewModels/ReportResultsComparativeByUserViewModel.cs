@@ -39,6 +39,8 @@ namespace SCC.ViewModels
             public int GeneralBusinessCriticalErrorCountFail { get; set; } = 0;
             public int GeneralFulfillmentCriticalErrorCountFail { get; set; } = 0;
 
+            public double GeneralNonCriticalErrorAverageResult { get; set; } = 0;
+
             public int AccurateResultCountSuccess { get; set; } = 0;
             public int AccurateFinalUserCriticalErrorCountSuccess { get; set; } = 0;
             public int AccurateBusinessCriticalErrorCountSuccess { get; set; } = 0;
@@ -49,6 +51,8 @@ namespace SCC.ViewModels
             public int AccurateBusinessCriticalErrorCountFail { get; set; } = 0;
             public int AccurateFulfillmentCriticalErrorCountFail { get; set; } = 0;
 
+            public double AccurateNonCriticalErrorAverageResult { get; set; } = 0;
+
             public int ControllableResultCountSuccess { get; set; } = 0;
             public int ControllableFinalUserCriticalErrorCountSuccess { get; set; } = 0;
             public int ControllableBusinessCriticalErrorCountSuccess { get; set; } = 0;
@@ -58,6 +62,8 @@ namespace SCC.ViewModels
             public int ControllableFinalUserCriticalErrorCountFail { get; set; } = 0;
             public int ControllableBusinessCriticalErrorCountFail { get; set; } = 0;
             public int ControllableFulfillmentCriticalErrorCountFail { get; set; } = 0;
+
+            public double ControllableNonCriticalErrorAverageResult { get; set; } = 0;
         }
 
         public void ProcessData()
@@ -120,6 +126,13 @@ namespace SCC.ViewModels
                                 e.GeneralFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
                             .Count();
 
+                    resultsByUser.GeneralNonCriticalErrorAverageResult =
+                        listByUserID
+                            .Where(e =>
+                                e.GeneralNonCriticalErrorAverageResult != null)
+                            .Sum(e => e.GeneralNonCriticalErrorAverageResult.Value) /
+                            resultsByUser.TotalTransactions;
+
                     //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
                     resultsByUser.AccurateResultCountSuccess =
@@ -164,6 +177,13 @@ namespace SCC.ViewModels
                                 e.AccurateFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
                             .Count();
 
+                    resultsByUser.AccurateNonCriticalErrorAverageResult =
+                        listByUserID
+                            .Where(e =>
+                                e.AccurateNonCriticalErrorAverageResult != null)
+                            .Sum(e => e.AccurateNonCriticalErrorAverageResult.Value) /
+                            resultsByUser.TotalTransactions;
+
                     //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
                     resultsByUser.ControllableResultCountSuccess =
@@ -207,6 +227,13 @@ namespace SCC.ViewModels
                             .Where(e =>
                                 e.ControllableFulfillmentCriticalErrorResultID.Value == (int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
                             .Count();
+
+                    resultsByUser.ControllableNonCriticalErrorAverageResult =
+                        listByUserID
+                            .Where(e =>
+                                e.ControllableNonCriticalErrorAverageResult != null)
+                            .Sum(e => e.ControllableNonCriticalErrorAverageResult.Value) /
+                            resultsByUser.TotalTransactions;
 
                     this.ResultsByUserList.Add(resultsByUser);
                 }

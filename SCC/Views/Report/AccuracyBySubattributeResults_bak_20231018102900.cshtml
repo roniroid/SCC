@@ -1,0 +1,764 @@
+﻿@using SCC.Controllers;
+@using System.Globalization;
+
+@model SCC.ViewModels.ReportResultsAccuracyBySubattributeViewModel
+
+@{
+    ViewBag.Title = "Restultados por atributo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+}
+
+<link href="~/Content/Custom/radio.css" rel="stylesheet" />
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+<style>
+    .chart-container {
+    }
+
+        .chart-container #myChart {
+            background-color: #fff;
+            border: 1px solid #000;
+        }
+</style>
+
+<script src="~/Scripts/chart.js"></script>
+<script src="~/Scripts/chartjs-plugin-datalabels@2.0.0.js"></script>
+
+<div class="chart-container row">
+    <div class="col-9">
+        <canvas class="p-5 m-5" id="myChart"></canvas>
+    </div>
+    <div class="col-3 border border-secondary m-0 p-0 bg-light">
+        <div class="bg-secondary text-light text-center p-4">
+            <span>
+                Personalización
+            </span>
+        </div>
+        <div class="text-secondary text-center p-2">
+            <span>
+                Etiquetas
+            </span>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtChartTitle" type="text" value="Error crítico - Gráfico pareto" placeholder="Título" autocomplete="off" />
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtChartSubtitle" type="text" value="Reporte gráfico de pareto" placeholder="Subtítulo" autocomplete="off" />
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtAxisX" type="text" value="" placeholder="Eje X" autocomplete="off" />
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtAxisY" type="text" value="Cantidad" placeholder="Eje Y" autocomplete="off" />
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1">
+            <input class="form-control text-center" id="txtAxisY2" type="text" value="" placeholder="Eje Y 2" autocomplete="off" />
+        </div>
+        <hr />
+        <div class="bg-light d-flex justify-content-center text-center p-1 align-items-center">
+            <div class="col-6 text-end p-2">
+                Fondo
+            </div>
+            <div class="col-6 text-start p-2">
+                <input class="form-control text-center w-25" id="txtBackgroundColor" type="color" value="#ffffff" placeholder="Título" autocomplete="off" />
+            </div>
+        </div>
+        <hr />
+        <div class="text-secondary text-center p-2">
+            <span>
+                Líneas
+            </span>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1 align-items-center">
+            <div class="col-6 text-end p-2">
+                Verticales
+            </div>
+            <div class="col-6 text-start p-2">
+                <div class="radio-control d-inline-block">
+                    <input name="rdVertical" type="radio" value="false" label="NO" />
+                    <input checked name="rdVertical" type="radio" value="true" label="SI" />
+                </div>
+            </div>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1 align-items-center">
+            <div class="col-6 text-end p-2">
+                Horizontales
+            </div>
+            <div class="col-6 text-start p-2">
+                <div class="radio-control d-inline-block">
+                    <input name="rdHorizontal" type="radio" value="false" label="NO" />
+                    <input checked name="rdHorizontal" type="radio" value="true" label="SI" />
+                </div>
+            </div>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-1 align-items-center">
+            <div class="col-6 text-end p-2">
+                Bordes
+            </div>
+            <div class="col-6 text-start p-2">
+                <div class="radio-control d-inline-block">
+                    <input name="rdBorder" type="radio" value="false" label="NO" />
+                    <input checked name="rdBorder" type="radio" value="true" label="SI" />
+                </div>
+            </div>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-3">
+            <button class="btn btn-secondary w-75" id="btnUpdateChart">Actualizar</button>
+        </div>
+        <div class="bg-light d-flex justify-content-center text-center p-3">
+            <button class="btn btn-primary w-75" id="btnExportXLS">Exportar a PNG</button>
+        </div>
+    </div>
+</div>
+
+@{
+    bool isControllable = (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyBySubattribute.IS_CONTROLLABLE];
+    int failTotalResultCount = Model.AccuracyBySubattributeResultList.Where(e => !e.SuccessfulResult).Count();
+}
+
+<div class="tableContainer mt-4">
+    <table class="display cell-border text-center" id="tbInfo">
+        <thead>
+            <tr>
+                <th class="text-center">
+                    #
+                </th>
+                <th class="text-center">
+                    Parámetro
+                </th>
+                <th class="text-center">
+                    Cantidad
+                </th>
+                <th class="text-center">
+                    Porcentaje
+                </th>
+                <th class="text-center">
+                    Acum %
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                List<int> processedID = new List<int>();
+                int cont = 1;
+                decimal currentCumulativeAmount = 0;
+                int maxSuccessfulResultCount = 0;
+                int maxFailedResultCount = 0;
+
+                int cumulativeSum = 0;
+                int totalCumulativeSum = 0;
+
+                Model.OrderHelperList
+                    .ForEach(e =>
+                    {
+                        totalCumulativeSum += Model.AccuracyBySubattributeResultList.Where(f => f.AttributeID == e.AttributeID && !f.SuccessfulResult).Count();
+                    });
+            }
+
+            @foreach (SCC.ViewModels.ReportResultsAccuracyBySubattributeViewModel.OrderHelper orderHelper in Model.OrderHelperList.Where(e => e.Quantity <= Model.TotalTransactions && e.Quantity > 0))
+            {
+                SCC_BL.Reports.Results.AccuracyBySubattribute accuracyBySubattributeResult =
+                    Model.AccuracyBySubattributeResultList
+                        .Where(e =>
+                            e.AttributeID == orderHelper.AttributeID)
+                        .FirstOrDefault();
+
+                int successfulResultCount = Model.AccuracyBySubattributeResultList.Where(e => e.AttributeID == accuracyBySubattributeResult.AttributeID && e.SuccessfulResult).Count();
+                int failResultCount = Model.AccuracyBySubattributeResultList.Where(e => e.AttributeID == accuracyBySubattributeResult.AttributeID && !e.SuccessfulResult).Count();
+
+                string errorType = string.Empty;
+                currentCumulativeAmount = currentCumulativeAmount + ((Convert.ToDecimal(successfulResultCount) / Model.TotalTransactions) * 100);
+
+                cumulativeSum += failResultCount;
+
+                switch ((SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE)accuracyBySubattributeResult.ErrorTypeID)
+                {
+                    case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE:
+                        errorType = "ECUF";
+                        break;
+                    case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE:
+                        errorType = "ECN";
+                        break;
+                    case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE:
+                        errorType = "ECC";
+                        break;
+                    case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE:
+                        errorType = "ENC";
+                        break;
+                    default:
+                        break;
+                }
+
+                <tr>
+                    <td class="text-start">
+                        @cont
+                    </td>
+                    <td class="text-start">
+                        @accuracyBySubattributeResult.AttributeName (@errorType)
+                    </td>
+                    <td>
+                        @failResultCount
+                    </td>
+                    <td>
+                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(failResultCount) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
+                    </td>
+                    <td>
+                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(cumulativeSum) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
+                    </td>
+                </tr>
+
+                cont++;
+
+                if (successfulResultCount > maxSuccessfulResultCount)
+                {
+                    maxSuccessfulResultCount = successfulResultCount;
+                }
+
+                if (failResultCount > maxFailedResultCount)
+                {
+                    maxFailedResultCount = failResultCount;
+                }
+            }
+            <tr>
+                <td>
+                </td>
+                <td>
+                    Total
+                </td>
+                <td>
+                    @failTotalResultCount
+                </td>
+                <td>
+                    100%
+                </td>
+                <td>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $("#tbInfo").on("draw.dt", function () {
+            $(this).find(".dataTables_empty").parents('tbody').empty();
+        }).DataTable({
+            "paging": false,
+            "ordering": false,
+            "info": false,
+            "searching": false,
+            "zeroRecords": " ",
+            "columnDefs": [
+                {
+                    className: "text-center",
+                    targets: [0, 1, 2, 3, 4]
+                }
+            ]
+        });
+
+        @*fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Resultados de precisión por subatributo' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customData;
+
+            /*customData = {
+            };
+            data.push(customButton);*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3, 4]
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3, 4]
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    }
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+        });*@
+    });
+
+    Array.prototype.max = function () {
+        return Math.max.apply(null, this);
+    };
+
+    Array.prototype.min = function () {
+        return Math.min.apply(null, this);
+    };
+
+    const ctx = document.getElementById('myChart');
+
+    @{
+        List<SCC.ViewModels.ReportResultsAccuracyBySubattributeViewModel.ResultBySubattribute> resultBySubattributeListForGraph =
+            Model.ResultBySubattributeList
+                .OrderByDescending(e => e.Quantity)
+                .ToList();
+    }
+
+    const DATA_POINTS = [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))];
+
+    const REDUCE_ARRAY = ((sum, dataPoint) => sum + dataPoint);
+    const TOTAL_SUM =
+        DATA_POINTS.length > 0
+            ? DATA_POINTS.reduce(REDUCE_ARRAY)
+            : 0;
+
+    const CUMULATIVE_SUM = (sum => dataPoint => sum += ((dataPoint / TOTAL_SUM) * 100))(0);
+    const CUMULATIVE_DATA_POINTS =
+        DATA_POINTS.length > 0
+            ? DATA_POINTS.map(CUMULATIVE_SUM)
+            : 0;
+
+    /*console.log('DATA_POINTS');
+    console.log(DATA_POINTS);
+    console.log('---------------------------');
+    console.log('TOTAL_SUM');
+    console.log(TOTAL_SUM);
+    console.log('---------------------------');
+    console.log('CUMULATIVE_DATA_POINTS');
+    console.log(CUMULATIVE_DATA_POINTS);*/
+
+    const PARETO_DATA_POINTS = [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))];
+
+    const DEFAULT_DATA = {
+        labels: [@Html.Raw(String.Join(",", resultBySubattributeListForGraph.Select(e => $"\"{ e.AttributeName }\"")))],
+        datasets: [
+            {
+                @*data: [@String.Join(",", resultBySubattributeListForGraph.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
+                data: CUMULATIVE_DATA_POINTS,
+                borderColor: [
+                    'rgba(0, 0, 0)',
+                ],
+                backgroundColor: [
+                    'rgba(0, 0, 0, 1)'
+                ],
+                borderWidth: 2,
+                yAxisID: 'y1',
+                customData: {
+                    successCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
+                    transactionAttributeIDList: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.TransactionAttributeID))],
+                    totalCount: @Model.TotalTransactions,
+                }
+            },{
+                data: DATA_POINTS,
+                @*data: [@String.Join(",", resultBySubattributeListForGraph.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
+                borderColor: [
+                    'rgba(118, 178, 240)',
+                ],
+                backgroundColor: [
+                    'rgba(118, 178, 240, 0.8)',
+                ],
+                borderWidth: 1,
+                type: 'bar',
+                barPercentage: 1,
+                customData: {
+                    hasChildren: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.HasChildren.ToString().ToLower()))],
+                    successCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
+                    failCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
+                    transactionAttributeIDList: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.TransactionAttributeID))],
+                    totalCount: @failTotalResultCount,
+                    currentAttributeID: [
+                        @String.Join(
+                            ",",
+                            resultBySubattributeListForGraph
+                                .Select(e => e.AttributeID))],
+                }
+            }
+        ]
+    };
+
+    const chartAreaBorder = {
+        id: 'chartAreaBorder',
+        beforeDraw(chart, args, options) {
+            const { ctx, chartArea: { left, top, width, height } } = chart;
+            ctx.save();
+            ctx.strokeStyle = options.borderColor;
+            ctx.lineWidth = options.borderWidth;
+            ctx.setLineDash(options.borderDash || []);
+            ctx.lineDashOffset = options.borderDashOffset;
+            ctx.strokeRect(left, top, width, height);
+            ctx.restore();
+        }
+    };
+
+    const backgroundColorPlugin = {
+        id: 'customCanvasBackgroundColor',
+        beforeDraw: (chart, args, options) => {
+            const { ctx } = chart;
+            ctx.save();
+            ctx.globalCompositeOperation = 'destination-over';
+            ctx.fillStyle = options.color || '#99ffff';
+            ctx.fillRect(0, 0, chart.width, chart.height);
+            ctx.restore();
+        }
+    };
+
+    Chart.register([ChartDataLabels, chartAreaBorder, backgroundColorPlugin]);
+
+    @{
+        int maxAmmount = maxFailedResultCount;
+        double defaultYMax = maxAmmount * 1.5;
+    }
+
+    let myChart = new Chart(ctx, {
+        type: 'line',
+        data: DEFAULT_DATA,
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: $('#txtAxisY').val(),
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        display: $('input[name="rdVertical"]:checked').val()
+                    },
+                    beginAtZero: true,
+                    max: @defaultYMax,
+                    offset: true,
+                },
+                y1: {
+                    title: {
+                        display: true,
+                        text: "Porcentaje acumulado",
+                        font: {
+                            size: 14,
+                            weight: 'bold'
+                        }
+                    },
+                    ticks: {
+                        display: true,
+                        drawTicks: true,
+                        callback: (value, index, values) => {
+                            return `${ value } %`;
+                        }
+                    },
+                    border: {
+                        display: true,
+                        color: '#ffffff'
+                    },
+                    scaleShowLabels: true,
+                    backdropColor: '#ffffff',
+                    grid: {
+                        @*display: $('input[name="rdVertical"]:checked').val()*@
+                        display: false
+                    },
+                    min: 0,
+                    max: 100,
+                    position: 'right',
+                    offset: true,
+                    //position: 20,
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: '',
+                        font: {
+                            size: 16,
+                            weight: 'bold'
+                        }
+                    },
+                    grid: {
+                        display: $('input[name="rdHorizontal"]:checked').val()
+                    }
+                },
+                /*xAxes: [{
+                    afterFit: function (scaleInstance) {
+                        scaleInstance.width = 20;
+                    }
+                }]*/
+            },
+            plugins:
+            {
+                title: {
+                    display: true,
+                    text: $('#txtChartTitle').val(),
+                    padding: {
+                        top: 10,
+                        bottom: 20
+                    },
+                    font: {
+                        size: 20,
+                        weight: 'bold'
+                    }
+                },
+                subtitle: {
+                    display: true,
+                    text: $('#txtChartSubtitle').val(),
+                    padding: {
+                        top: 5,
+                        bottom: 20
+                    },
+                    font: {
+                        size: 16,
+                        weight: 'bold'
+                    }
+                },
+                legend: {
+                    display: false,
+                    position: 'bottom'
+                },
+                datalabels: {
+                    backgroundColor: 'rgb(238, 244, 204)',
+                    borderColor: 'rgb(238, 244, 204)',
+                    borderRadius: 5,
+                    borderWidth: 1,
+                    display: false,
+                    anchor: 'end',
+                    align: 'start',
+                    offset: 20,
+                    color: '#000000',
+                    labels: {
+                        title: {
+                            font: {
+                                weight: 'bold',
+                                size: '14',
+                            }
+                        }
+                    },
+                    formatter: function (value, context) {
+                        return value/* + '%'*/;
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: (context) => `(${context.dataset.customData.failCount[context.dataIndex]}/${context.dataset.customData.totalCount})`
+                    }
+                },
+                chartAreaBorder: {
+                    borderColor: '#000000',
+                    borderWidth: 2,
+                    borderDash: [0, 0],
+                    borderDashOffset: 2,
+                },
+                customCanvasBackgroundColor: {
+                    color: $('#txtBackgroundColor').val(),
+                }
+            },
+            layout: {
+                padding: {
+                    top: 10,
+                    right: 50,
+                    bottom: 10,
+                    left: 10
+                }
+            },
+            onClick: clickHandler,
+            onHover: (event, chartElement) => {
+                const points = myChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+
+                if (points.length) {
+                    const firstPoint = points[0];
+                    /*const label = myChart.data.labels[firstPoint.index];
+                    const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
+
+                    let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
+
+                    if (hasChildren) {
+                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                    } else {
+                        event.native.target.style.cursor = 'default';
+                    }
+                }
+            }
+        }
+    });
+
+    function clickHandler(evt) {
+        const points = myChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+
+        if (points.length) {
+            const firstPoint = points[0];
+            const datasetIndex = firstPoint.datasetIndex;
+            const dataIndex = firstPoint.index;
+            /*const label = myChart.data.labels[firstPoint.index];
+            const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
+
+            let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
+
+            if (hasChildren) {
+                const selectedAttributeID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
+
+                const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
+
+                const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
+
+                $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedAttributeID + '" /> ');
+                $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyBySubattributeResultList.Select(e => e.TransactionAttributeID))" /> ');
+                $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+                $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');
+
+                $(document.body).append($form);
+
+                $form.submit();
+            }
+        }
+    }
+
+    $('#btnUpdateChart').click(() => {
+        const chartTitle = $('#txtChartTitle').val();
+        const chartSubtitle = $('#txtChartSubtitle').val();
+        const chartXTitle = $('#txtAxisX').val();
+        const chartYTitle = $('#txtAxisY').val();
+        const chartY2Title = $('#txtAxisY2').val();
+        const chartBackgroundColor = $('#txtBackgroundColor').val();
+
+        const showVerticalLines = $('input[name="rdVertical"]:checked').val() == 'true';
+        const showHorizontalLines = $('input[name="rdHorizontal"]:checked').val() == 'true';
+        const showBorderLines = $('input[name="rdBorder"]:checked').val() == 'true';
+
+        myChart.options.plugins.title.text = chartTitle;
+        myChart.options.plugins.subtitle.text = chartSubtitle;
+        myChart.options.scales.x.title.text = chartXTitle;
+        myChart.options.scales.y.title.text = chartYTitle;
+        //myChart.options.scales.y1.title.text = chartY2Title;
+        myChart.options.plugins.customCanvasBackgroundColor.color = chartBackgroundColor;
+
+        myChart.options.scales.y.grid.display = showVerticalLines;
+        //myChart.options.scales.y1.grid.display = showVerticalLines;
+        myChart.options.scales.x.grid.display = showHorizontalLines;
+
+        myChart.options.plugins.chartAreaBorder.borderColor =
+            showBorderLines
+                ? '#000000'
+                : chartBackgroundColor;
+
+        if (chartY2Title == '' || chartY2Title == null) {
+            delete myChart.options.scales.y1;
+            //myChart.options.scales.y1 = null;
+            myChart.update();
+        } else {
+            getY2Axis(chartY2Title)
+                .then((result) => {
+                    myChart.options.scales.y2 = result;
+                    myChart.update();
+                });
+        }
+    });
+
+    async function getY2Axis(titleText) {
+        return await {
+            title: {
+                display: true,
+                text: titleText,
+                font: {
+                    size: 14,
+                    weight: 'bold'
+                }
+            },
+            ticks: {
+                display: false,
+                drawTicks: false
+            },
+            border: {
+                display: false,
+                color: '#ffffff'
+            },
+            scaleShowLabels: false,
+            backdropColor: '#ffffff',
+            grid: {
+                @*display: $('input[name="rdVertical"]:checked').val()*@
+                display: false
+            }
+        };
+    }
+
+    $('#btnExportXLS').click(() => {
+        downloadChartPNG();
+    });
+
+    function downloadChartPNG() {
+        var a = document.createElement('a');
+        a.href = myChart.toBase64Image();
+        console.log(myChart.toBase64Image());
+        a.download = 'Reporte de precisión general.png';
+
+        a.click();
+    }
+
+    async function downloadExcel() {
+        let data;
+        await getTableData()
+            .then((result) => {
+                data = result;
+                let workbook = XLSX.utils.book_new();
+                worksheet = XLSX.utils.aoa_to_sheet(data);
+                workbook.SheetNames.push("Datos");
+                workbook.Sheets["Datos"] = worksheet;
+                XLSX.writeFile(workbook, "Reporte de precisión general.xlsx");
+            });
+    }
+
+    function getTableData() {
+        return new Promise((resolve, reject) => {
+            let data = [];
+
+            let headers = [];
+
+            $('#tbInfo thead tr th').each((index, e) => {
+                headers.push($(e).html().replace('\n', '').trim());
+            });
+
+            data.push(headers);
+
+            $('#tbInfo tbody tr').each((index, e) => {
+                let columns = [];
+
+                $(e).find('td').each((index, f) => {
+                    columns.push($(f).html().replace('\n', '').trim());
+                });
+
+                data.push(columns);
+            });
+
+            resolve(data);
+        });
+    }
+</script>

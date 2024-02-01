@@ -13,6 +13,8 @@
     string logsControllerName = OverallController.GetControllerName(typeof(LogController));
     string logsActionName = nameof(LogController.Index);
 
+    List<Catalog> allTypeList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Manage.AllTypeList.NAME];
+
     ViewBag.Title = "Administración de grupos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -69,8 +71,7 @@
                     <td>@form.Name</td>
                     <td>
                         @{
-                            Catalog tempCatalog = new Catalog(form.TypeID);
-                            tempCatalog.SetDataByID();
+                            Catalog tempCatalog = allTypeList.Where(e => e.ID == form.TypeID).FirstOrDefault();
                         }
 
                         @tempCatalog.Description
@@ -88,6 +89,9 @@
                                     <i class='bx bxs-trash'></i>
                                 </button>
                             </form>
+                            <button data-elementid="@form.ID" class="btn-element-action btn-element-action-primary btn-form-download-template" title="Descargar">
+                                <i class='bx bxs-download'></i>
+                            </button>
                             <button data-elementid="@form.ID" class="btn-element-action btn-element-action-warning btn-form-logs" title="Ver logs">
                                 <i class='bx bx-book-reader'></i>
                             </button>
@@ -106,6 +110,11 @@
 </div>
 <script>
     $(document).ready(function () {
+        @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_FORMS))
+        {
+            @:window.open('@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))', '_self');
+        }
+
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
             let fileName = 'Listado de formularios' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
@@ -174,6 +183,12 @@
                     'Mostrar sólo activos'
                 );
 
+            toolbarControls +=
+                getControlForToolbar(
+                    '<div class="radio-control d-inline-block"><input label="NO" name="filterBoundForms" onchange="onChangeFilterBoundFormsEvent(this);" type="radio" value="false" @(Request["filterBoundForms"] == null || Request["filterBoundForms"] == "false" ? "checked" : string.Empty ) /><input label="SI" name="filterBoundForms" onchange="onChangeFilterBoundFormsEvent(this);" type="radio" value="true" @(Request["filterBoundForms"] == "true" ? "checked" : string.Empty ) /></div>',
+                    'Mostrar sólo asignados'
+                );
+
             $('div.toolbar').html(toolbarControls);
         });
 
@@ -200,20 +215,34 @@
     }
 
     function onChangefilterActiveElementsEvent(element) {
-        let url = '@Url.Action(nameof(ProgramController.Manage), mainControllerName)';
+        let url = '@Html.Raw(Url.Action(nameof(FormController.Manage), mainControllerName, new { filterBoundForms = Request["filterBoundForms"] == "true" ? "true" : "false", filterActiveElements = Request["filterActiveElements"] == "true" ? "true" : "false" }, Request.Url.Scheme))';
 
-        if (element.value == 'true') {
-            url += '?filterActiveElements=' + element.value;
+        let urlObject = new URL(url);
+
+        urlObject.searchParams.set('filterActiveElements', (element.value == 'true').toString().toLowerCase());
+
+        let modifiedUrl = urlObject.toString();
+
+        let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+
+        if (confirm(message) == true) {
+            window.open(modifiedUrl, '_self');
         }
+    }
 
-        if ($('#identification').val()) {
-            let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+    function onChangeFilterBoundFormsEvent(element) {
+        let url = '@Html.Raw(Url.Action(nameof(FormController.Manage), mainControllerName, new { filterBoundForms = Request["filterBoundForms"] == "true" ? "true" : "false", filterActiveElements = Request["filterActiveElements"] == "true" ? "true" : "false" }, Request.Url.Scheme))';
 
-            if (confirm(message) == true) {
-                window.open(url, '_self');
-            }
-        } else {
-            window.open(url, '_self');
+        let urlObject = new URL(url);
+
+        urlObject.searchParams.set('filterBoundForms', (element.value == 'true').toString().toLowerCase());
+
+        let modifiedUrl = urlObject.toString();
+
+        let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+
+        if (confirm(message) == true) {
+            window.open(modifiedUrl, '_self');
         }
     }
 
@@ -263,5 +292,29 @@
         if (confirm(message) != true) {
             return false;
         }*/
+    });
+
+    $('.btn-form-download-template').click((e) => {
+        let message = '¿Desea descargar la plantilla del formulario?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action(nameof(FormController.ExportFormToExcel), mainControllerName)';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'formID';
+            input.value = elementID;
+
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+
+            form.submit();
+        }
     });
 </script>

@@ -16,6 +16,7 @@ function startMultiSelect(selector, data) {
 
 function startDataTable(selector, data) {
     let currentTable = $(selector).DataTable(data);
+    return currentTable;
 }
 
 function loadHtmlToControl(url, controlID, successFunction, errorFunction) {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
@@ -11,6 +12,7 @@ namespace SCC_DATA
 {
     public class DBDriver : IDisposable
 	{
+		const int COMMAND_TIMEOUT = 300;
 		public enum CONNECTION_STRINGS
 		{
 			DEFAULT_CONNECTION
@@ -21,7 +23,8 @@ namespace SCC_DATA
 			switch (connectionString)
 			{
 				default:
-					return Constants.DEFAULT_CONNECTION;
+					//return Constants.DEFAULT_CONNECTION;
+					return ConfigurationManager.ConnectionStrings["DEFAULT_CONNECTION"].ConnectionString;
 			}
 		}
 
@@ -98,8 +101,9 @@ namespace SCC_DATA
 				{
 					SqlCommand command = new SqlCommand(commandText, (SqlConnection)connection);
 					command.CommandType = commandType;
+                    command.CommandTimeout = COMMAND_TIMEOUT;
 
-					FillWithParameters(command, parameters);
+                    FillWithParameters(command, parameters);
 
 					object result = ReadFirstColumn(command);
 
@@ -124,6 +128,7 @@ namespace SCC_DATA
 				{
 					SqlCommand command = new SqlCommand(commandText, (SqlConnection)connection);
 					command.CommandType = commandType;
+					command.CommandTimeout = COMMAND_TIMEOUT;
 
 					FillWithParameters(command, parameters);
 

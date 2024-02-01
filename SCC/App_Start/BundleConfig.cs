@@ -25,6 +25,9 @@ namespace SCC
             bundles.Add(new ScriptBundle("~/bundles/datatables").Include(
                       "~/Content/DataTables/datatables.min.css"));
 
+            bundles.Add(new ScriptBundle("~/bundles/moment").Include(
+                      "~/Scripts/moment.min.js"));
+
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/Site.css"));
 

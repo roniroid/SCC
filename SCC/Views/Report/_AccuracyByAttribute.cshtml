@@ -33,7 +33,8 @@
             <div id="collapseOne" class="accordion-collapse collapse @(!hasModel ? "show" : string.Empty)" aria-labelledby="headingOne"
                  data-bs-parent="#accordionExample">
                 <form id="frmSubmit" action="@Url.Action(nameof(ReportController.AccuracyByAttribute), mainControllerName)" method="post" target="_blank">
-                    @Html.Hidden("TransactionCustomFieldCatalog")
+                    @Html.HiddenFor(modelItem => Model.AttributeIDArray)
+                    @Html.HiddenFor(modelItem => Model.TransactionCustomFieldCatalog)
 
                     <div class="accordion-body">
                         <div class="row d-block text-center text-danger required-advise d-none m-5">
@@ -226,8 +227,8 @@
                                 Atributos <span class="required">*</span>
                             </div>
                             <div class="col-7">
-                                @Html.DropDownListFor(modelitem =>
-                                    Model.AttributeIDArray,
+                                @Html.DropDownList(
+                                    "selectAttributeList",
                                     (ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.AttributeList.NAME] as MultiSelectList),
                                     new
                                     {
@@ -269,7 +270,7 @@
                                         new
                                         {
                                             label = "Conocido",
-                                            @class = "report-constraint"
+                                            @class = "report-constraint d-none"
                                         }
                                     )
                                     @Html.RadioButtonFor(model =>
@@ -347,8 +348,8 @@
                                                         htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Name1.PATTERN);
                                                         htmlAttributes.Add("type", "text");
                                                         break;
-                                                    case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
-                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.LastName1.PATTERN);
+                                                    case SCC_BL.Settings.AppValues.Masks.SurName1.MASK:
+                                                        htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.SurName1.PATTERN);
                                                         htmlAttributes.Add("type", "text");
                                                         break;
                                                     case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
@@ -374,12 +375,16 @@
                                                     @switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)customControl.ControlTypeID)
                                                     {
                                                         case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
+                                                            htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-text";
+
                                                             @Html.TextBox(
                                                                 "customControl_" + customControl.ID,
                                                                 null,
                                                                 htmlAttributes);
                                                             break;
                                                         case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
+                                                            htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-text";
+
                                                             htmlAttributes.Add(
                                                                 "rows",
                                                                 customControl.NumberOfRows.ToString());
@@ -394,36 +399,47 @@
                                                                 htmlAttributes);
                                                             break;
                                                         case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
+                                                            htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-checkbox";
+
                                                             htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
 
-                                                            <div class="radio-control d-inline-block">
+                                                            <div class="radio-control- d-inline-block">
                                                                 @foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
                                                                 {
                                                                     htmlAttributes.Remove("label");
                                                                     htmlAttributes.Add("label", customControlValueCatalog.Name);
 
-                                                                    <input id="customControl_@customControl.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" />
+                                                                    <input id="customControl_@customControl.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" />
                                                                 }
                                                             </div>
                                                             break;
                                                         case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.RADIO_BUTTON:
+                                                            htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-radio";
+
                                                             htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
 
-                                                            <div class="radio-control d-inline-block">
+                                                            <div class="radio-control- d-inline-block">
                                                                 @foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
                                                                 {
                                                                     htmlAttributes.Remove("label");
                                                                     htmlAttributes.Add("label", customControlValueCatalog.Name);
 
-                                                                    @Html.RadioButton(
+                                                                    @*@Html.RadioButton(
                                                                         "customControl_" + customControl.ID,
                                                                         customControlValueCatalog.ID,
-                                                                        htmlAttributes)
+                                                                        htmlAttributes)*@
+                                                                    
+                                                                    <div>
+                                                                        <input id="customControl_@customControlValueCatalog.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="radio" value="@customControlValueCatalog.ID" />
+                                                                        <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
+                                                                    </div>
                                                                 }
                                                             </div>
                                                             break;
                                                         case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
-                                                            <select class="custom-control-chosen-select" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description">
+                                                            htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-select";
+
+                                                            <select class="custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description">
                                                                 <option value="">Seleccionar</option>
                                                                 @{
                                                                     foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
@@ -469,6 +485,8 @@
         </div>
     }*@
 <script>
+    var customControlByProgramList = @Html.Raw(SCC.Controllers.OverallController.Serialize(Model.CustomControlByProgram.CustomControlByProgramList));
+
     $(document).ready(function () {
         @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
         {
@@ -483,7 +501,8 @@
             startMultiSelect('#@nameof(Model.SupervisorUserIDArray)', data);
             startMultiSelect('#@nameof(Model.EvaluatorUserIDArray)', data);
             startMultiSelect('#@nameof(Model.ErrorTypeIDArray)', data);
-            startMultiSelect('#@nameof(Model.AttributeIDArray)', data);
+            @*startMultiSelect('#@nameof(Model.AttributeIDArray)', data);*@
+            startMultiSelect('#selectAttributeList', data);
 
             startMultiSelect('.custom-control-chosen-select', data);
         });
@@ -491,30 +510,68 @@
         //updateAttributeList();
     });
 
+    $('#@nameof(Model.ProgramIDArray)').change((e) => {
+        let currentControl = e.currentTarget;
+        let currentValue = $(currentControl).val();
+        updateCustomControlDisplay(currentValue);
+    });
+
+    function updateCustomControlDisplay(programIDArray) {
+        $('.custom-control-field').removeClass('d-none');
+        $('.custom-control-field').addClass('d-none');
+
+        if (programIDArray == null || programIDArray == '') return;
+
+        let customControlsToShow =
+            customControlByProgramList.filter(e => programIDArray.includes(e.ProgramID.toString()));
+
+        for (let i = 0; i < customControlsToShow.length; i++) {
+            $('.custom-control-field[data-customcontrolid="' + customControlsToShow[i].CustomControlID + '"]').removeClass('d-none');
+        }
+    }
+
+    var mustLoadAttributes = true;
+
     $('#@nameof(Model.ProgramIDArray)').change(() => {
-        updateAttributeList();
+        mustLoadAttributes = true;
     });
 
     $('#@nameof(Model.ErrorTypeIDArray)').change(() => {
-        updateAttributeList();
+        mustLoadAttributes = true;
+    })
+
+    @*$('#@nameof(Model.AttributeIDArray)').on('chosen:showing_dropdown', function (event, chosen) {
+        if (mustLoadAttributes) {
+            updateAttributeList();
+        }
+    });*@
+
+    $('#selectAttributeList').on('chosen:showing_dropdown', function (event, chosen) {
+        if (mustLoadAttributes) {
+            updateAttributeList();
+        }
     });
 
     async function updateAttributeList() {
         if (
             ($('#@nameof(Model.ProgramIDArray)').val() == null || $('#@nameof(Model.ProgramIDArray)').val().length == 0) ||
             ($('#@nameof(Model.ErrorTypeIDArray)').val() == null || $('#@nameof(Model.ErrorTypeIDArray)').val().length == 0)) {
-            $('#@nameof(Model.AttributeIDArray)').html('');
-            $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");
-            alert('Por favor, seleccione los programas y los tipos de error para obtener los atributos');
+            @*$('#@nameof(Model.AttributeIDArray)').html('');
+            $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");*@
+            $('#selectAttributeList').html('');
+            $('#selectAttributeList').val('').trigger("chosen:updated");
+            //alert('Por favor, seleccione los programas y los tipos de error para obtener los atributos');
             return false;
         }
 
-        $('#btnSubmit').prop('disabled', false);
+        //$('#btnSubmit').prop('disabled', false);
 
         const DATA = {
             'programIDArray': $('#@nameof(Model.ProgramIDArray)').val(),
             'errorTypeIDArray': $('#@nameof(Model.ErrorTypeIDArray)').val()
         };
+
+        //showWaitingModal();
 
         let response =
             await fetch(
@@ -529,13 +586,22 @@
 
         response = await response.json();
 
-        $('#@nameof(Model.AttributeIDArray)').html('');
+        @*$('#@nameof(Model.AttributeIDArray)').html('');*@
+        $('#selectAttributeList').html('');
 
-        $(response).each((index, e) => {
-            $('#@nameof(Model.AttributeIDArray)').append(`<option value="${ e.ID }">${ e.Name }</option>`);
-        });
+        @*for (let i = 0; i < response.length; i++) {
+            $('#@nameof(Model.AttributeIDArray)').append(`<option value="${ response[i].ID }">${ response[i].Name }</option>`);
+        }*@
 
-        $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");
+        for (let i = 0; i < response.length; i++) {
+            $('#selectAttributeList').append(`<option value="${ response[i].Item1 }">${ response[i].Item2 }</option>`);
+        }
+
+        $('#selectAttributeList').val('').trigger("chosen:updated");
+
+        //hideWaitingModal();
+
+        mustLoadAttributes = false;
     }
 
     $('.report-no-constraint').click(() => {
@@ -553,7 +619,8 @@
 
     $('#frmSubmit').submit((e) => {
         if (
-            ($('#@nameof(Model.AttributeIDArray)').val() == null || $('#@nameof(Model.AttributeIDArray)').val().length == 0)) {
+            @*($('#@nameof(Model.AttributeIDArray)').val() == null || $('#@nameof(Model.AttributeIDArray)').val().length == 0)) {*@
+            ($('#selectAttributeList').val() == null || $('#selectAttributeList').val().length == 0)) {
             alert('Por favor, seleccione los programas, tipos de error y atributos deseados');
             e.preventDefault();
         }
@@ -582,7 +649,8 @@
         let requiredAdviseElement = $('.required-advise');
 
         if (
-            ($('#AttributeIDArray').val() == '' || $('#AttributeIDArray').val() == null)
+            @*($('#AttributeIDArray').val() == '' || $('#AttributeIDArray').val() == null)*@
+            ($('#selectAttributeList').val() == '' || $('#selectAttributeList').val() == null)
         ) {
             e.preventDefault();
             alert('Por favor, ingrese todos los datos requeridos');
@@ -598,9 +666,18 @@
             return false;
         }
 
+        let finalAttributeList = [];
+        let auxAttributeList = $('#selectAttributeList').val();
+
+        for (var i = 0; i < auxAttributeList.length; i++) {
+            auxAttributeList[i].split(',').map(e => finalAttributeList.push(parseInt(e)));
+        }
+
+        $('#@nameof(Model.AttributeIDArray)').val(finalAttributeList);
+
         let transactionCustomFieldList = [];
         transactionCustomFieldList = await getTransactionCustomFieldCatalog();
-        $('#TransactionCustomFieldCatalog').val(JSON.stringify(transactionCustomFieldList));
+        $('#@nameof(Model.TransactionCustomFieldCatalog)').val(JSON.stringify(transactionCustomFieldList));
     });
 
     function getTransactionCustomFieldCatalog() {
@@ -613,7 +690,7 @@
             let valueIDArray = [];
             let comment = '';
 
-            if ($(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').length > 0) {
+            @*if ($(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').length > 0) {
                 comment = $(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').val();
             }
             else
@@ -636,7 +713,36 @@
                     else
                         if ($(valueContainer).find('select option:selected').length > 0) {
                             valueID = $(valueContainer).find('select option:selected').val();
-                        }
+                        }*@
+
+            if ($(valueContainer).find('.custom-control-value-text').length > 0) {
+                comment = $(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').val();
+            }
+            else
+            if ($(valueContainer).find('.custom-control-value-radio').length > 0) {
+                valueID = $(valueContainer).find('input[type="radio"]:checked').val();
+            }
+            else
+            if ($(valueContainer).find('.custom-control-value-checkbox').length > 0) {
+                let elementList = $(valueContainer).find('input[type="checkbox"]:checked');
+                if (elementList.length > 0) {
+                    for (let index = 0; index < elementList.length; index++) {
+                        valueIDArray.push(parseInt($(elementList[index]).val()));
+                        /*valueID =
+                            valueID != null && valueID != ''
+                                ? (valueID + ',' + $(elementList[index]).val())
+                                : $(elementList[index]).val();*/
+                    }
+                }
+            }
+            else
+            if ($(valueContainer).find('.custom-control-value-select').length > 0) {
+                if ($(valueContainer).find('select option:selected').length > 0) {
+                    valueID = $(valueContainer).find('select option:selected').val();
+                } else {
+                    valueID = null;
+                }
+            }
 
             let transactionCustomFieldID = 0;
             let customFieldID = $(e).data('customfieldid');

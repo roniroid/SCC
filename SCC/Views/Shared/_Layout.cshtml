@@ -27,10 +27,10 @@
             top: calc(50% - 24px);
         }
 
-            .bd-example-modal-lg .modal-dialog .modal-content {
-                background-color: transparent;
-                border: none;
-            }
+        .bd-example-modal-lg .modal-dialog .modal-content {
+            background-color: transparent;
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -40,7 +40,7 @@
     <div class="sidebar close">
         <div class="logo-details">
             <!--<i class='bx bxl-c-plus-plus'></i>-->
-            <img src="~/Content/img/simple-logo.png" alt="">
+            <img src="~/Content/img/logo.png" alt="">
             <span class="logo_name"></span>
         </div>
         <ul class="nav-links">
@@ -59,7 +59,8 @@
                 actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS) ||
                 actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MASSIVELY_IMPORT_USERS) ||
                 actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS) ||
-                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CHANGE_NOTIFICATION_ALARMS)
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CHANGE_NOTIFICATION_ALARMS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS)
             )
             {
                 <li>
@@ -73,7 +74,11 @@
                     <ul class="sub-menu">
                         <li><a class="link_name">Usuarios</a></li>
 
-                        @if ((actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS)) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
+                        @if ((
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) ||
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS)) ||
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS) ||
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
                         {
                             <li><a href="@Url.Action(nameof(UserController.Manage), OverallController.GetControllerName(typeof(UserController)))">Administración de usuarios</a></li>
                         }
@@ -84,10 +89,13 @@
                             <li><a href="@Url.Action(nameof(UserController.MassiveImport), OverallController.GetControllerName(typeof(UserController)))">Importar usuarios</a></li>
                         }
                         <li class="with-separator"></li>
-                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
-                        {
-                            <li><a href="@Url.Action(nameof(UserController.MassivePasswordChange), OverallController.GetControllerName(typeof(UserController)))">Cambio masivo de contraseña</a></li>
-                        }
+                        <li>
+                            <a href="@Url.Action(nameof(UserController.MassivePasswordChange), OverallController.GetControllerName(typeof(UserController)))">
+                                @(actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS)
+                                    ? "Cambio masivo de contraseña"
+                                    : "Cambiar contraseña")
+                            </a>
+                        </li>
 
                         @*<li><a href="#">Mi cuenta</a></li>*@
                         @*<li><a href="#">Cambiar contraseña</a></li>*@
@@ -101,86 +109,159 @@
                     </ul>
                 </li>
             }
-            <li>
-                <div class="iocn-link">
-                    <a href="#">
-                        <i class='bx bxs-group'></i>
-                        <span class="link_name">Roles y Grupos</span>
-                    </a>
-                    <i class='bx bxs-chevron-down arrow'></i>
-                </div>
-                <ul class="sub-menu">
-                    <li><a class="link_name">Roles y Grupos</a></li>
-                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ROLES) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_ROLES))
-                    {
-                        <li><a href="@Url.Action(nameof(RoleController.Manage), OverallController.GetControllerName(typeof(RoleController)), new { filterActiveElements = "true" })">Roles</a></li>
-                    }
-                    <li class="with-separator"></li>
-                    <li><a href="@Url.Action(nameof(UserController.AsignRolesAndPermissions), OverallController.GetControllerName(typeof(UserController)))">Agregar rol a usuarios</a></li>
-                    <li class="with-separator"></li>
-                    <li><a href="@Url.Action(nameof(WorkspaceController.Manage), OverallController.GetControllerName(typeof(WorkspaceController)))">Puestos de trabajo</a></li>
-                    <li><a href="@Url.Action(nameof(GroupController.Manage), OverallController.GetControllerName(typeof(GroupController)))">Grupos</a></li>
-                </ul>
-            </li>
-            <li>
-                <div class="iocn-link">
-                    <a href="#">
-                        <i class='bx bxs-vector'></i>
-                        <span class="link_name">Programas</span>
-                    </a>
-                    <i class='bx bxs-chevron-down arrow'></i>
-                </div>
-                <ul class="sub-menu">
-                    <li><a class="link_name">Programas</a></li>
-                    <li><a href="@Url.Action(nameof(ProgramController.Manage), OverallController.GetControllerName(typeof(ProgramController)))">Programas</a></li>
-                    <li><a href="@Url.Action(nameof(ProgramGroupController.Manage), OverallController.GetControllerName(typeof(ProgramGroupController)))">Grupos de programas</a></li>
-                    <li><a href="@Url.Action(nameof(UserController.AsignProgramsAndProgramGroups), OverallController.GetControllerName(typeof(UserController)))">Agregar grupos a usuarios</a></li>
-                </ul>
-            </li>
-            <li>
-                <div class="iocn-link">
-                    <a href="#">
-                        <i class='bx bxs-check-square'></i>
-                        <span class="link_name">Monitoreo de transacción</span>
-                    </a>
-                    <i class='bx bxs-chevron-down arrow'></i>
-                </div>
-                <ul class="sub-menu">
-                    <li><a class="link_name">Monitoreo de transacción</a></li>
-                    <li><a class="link_name">Administración de formularios</a></li>
-                    <li><a href="@Url.Action(nameof(CustomControlController.Manage), OverallController.GetControllerName(typeof(CustomControlController)))">Campos personalizados</a></li>
-                    <li class="with-separator"></li>
-                    <li><a href="@Url.Action(nameof(BIFieldController.Manage), OverallController.GetControllerName(typeof(BIFieldController)))">Preguntas IN</a></li>
-                    @*<li><a href="#">Opciones de devolución</a></li>*@
-                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))
-                    {
-                        <li><a href="@Url.Action(nameof(FormController.Edit), OverallController.GetControllerName(typeof(FormController)))">Crear formulario</a></li>
-                    }
-                    <li><a href="@Url.Action(nameof(FormController.UploadForm), OverallController.GetControllerName(typeof(FormController)))">Subir formulario</a></li>
-                    <li class="with-separator"></li>
-                    <li><a href="@Url.Action(nameof(FormController.FormBinding), OverallController.GetControllerName(typeof(FormController)))">Asignar formulario</a></li>
-                    <li><a href="@Url.Action(nameof(FormController.Manage), OverallController.GetControllerName(typeof(FormController)), new { filterActiveElements = "true" })">Listar formularios</a></li>
-                    <li><a class="link_name">Monitoreo</a></li>
-                    <li class="with-separator"></li>
-                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_TRANSACTIONS))
-                    {
-                        <li><a href="@Url.Action(nameof(TransactionController.Search), OverallController.GetControllerName(typeof(TransactionController)))">Buscar transacciones</a></li>
-                    }
-                    <!--<li><a href="#">Recolección</a></li>-->
-                    <li><a href="@Url.Action(nameof(TransactionController.Edit), OverallController.GetControllerName(typeof(TransactionController)))">Evaluación</a></li>
-                    <li><a class="link_name">Calibración</a></li>
-                    <li class="with-separator"></li>
-                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS))
-                    {
-                        <li><a href="@Url.Action(nameof(CalibrationController.CalibrationTypes), OverallController.GetControllerName(typeof(CalibrationController)))">Tipos de calibración</a></li>
-                    }
-                    @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_SESSIONS))
-                    {
-                        <li><a href="@Url.Action(nameof(CalibrationController.Search), OverallController.GetControllerName(typeof(CalibrationController)))">Crear sesión</a></li>
-                    }
-                    <li><a href="@Url.Action(nameof(CalibrationController.Manage), OverallController.GetControllerName(typeof(CalibrationController)))">Sesiones de calibración</a></li>
-                </ul>
-            </li>
+            @if (
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ROLES) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_ROLES) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_USERS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_WORKSPACES) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_GROUPS)
+            )
+            {
+                <li>
+                    <div class="iocn-link">
+                        <a href="#">
+                            <i class='bx bxs-group'></i>
+                            <span class="link_name">Roles y Grupos</span>
+                        </a>
+                        <i class='bx bxs-chevron-down arrow'></i>
+                    </div>
+                    <ul class="sub-menu">
+                        <li><a class="link_name">Roles y Grupos</a></li>
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ROLES) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_ROLES))
+                        {
+                            <li><a href="@Url.Action(nameof(RoleController.Manage), OverallController.GetControllerName(typeof(RoleController)), new { filterActiveElements = "true" })">Roles</a></li>
+                        }
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_USERS))
+                        {
+                            <li class="with-separator"></li>
+                            <li><a href="@Url.Action(nameof(UserController.AsignRolesAndPermissions), OverallController.GetControllerName(typeof(UserController)))">Agregar rol a usuarios</a></li>
+                        }
+                        @if (
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_WORKSPACES) ||
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_WORKSPACES) ||
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_WORKSPACES))
+                        {
+                            <li class="with-separator"></li>
+                            <li><a href="@Url.Action(nameof(WorkspaceController.Manage), OverallController.GetControllerName(typeof(WorkspaceController)), new { filterActiveElements = "true" })">Puestos de trabajo</a></li>
+                        }
+                        @if (
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_GROUPS))
+                        {
+                            <li><a href="@Url.Action(nameof(GroupController.Manage), OverallController.GetControllerName(typeof(GroupController)))">Grupos</a></li>
+                        }
+                    </ul>
+                </li>
+            }
+            @if (
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_PROGRAMS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PROGRAM_GROUPS_TO_USERS)
+            )
+            {
+                <li>
+                    <div class="iocn-link">
+                        <a href="#">
+                            <i class='bx bxs-vector'></i>
+                            <span class="link_name">Programas</span>
+                        </a>
+                        <i class='bx bxs-chevron-down arrow'></i>
+                    </div>
+                    <ul class="sub-menu">
+                        <li><a class="link_name">Programas</a></li>
+                        @if (
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_PROGRAMS))
+                        {
+                            <li><a href="@Url.Action(nameof(ProgramController.Manage), OverallController.GetControllerName(typeof(ProgramController)))">Programas</a></li>
+                            <li><a href="@Url.Action(nameof(ProgramGroupController.Manage), OverallController.GetControllerName(typeof(ProgramGroupController)))">Grupos de programas</a></li>
+                        }
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PROGRAM_GROUPS_TO_USERS))
+                        {
+                            <li><a href="@Url.Action(nameof(UserController.AsignProgramsAndProgramGroups), OverallController.GetControllerName(typeof(UserController)))">Agregar grupos a usuarios</a></li>
+                        }
+                    </ul>
+                </li>
+            }
+            @if (
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_BI_QUESTIONS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_UPLOAD_FORMS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_FORMS_TO_PROGRAMS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_FORMS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_TRANSACTIONS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_SESSIONS) ||
+                actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS)
+            )
+            {
+                <li>
+                    <div class="iocn-link">
+                        <a href="#">
+                            <i class='bx bxs-check-square'></i>
+                            <span class="link_name">Monitoreo de transacción</span>
+                        </a>
+                        <i class='bx bxs-chevron-down arrow'></i>
+                    </div>
+                    <ul class="sub-menu">
+                        <li><a class="link_name">Monitoreo de transacción</a></li>
+                        <li><a class="link_name">Administración de formularios</a></li>
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS))
+                        {
+                            <li><a href="@Url.Action(nameof(CustomControlController.Manage), OverallController.GetControllerName(typeof(CustomControlController)))">Campos personalizados</a></li>
+                        }
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_BI_QUESTIONS))
+                        {
+                            <li class="with-separator"></li>
+                            <li><a href="@Url.Action(nameof(BIFieldController.Manage), OverallController.GetControllerName(typeof(BIFieldController)))">Preguntas IN</a></li>
+                        }
+                        @*<li><a href="#">Opciones de devolución</a></li>*@
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))
+                        {
+                            <li><a href="@Url.Action(nameof(FormController.Edit), OverallController.GetControllerName(typeof(FormController)))">Crear formulario</a></li>
+                        }
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_UPLOAD_FORMS))
+                        {
+                            <li><a href="@Url.Action(nameof(FormController.UploadForm), OverallController.GetControllerName(typeof(FormController)))">Subir formulario</a></li>
+                        }
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_FORMS_TO_PROGRAMS))
+                        {
+                            <li class="with-separator"></li>
+                            <li><a href="@Url.Action(nameof(FormController.FormBinding), OverallController.GetControllerName(typeof(FormController)))">Asignar formulario</a></li>
+                        }
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_FORMS))
+                        {
+                            <li><a href="@Url.Action(nameof(FormController.Manage), OverallController.GetControllerName(typeof(FormController)), new { filterActiveElements = "true" })">Listar formularios</a></li>
+                        }
+                        <li><a class="link_name">Monitoreo</a></li>
+                        <li class="with-separator"></li>
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_TRANSACTIONS))
+                        {
+                            <li><a href="@Url.Action(nameof(TransactionController.Search), OverallController.GetControllerName(typeof(TransactionController)))">Buscar transacciones</a></li>
+                        }
+                        <!--<li><a href="#">Recolección</a></li>-->
+                        @if (
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TRANSACTIONS) ||
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_TRANSACTIONS) ||
+                            actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USER_TRANSACTION))
+                        {
+                            <li><a href="@Url.Action(nameof(TransactionController.Edit), OverallController.GetControllerName(typeof(TransactionController)))">Evaluación</a></li>
+                        }
+                        <li><a class="link_name">Calibración</a></li>
+                        <li class="with-separator"></li>
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS))
+                        {
+                            <li><a href="@Url.Action(nameof(CalibrationController.CalibrationTypes), OverallController.GetControllerName(typeof(CalibrationController)))">Tipos de calibración</a></li>
+                        }
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_SESSIONS))
+                        {
+                            <li><a href="@Url.Action(nameof(CalibrationController.Search), OverallController.GetControllerName(typeof(CalibrationController)))">Crear sesión</a></li>
+                        }
+                        @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
+                        {
+                            <li><a href="@Url.Action(nameof(CalibrationController.Manage), OverallController.GetControllerName(typeof(CalibrationController)))">Sesiones de calibración</a></li>
+                        }
+                    </ul>
+                </li>
+            }
             @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
             {
                 <li>
@@ -229,10 +310,10 @@
         <div class="home-content">
             <div class="d-inline-block">
                 <i class='bx bx-menu'></i>
-                <span class="text">SCC</span>
+                <span class="text"></span>
             </div>
             <span class="name-label">
-                @actualUser.Person.FirstName @actualUser.Person.SurName @actualUser.Person.LastName
+                @actualUser.Person.FirstName @actualUser.Person.SurName
             </span>
         </div>
         <main>

@@ -175,7 +175,7 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public System.Data.DataRow SelectByName(string firstName, string surName, string lastName)
+		public System.Data.DataRow SelectByName(string firstName, string surName)
 		{
 			try
 			{
@@ -183,8 +183,7 @@ namespace SCC_DATA.Repositories
 				{
 					SqlParameter[] parameters = new SqlParameter[] {
 						db.CreateParameter(Queries.User.StoredProcedures.SelectByName.Parameters.FIRST_NAME, firstName, System.Data.SqlDbType.VarChar),
-						db.CreateParameter(Queries.User.StoredProcedures.SelectByName.Parameters.SUR_NAME, surName, System.Data.SqlDbType.VarChar),
-						db.CreateParameter(Queries.User.StoredProcedures.SelectByName.Parameters.LAST_NAME, lastName, System.Data.SqlDbType.VarChar)
+						db.CreateParameter(Queries.User.StoredProcedures.SelectByName.Parameters.SUR_NAME, surName, System.Data.SqlDbType.VarChar)
 					};
 
 					System.Data.DataTable response = new System.Data.DataTable();
@@ -220,6 +219,29 @@ namespace SCC_DATA.Repositories
 					return
 						db.Select(
 							Queries.User.StoredProcedures.SelectByRoleID.NAME,
+							parameters
+						);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
+		public System.Data.DataTable SelectByPermissionID(int permissionID)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					SqlParameter[] parameters = new SqlParameter[] {
+						db.CreateParameter(Queries.User.StoredProcedures.SelectByPermissionID.Parameters.ROLE_ID, permissionID, System.Data.SqlDbType.Int)
+					};
+
+					return
+						db.Select(
+							Queries.User.StoredProcedures.SelectByPermissionID.NAME,
 							parameters
 						);
 				}
@@ -349,9 +371,32 @@ namespace SCC_DATA.Repositories
 			{
 				throw ex;
 			}
-		}
+        }
 
-		public void Dispose()
+        public int CheckExistence(string username)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.User.StoredProcedures.CheckExistence.Parameters.USERNAME, username, System.Data.SqlDbType.VarChar)
+                    };
+
+                    return
+                        (int)db.ReadFirstColumn(
+                            Queries.User.StoredProcedures.CheckExistence.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void Dispose()
 		{
 		}
 	}

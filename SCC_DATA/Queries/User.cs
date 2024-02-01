@@ -24,8 +24,23 @@ namespace SCC_DATA.Queries
 		}
 
 		public struct StoredProcedures
-		{
-			public struct GetEmailByUsername
+        {
+            public struct CheckExistence
+            {
+                public const string NAME = "[dbo].[usp_UserCustomCheckExistence]";
+
+                public struct Parameters
+                {
+                    public const string USERNAME = "@username";
+                }
+
+                public struct ResultFields
+                {
+                    public const string ID = "ID";
+                }
+            }
+
+            public struct GetEmailByUsername
 			{
 				public const string NAME = "[dbo].[usp_UserCustomGetEmailByUsername]";
 
@@ -150,6 +165,31 @@ namespace SCC_DATA.Queries
 				}
 			}
 
+			public struct SelectByPermissionID
+			{
+				public const string NAME = "[dbo].[usp_UserSelectByPermissionID]";
+
+				public struct Parameters
+				{
+					public const string ROLE_ID = "@permissionID";
+				}
+
+				public struct ResultFields
+				{
+					public const string ID = "ID";
+					public const string PERSONID = "PersonID";
+					public const string USERNAME = "Username";
+					public const string PASSWORD = "Password";
+					public const string SALT = "Salt";
+					public const string EMAIL = "Email";
+					public const string STARTDATE = "StartDate";
+					public const string LANGUAGEID = "LanguageID";
+					public const string HASPASSPERMISSION = "HasPassPermission";
+					public const string LASTLOGINDATE = "LastLoginDate";
+					public const string BASICINFOID = "BasicInfoID";
+				}
+			}
+
 			public struct SelectEvaluatorList
 			{
 				public const string NAME = "[dbo].[usp_UserEvaluatorSelect]";
@@ -201,7 +241,6 @@ namespace SCC_DATA.Queries
 				{
 					public const string FIRST_NAME = "@firstName";
 					public const string SUR_NAME = "@surName";
-					public const string LAST_NAME = "@lastName";
 				}
 
 				public struct ResultFields

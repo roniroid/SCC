@@ -14,6 +14,8 @@
     string logsControllerName = OverallController.GetControllerName(typeof(LogController));
     string logsActionName = nameof(LogController.Index);
 
+    List<Program> allProgramList = (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.FormBinding.AllProgramList.NAME];
+
     ViewBag.Title = "Asignación de formularios a programas";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -160,8 +162,7 @@
                             {
                                 <li>
                                     @{
-                                        Program tempProgram = new Program(programFormCatalog.ProgramID);
-                                        tempProgram.SetDataByID();
+                                        Program tempProgram = allProgramList.Where(e => e.ID == programFormCatalog.ProgramID).FirstOrDefault();
                                     }
 
                                     @tempProgram.Name
@@ -209,6 +210,11 @@
 </div>
 <script>
     $(document).ready(function () {
+        @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_FORMS_TO_PROGRAMS))
+        {
+            @:window.open('@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))', '_self');
+        }
+
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
             let fileName = 'Listado de programas con formularios' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();

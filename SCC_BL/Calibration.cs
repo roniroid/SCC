@@ -30,6 +30,7 @@ namespace SCC_BL
         public string TypeDescription { get; set; }
         public string StatusDescription { get; set; }
         public List<Transaction> CalibrationList { get; set; } = new List<Transaction>();
+		public int[] ProgramIDArray = null;
 
         public Calibration()
 		{
@@ -213,14 +214,125 @@ namespace SCC_BL
                     calibration.SetStatusDescription();
                     calibration.SetCalibrationList(true);
 
+                    calibration.SetProgramIDArray();
+
                     calibrationList.Add(calibration);
 				}
 			}
 
-			return calibrationList
+            return calibrationList
 				.OrderByDescending(o => o.BasicInfo.CreationDate)
 				.ToList();
 		}
+
+        public List<Calibration> SelectByProgramID(int programID)
+		{
+			List<Calibration> calibrationList = new List<Calibration>();
+
+			using (SCC_DATA.Repositories.Calibration repoCalibration = new SCC_DATA.Repositories.Calibration())
+			{
+				DataTable dt = repoCalibration.SelectByProgramID(programID);
+
+				foreach (DataRow dr in dt.Rows)
+				{
+					Calibration calibration = new Calibration(
+						Convert.ToInt32(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByProgramID.ResultFields.ID]),
+						Convert.ToDateTime(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByProgramID.ResultFields.STARTDATE]),
+						Convert.ToDateTime(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByProgramID.ResultFields.ENDDATE]),
+						Convert.ToString(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByProgramID.ResultFields.DESCRIPTION]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByProgramID.ResultFields.TYPEID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByProgramID.ResultFields.EXPERIENCEDUSERID]),
+						Convert.ToBoolean(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByProgramID.ResultFields.HASNOTIFICATIONTOBESENT]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByProgramID.ResultFields.BASICINFOID])
+					);
+
+					calibration.BasicInfo = new BasicInfo(calibration.BasicInfoID);
+					calibration.BasicInfo.SetDataByID();
+
+					calibration.CalibrationUserCatalogList = CalibrationUserCatalog.CalibrationUserCatalogWithCalibrationID(calibration.ID).SelectByCalibrationID();
+					calibration.CalibratorUserGroupList = CalibrationGroupCatalog.CalibrationGroupCatalogWithCalibrationID(calibration.ID).SelectByCalibrationID();
+					calibration.TransactionList = CalibrationTransactionCatalog.CalibrationTransactionCatalogWithCalibrationID(calibration.ID).SelectByCalibrationID();
+
+                    calibration.SetExperiencedUser();
+                    calibration.SetCalibratorUserList();
+                    calibration.SetTypeDescription();
+                    calibration.SetStatusDescription();
+                    calibration.SetCalibrationList(true);
+
+                    calibration.SetProgramIDArray();
+
+                    calibrationList.Add(calibration);
+				}
+			}
+
+            return calibrationList
+				.OrderByDescending(o => o.BasicInfo.CreationDate)
+				.ToList();
+		}
+
+        public List<Calibration> SelectByUserID(int userID)
+		{
+			List<Calibration> calibrationList = new List<Calibration>();
+
+			using (SCC_DATA.Repositories.Calibration repoCalibration = new SCC_DATA.Repositories.Calibration())
+			{
+				DataTable dt = repoCalibration.SelectByUserID(userID);
+
+				foreach (DataRow dr in dt.Rows)
+				{
+					Calibration calibration = new Calibration(
+						Convert.ToInt32(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByUserID.ResultFields.ID]),
+						Convert.ToDateTime(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByUserID.ResultFields.STARTDATE]),
+						Convert.ToDateTime(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByUserID.ResultFields.ENDDATE]),
+						Convert.ToString(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByUserID.ResultFields.DESCRIPTION]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByUserID.ResultFields.TYPEID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByUserID.ResultFields.EXPERIENCEDUSERID]),
+						Convert.ToBoolean(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByUserID.ResultFields.HASNOTIFICATIONTOBESENT]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Calibration.StoredProcedures.SelectByUserID.ResultFields.BASICINFOID])
+					);
+
+					calibration.BasicInfo = new BasicInfo(calibration.BasicInfoID);
+					calibration.BasicInfo.SetDataByID();
+
+					calibration.CalibrationUserCatalogList = CalibrationUserCatalog.CalibrationUserCatalogWithCalibrationID(calibration.ID).SelectByCalibrationID();
+					calibration.CalibratorUserGroupList = CalibrationGroupCatalog.CalibrationGroupCatalogWithCalibrationID(calibration.ID).SelectByCalibrationID();
+					calibration.TransactionList = CalibrationTransactionCatalog.CalibrationTransactionCatalogWithCalibrationID(calibration.ID).SelectByCalibrationID();
+
+                    calibration.SetExperiencedUser();
+                    calibration.SetCalibratorUserList();
+                    calibration.SetTypeDescription();
+                    calibration.SetStatusDescription();
+                    calibration.SetCalibrationList(true);
+
+                    calibration.SetProgramIDArray();
+
+                    calibrationList.Add(calibration);
+				}
+			}
+
+            return calibrationList
+				.OrderByDescending(o => o.BasicInfo.CreationDate)
+				.ToList();
+		}
+
+		void SetProgramIDArray()
+		{
+			int[] transactionIDArray = this.TransactionList.Select(e => e.TransactionID).ToArray();
+			List<int> programIDList = new List<int>();
+
+			for (int i = 0; i < transactionIDArray.Length; i++)
+            {
+                using (Transaction transaction = new Transaction(transactionIDArray[i]))
+                {
+					int currentProgramID = transaction.GetProgramID();
+
+					if (!programIDList.Contains(currentProgramID))
+						programIDList.Add(currentProgramID);
+                }
+            }
+
+			this.ProgramIDArray = programIDList.ToArray();
+        }
 
 		public int Update()
 		{

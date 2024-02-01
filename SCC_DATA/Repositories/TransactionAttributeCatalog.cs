@@ -107,6 +107,30 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
+		public System.Data.DataRow SelectByTransactionIDAndAttributeID(int transactionID, int attributeID)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					SqlParameter[] parameters = new SqlParameter[] {
+						db.CreateParameter(Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.Parameters.TRANSACTIONID, transactionID, System.Data.SqlDbType.Int),
+						db.CreateParameter(Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.Parameters.ATTRIBUTE_ID, attributeID, System.Data.SqlDbType.Int),
+					};
+
+					return
+						db.Select(
+							Queries.TransactionAttributeCatalog.StoredProcedures.SelectByTransactionIDAndAttributeID.NAME,
+							parameters
+						).Rows[0];
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
 		public System.Data.DataTable SelectAttributeIDListByTransactionID(int transactionID)
 		{
 			try

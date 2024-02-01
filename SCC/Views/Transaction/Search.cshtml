@@ -15,6 +15,13 @@
 
     bool hasModel = Model.TransactionSearchHelper != null;
 
+    //Starts loading data
+
+    List<Catalog> allResultList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Search.AllData.ResultCatalog.NAME];
+    List<User> allUserList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Search.AllData.User.NAME];
+
+    //Finish loading data
+
     ViewBag.Title = "Búsqueda de transacciones";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -87,7 +94,7 @@
                                     <datalist id="dataListUser">
                                         @foreach (User user in userList)
                                         {
-                                            <option value="@user.Person.Identification">@($"{ user.Person.Identification } - { user.Person.SurName } { user.Person.LastName }, { user.Person.FirstName } - { user.Email }")</option>
+                                            <option value="@user.Person.Identification">@($"{ user.Person.Identification } - { user.Person.SurName }, { user.Person.FirstName } - { user.Email }")</option>
                                         }
                                     </datalist>
                                 </div>
@@ -252,10 +259,10 @@
                                             title = "Fecha desde",
                                             autocomplete = "off",
                                             type = "datetime-local",
-                                            @Value =
+                                            @*@Value =
                                                 Model.TransactionSearchHelper.TransactionDateFrom != null
                                                     ? ((DateTime)Model.TransactionSearchHelper.TransactionDateFrom).ToString("yyyy-MM-dd")
-                                                    : /*DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")*/ string.Empty
+                                                    : /*DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")*/ string.Empty*@
                                         }
                                     )
                                 </div>
@@ -270,10 +277,10 @@
                                             title = "Fecha hasta",
                                             autocomplete = "off",
                                             type = "datetime-local",
-                                            @Value =
+                                            @*@Value =
                                                 Model.TransactionSearchHelper.TransactionDateTo != null
                                                     ? ((DateTime)Model.TransactionSearchHelper.TransactionDateTo).ToString("yyyy-MM-dd")
-                                                    : /*DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")*/ string.Empty
+                                                    : /*DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")*/ string.Empty*@
                                         }
                                     )
                                 </div>
@@ -326,10 +333,10 @@
                                             title = "Fecha desde",
                                             autocomplete = "off",
                                             type = "datetime-local",
-                                            @Value =
+                                            @*@Value =
                                                 Model.TransactionSearchHelper.EvaluationDateFrom != null
                                                     ? ((DateTime)Model.TransactionSearchHelper.EvaluationDateFrom).ToString("yyyy-MM-dd")
-                                                    : /*DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")*/ string.Empty
+                                                    : /*DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")*/ string.Empty*@
                                         }
                                     )
                                 </div>
@@ -344,10 +351,10 @@
                                             title = "Fecha hasta",
                                             autocomplete = "off",
                                             type = "datetime-local",
-                                            @Value =
+                                            @*@Value =
                                                 Model.TransactionSearchHelper.EvaluationDateTo != null
                                                     ? ((DateTime)Model.TransactionSearchHelper.EvaluationDateTo).ToString("yyyy-MM-dd")
-                                                    : /*DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")*/ string.Empty
+                                                    : /*DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")*/ string.Empty*@
                                         }
                                     )
                                 </div>
@@ -737,62 +744,67 @@
     <table class="display cell-border" id="tbInfo">
         <thead>
             <tr>
-                <th>
+                <th class="rotate">
                     <input class="transaction-selected-all" type="checkbox" />
                 </th>
-                <th>
+                <th class="rotate">
                     Identificador
                 </th>
-                <th>
+                <th class="rotate">
                     Usuario monitoreado
                 </th>
-                <th>
+                <th class="rotate">
                     Supervisor
                 </th>
-                <th>
+                <th class="rotate">
                     Fecha de la transacción
                 </th>
-                <th>
+                <th class="rotate">
                     Fecha de la evaluación
                 </th>
-                <th>
+                <th class="rotate">
                     Programa
                 </th>
-                <th>
+                <th class="rotate">
                     Monitoreado por
                 </th>
-                <th>
+                <th class="rotate">
                     Comentario
                 </th>
-                <th>
+                <th class="rotate">
                     EC Global
                 </th>
-                <th>
+                <th class="rotate">
                     EC Usuario Final
                 </th>
-                <th>
+                <th class="rotate">
                     EC Negocios
                 </th>
-                <th>
+                <th class="rotate">
                     EC Cumplimiento
                 </th>
-                <th>
+                <th class="rotate">
                     Estado coaching recibido
                 </th>
-                <th>
+                <th class="rotate">
                     Disputado
                 </th>
-                <th>
+                <th class="rotate">
                     Invalidado
                 </th>
-                <th>
+                <th class="rotate">
                     Devolución
+                </th>
+                <th>
+                    Acciones
                 </th>
             </tr>
         </thead>
         <tbody>
             @foreach (Transaction transaction in Model.TransactionList)
             {
+                bool hasInvalidation = transaction.InvalidationCommentaries.Count() > 0;
+
                 string tableRowClass = string.Empty;
                 if (transaction.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION.DELETED)
                 {
@@ -802,36 +814,65 @@
                             " strikethrough";
                 }
 
-                <tr class="@tableRowClass" data-transactionid="@transaction.ID">
+                <tr class="@tableRowClass @(hasInvalidation ? "has-invalidation" : string.Empty)" data-transactionid="@transaction.ID">
                     <td class="d-flex justify-content-center align-content-center">
                         <input class="transaction-selected" type="checkbox" />
                     </td>
                     <td>
                         <a href="@Url.Action(nameof(TransactionController.Edit), OverallController.GetControllerName(typeof(TransactionController)), new { transactionID = transaction.ID })" target="_blank">@transaction.Identifier</a>
                     </td>
-                    <td>@transaction.UserToEvaluate.Person.SurName @transaction.UserToEvaluate.Person.LastName, @transaction.UserToEvaluate.Person.FirstName</td>
+                    <td>@transaction.UserToEvaluate.Person.SurName, @transaction.UserToEvaluate.Person.FirstName</td>
                     <td>
                         <ul>
                             @foreach (UserSupervisorCatalog userSupervisorCatalog in transaction.UserToEvaluate.SupervisorList)
                             {
-                                User supervisorUser = new User(userSupervisorCatalog.SupervisorID);
-                                supervisorUser.SetDataByID();
+                                User supervisorUser = allUserList.Where(e => e.ID == userSupervisorCatalog.SupervisorID).FirstOrDefault();
 
-                                <li>@supervisorUser.Person.SurName @supervisorUser.Person.LastName, @supervisorUser.Person.FirstName</li>
+                                <li>@supervisorUser.Person.SurName, @supervisorUser.Person.FirstName</li>
                             }
                         </ul>
                     </td>
                     <td data-order="@transaction.TransactionDate.ToString("yyyyMMdd")">@transaction.TransactionDate.ToString("dd/MM/yyyy")</td>
                     <td data-order="@transaction.EvaluationDate.ToString("yyyyMMdd")">@transaction.EvaluationDate.ToString("dd/MM/yyyy")</td>
                     <td>@transaction.Program.Name</td>
-                    <td>@transaction.EvaluatorUser.Person.SurName @transaction.EvaluatorUser.Person.LastName, @transaction.EvaluatorUser.Person.FirstName</td>
+                    <td>
+                        @{ 
+                            User evaluatorUser = allUserList.Where(e => e.ID == transaction.EvaluatorUserID).FirstOrDefault();
+                        }
+
+                        @evaluatorUser.Person.SurName, @evaluatorUser.Person.FirstName
+                    </td>
                     <td>
                         @transaction.Comment
                     </td>
-                    <td>@transaction.ControllableResult.Description</td>
-                    <td>@transaction.ControllableFinalUserCriticalErrorResult.Description</td>
-                    <td>@transaction.ControllableBusinessCriticalErrorResult.Description</td>
-                    <td>@transaction.ControllableFulfillmentCriticalErrorResult.Description</td>
+                    <td>
+                        @{ 
+                            Catalog controllableResult = allResultList.Where(e => e.ID == transaction.ControllableResultID).FirstOrDefault();
+                        }
+
+                        @controllableResult.Description
+                    </td>
+                    <td>
+                        @{ 
+                            Catalog controllableFUCEResult = allResultList.Where(e => e.ID == transaction.ControllableFinalUserCriticalErrorResultID).FirstOrDefault();
+                        }
+
+                        @controllableFUCEResult.Description
+                    </td>
+                    <td>
+                        @{ 
+                            Catalog controllableBCEResult = allResultList.Where(e => e.ID == transaction.ControllableBusinessCriticalErrorResultID).FirstOrDefault();
+                        }
+
+                        @controllableBCEResult.Description
+                    </td>
+                    <td>
+                        @{ 
+                            Catalog controllableFCEResult = allResultList.Where(e => e.ID == transaction.ControllableFulfillmentCriticalErrorResultID).FirstOrDefault();
+                        }
+
+                        @controllableFCEResult.Description
+                    </td>
                     <td>
                         @*RELLENAR*@
                     </td>
@@ -850,12 +891,19 @@
                             <i class='bx bx-link-external'></i>
                         </button>
                     </td>
+                    <td>
+                        <button data-elementid="@transaction.ID" class="btn-element-action btn-element-action-primary btn-transaction-download-pdf" title="Descargar PDF">
+                            <i class='bx bxs-download'></i>
+                        </button>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
 <script>
+    let infoTable = null;
+
     $(document).ready(function () {
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
@@ -874,7 +922,7 @@
                 "exportOptions": {
                     "columns": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                     //"rows": getSelectedTransactionIndex(),
-                    "rows": ":not('.strikethrough')",
+                    "rows": ":not('.strikethrough,.d-none')",
                 }
             };
 
@@ -889,7 +937,7 @@
                 "exportOptions": {
                     "columns": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                     //"rows": getSelectedTransactionIndex(),
-                    "rows": ":not('.strikethrough')",
+                    "rows": ":not('.strikethrough,.d-none')",
                 }
             };
 
@@ -906,7 +954,7 @@
                     },
                     "columns": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
                     //"rows": getSelectedTransactionIndex(),
-                    "rows": ":not('.strikethrough')",
+                    "rows": ":not('.strikethrough,.d-none')",
                 }
             };
 
@@ -924,7 +972,17 @@
             data["buttons"].push(copyButton);
             data["buttons"].push(customButton);
 
-            startDataTable('#tbInfo', data);
+            infoTable = startDataTable('#tbInfo', data);
+
+            let toolbarControls = '';
+
+            toolbarControls +=
+                getControlForToolbar(
+                    '<div class="radio-control d-inline-block"><input label="NO" id="filterActiveElements_NO" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="false" /><input label="SI" id="filterActiveElements_YES" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="true" checked /></div>',
+                    'Mostrar invalidadas'
+                );
+
+            $('div.toolbar').html(toolbarControls);
         });
 
         fetchMultiSelectBasicData().then(response => {
@@ -946,14 +1004,81 @@
         {
             @:window.location.href = '#tbInfo';
         }
+
+        $('#filterActiveElements_YES').change();
     });
 
-    async function exportTransactionsFile() {
+    function getControlForToolbar(content, label) {
+        let result = '';
+
+        const divPropertyField = '<div class="row property-field m-3">%replaceContent%</div>';
+
+        const divPropertyFieldLabel = '<div class="col-5 property-field-label">' + label + '</div>';
+        const contentContainer = '<div class="col-7">' + content + '</div>';
+
+        result =
+            divPropertyField
+                .replace('%replaceContent%', divPropertyFieldLabel + contentContainer);
+
+        return result;
+    }
+
+    function onChangefilterActiveElementsEvent(element) {
+        let show = false;
+        show = element.value == 'true';
+
+        @*let elements = $('table#tbInfo tbody tr.has-invalidation');
+
+        if (show) {
+            $(elements).removeClass('d-none');
+        } else {
+            $(elements).addClass('d-none');
+        }*@
+
+        infoTable.rows().every(function () {
+            if ($(this.node()).hasClass('has-invalidation')) {
+                if (show) {
+                    $(this.node()).removeClass('d-none');
+                } else {
+                    $(this.node()).addClass('d-none');
+                }
+            }
+        });
+
+        infoTable.draw();
+    }
+
+    @*async function exportTransactionsFile() {
         let transactionIDArray = [];
 
         transactionIDArray = await getTransactionIDArray();
 
         window.open('@Url.Action(nameof(TransactionController.ExportTransactionListToExcel), mainControllerName)?transactionIDArray=' + transactionIDArray.join(','), '_blank');
+    }*@
+
+    async function exportTransactionsFile() {
+        let transactionIDArray = await getTransactionIDArray();
+
+        if (transactionIDArray.length > 0) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action(nameof(TransactionController.ExportTransactionListToExcel), mainControllerName)';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'transactionIDArray';
+            input.value = transactionIDArray.join(',');
+
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+
+            //console.log(transactionIDArray);
+            form.submit();
+        }
+        else {
+            alert('No se han seleccionado transacciones para exportar');
+        }
     }
 
     async function getTransactionIDArray() {
@@ -961,10 +1086,30 @@
 
         let currentPage = $('#tbInfo').DataTable().page.info().page;
         let currentSearch = $('#tbInfo').DataTable().search();
+
         $('#tbInfo').DataTable().page.len(-1).draw();
         $('#tbInfo').DataTable().search('', false, false).draw();
 
-        response = $('#tbInfo').find('tbody tr').map((index, e) => $(e).data('transactionid')).get();
+        //response = $('#tbInfo').find('tbody tr').map((index, e) => $(e).data('transactionid')).get();
+        response =
+            $('#tbInfo')
+                .find('tbody tr')
+            .map((index, e) => {
+                let hasInvalidation = $(e).hasClass('has-invalidation');
+                let includeInvalidationTransactions = $('#filterActiveElements_YES').is(':checked');
+
+                if (includeInvalidationTransactions) {
+                    if ($(e).find('td input.transaction-selected:checked').length > 0) {
+                        return $(e).data('transactionid');
+                    }
+                } else {
+                    if (!hasInvalidation) {
+                        if ($(e).find('td input.transaction-selected:checked').length > 0) {
+                            return $(e).data('transactionid');
+                        }
+                    }
+                }
+            }).get();
 
         $('#tbInfo').DataTable().page.len(10).draw();
         $('#tbInfo').DataTable().page(currentPage).draw('page');
@@ -1022,9 +1167,19 @@
     });
 
     $('.transaction-selected-all').change((e) => {
+        let currentPage = $('#tbInfo').DataTable().page.info().page;
+        let currentSearch = $('#tbInfo').DataTable().search();
+
+        $('#tbInfo').DataTable().page.len(-1).draw();
+        $('#tbInfo').DataTable().search('', false, false).draw();
+
         $('.transaction-selected').each((index, f) => {
             $(f)[0].checked = $(e.currentTarget)[0].checked;
         });
+
+        $('#tbInfo').DataTable().page.len(10).draw();
+        $('#tbInfo').DataTable().page(currentPage).draw('page');
+        $('#tbInfo').DataTable().search(currentSearch, false, false).draw();
     });
 
     function getSelectedTransactionIndex() {
@@ -1036,4 +1191,47 @@
         return rowIndexes.join(',');
     }
 
+    $('.btn-transaction-download-pdf').click((e) => {
+        let message = '¿Quieres descargar la transacción en formato PDF?';
+
+        if (confirm(message) == true) {
+            showWaitingModal();
+
+            const element = e.currentTarget;
+            const elementID = $(element).data('elementid');
+
+            const data = {
+                "transactionID": elementID
+            };
+
+            $.ajax({
+                "url": '@Url.Action(nameof(TransactionController.ExportTransactionToPDF), mainControllerName)',
+                "contentType": 'application/json',
+                "data": JSON.stringify(data),
+                "method": 'POST',
+                "timeout": 0,
+                "success": function (response) {
+                    printToPDF(response);
+                    //window.open(response, '_blank');
+                },
+                "error": function (error) {
+                    window.open(response, '_blank');
+                },
+                "complete": function (response) {
+                    //window.open(response, '_blank');
+                    hideWaitingModal();
+                }
+            });
+        }
+    });
+
+    function printToPDF(content) {
+        var printWindow = window.open('', '_blank');
+
+        printWindow.document.write(content);
+
+        printWindow.document.addEventListener('DOMContentLoaded', function () {
+            printWindow.print();
+        });
+    }
 </script>

@@ -187,11 +187,7 @@
 
                 <tr>
                     <td>
-                        @{
-                            User user = new User(resultsByCalibrator.CalibratorUserID);
-                            user.SetDataByID();
-                        }
-                        @($"{ user.Person.SurName } { user.Person.LastName }, { user.Person.FirstName }")
+                        @($"{ resultsByCalibrator.CalibratorUser.Person.SurName }, { resultsByCalibrator.CalibratorUser.Person.FirstName }")
                     </td>
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                     {
@@ -387,37 +383,40 @@
                         @:'rgb(255, 190, 113, 0.8)'
                     @:],
                     @:borderWidth: 1,
-                    @:successCount: [
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
-                        {
-                            @resultsByCalibrator.GlobalControllableFinalUserCriticalErrorCountSuccess@:,
-                        }
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
-                        {
-                            @resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountSuccess@:,
-                        }
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
-                        {
-                            @resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountSuccess@:,
-                        }
-                        @resultsByCalibrator.GlobalControllableResultCountSuccess
-                    @:],
-                    @:errorTypeIDs: [
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
-                        {
-                            @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE)@:,
-                        }
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
-                        {
-                            @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE)@:,
-                        }
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
-                        {
-                            @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE)@:,
-                        }
-                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
-                    @:],
-                    @:totalCount: @resultsByCalibrator.TotalTransactions,
+                    @:customData: {
+                        @:errorTypeIDs: [
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
+                            {
+                                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
+                            {
+                                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
+                            {
+                                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE)@:,
+                            }
+                            @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
+                        @:],
+                        @:successCount: [
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
+                            {
+                                @resultsByCalibrator.GlobalControllableFinalUserCriticalErrorCountSuccess@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
+                            {
+                                @resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountSuccess@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
+                            {
+                                @resultsByCalibrator.GlobalControllableFulfillmentCriticalErrorCountSuccess@:,
+                            }
+                            @resultsByCalibrator.GlobalControllableResultCountSuccess
+                        @:],
+                        @:totalCount: @resultsByCalibrator.TotalTransactions,
+                        @:users: [@Html.Raw(String.Join(",", Model.ResultsByCalibratortList.Select(e => $"\"{e.CalibratorUser.Person.SurName}, {e.CalibratorUser.Person.FirstName}\"")))]
+                    @:}
                 @:},
             }
         ]
@@ -546,7 +545,9 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `${context.formattedValue.replace(',', '.')}% (${context.dataset.successCount[context.dataIndex]}/${context.dataset.totalCount})`
+                        label: (context) => {
+                            return `${ context.dataset.customData.users[context.datasetIndex] }: ${context.formattedValue.replace(',', '.')}% (${context.dataset.customData.successCount[context.dataIndex]}/${context.dataset.customData.totalCount})`;
+                        }
                     }
                 },
                 chartAreaBorder: {
@@ -581,7 +582,7 @@
             const firstPoint = points[0];
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
-            let errorTypeID = myChart.data.datasets[firstPoint.datasetIndex].errorTypeIDs[firstPoint.index];
+            let errorTypeID = myChart.data.datasets[firstPoint.datasetIndex].customData.errorTypeIDs[firstPoint.index];
 
             const url = '@Url.Action(nameof(ReportController.AccuracyByAttribute), mainControllerName)';
 

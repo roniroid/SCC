@@ -47,7 +47,7 @@
             <input class="form-control text-center" id="txtChartTitle" type="text" value="Inteligencia de negocios - Gráfico pareto" placeholder="Título" autocomplete="off" />
         </div>
         <div class="bg-light d-flex justify-content-center text-center p-1">
-            <input class="form-control text-center" id="txtChartSubtitle" type="text" value="No resuelto por limitaciones de procedimientos, políticas o procesos" placeholder="Subtítulo" autocomplete="off" />
+            <input class="form-control text-center" id="txtChartSubtitle" type="text" value="@ViewData[SCC_BL.Settings.AppValues.ViewData.Report.ParetoBIResults.BusinessIntelligenceFieldNames.NAME]" placeholder="Subtítulo" autocomplete="off" />
         </div>
         <div class="bg-light d-flex justify-content-center text-center p-1">
             <input class="form-control text-center" id="txtAxisX" type="text" value="" placeholder="Eje X" autocomplete="off" />
@@ -118,6 +118,10 @@
     </div>
 </div>
 
+@{ 
+    int failTotalResultCount = Model.ParetoBIResultList.Where(e => !e.SuccessfulResult).Count();
+}
+
 <div class="tableContainer mt-4">
     <table class="display cell-border text-center" id="tbInfo">
         <thead>
@@ -145,6 +149,7 @@
                 int cont = 1;
                 decimal currentCumulativeAmount = 0;
                 int maxSuccessfulResultCount = 0;
+                int maxFailedResultCount = 0;
 
                 int cumulativeSum = 0;
                 int totalCumulativeSum = 0;
@@ -152,11 +157,11 @@
                 Model.OrderHelperList
                     .ForEach(e =>
                     {
-                        totalCumulativeSum += Model.ParetoBIResultList.Where(f => f.BusinessIntelligenceFieldID == e.BusinessIntelligenceFieldID && f.SuccessfulResult).Count();
+                        totalCumulativeSum += Model.ParetoBIResultList.Where(f => f.BusinessIntelligenceFieldID == e.BusinessIntelligenceFieldID && !f.SuccessfulResult).Count();
                     });
             }
 
-            @foreach (SCC.ViewModels.ReportResultsParetoBIViewModel.OrderHelper orderHelper in Model.OrderHelperList.OrderByDescending(e => e.Quantity))
+            @foreach (SCC.ViewModels.ReportResultsParetoBIViewModel.OrderHelper orderHelper in Model.OrderHelperList.Where(e => e.Quantity <= Model.TotalTransactions && e.Quantity > 0))
             {
                 SCC_BL.Reports.Results.ParetoBI paretoBIResult =
                     Model.ParetoBIResultList
@@ -165,9 +170,11 @@
                         .FirstOrDefault();
 
                 int successfulResultCount = Model.ParetoBIResultList.Where(e => e.BusinessIntelligenceFieldID == paretoBIResult.BusinessIntelligenceFieldID && e.SuccessfulResult).Count();
+                int failResultCount = Model.ParetoBIResultList.Where(e => e.BusinessIntelligenceFieldID == paretoBIResult.BusinessIntelligenceFieldID && !e.SuccessfulResult).Count();
+
                 currentCumulativeAmount = currentCumulativeAmount + ((Convert.ToDecimal(successfulResultCount) / Model.TotalTransactions) * 100);
 
-                cumulativeSum += successfulResultCount;
+                cumulativeSum += failResultCount;
 
                 <tr>
                     <td class="text-start">
@@ -177,13 +184,13 @@
                         @paretoBIResult.BusinessIntelligenceFieldName
                     </td>
                     <td>
-                        @successfulResultCount
+                        @failResultCount
                     </td>
                     <td>
-                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(successfulResultCount) / totalCumulativeSum) * 100)).Replace('.', ',')%
+                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(failResultCount) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
                     </td>
                     <td>
-                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(cumulativeSum) / totalCumulativeSum) * 100)).Replace('.', ',')%
+                        @String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(cumulativeSum) / (totalCumulativeSum > 0 ? totalCumulativeSum : 1)) * 100)).Replace('.', ',')%
                     </td>
                 </tr>
 
@@ -192,7 +199,27 @@
                 {
                     maxSuccessfulResultCount = successfulResultCount;
                 }
+
+                if (failResultCount > maxFailedResultCount)
+                {
+                    maxFailedResultCount = failResultCount;
+                }
             }
+            <tr>
+                <td>
+                </td>
+                <td>
+                    Total
+                </td>
+                <td>
+                    @failTotalResultCount
+                </td>
+                <td>
+                    100%
+                </td>
+                <td>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -200,7 +227,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
-    $(document).ready(function () {
+    @*$(document).ready(function () {
         fetchDatatableBasicData().then(response => {
             const dateNow = new Date();
             let fileName = 'Resultados de pareto para inteligencia de negocios' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
@@ -257,6 +284,24 @@
 
             startDataTable('#tbInfo', data);
         });
+    });*@
+
+    $(document).ready(function () {
+        $("#tbInfo").on("draw.dt", function () {
+            $(this).find(".dataTables_empty").parents('tbody').empty();
+        }).DataTable({
+            "paging": false,
+            "ordering": false,
+            "info": false,
+            "searching": false,
+            "zeroRecords": " ",
+            "columnDefs": [
+                {
+                    className: "text-center",
+                    targets: [0, 1, 2, 3, 4]
+                }
+            ]
+        });
     });
 
     Array.prototype.max = function () {
@@ -269,22 +314,34 @@
 
     const ctx = document.getElementById('myChart');
 
-    const DATA_POINTS = [@String.Join(",", Model.ResultByBIFieldList.Select(e => Model.TotalTransactions - e.Quantity))];
-    console.log(DATA_POINTS);
+    @{
+        List<SCC.ViewModels.ReportResultsParetoBIViewModel.ResultByBIField> resultByBIFieldListForGraph =
+            Model.ResultByBIFieldList
+                .OrderByDescending(e => e.Quantity)
+                .ToList();
+    }
+
+    const DATA_POINTS = [@String.Join(",", resultByBIFieldListForGraph.Select(e => e.Quantity))];
 
     const REDUCE_ARRAY = ((sum, dataPoint) => sum + dataPoint);
-    const TOTAL_SUM = DATA_POINTS.length > 0 ? DATA_POINTS.reduce(REDUCE_ARRAY) : 0;
+    const TOTAL_SUM =
+        DATA_POINTS.length > 0
+            ? DATA_POINTS.reduce(REDUCE_ARRAY)
+            : 0;
 
     const CUMULATIVE_SUM = (sum => dataPoint => sum += ((dataPoint / TOTAL_SUM) * 100))(0);
-    const CUMULATIVE_DATA_POINTS = DATA_POINTS.map(CUMULATIVE_SUM);
+    const CUMULATIVE_DATA_POINTS =
+        DATA_POINTS.length > 0
+            ? DATA_POINTS.map(CUMULATIVE_SUM)
+            : 0;
 
-    const PARETO_DATA_POINTS = [@String.Join(",", Model.ResultByBIFieldList.Select(e => e.Quantity))];
+    const PARETO_DATA_POINTS = [@String.Join(",", resultByBIFieldListForGraph.Select(e => e.Quantity))];
 
     const DEFAULT_DATA = {
-        labels: [@Html.Raw(String.Join(",", Model.ResultByBIFieldList.Select(e => $"\"{ e.BusinessIntelligenceFieldName }\"")))],
+        labels: [@Html.Raw(String.Join(",", resultByBIFieldListForGraph.Select(e => $"\"{ e.BusinessIntelligenceFieldName }\"")))],
         datasets: [
             {
-                @*data: [@String.Join(",", Model.ResultBySubattributeList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
+                @*data: [@String.Join(",", resultByBIFieldListForGraph.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
                 data: CUMULATIVE_DATA_POINTS,
                 borderColor: [
                     'rgba(0, 0, 0)',
@@ -293,13 +350,15 @@
                     'rgba(0, 0, 0, 1)'
                 ],
                 borderWidth: 2,
-                successCount: [@String.Join(",", Model.ResultByBIFieldList.Select(e => e.Quantity))],
-                transactionAttributeIDList: [@String.Join(",", Model.ResultByBIFieldList.Select(e => e.TransactionBIFieldID))],
-                totalCount: @Model.TotalTransactions,
                 yAxisID: 'y1',
+                customData: {
+                    successCount: [@String.Join(",", resultByBIFieldListForGraph.Select(e => e.Quantity))],
+                    transactionBIFieldIDList: [@String.Join(",", resultByBIFieldListForGraph.Select(e => e.TransactionBIFieldID))],
+                    totalCount: @Model.TotalTransactions,
+                }
             },{
                 data: DATA_POINTS,
-                @*data: [@String.Join(",", Model.ResultBySubattributeList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
+                @*data: [@String.Join(",", resultByBIFieldListForGraph.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.##}", ((Convert.ToDecimal(e.Quantity) / Model.TotalTransactions) * 100)).ToString().Replace(',', '.')))],*@
                 borderColor: [
                     'rgba(118, 178, 240)',
                 ],
@@ -307,12 +366,20 @@
                     'rgba(118, 178, 240, 0.8)',
                 ],
                 borderWidth: 1,
-                hasChildren: [@String.Join(",", Model.ResultByBIFieldList.Select(e => e.HasChildren.ToString().ToLower()))],
-                successCount: [@String.Join(",", Model.ResultByBIFieldList.Select(e => e.Quantity))],
-                transactionAttributeIDList: [@String.Join(",", Model.ResultByBIFieldList.Select(e => e.TransactionBIFieldID))],
-                totalCount: @Model.TotalTransactions,
                 type: 'bar',
                 barPercentage: 1,
+                customData: {
+                    hasChildren: [@String.Join(",", resultByBIFieldListForGraph.Select(e => e.HasChildren.ToString().ToLower()))],
+                    successCount: [@String.Join(",", resultByBIFieldListForGraph.Select(e => e.Quantity))],
+                    failCount: [@String.Join(",", resultByBIFieldListForGraph.Select(e => e.Quantity))],
+                    transactionBIFieldIDList: [@String.Join(",", resultByBIFieldListForGraph.Select(e => e.TransactionBIFieldID))],
+                    totalCount: @failTotalResultCount,
+                    currentBusinessIntelligenceFieldID: [
+                        @String.Join(
+                            ",",
+                            resultByBIFieldListForGraph
+                                .Select(e => e.BusinessIntelligenceFieldID))],
+                }
             }
         ]
     };
@@ -346,12 +413,8 @@
     Chart.register([ChartDataLabels, chartAreaBorder, backgroundColorPlugin]);
 
     @{
-        int defaultYSteps = 10;
-        int maxAmmount = maxSuccessfulResultCount;
-        int maxYScore =
-            maxAmmount % defaultYSteps > 0
-                ? (Convert.ToInt32(maxAmmount / defaultYSteps) + 1) * defaultYSteps
-                : maxAmmount;
+        int maxAmmount = maxFailedResultCount;
+        double defaultYMax = maxAmmount * 1.5;
     }
 
     let myChart = new Chart(ctx, {
@@ -373,7 +436,7 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
-                    max: @maxYScore,
+                    max: @defaultYMax,
                     ticks: {
                         stepSize: 25,
                         callback: function (value) {
@@ -425,8 +488,8 @@
                     grid: {
                         display: $('input[name="rdHorizontal"]:checked').val()
                     },
-                    offset: true,
-                    position: 20,
+                    /*offset: true,
+                    position: 20,*/
                 },
             },
             plugins:
@@ -483,7 +546,7 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `(${context.dataset.successCount[context.dataIndex]}/${context.dataset.totalCount})`
+                        label: (context) => `(${context.dataset.customData.successCount[context.dataIndex]}/${context.dataset.customData.totalCount})`
                     }
                 },
                 chartAreaBorder: {
@@ -504,7 +567,7 @@
                     left: 10
                 }
             },
-            //onClick: clickHandler,
+            onClick: clickHandler,
             onHover: (event, chartElement) => {
                 const points = myChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
 
@@ -513,7 +576,7 @@
                     /*const label = myChart.data.labels[firstPoint.index];
                     const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
 
-                    let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].hasChildren[firstPoint.index];
+                    let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
 
                     if (hasChildren) {
                         event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
@@ -530,16 +593,21 @@
 
         if (points.length) {
             const firstPoint = points[0];
+            const datasetIndex = firstPoint.datasetIndex;
+            const dataIndex = firstPoint.index;
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
 
-            let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].hasChildren[firstPoint.index];
+            let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
 
             if (hasChildren) {
+                const selectedBusinessIntelligenceFieldID = myChart.data.datasets[datasetIndex].customData.currentBusinessIntelligenceFieldID[dataIndex];
+
                 const url = '@Url.Action(nameof(ReportController.ParetoBI), mainControllerName)';
 
                 const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
 
+                $($form).append('<input type="hidden" name="selectedBusinessIntelligenceFieldID" value="' + selectedBusinessIntelligenceFieldID + '" /> ');
                 $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.ParetoBIResultList.Select(e => e.TransactionBIFieldID))" /> ');
                 $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
 

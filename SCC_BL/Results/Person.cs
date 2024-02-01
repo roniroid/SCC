@@ -63,10 +63,10 @@ namespace SCC_BL.Results
 				public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.ERROR;
 				public const string LOCAL_LOG = "Creación del elemento de \"" + TABLE_NAME + "\" fallida, " + PHRASE_WITH_GENRE + " se encontró en el sistema.\r\n\tDatos del objeto: " + REPLACE_JSON_INFO + "\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
 
-				public const string DATABASE_LOG = "Hubo un error en la creación " + PHRASE_WITH_POSESSION + ".\r\n\tDatos del objeto: " + REPLACE_JSON_INFO + "\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+				public const string DATABASE_LOG = "Hubo un error en la creación " + PHRASE_WITH_POSESSION + ", " + PHRASE_WITH_GENRE + " se encontró en el sistema.\r\n\tDatos del objeto: " + REPLACE_JSON_INFO + "\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
 
 				public const string MESSAGE_TITLE = "Error";
-				public const string MESSAGE_CONTENT = "Ha ocurrido un error al crear " + PHRASE_WITH_GENRE + "\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+				public const string MESSAGE_CONTENT = "Ha ocurrido un error al crear " + PHRASE_WITH_GENRE + ", " + PHRASE_WITH_GENRE + " se encontró en el sistema.\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
 			}
 		}
 

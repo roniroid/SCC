@@ -9,38 +9,50 @@ namespace SCC_BL.Reports.Results
     public class AccuracyByAttribute
     {
         public int TransactionAttributeID { get; set; } = 0;
+        public int TransactionID { get; set; } = 0;
         public int AttributeID { get; set; } = 0;
         public string AttributeName { get; set; }
         public bool SuccessFulResult { get; set; }
-        public bool IsControllable { get; set; }
+        public bool IsControllable { get; set; } = true;
 
-        public AccuracyByAttribute(int transactionAttributeID, int attributeID, string attributeName, bool successFulResult)
+        public AccuracyByAttribute(int transactionAttributeID, int transactionID, int attributeID, string attributeName, bool successFulResult, bool mustBeControllable)
         {
             this.TransactionAttributeID = transactionAttributeID;
+            this.TransactionID = transactionID;
             this.AttributeID = attributeID;
             this.AttributeName = attributeName;
             this.SuccessFulResult = successFulResult;
-            this.SetIsControllable();
+
+            if (mustBeControllable)
+                this.SetIsControllable();
         }
 
         public void SetIsControllable()
         {
-            List<SCC_BL.Attribute> levelOneAttributeList = new List<SCC_BL.Attribute>();
-            int[] parentIDArray = new int[0];
+            List<SCC_BL.Attribute> childrenAttributeList = new List<SCC_BL.Attribute>();
 
-            using (SCC_BL.Attribute attribute = new SCC_BL.Attribute(this.AttributeID))
-            {
-                levelOneAttributeList = attribute.SelectByLevel(1);
-                parentIDArray = attribute.SelectParentIDArrayByID();
-                parentIDArray.Append(this.AttributeID);
-            }
+            using (SCC_BL.Attribute attribute = SCC_BL.Attribute.AttributeWithParentAttributeID(this.AttributeID))
+                childrenAttributeList = attribute.SelectByParentAttributeID();
 
-            for (int i = 0; i < parentIDArray.Length; i++)
+            childrenAttributeList = childrenAttributeList.Where(e => !e.IsControllable).ToList();
+
+            bool attributeIsControllable = childrenAttributeList.Count() <= 0;
+
+            if (!attributeIsControllable)
             {
-                if (levelOneAttributeList.Select(s => s.ID).Contains(parentIDArray[i]))
+                foreach (SCC_BL.Attribute currentChildAttribute in childrenAttributeList)
                 {
-                    this.IsControllable = true;
-                    break;
+                    using (TransactionAttributeCatalog transactionAttributeCatalog = TransactionAttributeCatalog.TransactionAttributeCatalogWithTransactionIDAndAttributeID(this.TransactionID, currentChildAttribute.ID))
+                    {
+                        transactionAttributeCatalog.SetDataByTransactionIDAndAttributeID();
+
+                        if (transactionAttributeCatalog.Checked)
+                        {
+                            this.IsControllable = false;
+                            this.SuccessFulResult = true;
+                            break;
+                        }
+                    }
                 }
             }
         }

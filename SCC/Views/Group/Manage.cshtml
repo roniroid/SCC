@@ -15,6 +15,9 @@
 
     bool hasModel = Model.Group.ID != null && Model.Group.ID > 0;
 
+    List<User> allUserList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.Group.Manage.AllUserList.NAME];
+    List<Catalog> allModuleList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Group.Manage.AllModuleList.NAME];
+
     ViewBag.Title = "Administración de grupos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -177,11 +180,10 @@
                         <ol>
                             @foreach (UserGroupCatalog user in group.UserList)
                             {
-                                User tempUser = new User(user.UserID);
-                                tempUser.SetDataByID();
+                                User tempUser = allUserList.Where(e => e.ID == user.UserID).FirstOrDefault();
 
                                 <li>
-                                    @tempUser.Person.SurName @tempUser.Person.LastName @tempUser.Person.FirstName (id: @tempUser.Person.Identification)
+                                    @tempUser.Person.SurName @tempUser.Person.FirstName (id: @tempUser.Person.Identification)
                                 </li>
                             }
                         </ol>
@@ -189,8 +191,7 @@
                     <td>
                         <ol>
                             @{
-                                Catalog tempCatalog = new Catalog(group.ApplicableModuleID);
-                                tempCatalog.SetDataByID();
+                                Catalog tempCatalog = allModuleList.Where(e => e.ID == group.ApplicableModuleID).FirstOrDefault();
 
                                 <li>
                                     @tempCatalog.Description

@@ -1,0 +1,130 @@
+﻿@using SCC_BL;
+@using SCC.Controllers;
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+}
+
+@model Log
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@Styles.Render("~/Content/css")
+@Scripts.Render("~/bundles/bootstrap")
+
+@Styles.Render("~/Content/panel")
+@Styles.Render("~/Content/radio")
+
+@*@Styles.Render("~/Content/datatables")
+    @Scripts.Render("~/bundles/datatables")*@
+
+<link href="~/Content/DataTables/datatables.min.css" rel="stylesheet" />
+<script src="~/Content/DataTables/datatables.min.js"></script>
+
+@{
+    bool preLoad = false;
+    if (Model.CategoryID != null && Model.ItemID != null)
+    {
+        if (Model.CategoryID > 0 && Model.ItemID > 0)
+        {
+            preLoad = true;
+        }
+    }
+}
+@if (!preLoad)
+{
+    <div class="panel">
+        <div class="accordion accordion-flush" id="accordionExample">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        <strong> Crear / Editar usuario</strong>
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                     data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                Categoría <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.DropDownListFor(model =>
+                                    model.CategoryID,
+                                    (SelectList)ViewData[SCC_BL.Settings.AppValues.ViewData.Log.Index.CategoryCatalog.NAME]
+                                )
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                ID del elemento <span class="required">*</span>
+                            </div>
+                            <div class="col-7">
+                                @Html.TextBoxFor(model => model.ItemID, null, new { @class = "property-field-control", placeholder = "Identificación", autocomplete = "off" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <button class="btn-custom-system btn-custom-system-secondary" id="btnSearch" type="button">
+                            Buscar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<div id="tableContainer" class="tableContainer">
+</div>
+<script>
+    $(document).ready(() => {
+        @if (preLoad)
+        {
+            @:LoadLogList();
+        }
+    });
+
+    $('#btnSearch').click(() => {
+        LoadLogList();
+    });
+
+    function LoadLogList() {
+        @if (preLoad)
+        {
+            @:let categoryID = @Model.CategoryID;
+            @:let itemID = @Model.ItemID;
+        }
+        else {
+            @:let categoryID = $('#@nameof(Model.CategoryID)').val();
+            @:let itemID = $('#@nameof(Model.ItemID)').val();
+        }
+
+        console.log(categoryID);
+        console.log(itemID);
+
+        const url = '@Url.Action(nameof(LogController._LogList), LogController.GetControllerName(typeof(LogController)))';
+        const httpMethod = 'POST';
+        const data = {
+            'categoryID': categoryID,
+            'itemID': itemID
+        };
+
+        $.ajax({
+            url: url,
+            type: httpMethod,
+            data: data,
+            cache: false,
+            success: function (result) {
+                $('#tableContainer').html(result);
+            },
+            error: function (error) {
+                console.error(error);
+            },
+            timeout: 0
+        });
+    }
+</script>

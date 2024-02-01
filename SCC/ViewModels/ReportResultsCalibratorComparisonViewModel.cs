@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SCC_BL;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -26,6 +27,7 @@ namespace SCC.ViewModels
         public class ResultsByCalibrator
         {
             public int CalibratorUserID { get; set; } = 0;
+            public User CalibratorUser { get; set; } = new User();
 
             public int TotalTransactions { get; set; } = 0;
 
@@ -79,6 +81,12 @@ namespace SCC.ViewModels
                             .ToList();
 
                     resultsByCalibrator.CalibratorUserID = calibratorComparisonResult.CalibratorUserID;
+
+                    using (User user = new User(resultsByCalibrator.CalibratorUserID))
+                    {
+                        user.SetDataByID(true);
+                        resultsByCalibrator.CalibratorUser = user;
+                    }
 
                     resultsByCalibrator.TotalTransactions = listByCalibratorUserID.Count();
 

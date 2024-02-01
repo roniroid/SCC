@@ -32,7 +32,7 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public int Insert(string name, string description, int? parentBIFieldID, bool hasForcedComment, int basicInfoID)
+		public int Insert(string name, string description, int? parentBIFieldID, bool hasForcedComment, int basicInfoID, int order)
 		{
 			try
 			{
@@ -43,7 +43,8 @@ namespace SCC_DATA.Repositories
 						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.DESCRIPTION, description, System.Data.SqlDbType.VarChar),
 						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.PARENTBIFIELDID, parentBIFieldID, System.Data.SqlDbType.Int),
 						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.HASFORCEDCOMMENT, hasForcedComment, System.Data.SqlDbType.Bit),
-						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.BASICINFOID, basicInfoID, System.Data.SqlDbType.Int)
+						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.BASICINFOID, basicInfoID, System.Data.SqlDbType.Int),
+						db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.Insert.Parameters.ORDER, order, System.Data.SqlDbType.Int)
 					};
 
 					return
@@ -154,7 +155,53 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
-		public int Update(int id, string name, string description, int? parentBIFieldID, bool hasForcedComment, int order)
+        public System.Data.DataTable SelectByProgramID(string programIDArray)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.Parameters.PROGRAM_ID_LIST, programIDArray, System.Data.SqlDbType.VarChar)
+                    };
+
+                    return
+                        db.Select(
+                            Queries.BusinessIntelligenceField.StoredProcedures.SelectByProgramID.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public System.Data.DataTable SelectHierarchyByFormID(int formID)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.Parameters.FORMID, formID, System.Data.SqlDbType.Int)
+                    };
+
+                    return
+                        db.Select(
+                            Queries.BusinessIntelligenceField.StoredProcedures.SelectHierarchyByFormID.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public int Update(int id, string name, string description, int? parentBIFieldID, bool hasForcedComment, int order)
 		{
 			try
 			{

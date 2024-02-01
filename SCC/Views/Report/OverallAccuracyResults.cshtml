@@ -63,6 +63,20 @@
                     : Model.GeneralFulfillmentCriticalErrorCountSuccess
                 ) / Model.TotalTransactions) * 100) 
             : 0);
+    string percentageNCE =
+        String.Format(
+            CultureInfo.InvariantCulture,
+            /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+            Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                ? "{0:0.0#}"
+                : */"{0:0.#}",
+        Model.TotalTransactions > 0 
+            ? ((Convert.ToDecimal(
+                isControllable
+                    ? Model.ControllableNonCriticalErrorAverageResult
+                    : Model.GeneralNonCriticalErrorAverageResult
+                ))) 
+            : 0);
     string percentageGCE =
         String.Format(
             CultureInfo.InvariantCulture,
@@ -207,9 +221,18 @@
                         Precisión Error Crítico de Cumplimiento
                     </th>
                 }
-                <th class="text-center">
-                    Precisión Error Crítico Global
-                </th>
+                @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                {
+                    <th class="text-center">
+                        Precisión Error No Crítico
+                    </th>
+                }
+                @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                {
+                    <th class="text-center">
+                        Precisión Error Crítico Global
+                    </th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -235,9 +258,18 @@
                         @percentageFCE.Replace('.', ',')%
                     </td>
                 }
-                <td>
-                    @percentageGCE.Replace('.', ',')%
-                </td>
+                @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                {
+                    <td>
+                        @percentageNCE.Replace('.', ',')%
+                    </td>
+                }
+                @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                {
+                    <td>
+                        @percentageGCE.Replace('.', ',')%
+                    </td>
+                }
             </tr>
         </tbody>
     </table>
@@ -308,6 +340,7 @@
     const percentageFUCE = @percentageFUCE.Replace(',', '.');
     const percentageBCE = @percentageBCE.Replace(',', '.');
     const percentageFCE = @percentageFCE.Replace(',', '.');
+    const percentageNCE = @percentageNCE.Replace(',', '.');
     const percentageGCE = @percentageGCE.Replace(',', '.');
 
     const ctx = document.getElementById('myChart');
@@ -326,7 +359,14 @@
             {
                 @:'Precisión Error Crítico de Cumplimiento',
             }
-            'Precisión Error Crítico Global'
+            @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+            {
+                @:'Precisión Error No Crítico',
+            }
+            @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+            {
+                @:'Precisión Error Crítico Global',
+            }
         ],
         datasets: [
             {
@@ -343,7 +383,15 @@
                     {
                         @:percentageFCE,
                     }
-                    percentageGCE],
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                    {
+                        @:percentageNCE,
+                    }
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                    {
+                        @:percentageGCE,
+                    }
+                ],
                 borderColor: [
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                     {
@@ -357,7 +405,14 @@
                     {
                         @:'rgba(137, 222, 122)',
                     }
-                    'rgba(255, 190, 113)'
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                    {
+                        @:'rgba(255, 190, 113)',
+                    }
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                    {
+                        @:'rgba(128, 133, 233)',
+                    }
                 ],
                 backgroundColor: [
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
@@ -372,7 +427,14 @@
                     {
                         @:'rgb(137, 222, 122, 0.8)',
                     }
-                    'rgb(255, 190, 113, 0.8)'
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                    {
+                        @:'rgba(255, 190, 113, 0.8)',
+                    }
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                    {
+                        @:'rgb(128, 133, 233, 0.8)',
+                    }
                 ],
                 borderWidth: 1,
                 successCount: [
@@ -394,9 +456,18 @@
                             ? Model.ControllableFulfillmentCriticalErrorCountSuccess
                             : Model.GeneralFulfillmentCriticalErrorCountSuccess)@:,
                     }
-                    @(isControllable
-                        ? Model.ControllableResultCountSuccess
-                        : Model.GeneralResultCountSuccess)
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                    {
+                        @(isControllable
+                            ? Model.TotalTransactions
+                            : Model.TotalTransactions)@:,
+                    }
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                    {
+                        @(isControllable
+                            ? Model.ControllableResultCountSuccess
+                            : Model.GeneralResultCountSuccess)@:,
+                    }
                 ],
                 errorTypeIDs: [
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
@@ -407,11 +478,18 @@
                     {
                         @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE)@:,
                     }
-                        @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
                     {
                         @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE)@:,
                     }
-                    @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                    {
+                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)@:,
+                    }
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                    {
+                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE)@:,
+                    }
                 ],
                 constraintTypeID:
                     @if (Model.RequestObject.AttributeNoConstraint == true)
@@ -602,6 +680,8 @@
             $($form).append('<input type="hidden" name="errorTypeID" value="' + errorTypeID + '" /> ');
             $($form).append('<input type="hidden" name="constraintTypeID" value="' + constraintTypeID + '" /> ');
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+            $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+            $($form).append('<input type="hidden" name="isControllable" value="@isControllable.ToString().ToLower()" /> ');
 
             $(document.body).append($form);
 

@@ -21,8 +21,14 @@ namespace SCC.Controllers
                 ViewData[SCC_BL.Settings.AppValues.ViewData.CustomControl.Manage.MODEL_ID] = customControlID.Value;
 
             List<CustomControl> customControlList = new List<CustomControl>();
+            List<Catalog> moduleCatalogList = new List<Catalog>();
 
             customControlList = new CustomControl().SelectAll();
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.MODULE))
+                moduleCatalogList = catalog.SelectByCategoryID();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.CustomControl.Manage.MODULE_LIST] = moduleCatalogList;
 
             if (filterActiveElements)
                 customControlList =
@@ -98,8 +104,8 @@ namespace SCC.Controllers
                         case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
                             maskID = (int)SCC_BL.Settings.AppValues.Masks.MaskID.NAME_1;
                             break;
-                        case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
-                            maskID = (int)SCC_BL.Settings.AppValues.Masks.MaskID.LAST_NAME_1;
+                        case SCC_BL.Settings.AppValues.Masks.SurName1.MASK:
+                            maskID = (int)SCC_BL.Settings.AppValues.Masks.MaskID.SUR_NAME_1;
                             break;
                         case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
                             maskID = (int)SCC_BL.Settings.AppValues.Masks.MaskID.EMAIL_1;

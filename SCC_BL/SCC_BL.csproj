@@ -30,6 +30,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Test|AnyCPU'">
+    <OutputPath>bin\Test\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="DocumentFormat.OpenXml, Version=2.20.0.0, Culture=neutral, PublicKeyToken=8fb06cb64d019a17, processorArchitecture=MSIL">
       <HintPath>..\packages\DocumentFormat.OpenXml.2.20.0\lib\net46\DocumentFormat.OpenXml.dll</HintPath>
@@ -65,12 +68,19 @@
     <Compile Include="FormBIFieldCatalog.cs" />
     <Compile Include="FormImportHistory.cs" />
     <Compile Include="Group.cs" />
+    <Compile Include="Helpers\PersistentData\User.cs" />
     <Compile Include="Helpers\Transaction\Import\Success.cs" />
     <Compile Include="Helpers\Transaction\Search\TransactionSearchHelper.cs" />
     <Compile Include="Helpers\Transaction\Import\Error.cs" />
     <Compile Include="Log.cs" />
+    <Compile Include="Reports\Helpers\BusinessIntelligenceFieldByProgram.cs" />
+    <Compile Include="Reports\Helpers\CustomControlByProgram.cs" />
+    <Compile Include="Reports\Results\CalibratorComparisonByError.cs" />
+    <Compile Include="Reports\Results\CalibratorComparisonWithAttributes.cs" />
     <Compile Include="Settings\HTML Content\Calibration\CalibrationCreated.cs" />
+    <Compile Include="Settings\HTML Content\Transaction\DownloadPDF.cs" />
     <Compile Include="Settings\HTML Content\Transaction\Transaction.cs" />
+    <Compile Include="Tools\ExcelParser_bak_20231011210000.cs" />
     <Compile Include="UserNotification.cs" />
     <Compile Include="NotificationMatrix.cs" />
     <Compile Include="UserNotificationUrl.cs" />

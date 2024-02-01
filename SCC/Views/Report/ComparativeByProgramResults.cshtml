@@ -126,6 +126,9 @@
                 <th class="text-center">
                     Usuario
                 </th>
+                <th class="text-center">
+                    Total de transacciones
+                </th>
                 @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                 {
                     <th class="text-center">
@@ -223,6 +226,9 @@
                             program.SetDataByID();
                         }
                         @($"{ program.Name }")
+                    </td>
+                    <td>
+                        @resultsByProgram.TotalTransactions
                     </td>
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                     {
@@ -411,6 +417,18 @@
                                 ) / resultsByProgram.TotalTransactions) * 100)
                             : 0).Replace(',', '.');
 
+                string programsString =
+                    String.Join(
+                        ",",
+                        Model.ResultsByProgramList
+                            .Select(e =>
+                            {
+                                Program program = new Program(e.ProgramID);
+                                program.SetDataByID();
+
+                                return $"'{ program.Name }'";
+                            }));
+
                 @:{
                     @:data: [
                         if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
@@ -430,36 +448,39 @@
                     @:borderColor: '@colorList[currentColor]',
                     @:backgroundColor: '@colorList[currentColor]',
                     @:borderWidth: 1,
-                    @:successCount: [
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
-                        {
+                    @:customData: {
+                        @:currentProgram: [@Html.Raw(programsString)],
+                        @:successCount: [
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
+                            {
+                                @(isControllable
+                                    ? resultsByProgram.GlobalGeneralFinalUserCriticalErrorCountSuccess
+                                    : resultsByProgram.GlobalControllableFinalUserCriticalErrorCountSuccess)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
+                            {
+                                @(isControllable
+                                    ? resultsByProgram.GlobalGeneralBusinessCriticalErrorCountSuccess
+                                    : resultsByProgram.GlobalControllableBusinessCriticalErrorCountSuccess)@:,
+                            }
+                            if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
+                            {
+                                @(isControllable
+                                    ? resultsByProgram.GlobalGeneralFulfillmentCriticalErrorCountSuccess
+                                    : resultsByProgram.GlobalControllableFulfillmentCriticalErrorCountSuccess)@:,
+                            }
                             @(isControllable
-                                ? resultsByProgram.GlobalGeneralFinalUserCriticalErrorCountSuccess
-                                : resultsByProgram.GlobalControllableFinalUserCriticalErrorCountSuccess)@:,
-                        }
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
-                        {
-                            @(isControllable
-                                ? resultsByProgram.GlobalGeneralBusinessCriticalErrorCountSuccess
-                                : resultsByProgram.GlobalControllableBusinessCriticalErrorCountSuccess)@:,
-                        }
-                        if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
-                        {
-                            @(isControllable
-                                ? resultsByProgram.GlobalGeneralFulfillmentCriticalErrorCountSuccess
-                                : resultsByProgram.GlobalControllableFulfillmentCriticalErrorCountSuccess)@:,
-                        }
-                        @(isControllable
-                            ? resultsByProgram.GlobalGeneralResultCountSuccess
-                            : resultsByProgram.GlobalControllableResultCountSuccess)
-                    @:],
-                    @:errorTypeIDs: [
-                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE)@:,
-                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE)@:,
-                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE)@:,
-                        @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
-                    @:],
-                    @:totalCount: @resultsByProgram.TotalTransactions,
+                                ? resultsByProgram.GlobalGeneralResultCountSuccess
+                                : resultsByProgram.GlobalControllableResultCountSuccess)
+                        @:],
+                        @:errorTypeIDs: [
+                            @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE)@:,
+                            @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE)@:,
+                            @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE)@:,
+                            @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
+                        @:],
+                        @:totalCount: @resultsByProgram.TotalTransactions,
+                    @:}
                 @:},
 
                 currentColor++;
@@ -595,7 +616,7 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `${context.formattedValue.replace(',', '.')}% (${context.dataset.successCount[context.dataIndex]}/${context.dataset.totalCount})`
+                        label: (context) => `${context.dataset.customData.currentProgram[context.datasetIndex]}: ${context.formattedValue.replace(',', '.')}% (${context.dataset.customData.successCount[context.dataIndex]}/${context.dataset.customData.totalCount})`
                     }
                 },
                 chartAreaBorder: {
@@ -630,7 +651,7 @@
             const firstPoint = points[0];
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
-            let errorTypeID = myChart.data.datasets[firstPoint.datasetIndex].errorTypeIDs[firstPoint.index];
+            let errorTypeID = myChart.data.datasets[firstPoint.datasetIndex].customData.errorTypeIDs[firstPoint.index];
 
             const url = '@Url.Action(nameof(ReportController.AccuracyByAttribute), mainControllerName)';
 

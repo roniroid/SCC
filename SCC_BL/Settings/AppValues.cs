@@ -57,10 +57,24 @@ namespace SCC_BL.Settings
                     EXCEL_FILES = 0
                 }
 
+                public const string EXCEL_FILES_XML = "application/xml";
                 public const string EXCEL_FILES_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
                 public const string EXCEL_FILES_XLS = "application/vnd.ms-excel";
                 public const string TEXT_FILES = "text/plain";
                 public const string OCTET_STREAM = "application/octet-stream";
+                public const string PDF_FILES = "application/pdf";
+            }
+        }
+
+        public struct Export
+        {
+            public struct Transaction
+            {
+                public struct PDF
+                {
+                    public const string REPLACE_CONTENT = "yyyyMMddhhmmss";
+                    public const string NAME = "Transacción - " + REPLACE_CONTENT + ".pdf";
+                }
             }
         }
 
@@ -74,7 +88,7 @@ namespace SCC_BL.Settings
                     {
                         IDENTIFICATION = 0,
                         FIRST_NAME = 1,
-                        LAST_NAME = 2,
+                        SUR_NAME = 2,
                         EMAIL = 3,
                         START_DATE = 4,
                         END_DATE = 5,
@@ -86,6 +100,8 @@ namespace SCC_BL.Settings
                         GROUP = 11,
                         PROGRAM = 12,
                         HAS_PASS_PERMISSION = 13,
+                        COUNTRY = 14,
+                        WORKSPACE_START_DATES = 15,
                     }
                 }
             }
@@ -259,7 +275,7 @@ namespace SCC_BL.Settings
                 PHONE_2 = 4,
                 ALPHANUMERIC_1 = 5,
                 NAME_1 = 6,
-                LAST_NAME_1 = 7,
+                SUR_NAME_1 = 7,
                 EMAIL_1 = 8,
             }
 
@@ -299,10 +315,10 @@ namespace SCC_BL.Settings
                 public const string PATTERN = "^[a-zA-ZÀ-ÿñÑ]+(\\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$";
             }
 
-            public struct LastName1
+            public struct SurName1
             {
                 public const string MASK = "Apellido";
-                public const string PATTERN = "^[a-zA-ZÀ-ÿñÑ]+$";
+                public const string PATTERN = "^[a-zA-ZÀ-ÿñÑ]+(\\s*[a-zA-ZÀ-ÿñÑ]*)*[a-zA-ZÀ-ÿñÑ]+$";
             }
 
             public struct Email1
@@ -332,6 +348,14 @@ namespace SCC_BL.Settings
                         }
                     }
                 }
+
+                public struct _LogList
+                {
+                    public struct AllUserList
+                    {
+                        public const string NAME = "LOG_LOG_LIST_ALL_USER_LIST";
+                    }
+                }
             }
 
             public struct Workspace
@@ -349,7 +373,8 @@ namespace SCC_BL.Settings
 
                 public struct Manage
                 {
-                    public const string MODEL_ID = "CUSTOM_CONTROL_MODEL_ID";
+                    public const string MODEL_ID = "CUSTOM_CONTROL_MANAGE_MODEL_ID";
+                    public const string MODULE_LIST = "CUSTOM_CONTROL_MANAGE_MODULE_CATALOG";
                 }
 
                 public struct CustomControlTypeView
@@ -401,6 +426,16 @@ namespace SCC_BL.Settings
                             public const string VALUE = "ID";
                         }
                     }
+
+                    public struct AllUserList
+                    {
+                        public const string NAME = "MANAGE_GROUP_ALL_USER_LIST";
+                    }
+
+                    public struct AllModuleList
+                    {
+                        public const string NAME = "MANAGE_GROUP_ALL_MODULE_LIST";
+                    }
                 }
             }
 
@@ -419,6 +454,11 @@ namespace SCC_BL.Settings
                             public const string TEXT = "Name";
                             public const string VALUE = "ID";
                         }
+                    }
+
+                    public struct ProgramFormList
+                    {
+                        public const string NAME = "EDIT_TRANSACTION_PROGRAM_FORM_LIST";
                     }
                 }
 
@@ -448,6 +488,21 @@ namespace SCC_BL.Settings
                     public struct HasDevolution
                     {
                         public const string NAME = "EDIT_TRANSACTION_HAS_DEVOLUTION";
+                    }
+
+                    public struct CustomControlList
+                    {
+                        public struct CallID
+                        {
+                            public struct CustomControlID
+                            {
+                                public const string NAME = "EDIT_TRANSACTION_CUSTOM_CONTROL_LIST_CALL_ID_CUSTOM_CONTROL_ID";
+                            }
+                            public struct Content
+                            {
+                                public const string NAME = "EDIT_TRANSACTION_CUSTOM_CONTROL_LIST_CALL_ID_CONTENT";
+                            }
+                        }
                     }
                 }
 
@@ -494,6 +549,24 @@ namespace SCC_BL.Settings
                     {
                         public const string NAME = "SEARCH_TRANSACTION_USER_LIST";
                     }
+
+                    public struct AllData
+                    {
+                        public struct ResultCatalog
+                        {
+                            public const string NAME = "ALL_RESULT_CATALOG";
+                        }
+
+                        public struct User
+                        {
+                            public const string NAME = "ALL_USER_CATALOG";
+                        }
+
+                        public struct Program
+                        {
+                            public const string NAME = "ALL_PROGRAM_CATALOG";
+                        }
+                    }
                 }
             }
 
@@ -539,6 +612,23 @@ namespace SCC_BL.Settings
                     {
                         public const string NAME = "SEARCH_CALIBRATION_PROGRAM_LIST";
                     }
+
+                    //Has transactions
+
+                    public struct ProgramFormList
+                    {
+                        public const string NAME = "SEARCH_TRANSACTION_ALL_PROGRAM_FORM_LIST";
+                    }
+
+                    public struct AllProgramList
+                    {
+                        public const string NAME = "SEARCH_TRANSACTION_ALL_PROGRAM_LIST";
+                    }
+
+                    public struct AllUserList
+                    {
+                        public const string NAME = "SEARCH_TRANSACTION_ALL_USER_LIST";
+                    }
                 }
 
                 public struct Edit
@@ -566,6 +656,17 @@ namespace SCC_BL.Settings
                 }
             }
 
+            public struct Program
+            {
+                public struct Manage
+                {
+                    public struct ProgramFormList
+                    {
+                        public const string NAME = "MANAGE_PROGRAM_PROGRAM_FORM_LIST";
+                    }
+                }
+            }
+
             public struct ProgramGroup
             {
                 public const string PROGRAM_GROUPS = "PROGRAM_GROUPS";
@@ -581,6 +682,10 @@ namespace SCC_BL.Settings
                             public const string TEXT = "Name";
                             public const string VALUE = "ID";
                         }
+                    }
+                    public struct AllProgramList
+                    {
+                        public const string NAME = "MANAGE_PROGRAM_GROUP_ALL_PROGRAM_LIST";
                     }
                 }
             }
@@ -607,6 +712,14 @@ namespace SCC_BL.Settings
             public struct Form
             {
                 public const string FORMS = "FORMS";
+
+                public struct Manage
+                {
+                    public struct AllTypeList
+                    {
+                        public const string NAME = "MANAGE_FORM_ALL_TYPE_LIST";
+                    }
+                }
 
                 public struct Edit
                 {
@@ -690,6 +803,10 @@ namespace SCC_BL.Settings
                             public const string TEXT = "Name";
                             public const string VALUE = "ID";
                         }
+                    }
+                    public struct AllProgramList
+                    {
+                        public const string NAME = "FORM_BINDING_ALL_PROGRAM_LIST";
                     }
                 }
             }
@@ -901,6 +1018,44 @@ namespace SCC_BL.Settings
                             public const string VALUE = "ID";
                         }
                     }
+
+                    public struct AllData
+                    {
+                        public struct LanguageCatalog
+                        {
+                            public const string NAME = "ALL_LANGUAGE_CATALOG";
+                        }
+
+                        public struct CountryCatalog
+                        {
+                            public const string NAME = "ALL_COUNTRY_CATALOG";
+                        }
+
+                        public struct RoleCatalog
+                        {
+                            public const string NAME = "ALL_ROLE_CATALOG";
+                        }
+
+                        public struct Supervisor
+                        {
+                            public const string NAME = "ALL_SUPERVISOR_CATALOG";
+                        }
+
+                        public struct Workspace
+                        {
+                            public const string NAME = "ALL_WORKSPACE_CATALOG";
+                        }
+
+                        public struct Group
+                        {
+                            public const string NAME = "ALL_GROUP_CATALOG";
+                        }
+
+                        public struct Program
+                        {
+                            public const string NAME = "ALL_PROGRAM_CATALOG";
+                        }
+                    }
                 }
             }
 
@@ -1036,6 +1191,14 @@ namespace SCC_BL.Settings
                     }
                 }
                 
+                public struct ParetoBIResults
+                {
+                    public struct BusinessIntelligenceFieldNames
+                    {
+                        public const string NAME = "REPORT_PARETO_BI_RESULTS_BUSINESS_INTELLIGENCE_FIELD_NAMES";
+                    }
+                }
+                
                 public struct _ComparativeByUser
                 {
                     public struct ProgramList
@@ -1154,6 +1317,8 @@ namespace SCC_BL.Settings
                 
                 public struct _AccuracyByAttribute
                 {
+                    public const string IS_CONTROLLABLE = "IS_CONTROLLABLE";
+
                     public struct ProgramList
                     {
                         public const string NAME = "REPORT_ATTRIBUTE_ACCURACY_PROGRAM_LIST";
@@ -1220,6 +1385,11 @@ namespace SCC_BL.Settings
                         }
                     }
                 }
+                
+                public struct _AccuracyBySubattribute
+                {
+                    public const string IS_CONTROLLABLE = "IS_CONTROLLABLE";
+                }
 
                 public struct _CalibratorComparison
                 {
@@ -1281,6 +1451,144 @@ namespace SCC_BL.Settings
                     public struct ErrorTypeList
                     {
                         public const string NAME = "REPORT_CALIBRATOR_COMPARISON_ERROR_TYPE_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+                }
+
+                public struct _CalibratorComparisonWithAttributes
+                {
+                    public struct ProgramList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_WITH_ATTRIBUTES_PROGRAM_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "Name";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibratedUserList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_WITH_ATTRIBUTES_CALIBRATED_USER_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibratedSupervisorList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_WITH_ATTRIBUTES_CALIBRATED_SUPERVISOR_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibratorUserList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_WITH_ATTRIBUTES_CALIBRATOR_USER_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibrationTypeList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_WITH_ATTRIBUTES_CALIBRATION_TYPE_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct ErrorTypeList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_WITH_ATTRIBUTES_ERROR_TYPE_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+                }
+
+                public struct _CalibratorComparisonByError
+                {
+                    public struct ProgramList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_PROGRAM_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "Name";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibratedUserList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_CALIBRATED_USER_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibratedSupervisorList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_CALIBRATED_SUPERVISOR_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibratorUserList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_CALIBRATOR_USER_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct CalibrationTypeList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_CALIBRATION_TYPE_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct ErrorTypeList
+                    {
+                        public const string NAME = "REPORT_CALIBRATOR_COMPARISON_BY_ERROR_ERROR_TYPE_LIST";
 
                         public struct SelectList
                         {
@@ -1361,6 +1669,8 @@ namespace SCC_BL.Settings
 
                 public struct _AccuracyTrendByAttribute
                 {
+                    public const string IS_CONTROLLABLE = "IS_CONTROLLABLE";
+
                     public struct ProgramList
                     {
                         public const string NAME = "REPORT_ACCURACY_TREND_BY_ATTRIBUTE_PROGRAM_LIST";

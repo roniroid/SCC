@@ -429,7 +429,9 @@ namespace SCC.ViewModels
             userList = this.CalibrationSession.GetUserList();
 
             int totalTransactionCount = this.CalibrationSession.TransactionList.Count;
-            int totalExpected = totalTransactionCount * userList.Count();
+
+            //int totalExpected = totalTransactionCount * userList.Count();
+            int totalExpected = 0;
 
             foreach (User user in userList)
             {
@@ -441,8 +443,8 @@ namespace SCC.ViewModels
 
                 List<Transaction> calibratedTransactionList = new List<Transaction>();
                 calibratedTransactionList = this.CalibratedTransactionList
-                    .Where(e =>
-                        calibrationList.Select(s => s.CalibratedTransactionID).Contains(e.ID))
+                    /*.Where(e =>
+                        calibrationList.Select(s => s.CalibratedTransactionID).Contains(e.ID))*/
                     .ToList();
 
                 ResultsByCalibrator resultsByCalibrator = new ResultsByCalibrator(
@@ -453,7 +455,12 @@ namespace SCC.ViewModels
                     this.Form,
                     totalTransactionCount);
 
-                this.ResultsByCalibratorList.Add(resultsByCalibrator);
+                //if (resultsByCalibrator.CalibrationList.Count() > 0)
+                //{
+                    this.ResultsByCalibratorList.Add(resultsByCalibrator);
+                //}
+
+                totalExpected += calibrationList.Count();
             }
 
             this.FUCE = new Result(SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE, this.CalibrationList, this.ExpertEvaluationList, totalExpected, this.Form);

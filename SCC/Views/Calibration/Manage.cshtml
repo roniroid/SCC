@@ -80,13 +80,13 @@
                 <tr class="@tableRowClass">
                     <td>@calibration.ID</td>
                     <td>@calibration.Description</td>
-                    <td>@calibration.ExperiencedUser.Person.SurName @calibration.ExperiencedUser.Person.LastName, @calibration.ExperiencedUser.Person.FirstName (@calibration.ExperiencedUser.Person.Identification)</td>
+                    <td>@calibration.ExperiencedUser.Person.SurName, @calibration.ExperiencedUser.Person.FirstName (@calibration.ExperiencedUser.Person.Identification)</td>
                     <td>
                         <ol>
                             @foreach (User calibratorUser in calibration.CalibratorUserList)
                             {
                                 <li>
-                                    @calibratorUser.Person.SurName @calibratorUser.Person.LastName, @calibratorUser.Person.FirstName (@calibratorUser.Person.Identification)
+                                    @calibratorUser.Person.SurName, @calibratorUser.Person.FirstName (@calibratorUser.Person.Identification)
                                 </li>
                             }
                         </ol>
@@ -181,7 +181,18 @@
                             }
                         </div>
                         <div class="col-12 mt-2">
-                            @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
+                            @{
+                                bool expiredDate = DateTime.Now > calibration.EndDate;
+                            }
+
+                            @if (expiredDate)
+                            {
+                                <div class="text-center">
+                                    <span>Esta sesión de calibración ha caducado</span>
+                                </div>
+                            }
+                            else
+                            if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
                             {
                                 <div class="text-danger text-center">
                                     <span>Usted no posee permiso para calibrar evaluaciones</span>
@@ -207,7 +218,7 @@
                                     }
                                 }
 
-                                int calibrationTransactionCount = 0;
+                                int calibrationTransactionCount = 1;
 
                                 foreach (CalibrationTransactionCatalog calibrationTransaction in calibration.TransactionList)
                                 {
@@ -329,7 +340,7 @@
         const elementID = element.dataset.transactiontocalibrateid;
 
         if (confirm(message) == true) {
-            window.open('@Url.Action(nameof(TransactionController.Edit), transactionControllerName)?calibratedTransactionID=' + elementID + '&typeID=' + @((int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION), '_self');
+            window.open('@Url.Action(nameof(TransactionController.Edit), transactionControllerName)?calibratedTransactionID=' + elementID + '&typeID=' + @((int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION), '_blank');
         }
     });
 

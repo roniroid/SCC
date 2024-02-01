@@ -37,7 +37,7 @@
             <h2 class="accordion-header" id="headingOne">
                 <button class="accordion-button" type="button" data-bs-toggle="collapse"
                         data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    <strong> Crear / Editar usuario</strong>
+                    <strong> Importación masiva de usuarios</strong>
                 </button>
             </h2>
             <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
@@ -50,6 +50,32 @@
                             </div>
                             <div class="col-7">
                                 <input type="file" name="file" max-size="@(SCC_BL.Settings.Overall.MAX_FILE_SIZE_MB * 1000)" accept=".csv, .xls, xlsx, xlt, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+                            </div>
+                        </div>
+                        <div class="row property-field">
+                            <div class="col-5 property-field-label">
+                                ¿Modificar existentes?
+                            </div>
+                            <div class="col-7">
+                                <div class="radio-control d-inline-block">
+                                    @Html.RadioButton(
+                                        "modifyExistingOnes",
+                                        false,
+                                        new
+                                        {
+                                            label = "NO",
+                                            @checked = true
+                                        }
+                                    )
+                                    @Html.RadioButton(
+                                        "modifyExistingOnes",
+                                        true,
+                                        new
+                                        {
+                                            label = "SI"
+                                        }
+                                    )
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -102,14 +128,14 @@
                 <tr class="@tableRowClass">
                     <td>@uploadedFile.ID</td>
                     <td>@uploadedFile.FileName</td>
-                    <td>@uploadedFile.BasicInfo.CreationDate.ToString("dd MMM yyyy hh:mm:ss")</td>
+                    <td data-order="@uploadedFile.BasicInfo.CreationDate.ToString("yyyyMMddHHmmss")">@uploadedFile.BasicInfo.CreationDate.ToString("dd MMM yyyy hh:mm:ss")</td>
                     <td>
                         @{ 
                             string userWhoUploaded = string.Empty;
                             using (SCC_BL.User user = new SCC_BL.User(uploadedFile.BasicInfo.CreationUserID.Value))
                             {
                                 user.SetDataByID();
-                                userWhoUploaded = $"{ user.Person.Identification } - { user.Person.SurName } { user.Person.LastName }, { user.Person.FirstName }";
+                                userWhoUploaded = $"{ user.Person.Identification } - { user.Person.SurName }, { user.Person.FirstName }";
                             }
                         }
 

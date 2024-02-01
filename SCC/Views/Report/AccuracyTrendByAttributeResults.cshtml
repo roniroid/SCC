@@ -9,6 +9,11 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+
+    bool isControllable =
+        Model.RequestObject.AttributeControllable != null
+            ? Model.RequestObject.AttributeControllable.Value
+            : false;
 }
 
 <link href="~/Content/Custom/radio.css" rel="stylesheet" />
@@ -136,11 +141,11 @@
             </thead>
         <tbody>
             @{
-                List<int> processedAttributeID = new List<int>();
+                List<string> processedAttributeNames = new List<string>();
             }
             @foreach (SCC_BL.Reports.Results.AccuracyTrendByAttribute accuracyTrendByAttribute in Model.AccuracyTrendByAttributeResultList)
             {
-                if (!processedAttributeID.Contains(accuracyTrendByAttribute.AttributeID))
+                if (!processedAttributeNames.Contains(accuracyTrendByAttribute.AttributeName))
                 {
                     <tr>
                         <td>
@@ -149,19 +154,30 @@
                         @foreach (ReportResultsAccuracyTrendByAttributeViewModel.AccuracyTrendByPeriod accuracyTrendResult in Model.AccuracyTrendByPeriodList)
                         {
                             <td>
+                                @{ 
+                                    int successfulResultCount =
+                                        accuracyTrendResult.AccuracyTrendByAttributeInPeriod
+                                            .Where(e =>
+                                                e.AttributeName.Equals(accuracyTrendByAttribute.AttributeName) &&
+                                                e.SuccessfulResult)
+                                            .Count();
+                                }
+
                                 @String.Format(
                                     CultureInfo.InvariantCulture,
                                     /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
                                     Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
                                         ? "{0:0.0#}"
                                         : */"{0:0.##}",
-                                    accuracyTrendResult.TransactionCount > 0 ? ((Convert.ToDecimal(accuracyTrendResult.AccuracyTrendByAttributeInPeriod.Where(e => e.AttributeID == accuracyTrendByAttribute.AttributeID && accuracyTrendByAttribute.SuccessfulResult).Count()) / accuracyTrendResult.TransactionCount) * 100) : 0)%
+                                    accuracyTrendResult.TransactionCount > 0 
+                                        ? ((Convert.ToDecimal(successfulResultCount) / accuracyTrendResult.TransactionCount) * 100) 
+                                        : 0)%
                             </td>
                         }
                     </tr>
-                }
 
-                processedAttributeID.Add(accuracyTrendByAttribute.AttributeID);
+                    processedAttributeNames.Add(accuracyTrendByAttribute.AttributeName);
+                }
             }
         </tbody>
     </table>
@@ -235,14 +251,14 @@
         labels: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => $"\"{ e.Period.ToString("MMM dd, yyyy") }\"")))],
         datasets: [
             @{
-                processedAttributeID = new List<int>();
+                processedAttributeNames = new List<string>();
 
-                string[] colorList = new string[4]{ "rgba(117, 178, 239)", "rgba(67, 66, 71)", "rgba(137, 222, 122)", "rgba(255, 190, 113)" };
+                string[] colorList = new string[5]{ "rgba(117, 178, 239)", "rgba(67, 66, 71)", "rgba(137, 222, 122)", "rgba(255, 190, 113)", "rgb(128, 133, 233)" };
                 int currentColor = 0;
             }
             @foreach (SCC_BL.Reports.Results.AccuracyTrendByAttribute accuracyTrendByAttribute in Model.AccuracyTrendByAttributeResultList)
             {
-                if (processedAttributeID.Contains(accuracyTrendByAttribute.AttributeID))
+                if (processedAttributeNames.Contains(accuracyTrendByAttribute.AttributeName))
                 {
                     continue;
                 }
@@ -251,15 +267,21 @@
 
                 foreach (ReportResultsAccuracyTrendByAttributeViewModel.AccuracyTrendByPeriod accuracyTrendResult in Model.AccuracyTrendByPeriodList)
                 {
+                    int successfulResultCount =
+                        accuracyTrendResult.AccuracyTrendByAttributeInPeriod
+                            .Where(e => 
+                                e.AttributeName.Equals(accuracyTrendByAttribute.AttributeName) && 
+                                e.SuccessfulResult).Count();
+
                     dataText +=
                         (!string.IsNullOrEmpty(dataText) ? "," : string.Empty) +
                         String.Format(
                             CultureInfo.InvariantCulture,
-                            /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
-                            Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
-                                ? "{0:0.0#}"
-                                : */"{0:0.##}",
-                            accuracyTrendResult.TransactionCount > 0 ? ((Convert.ToDecimal(accuracyTrendResult.AccuracyTrendByAttributeInPeriod.Where(e => e.AttributeID == accuracyTrendByAttribute.AttributeID && accuracyTrendByAttribute.SuccessfulResult).Count()) / accuracyTrendResult.TransactionCount) * 100) : 0);
+                                /*Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains(',') ||
+                                Convert.ToString((Convert.ToDouble(Model.GeneralFulfillmentCriticalErrorCountSuccess) / Model.TotalTransactions) * 100).Contains('.')
+                                    ? "{0:0.0#}"
+                                    : */"{0:0.##}",
+                            accuracyTrendResult.TransactionCount > 0 ? ((Convert.ToDecimal(successfulResultCount) / accuracyTrendResult.TransactionCount) * 100) : 0);
                 }
 
                 @:{
@@ -273,7 +295,7 @@
                     totalCount: @Model.TotalTransactions,*@
                 @:},
 
-                processedAttributeID.Add(accuracyTrendByAttribute.AttributeID);
+                processedAttributeNames.Add(accuracyTrendByAttribute.AttributeName);
 
                 currentColor++;
 
@@ -313,6 +335,8 @@
 
     Chart.register([ChartDataLabels, chartAreaBorder, backgroundColorPlugin]);
 
+    let minScale = 0;
+
     let myChart = new Chart(ctx, {
         type: 'line',
         data: DEFAULT_DATA,
@@ -337,9 +361,10 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
+                    min: minScale,
                     max: 100,
                     ticks: {
-                        stepSize: 25,
+                        stepSize: minScale < 50 ? 25 : 10,
                         callback: function (value) {
                             return value + '%';
                         }

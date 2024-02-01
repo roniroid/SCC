@@ -70,6 +70,50 @@ namespace SCC_DATA.Queries
 				}
 			}
 
+			public struct SelectByProgramID
+			{
+				public const string NAME = "[dbo].[usp_CalibrationSelectByProgramID]";
+
+                public struct Parameters
+                {
+                    public const string PROGRAM_ID = "@programID";
+                }
+
+                public struct ResultFields
+				{
+					public const string ID = "ID";
+					public const string STARTDATE = "StartDate";
+					public const string ENDDATE = "EndDate";
+					public const string DESCRIPTION = "Description";
+					public const string TYPEID = "TypeID";
+					public const string EXPERIENCEDUSERID = "ExperiencedUserID";
+					public const string HASNOTIFICATIONTOBESENT = "HasNotificationToBeSent";
+					public const string BASICINFOID = "BasicInfoID";
+				}
+			}
+
+			public struct SelectByUserID
+			{
+				public const string NAME = "[dbo].[usp_CalibrationSelectByUserID]";
+
+                public struct Parameters
+                {
+                    public const string USER_ID = "@userID";
+                }
+
+                public struct ResultFields
+				{
+					public const string ID = "ID";
+					public const string STARTDATE = "StartDate";
+					public const string ENDDATE = "EndDate";
+					public const string DESCRIPTION = "Description";
+					public const string TYPEID = "TypeID";
+					public const string EXPERIENCEDUSERID = "ExperiencedUserID";
+					public const string HASNOTIFICATIONTOBESENT = "HasNotificationToBeSent";
+					public const string BASICINFOID = "BasicInfoID";
+				}
+			}
+
 			public struct SelectByID
 			{
 				public const string NAME = "[dbo].[usp_CalibrationSelectByID]";

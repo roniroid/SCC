@@ -156,3 +156,7 @@ body {
     .horizontal-menu li li span[data-reporttypeid=""]:hover {
         background-color: red;
     }
+
+    .horizontal-menu li li span[data-reporttypeid=""] {
+        display: none;
+    }

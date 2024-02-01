@@ -14,9 +14,29 @@
         !hasModel ?
             @Url.Action(nameof(TransactionController.Create), mainControllerName) :
             @Url.Action(nameof(TransactionController.Edit), mainControllerName);
+
+    int? calibratedTransactionCallIDCustomControlID = null;
+    string calibratedTransactionCallID = string.Empty;
+}
+
+@{ 
+    if (Model.Transaction.CalibratedTransactionID != null)
+    {
+        try
+        {
+            calibratedTransactionCallIDCustomControlID = (int)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.CustomControlID.NAME];
+            calibratedTransactionCallID = ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.Content.NAME].ToString();
+        }
+        catch (Exception ex)
+        {
+        }
+    }
 }
 
 @Styles.Render("~/Content/radio")
+@Scripts.Render("~/bundles/moment")
+
+<meta http-equiv="Permissions-Policy" content="clipboard-read=*">
 
 <style>
     .comment-container textarea {
@@ -38,6 +58,11 @@
     <div class="row d-block text-center m-5">
         <h3>
             Detalles del monitoreo
+            <br />
+            @if (hasModel)
+            {
+                <button class="h6 p-1" id="generatePDF">Exportar a PDF</button>
+            }
         </h3>
         <p><b>Programa: </b>@Model.Form.ProgramName</p>
     </div>
@@ -71,7 +96,7 @@
             Usuario a monitorear <span class="required">*</span>
         </div>
         <div class="col-7">
-            @{ 
+            @{
                 bool hasUserToEvaluate = Model.Transaction.UserToEvaluateID > 0;
             }
 
@@ -83,7 +108,7 @@
             <div class="@(hasUserToEvaluate ? "d-none" : string.Empty)">
                 @Html.DropDownList(
                     "userToEvaluate",
-                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList),
+                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value != actualUser.ID.ToString()),
                     "Seleccione un usuario",
                     new
                     {
@@ -112,8 +137,8 @@
                 transactionEvaluationDateAttributes.Add("placeholder", "Fecha de la evaluación");
                 transactionEvaluationDateAttributes.Add("title", "Fecha de la evaluación");
                 transactionEvaluationDateAttributes.Add("autocomplete", "off");
-                transactionEvaluationDateAttributes.Add("type", "date");
-                transactionEvaluationDateAttributes.Add("Value", evaluationDate.ToString("yyyy-MM-dd"));
+                transactionEvaluationDateAttributes.Add("type", "datetime-local");
+                transactionEvaluationDateAttributes.Add("Value", evaluationDate.ToString("yyyy-MM-ddTHH:mm"));
                 transactionEvaluationDateAttributes.Add("required", "");
 
                 @*if (hasModel)*@
@@ -131,7 +156,7 @@
             @*if (hasModel)*@
             @if (true)
             {
-                <span>@evaluationDate.ToString("dd MMM yyyy")</span>
+                <span>@evaluationDate.ToString("dd MMM yyyy hh:mm:ss tt")</span>
             }
 
             @Html.TextBox(
@@ -153,22 +178,45 @@
                             ? Model.Transaction.TransactionDate
                             : DateTime.Now)
                         : DateTime.Now;
+
+                Dictionary<string, object> transactionTransactionDateAttributes = new Dictionary<string, object>();
+                transactionTransactionDateAttributes.Add("placeholder", "Fecha de la transacción");
+                transactionTransactionDateAttributes.Add("title", "Fecha de la transacción");
+                transactionTransactionDateAttributes.Add("autocomplete", "off");
+                transactionTransactionDateAttributes.Add("type", "datetime-local");
+                transactionTransactionDateAttributes.Add("Value", transactionDate.ToString("yyyy-MM-ddTHH:mm"));
+                transactionTransactionDateAttributes.Add("required", "");
+
+                if (hasModel)
+                {
+                    transactionTransactionDateAttributes.Add("class", "property-field-control d-none");
+                    transactionTransactionDateAttributes.Add("disabled", "");
+                }
+                else
+                {
+                    transactionTransactionDateAttributes.Add("class", "property-field-control");
+                }
             }
 
-            @Html.TextBox(
-                "transactionTransactionDate",
-                null,
-                new
-                {
-                    @class = "property-field-control",
-                    placeholder = "Fecha de la transacción",
-                    title = "Fecha de la transacción",
-                    autocomplete = "off",
-                    type = "date",
-                    @Value = transactionDate.ToString("yyyy-MM-dd"),
-                    required = ""
-                }
-            )
+            @if (hasModel)
+            {
+                <span>@transactionDate.ToString("dd MMM yyyy hh:mm:ss tt")</span>
+            }
+
+            <div class="mb-3 @(hasModel ? "d-none" : string.Empty)">
+                <div class="input-group">
+                    <div class="col-11">
+                        @Html.TextBox(
+                            "transactionTransactionDate",
+                            null,
+                            transactionTransactionDateAttributes
+                        )
+                    </div>
+                    <button class="btn btn-outline-secondary pointer-copy" type="button" id="btnPasteTransactionDate">
+                        <i class='bx bx-paste'></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row property-field">
@@ -548,162 +596,183 @@
             </h3>
         </div>
 
-        @foreach (CustomField customField in Model.Form.CustomFieldList.Where(e => e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED))
+        @foreach (CustomField customField in Model.Form.CustomFieldList.Where(e => e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED).OrderBy(e => e.Order))
         {
-                if (!Model.Form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
+            if (!Model.Form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
+            {
+                continue;
+            }
+
+            TransactionCustomFieldCatalog currentTransactionCustomFieldCatalog = null;
+
+            if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() > 0)
+            {
+                currentTransactionCustomFieldCatalog = Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).FirstOrDefault();
+            }
+
+            Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+            htmlAttributes.Add("autocomplete", "off");
+
+            using (CustomControl customControl = Model.Form.CustomControlList.Where(e => e.ID == customField.CustomControlID).FirstOrDefault())
+            {
+                if (customControl.IsRequired)
                 {
-                    continue;
+                    htmlAttributes.Add("required", "");
                 }
 
-                TransactionCustomFieldCatalog currentTransactionCustomFieldCatalog = null;
-
-                if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() > 0)
+                if (!string.IsNullOrEmpty(customControl.Mask))
                 {
-                    currentTransactionCustomFieldCatalog = Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).FirstOrDefault();
+                    switch (customControl.Mask)
+                    {
+                        case SCC_BL.Settings.AppValues.Masks.Date1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Date1.PATTERN);
+                            htmlAttributes.Add("type", "date");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Time1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Time1.PATTERN);
+                            htmlAttributes.Add("type", "time");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.PhoneNumber1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.PhoneNumber2.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber2.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Alphanumeric1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Name1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.SurName1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.SurName1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Email1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        default:
+                            break;
+                    }
                 }
 
-                Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
-                htmlAttributes.Add("autocomplete", "off");
+                string currentControlClass = "property-field-control custom-control-value " + customControl.CssClass;
 
-                using (CustomControl customControl = Model.Form.CustomControlList.Where(e => e.ID == customField.CustomControlID).FirstOrDefault())
-                {
-                    if (customControl.IsRequired)
-                    {
-                        htmlAttributes.Add("required", "");
-                    }
+                htmlAttributes.Add("placeholder", customControl.Label);
+                htmlAttributes.Add("title", customControl.Description);
+                htmlAttributes.Add("class", currentControlClass);
 
-                    if (!string.IsNullOrEmpty(customControl.Mask))
-                    {
-                        switch (customControl.Mask)
-                        {
-                            case SCC_BL.Settings.AppValues.Masks.Date1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Date1.PATTERN);
-                                htmlAttributes.Add("type", "date");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.Time1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Time1.PATTERN);
-                                htmlAttributes.Add("type", "time");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.PhoneNumber1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.PhoneNumber2.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber2.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.Alphanumeric1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Name1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.LastName1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.LastName1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
-                                htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Email1.PATTERN);
-                                htmlAttributes.Add("type", "text");
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    string currentControlClass = "property-field-control custom-control-value " + customControl.CssClass;
-
-                    htmlAttributes.Add("placeholder", customControl.Label);
-                    htmlAttributes.Add("title", customControl.Description);
-                    htmlAttributes.Add("class", currentControlClass);
-
-                <div class="row property-field custom-control-field" data-customcontrolid="@customControl.ID" data-customfieldid="@customField.ID" data-transactioncustomfieldid="@(currentTransactionCustomFieldCatalog != null ? currentTransactionCustomFieldCatalog.ID : 0)" >
+                <div class="row property-field custom-control-field" data-customcontrolid="@customControl.ID" data-customfieldid="@customField.ID" data-transactioncustomfieldid="@(currentTransactionCustomFieldCatalog != null ? currentTransactionCustomFieldCatalog.ID : 0)">
                     <div class="col-5 property-field-label">
                         @customControl.Label @Html.Raw(customControl.IsRequired ? "<span class=\"required\">*</span>" : string.Empty)
                     </div>
                     <div class="col-7 value-container">
+                        @{
+                            string valueToDisplay =
+                                currentTransactionCustomFieldCatalog != null
+                                    ? currentTransactionCustomFieldCatalog.Comment
+                                    : customControl.DefaultValue;
+
+                            if (customControl.ID == calibratedTransactionCallIDCustomControlID)
+                            {
+                                if (string.IsNullOrEmpty(valueToDisplay))
+                                {
+                                    valueToDisplay = calibratedTransactionCallID;
+                                }
+                            }
+                        }
+
                         @switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)customControl.ControlTypeID)
-        {
+                        {
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
-                htmlAttributes.Add(
-                    "value",
-                    currentTransactionCustomFieldCatalog != null
-                        ? currentTransactionCustomFieldCatalog.Comment
-                        : customControl.DefaultValue);
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-text";
 
-                @Html.TextBox(
-                    "customControl_" + customControl.ID,
-                    currentTransactionCustomFieldCatalog != null
-                        ? currentTransactionCustomFieldCatalog.Comment
-                        : customControl.DefaultValue,
-                    htmlAttributes);
-                break;
-            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
-                htmlAttributes.Add(
-                    "rows",
-                    customControl.NumberOfRows.ToString());
+                                htmlAttributes.Add(
+                                    "value",
+                                    valueToDisplay);
 
-                htmlAttributes.Add(
-                    "cols",
-                    customControl.NumberOfColumns.ToString());
+                                @Html.TextBox(
+                                    "customControl_" + customControl.ID,
+                                    valueToDisplay,
+                                    htmlAttributes);
+                                break;
+                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-text";
 
-                htmlAttributes.Add(
-                    "value",
-                    currentTransactionCustomFieldCatalog != null
-                        ? currentTransactionCustomFieldCatalog.Comment
-                        : customControl.DefaultValue);
+                                htmlAttributes.Add(
+                                    "rows",
+                                    customControl.NumberOfRows.ToString());
 
-                @Html.TextArea(
-                    "customControl_" + customControl.ID,
-                    currentTransactionCustomFieldCatalog != null
-                        ? currentTransactionCustomFieldCatalog.Comment
-                        : customControl.DefaultValue,
-                    htmlAttributes);
-                break;
-            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
-                htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
+                                htmlAttributes.Add(
+                                    "cols",
+                                    customControl.NumberOfColumns.ToString());
+
+                                htmlAttributes.Add(
+                                    "value",
+                                    valueToDisplay);
+
+                                @Html.TextArea(
+                                    "customControl_" + customControl.ID,
+                                    valueToDisplay,
+                                    htmlAttributes);
+                                break;
+                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-checkbox";
+
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
 
                                 <div class="radio-controls d-inline-block">
                                     @foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
-        {
-            bool isChecked = false;
+                                    {
+                                        bool isChecked = false;
 
-            htmlAttributes.Remove("label");
-            htmlAttributes.Add("label", customControlValueCatalog.Name);
+                                        htmlAttributes.Remove("label");
+                                        htmlAttributes.Add("label", customControlValueCatalog.Name);
 
-            if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() <= 0)
-            {
-                if (customControlValueCatalog.IsDefaultValue)
-                {
-                    isChecked = true;
-                }
-            }
-            else
-            if (currentTransactionCustomFieldCatalog != null)
-            {
-                if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
-                {
-                    isChecked = true;
-                }
-            }
+                                        if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() <= 0)
+                                        {
+                                            if (customControlValueCatalog.IsDefaultValue)
+                                            {
+                                                isChecked = true;
+                                            }
+                                        }
+                                        else
+                                        if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Select(e => e.ValueID).Contains(customControlValueCatalog.ID))
+                                        {
+                                            isChecked = true;
+                                        }
+
+                                        @*if (currentTransactionCustomFieldCatalog != null)
+                                        {
+                                            if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
+                                            {
+                                                isChecked = true;
+                                            }
+                                        }*@
+
                                         <div>
-                                            <input id="customControl_@customControlValueCatalog.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />
+                                            <input id="customControl_@customControlValueCatalog.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
                                             <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
                                         </div>
                                         @*<input id="customControl_@customControl.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />*@
 
                                         @*@Html.CheckBox(
-                                            "customControl_" + customControl.ID,
-                                            currentTransactionCustomFieldCatalog != null
-                                                ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
-                                                : customControlValueCatalog.IsDefaultValue,
-                                            htmlAttributes)*@
+                                        "customControl_" + customControl.ID,
+                                        currentTransactionCustomFieldCatalog != null
+                                            ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
+                                            : customControlValueCatalog.IsDefaultValue,
+                                        htmlAttributes)*@
                                     }
-                                    </div>
+                                </div>
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.RADIO_BUTTON:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-radio";
+
                                 htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
 
                                 <div class="radio-controls d-inline-block">
@@ -728,7 +797,7 @@
                                         }
 
                                         <div>
-                                            <input id="customControl_@customControlValueCatalog.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="radio" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />
+                                            <input id="customControl_@customControlValueCatalog.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="radio" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
                                             <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
                                         </div>
                                         @*htmlAttributes.Remove("label");
@@ -745,7 +814,9 @@
                                 </div>
                                 break;
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
-                                <select class="custom-control-chosen-select" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description">
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-select";
+
+                                <select class="custom-control-multiple custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" @(customControl.IsRequired ? "required" : string.Empty)>
                                     <option value="">Seleccionar</option>
                                     @{
                                         foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
@@ -785,7 +856,7 @@
         </div>
     </div>
 
-    @{ 
+    @{
         int[] levelZeroAttributeIDArray = Model.Form.AttributeList.Where(e => e.ParentAttributeID == null || e.ParentAttributeID <= 0).Select(e => e.ID).ToArray();
     }
 
@@ -1251,7 +1322,7 @@
 
                 TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
 
-                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : "has-children") @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? string.Empty : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
                     <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
                         @for (int i = 0; i < spaceCounter; i++)
                         {
@@ -1263,8 +1334,11 @@
                         <span>@attribute.Name</span>
                     </div>
                     <div class="col-1 d-flex align-items-center attribute-value-container text-center">
-                        <input class="attribute-property-field-control attribute-nce text-center d-none" min="0" max="@attribute.MaxScore" title="Escriba un valor" type="number" name="name" value="@(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.ScoreValue : attribute.MaxScore)" disabled />
-                        <b><i>@attribute.MaxScore pts</i></b>
+                        <input class="attribute-property-field-control attribute-nce text-center d-none" min="0" max="@attribute.MaxScore" title="Escriba un valor" type="number" name="name" value="@(currentTransactionAttributeCatalog != null ? /*currentTransactionAttributeCatalog.ScoreValue*/ attribute.MaxScore : attribute.MaxScore)" disabled />
+                        @if (Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0)
+                        {
+                            <b><i>@attribute.MaxScore pts</i></b>
+                        }
                         <!--Agregar controles y funcionalidades de max score-->
                     </div>
                     <div class="col-4 attribute-comment-container">
@@ -1362,31 +1436,49 @@
             </h3>
         </div>
         <div class="bifield-container">
-            @foreach (FormBIFieldCatalog formBIField in Model.Form.FormBIFieldCatalogList)
+            @{
+                List<BusinessIntelligenceField> parentBusinessIntelligenceFieldList = new List<BusinessIntelligenceField>();
+                List<FormBIFieldCatalog> orderedFormBIFieldCatalogList = new List<FormBIFieldCatalog>();
+
+                parentBusinessIntelligenceFieldList =
+                    Model.Form.BusinessIntelligenceFieldList
+                        .Where(w => w.ParentBIFieldID == null || w.ParentBIFieldID == 0)
+                        .ToList();
+
+                orderedFormBIFieldCatalogList =
+                    Model.Form.FormBIFieldCatalogList
+                        .Where(e => parentBusinessIntelligenceFieldList.Select(s => s.ID).Contains(e.BIFieldID))
+                        .OrderBy(e => e.Order)
+                        .ToList();
+
+                List<BusinessIntelligenceField> GetDescendants(int parentBIFieldID, List<BusinessIntelligenceField> allFields)
+                {
+                    List<BusinessIntelligenceField> descendants = new List<BusinessIntelligenceField>();
+
+                    var children = allFields.Where(field => field.ParentBIFieldID == parentBIFieldID).ToList();
+
+                    foreach (var child in children)
+                    {
+                        descendants.Add(child);
+                        descendants.AddRange(GetDescendants(child.ID, allFields));
+                    }
+
+                    return descendants;
+                }
+            }
+            @foreach (FormBIFieldCatalog formBIField in orderedFormBIFieldCatalogList)
             {
                 if (!Model.Form.BusinessIntelligenceFieldList.Select(e => e.ID).Contains(formBIField.BIFieldID))
                 {
                     continue;
                 }
 
-                int spaceCounter = 0;
+                List<BusinessIntelligenceField> childList = new List<BusinessIntelligenceField>();
 
-                SCC_BL.BusinessIntelligenceField auxBusinessIntelligenceField =
-                    Model.Form.BusinessIntelligenceFieldList
-                        .Where(e =>
-                            e.ID == formBIField.BIFieldID)
-                        .FirstOrDefault();
-
-                while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
-                {
-                    auxBusinessIntelligenceField =
-                        Model.Form.BusinessIntelligenceFieldList
-                            .Where(e =>
-                                e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value)
-                            .FirstOrDefault();
-
-                    spaceCounter++;
-                }
+                childList =
+                    GetDescendants(formBIField.BIFieldID, Model.Form.BusinessIntelligenceFieldList)
+                        .OrderBy(e => e.Order)
+                        .ToList();
 
                 BusinessIntelligenceField currentBusinessIntelligenceField =
                     Model.Form.BusinessIntelligenceFieldList
@@ -1400,20 +1492,31 @@
                             e.BIFieldID == currentBusinessIntelligenceField.ID)
                         .FirstOrDefault();
 
-                <div class="row bg-secondary-light text-dark border border-secondary mt-1 bifield-row @(Model.Form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == formBIField.BIFieldID).Count() == 0 ? "no-children" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID == null || currentBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)" data-hasforcedcomment="@currentBusinessIntelligenceField.HasForcedComment" data-basicinfoid="@currentBusinessIntelligenceField.BasicInfoID" data-bifieldid="@currentBusinessIntelligenceField.ID" data-parentbifieldid="@currentBusinessIntelligenceField.ParentBIFieldID" data-order="@formBIField.Order">
+                <div class="
+                        row
+                        bg-secondary-light
+                        text-dark
+                        border
+                        border-secondary
+                        mt-1
+                        bifield-row
+                        @(Model.Form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == formBIField.BIFieldID).Count() == 0 ? "no-children" : string.Empty)
+                        @(currentBusinessIntelligenceField.ParentBIFieldID == null || currentBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty)
+                        @(currentBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)"
+                     data-hasforcedcomment="@currentBusinessIntelligenceField.HasForcedComment"
+                     data-basicinfoid="@currentBusinessIntelligenceField.BasicInfoID"
+                     data-bifieldid="@currentBusinessIntelligenceField.ID"
+                     data-parentbifieldid="@currentBusinessIntelligenceField.ParentBIFieldID"
+                     data-order="@formBIField.Order">
                     <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(currentBusinessIntelligenceField.Description) ? currentBusinessIntelligenceField.Description : currentBusinessIntelligenceField.Name)">
-                        @for (int i = 0; i < spaceCounter; i++)
-                        {
-                            <div class="bifield-marginator px-4 d-inline-block"></div>
-                        }
                         @*@if (currentBusinessIntelligenceField.ParentBIFieldID > 0)
-                        {
-                        }*@
+                            {
+                            }*@
                         <div class="d-flex justify-content-center align-content-center">
                             <input class="bifield-checked me-3" type="checkbox" value="true" @(currentTransactionBIFieldCatalog != null ? currentTransactionBIFieldCatalog.Checked ? "checked" : string.Empty : string.Empty) />
                         </div>
                         @*<span>ID-@currentBusinessIntelligenceField.ID-</span>
-                        <span>@(currentBusinessIntelligenceField.ParentBIFieldID == null || @currentBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + currentBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
+                            <span>@(currentBusinessIntelligenceField.ParentBIFieldID == null || @currentBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + currentBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
                         <span>@currentBusinessIntelligenceField.Name</span>
                     </div>
                     <div class="col-4 bifield-comment-container">
@@ -1498,6 +1601,144 @@
                         </div>
                     </div>
                 </div>
+
+                foreach (BusinessIntelligenceField childBusinessIntelligenceField in childList)
+                {
+                    int spaceCounter = 0;
+
+                    SCC_BL.BusinessIntelligenceField auxBusinessIntelligenceField = childBusinessIntelligenceField;
+
+                    while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
+                    {
+                        auxBusinessIntelligenceField =
+                            Model.Form.BusinessIntelligenceFieldList
+                                .Where(e =>
+                                    e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value)
+                                .FirstOrDefault();
+
+                        spaceCounter++;
+                    }
+
+                    TransactionBIFieldCatalog currentChildTransactionBIFieldCatalog =
+                        Model.Transaction.BIFieldList
+                            .Where(e =>
+                                e.BIFieldID == childBusinessIntelligenceField.ID)
+                            .FirstOrDefault();
+
+                    <div class="
+                        row
+                        bg-secondary-light
+                        text-dark
+                        border
+                        border-secondary
+                        mt-1
+                        bifield-row
+                        @(Model.Form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == childBusinessIntelligenceField.ID).Count() == 0 ? "no-children" : string.Empty)
+                        @(childBusinessIntelligenceField.ParentBIFieldID == null || childBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty)
+                        @(childBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)"
+                         data-hasforcedcomment="@childBusinessIntelligenceField.HasForcedComment"
+                         data-basicinfoid="@childBusinessIntelligenceField.BasicInfoID"
+                         data-bifieldid="@childBusinessIntelligenceField.ID"
+                         data-parentbifieldid="@childBusinessIntelligenceField.ParentBIFieldID"
+                         data-order="@childBusinessIntelligenceField.Order">
+                        <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(childBusinessIntelligenceField.Description) ? childBusinessIntelligenceField.Description : childBusinessIntelligenceField.Name)">
+                            @for (int i = 0; i < spaceCounter; i++)
+                            {
+                                <div class="bifield-marginator px-4 d-inline-block"></div>
+                            }
+                            @*@if (childBusinessIntelligenceField.ParentBIFieldID > 0)
+                                {
+                                }*@
+                            <div class="d-flex justify-content-center align-content-center">
+                                <input class="bifield-checked me-3" type="checkbox" value="true" @(currentChildTransactionBIFieldCatalog != null ? currentChildTransactionBIFieldCatalog.Checked ? "checked" : string.Empty : string.Empty) />
+                            </div>
+                            @*<span>ID-@childBusinessIntelligenceField.ID-</span>
+                                <span>@(childBusinessIntelligenceField.ParentBIFieldID == null || @childBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + childBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
+                            <span>@childBusinessIntelligenceField.Name</span>
+                        </div>
+                        <div class="col-4 bifield-comment-container">
+                            <div class="row property-field">
+                                @if (currentChildTransactionBIFieldCatalog != null)
+                                {
+                                    if (childBusinessIntelligenceField.HasForcedComment)
+                                    {
+                                        <div class="col-1 property-field-label button-container">
+                                            <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                                <i class='bx bx-traffic-cone'></i>
+                                            </button>
+                                        </div>
+                                        <div class="col-11 comment-container">
+                                            <div class="d-flex align-items-start">
+                                                <span class="required">*</span>
+                                            </div>
+                                            <textarea class="w-100 min-w-100" rows="4" required>@currentChildTransactionBIFieldCatalog.Comment</textarea>
+                                        </div>
+                                    }
+                                    else
+                                    if (!string.IsNullOrEmpty(currentChildTransactionBIFieldCatalog.Comment))
+                                    {
+                                        <div class="col-1 property-field-label button-container">
+                                            <button class="btn-element-action btn-element-action-primary btn-bifield-comment-on d-none" title="Editar comentario">
+                                                <i class='bx bxs-message-add'></i>
+                                            </button>
+                                            <button class="btn-element-action btn-element-action-dark btn-bifield-comment-off" title="Ocultar comentario">
+                                                <i class='bx bxs-message-minus'></i>
+                                            </button>
+                                        </div>
+                                        <div class="col-11 comment-container">
+                                            <textarea class="w-100 min-w-100" rows="4">@currentChildTransactionBIFieldCatalog.Comment</textarea>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-1 property-field-label button-container">
+                                            <button class="btn-element-action btn-element-action-primary btn-bifield-comment-on" title="Editar comentario">
+                                                <i class='bx bxs-message-add'></i>
+                                            </button>
+                                            <button class="btn-element-action btn-element-action-dark btn-bifield-comment-off d-none" title="Ocultar comentario">
+                                                <i class='bx bxs-message-minus'></i>
+                                            </button>
+                                        </div>
+                                        <div class="col-11 comment-container d-none">
+                                            <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    if (childBusinessIntelligenceField.HasForcedComment)
+                                    {
+                                        <div class="col-1 property-field-label button-container">
+                                            <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                                <i class='bx bx-traffic-cone'></i>
+                                            </button>
+                                        </div>
+                                        <div class="col-11 comment-container">
+                                            <div class="d-flex align-items-start">
+                                                <span class="required">*</span>
+                                            </div>
+                                            <textarea class="w-100 min-w-100" rows="4" required></textarea>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-1 property-field-label button-container">
+                                            <button class="btn-element-action btn-element-action-primary btn-bifield-comment-on" title="Editar comentario">
+                                                <i class='bx bxs-message-add'></i>
+                                            </button>
+                                            <button class="btn-element-action btn-element-action-dark btn-bifield-comment-off d-none" title="Ocultar comentario">
+                                                <i class='bx bxs-message-minus'></i>
+                                            </button>
+                                        </div>
+                                        <div class="col-11 comment-container d-none">
+                                            <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
             }
         </div>
     </div>
@@ -1527,7 +1768,10 @@
     }
     else
     {
-        <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+        if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TRANSACTIONS))
+        {
+            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+        }
     }
 </div>
 <div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center d-none">
@@ -1698,7 +1942,7 @@
         </div>
     </div>
 </div>
-
+<script src="~/Scripts/html2pdf_0.9.2.bundle.min.js"></script>
 <script>
     let loadedData = false;
 
@@ -1806,6 +2050,73 @@
         LoadTransactionCommentaries();
     });
 
+    const hasModel = @hasModel.ToString().ToLower();
+
+    if (hasModel) {
+        @*document.getElementById('generatePDF').addEventListener('click', function () {
+            const element = document.body;
+
+            const options = {
+                margin: 10,
+                filename: 'webpage.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf()
+                .from(element)
+                .set(options)
+                .outputPdf()
+                .then(function (pdf) {
+                    pdf.save();
+                });
+        });*@
+
+        document.getElementById('generatePDF').addEventListener('click', function () {
+            let message = '¿Quieres descargar la transacción en formato PDF?';
+
+            if (confirm(message) == true) {
+                showWaitingModal();
+
+                const transactionID = @Model.Transaction.ID;
+
+                const data = {
+                    "transactionID": transactionID
+                };
+
+                $.ajax({
+                    "url": '@Url.Action(nameof(TransactionController.ExportTransactionToPDF), mainControllerName)',
+                    "contentType": 'application/json',
+                    "data": JSON.stringify(data),
+                    "method": 'POST',
+                    "timeout": 0,
+                    "success": function (response) {
+                        printToPDF(response);
+                        //window.open(response, '_blank');
+                    },
+                    "error": function (error) {
+                        window.open(response, '_blank');
+                    },
+                    "complete": function (response) {
+                        //window.open(response, '_blank');
+                        hideWaitingModal();
+                    }
+                });
+            }
+        });
+    }
+
+    function printToPDF(content) {
+        var printWindow = window.open('', '_blank');
+
+        printWindow.document.write(content);
+
+        printWindow.document.addEventListener('DOMContentLoaded', function () {
+            printWindow.print();
+        });
+    }
+
     function LoadTransactionCommentaries() {
         console.log('@Request["hasDisputation"]');
         if ('@Request["hasDisputation"]' === 'true') {
@@ -1884,6 +2195,8 @@
     }
 
     async function initialLoad() {
+        //await showWaitingModal();
+
         await $('.attribute-value-select').trigger('change', { eventTriggered: false });
         await $('.attribute-checked').trigger('change', { eventTriggered: false });
 
@@ -1891,6 +2204,8 @@
 
         await updateResults();
         loadedData = true;
+
+        //await hideWaitingModal();
     }
 
     $('.attribute-value-select').on('change', (e, data = { eventTriggered: true }) => {
@@ -2084,9 +2399,9 @@
             //aqui, revisar attributo de nivel cero ya que contiene el iscontrollable
             let auxParentAttributeRow = $('.attribute-row[data-attributeid="' + e + '"]');;
             let auxParentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
-            
+
             if (auxParentAttributeID == parentAttributeID) controllableCEFound = false;
-            
+
             let isControllable = $(auxParentAttributeRow).data('iscontrollable') == 'True';
 
             if (isControllable) controllableCEFound = true;
@@ -2440,7 +2755,7 @@
         let accurateNceMinimumScore = @SCC_BL.Settings.AppValues.TRANSACTION_MINIMUM_NCE_SCORE;
         let accurateNceFailAttributeCount = 0;
 
-        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].level-zero-attribute');
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].no-children');
 
         if (elements.length <= 0) return result;
 
@@ -2600,7 +2915,7 @@
         let controllableNceMinimumScore = @SCC_BL.Settings.AppValues.TRANSACTION_MINIMUM_NCE_SCORE;
         let controllableNceFailAttributeCount = 0;
 
-        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].level-zero-attribute');
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].no-children');
 
         if (elements.length <= 0) return result;
 
@@ -2638,7 +2953,7 @@
 
         let firstMissingElement = null;
 
-        for (var i = 0; i < requiredElements.length; i++) {
+        for (let i = 0; i < requiredElements.length; i++) {
             if (!requiredElements[i].value) {
                 if (!firstMissingElement) {
                     firstMissingElement = requiredElements[i];
@@ -2650,12 +2965,72 @@
         }
 
         if (firstMissingElement) {
+            console.log(firstMissingElement);
             firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
 
         return true;
     }
+
+    function validateFormRadioButtons() {
+        const formContainer = document.querySelector('#formContainer');
+        const requiredRadios = formContainer.querySelectorAll('[type="radio"][required]');
+        let firstMissingElement = null;
+
+        requiredRadios.forEach(radio => {
+            const groupName = radio.getAttribute('name');
+            const radiosInGroup = formContainer.querySelectorAll(`[name="${groupName}"]`);
+            const isChecked = Array.from(radiosInGroup).some(radio => radio.checked);
+
+            if (!isChecked) {
+                if (!firstMissingElement) {
+                    firstMissingElement = radio;
+                }
+                radiosInGroup.forEach(radio => radio.classList.add('missing'));
+            } else {
+                radiosInGroup.forEach(radio => radio.classList.remove('missing'));
+            }
+        });
+
+        if (firstMissingElement) {
+            console.log(firstMissingElement);
+            firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateFormCheckboxes() {
+        const formContainer = document.querySelector('#formContainer');
+        const requiredCheckboxes = formContainer.querySelectorAll('[type="checkbox"][required]');
+        let firstMissingElement = null;
+
+        requiredCheckboxes.forEach(checkbox => {
+            const checkboxName = checkbox.getAttribute('name');
+            const checkboxesInGroup = formContainer.querySelectorAll(`[name="${checkboxName}"]`);
+            const isChecked = Array.from(checkboxesInGroup).some(checkbox => checkbox.checked);
+
+            if (!isChecked) {
+                if (!firstMissingElement) {
+                    firstMissingElement = checkbox;
+                }
+                checkboxesInGroup.forEach(checkbox => checkbox.classList.add('missing'));
+            } else {
+                checkboxesInGroup.forEach(checkbox => checkbox.classList.remove('missing'));
+            }
+        });
+
+        if (firstMissingElement) {
+            console.log(firstMissingElement);
+            firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        return true;
+    }
+
 
     $('#btnSubmit').click((e) => {
         let requiredAdviseElement = $('.required-advise');
@@ -2681,11 +3056,35 @@
             return false;
         }
 
+        if (!validateFormRadioButtons()) {
+            alert('Por favor, ingrese todos los campos requeridos');
+            return false;
+        }
+
+        if (!validateFormCheckboxes()) {
+            alert('Por favor, ingrese todos los campos requeridos');
+            return false;
+        }
+
+        /*const customControlMultipleElements = $('.custom-control-multiple[required]');
+
+        for (let i = 0; i < customControlMultipleElements.length; i++) {
+            const currentElement = $(customControlMultipleElements[i]);
+
+            if ($(currentElement).val() == '' || $(currentElement).val() == null) {
+                alert('Seleccione valores para las listas desplegables requeridas');
+                currentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+        }*/
+
         let message = '¿Quiere guardar los cambios?';
 
         if (confirm(message) != true) {
             return false;
         }
+
+        $('#btnSubmit').prop('disabled', true);
 
         showWaitingModal();
 
@@ -2693,9 +3092,8 @@
 
         getFormObject()
             .then((response) => {
-                $('#btnSubmit').prop('disabled', true);
-                //console.log(response);
-                //return false;
+                /*console.log(response);
+                return false;*/
                 $.ajax({
                     "url": '@formAction',
                     "contentType": 'application/json',
@@ -2718,7 +3116,7 @@
                 console.error(reject);
             })
             .finally(() => {
-                $('#btnSubmit').prop('disabled', false);
+                $('#btnSubmit').removeProp('disabled');
                 hideWaitingModal();
             });
 
@@ -2810,6 +3208,7 @@
                 "UserToEvaluateID": $('#userToEvaluate').val(),
                 "EvaluatorUserID": @Model.Transaction.EvaluatorUserID,
                 "EvaluationDate": $('#transactionEvaluationDate').val(),
+                "LoadDate": '@Model.Transaction.LoadDate.ToString("yyyy-MM-ddTHH:mm")',
                 "TransactionDate": $('#transactionTransactionDate').val(),
                 "FormID": @Model.Form.ID,
                 "Comment": $('#transactionComments').val() ? $('#transactionComments').val() : '',
@@ -2859,13 +3258,11 @@
                     let parentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
 
                     while (parentAttributeID != null && parentAttributeID > 0) {
-                        console.log('entró')
                         auxParentAttributeRow = $('.attribute-row[data-attributeid="' + parentAttributeID + '"]');
                         parentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
                     }
 
                     if (parentAttributeID == null || parentAttributeID == 0) {
-                        console.log('salió')
                         isControllable = $(auxParentAttributeRow).data('iscontrollable') == 'True';
                     }
                 }
@@ -2907,7 +3304,7 @@
                 let valueIDArray = [];
                 let comment = '';
 
-                if ($(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').length > 0) {
+                @*if ($(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').length > 0) {
                     comment = $(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').val();
                 }
                 else
@@ -2930,6 +3327,35 @@
                 else
                 if ($(valueContainer).find('select option:selected').length > 0) {
                     valueID = $(valueContainer).find('select option:selected').val();
+                }*@
+
+                if ($(valueContainer).find('.custom-control-value-text').length > 0) {
+                    comment = $(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').val();
+                }
+                else
+                if ($(valueContainer).find('.custom-control-value-radio').length > 0) {
+                    valueID = $(valueContainer).find('input[type="radio"]:checked').val();
+                }
+                else
+                if ($(valueContainer).find('.custom-control-value-checkbox').length > 0) {
+                    let elementList = $(valueContainer).find('input[type="checkbox"]:checked');
+                    if (elementList.length > 0) {
+                        for (let index = 0; index < elementList.length; index++) {
+                            valueIDArray.push(parseInt($(elementList[index]).val()));
+                            /*valueID =
+                                valueID != null && valueID != ''
+                                    ? (valueID + ',' + $(elementList[index]).val())
+                                    : $(elementList[index]).val();*/
+                        }
+                    }
+                }
+                else
+                if ($(valueContainer).find('.custom-control-value-select').length > 0) {
+                    if ($(valueContainer).find('select option:selected').length > 0) {
+                        valueID = $(valueContainer).find('select option:selected').val();
+                    } else {
+                        valueID = null;
+                    }
                 }
 
                 let transactionCustomFieldID = $(e).data('transactioncustomfieldid');
@@ -2938,7 +3364,7 @@
                 let transactionCustomField = {};
 
                 if (valueIDArray.length > 0) {
-                    for (var i = 0; i < valueIDArray.length; i++) {
+                    for (let i = 0; i < valueIDArray.length; i++) {
                         transactionCustomField =
                         {
                             "ID": transactionCustomFieldID ?? 0,
@@ -3016,7 +3442,7 @@
 
             const attributesToCheck = transactionAttributeList.filter(e => e.ValueID != null || e.Checked);
 
-            for (var i = 0; i < attributesToCheck.length; i++) {
+            for (let i = 0; i < attributesToCheck.length; i++) {
                 const currentAttribute = attributesToCheck[i];
 
                 if (hasChildren(currentAttribute.AttributeID)) {
@@ -3046,6 +3472,16 @@
             formObject['transactionCommentaryList'] = transactionCommentaryList;
             formObject['transactionLabelArray'] = transactionLabelArray;
 
+            let customControlElements = $('.custom-control-field');
+
+            for (let i = 0; i < customControlElements.length; i++) {
+                let currentCustomControlElement = customControlElements[i];
+                let customFieldID = $(currentCustomControlElement).data('customfieldid');
+
+                console.log(customFieldID);
+                console.log(transactionCustomFieldIDList.filter(x => x.CustomFieldID == customFieldID));
+            }
+
             resolve(formObject);
         });
     }
@@ -3061,7 +3497,7 @@
 
             const elements = $('.transaction-comment-disputation');
 
-            for (var i = 0; i < elements.length; i++) {
+            for (let i = 0; i < elements.length; i++) {
                 const currentElement = elements[i];
 
                 const currentComment = {
@@ -3110,7 +3546,7 @@
 
             const elements = $('.transaction-comment-invalidation');
 
-            for (var i = 0; i < elements.length; i++) {
+            for (let i = 0; i < elements.length; i++) {
                 const currentElement = elements[i];
 
                 const currentComment = {
@@ -3159,7 +3595,7 @@
 
             const elements = $('.transaction-comment-devolution, .transaction-comment-devolution-improvement-steps, .transaction-comment-devolution-user-strengths');
 
-            for (var i = 0; i < elements.length; i++) {
+            for (let i = 0; i < elements.length; i++) {
                 const currentElement = elements[i];
 
                 const currentComment = {
@@ -3196,4 +3632,50 @@
             });
         }
     });
+
+    $('#btnPasteTransactionDate').on('click', function () {
+        handlePaste();
+    });
+
+    async function handlePaste() {
+        const datetimeInput = $('input[name="transactionTransactionDate"]');
+
+        try {
+            const clipboardItems = await navigator.clipboard.read();
+
+            if (clipboardItems.length > 0) {
+                // Convert the Blob to text
+                let pastedText = await clipboardItems[0].getType('text/plain').then(textBlob => textBlob.text());
+                pastedText = pastedText.trim();
+
+                const dateFormats = ['DD/MM/YYYY HH:mm:ss', 'DD/MM/YY HH:mm:ss'];
+                let parsedDate;
+
+                for (const format of dateFormats) {
+                    console.log('Test 1: ' + pastedText);
+                    console.log('Test 2: ' + format);
+                    parsedDate = await parseDateString(pastedText, format);
+                    console.log('Test 3: ' + parsedDate);
+                    if (parsedDate.isValid()) {
+                        break;
+                    }
+                }
+
+                if (parsedDate.isValid()) {
+                    const formattedDate = parsedDate.format('YYYY-MM-DDTHH:mm');
+                    datetimeInput.val(formattedDate);
+                } else {
+                    alert('No se recibió un formato de fecha aceptable por el campo de la fecha de transacción.');
+                }
+            } else {
+                alert('El portapapeles está vacío.');
+            }
+        } catch (error) {
+            console.error('Error al leer el portapapeles:', error);
+        }
+    }
+
+    function parseDateString(dateString, format) {
+        return moment(dateString, format, true);
+    }
 </script>

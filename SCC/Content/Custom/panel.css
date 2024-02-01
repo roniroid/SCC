@@ -88,3 +88,15 @@
 span.required {
     color: red;
 }
+
+span.possibly-required {
+    color: orange;
+}
+
+.pointer-question {
+    cursor: help;
+}
+
+.pointer-copy {
+    cursor: copy;
+}

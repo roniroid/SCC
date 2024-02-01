@@ -182,6 +182,13 @@ namespace SCC_BL.DBValues
             CAN_SEE_DESCENDANT_USERS = 40,
             CAN_EDIT_RECOLECTION = 41,
             CAN_RECOLECT = 42,
+            CAN_ASIGN_PROGRAM_GROUPS_TO_USERS = 43,
+            CAN_UPLOAD_FORMS = 44,
+            CAN_ASIGN_FORMS_TO_PROGRAMS = 45,
+            CAN_SEE_FORMS = 46,
+            CAN_CREATE_TRANSACTIONS = 47,
+            CAN_SEE_THEIR_OWN_PROGRAMS_IN_TRANSACTIONS = 48,
+            CAN_SEE_THEIR_PROGRAMS_CALIBRATION_SESSIONS = 49,
         }
 
         public enum USER_LANGUAGE
@@ -612,6 +619,7 @@ namespace SCC_BL.DBValues
             BCE = 1344,
             FCE = 1345,
             NCE = 1346,
+            GCE = 3419,
         }
 
         public enum TRANSACTION_COMMENT_TYPE
@@ -725,6 +733,8 @@ namespace SCC_BL.DBValues
             COMPARATIVE_BY_USER = 1406,
             COMPARATIVE_BY_PROGRAM = 1407,
             PARETO_BI = 1408,
+            CALIBRATOR_COMPARISON_BY_ATTRIBUTE = 3420,
+            CALIBRATOR_COMPARISON_BY_ERROR = 3422,
         }
 
         public enum TIME_INTERVAL

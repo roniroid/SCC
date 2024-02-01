@@ -16,6 +16,13 @@ namespace SCC.Controllers
         {
             ProgramManagementViewModel programManagementViewModel = new ProgramManagementViewModel();
 
+            List<ProgramFormCatalog> programFormCatalogList = new List<ProgramFormCatalog>();
+
+            using (ProgramFormCatalog programFormCatalog = new ProgramFormCatalog())
+                programFormCatalogList = programFormCatalog.SelectAll();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Program.Manage.ProgramFormList.NAME] = programFormCatalogList;
+
             if (programID != null)
             {
                 programManagementViewModel.Program = new Program(programID.Value);
@@ -29,7 +36,9 @@ namespace SCC.Controllers
                     programManagementViewModel.ProgramList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
-                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED &&
+                            (DateTime.Now <= e.EndDate ||
+                            e.EndDate == null))
                         .ToList();
 
             return View(programManagementViewModel);

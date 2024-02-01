@@ -208,6 +208,9 @@
 <script>
     $(document).ready(function () {
         fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de puestos' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
             let data = response;
 
             let customData;
@@ -218,7 +221,8 @@
 
             const excelButton =
             {
-                "title": "Excel",
+                "title": null,
+                "filename": fileName,
                 "extend": "excel",
                 "className": "btn-sm",
                 "exportOptions": {
@@ -229,7 +233,8 @@
 
             const pdfButton =
             {
-                "title": "PDF",
+                "title": null,
+                "filename": fileName,
                 "extend": "pdfHtml5",
                 "className": "btn-sm",
                 "orientation": "landscape",
@@ -242,6 +247,8 @@
 
             const copyButton =
             {
+                "title": null,
+                "filename": fileName,
                 "extend": 'copy',
                 "text": 'Copiar',
                 "exportOptions":
@@ -259,8 +266,51 @@
             data["buttons"].push(copyButton);
 
             startDataTable('#tbInfo', data);
+
+            let toolbarControls = '';
+
+            toolbarControls +=
+                getControlForToolbar(
+                    '<div class="radio-control d-inline-block"><input label="NO" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="false" @(Request["filterActiveElements"] == null || Request["filterActiveElements"] == "false" ? "checked" : string.Empty) /><input label="SI" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="true" @(Request["filterActiveElements"] == "true" ? "checked" : string.Empty) /></div>',
+                    'Mostrar sólo activos'
+                );
+
+            $('div.toolbar').html(toolbarControls);
         });
     });
+
+    function getControlForToolbar(content, label) {
+        let result = '';
+
+        const divPropertyField = '<div class="row property-field m-3">%replaceContent%</div>';
+
+        const divPropertyFieldLabel = '<div class="col-5 property-field-label">' + label + '</div>';
+        const contentContainer = '<div class="col-7">' + content + '</div>';
+
+        result =
+            divPropertyField
+                .replace('%replaceContent%', divPropertyFieldLabel + contentContainer);
+
+        return result;
+    }
+
+    function onChangefilterActiveElementsEvent(element) {
+        let url = '@Url.Action(nameof(WorkspaceController.Manage), mainControllerName)';
+
+        if (element.value == 'true') {
+            url += '?filterActiveElements=' + element.value;
+        }
+
+        if ($('#identification').val()) {
+            let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+
+            if (confirm(message) == true) {
+                window.open(url, '_self');
+            }
+        } else {
+            window.open(url, '_self');
+        }
+    }
 
     $('.btn-workspace-edit').click((e) => {
         let message = '¿Quieres salir de esta pantalla para editar el elemento?';

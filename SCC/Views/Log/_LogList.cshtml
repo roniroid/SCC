@@ -1,0 +1,114 @@
+﻿@using SCC_BL;
+@model List<Log>
+
+@{ 
+    List<User> allUserList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.Log._LogList.AllUserList.NAME];
+}
+
+<link href="~/Content/Custom/Datatables/custom-datatables.css" rel="stylesheet" />
+
+<table class="display" id="tbInfo">
+    <thead>
+        <tr>
+            <th>
+                ID
+            </th>
+            <th>
+                Fecha de creación
+            </th>
+            <th>
+                Usuario
+            </th>
+            <th>
+                Descripción
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Log log in Model)
+        {
+            <tr>
+                <td>@log.ID</td>
+                <td>@log.BasicInfo.CreationDate.ToString("dd/MM/yyyy hh:mm tt")</td>
+                <td>
+                    @{
+                        User user = new User();
+
+                        if (log.BasicInfo.CreationUserID != null)
+                        {
+                            user = allUserList.Where(e => e.ID == log.BasicInfo.CreationUserID.Value).FirstOrDefault();
+                        }
+                    }
+                    @user.Username
+                </td>
+                <td>@log.Description</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    const pathJsonDatatables = './Content/files/datatables-basic-data.json';
+
+    $(document).ready(() => {
+        fetchDatatableBasicData(pathJsonDatatables).then(response => {
+            const dateNow = new Date();
+            let fileName = 'Logs' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customButton;
+
+            /*customButton = {
+                "text": 'Exportar en formato de importación',
+                "className": "btn-sm border border-dark",
+                "action": function (e, dt, node, config) {
+                    alert('Button activated');
+                }
+            };*/
+
+            let excelButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3]
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2, 3]
+                }
+            };
+
+            let copyButton =
+            {
+                "title": null,
+                "filename": fileName,
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    }
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbInfo', data);
+        });
+    });
+</script>

@@ -9,6 +9,11 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+
+    bool isControllable =
+        Model.RequestObject.AttributeControllable != null
+            ? Model.RequestObject.AttributeControllable.Value
+            : false;
 }
 
 <link href="~/Content/Custom/radio.css" rel="stylesheet" />
@@ -144,9 +149,18 @@
                         Error Crítico de Cumplimiento
                     </th>
                 }
-                <th class="text-center">
-                    Error Crítico Global
-                </th>
+                @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                {
+                    <th class="text-center">
+                        Error No Crítico
+                    </th>
+                }
+                @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                {
+                    <th class="text-center">
+                        Error Crítico Global
+                    </th>
+                }
                 <th class="text-center">
                     Transacciones
                 </th>
@@ -155,94 +169,148 @@
         <tbody>
             @foreach (ReportResultsAccuracyTrendViewModel.AccuracyTrendByPeriod accuracyTrendResult in Model.AccuracyTrendByPeriodList)
             {
-                string percentageGlobalGCE =
-                    String.Format(
-                        CultureInfo.InvariantCulture,
-                        "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.GeneralCriticalErrorPercentage : 0);
                 string percentageGlobalFUCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.GeneralFinalUserCriticalErrorPercentage : 0);
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.GeneralFinalUserCriticalErrorPercentage 
+                            : 0);
                 string percentageGlobalBCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.GeneralBusinessCriticalErrorPercentage : 0);
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.GeneralBusinessCriticalErrorPercentage 
+                            : 0);
                 string percentageGlobalFCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.GeneralFulfillmentCriticalErrorPercentage : 0);
-
-                string percentageAccurateGCE =
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.GeneralFulfillmentCriticalErrorPercentage 
+                            : 0);
+                string percentageGlobalNCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.AccurateCriticalErrorPercentage : 0);
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.GeneralNonCriticalErrorAverageResult 
+                            : 0);
+                string percentageGlobalGCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.GeneralCriticalErrorPercentage 
+                            : 0);
+
                 string percentageAccurateFUCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.AccurateFinalUserCriticalErrorPercentage : 0);
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.AccurateFinalUserCriticalErrorPercentage 
+                            : 0);
                 string percentageAccurateBCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.AccurateBusinessCriticalErrorPercentage : 0);
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.AccurateBusinessCriticalErrorPercentage 
+                            : 0);
                 string percentageAccurateFCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.AccurateFulfillmentCriticalErrorPercentage : 0);
-
-                string percentageControllableGCE =
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.AccurateFulfillmentCriticalErrorPercentage 
+                            : 0);
+                string percentageAccurateNCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.ControllableCriticalErrorPercentage : 0);
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.AccurateNonCriticalErrorAverageResult 
+                            : 0);
+                string percentageAccurateGCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.AccurateCriticalErrorPercentage 
+                            : 0);
+
                 string percentageControllableFUCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.ControllableFinalUserCriticalErrorPercentage : 0);
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.ControllableFinalUserCriticalErrorPercentage 
+                            : 0);
                 string percentageControllableBCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.ControllableBusinessCriticalErrorPercentage : 0);
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.ControllableBusinessCriticalErrorPercentage 
+                            : 0);
                 string percentageControllableFCE =
                     String.Format(
                         CultureInfo.InvariantCulture,
                         "{0:0.#}",
-                        accuracyTrendResult.TransactionCount > 0 ? accuracyTrendResult.ControllableFulfillmentCriticalErrorPercentage : 0);
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.ControllableFulfillmentCriticalErrorPercentage 
+                            : 0);
+                string percentageControllableNCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.ControllableNonCriticalErrorAverageResult 
+                            : 0);
+                string percentageControllableGCE =
+                    String.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0:0.#}",
+                        accuracyTrendResult.TransactionCount > 0 
+                            ? accuracyTrendResult.ControllableCriticalErrorPercentage 
+                            : 0);
 
                 <tr>
-                    <td>
+                    <td data-order="@accuracyTrendResult.Period.ToString("yyyyMMddHHmmss")">
                         @accuracyTrendResult.Period.ToString("MMM dd, yyyy")
                     </td>
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
                     {
                         <td>
-                            @percentageControllableFUCE%
+                            @(isControllable ? percentageControllableFUCE : percentageAccurateFUCE)%
                         </td>
                     }
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
                     {
                         <td>
-                            @percentageControllableBCE%
+                            @(isControllable ? percentageControllableBCE : percentageAccurateBCE)%
                         </td>
                     }
                     @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
                     {
                         <td>
-                            @percentageControllableFCE%
+                            @(isControllable ? percentageControllableFCE : percentageAccurateFCE)%
                         </td>
                     }
-                    <td>
-                        @percentageControllableGCE%
-                    </td>
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+                    {
+                        <td>
+                            @(isControllable ? percentageControllableNCE : percentageAccurateNCE)%
+                        </td>
+                    }
+                    @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+                    {
+                        <td>
+                            @(isControllable ? percentageControllableGCE : percentageAccurateGCE)%
+                        </td>
+                    }
                     <td>
                         @accuracyTrendResult.TransactionCount
                     </td>
@@ -323,7 +391,7 @@
             {
                 @:{
                     @:label: 'Error Crítico de Usuario Final',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableFinalUserCriticalErrorPercentage : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableFinalUserCriticalErrorPercentage : e.AccurateFinalUserCriticalErrorPercentage : 0))))],
                     @:borderColor: 'rgba(117, 178, 239)',
                     @:backgroundColor: 'rgba(117, 178, 239, 0.8)',
                     @:borderWidth: 3,
@@ -336,7 +404,7 @@
             {
                 @:{
                     @:label: 'Error Crítico de Negocio',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableBusinessCriticalErrorPercentage : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableBusinessCriticalErrorPercentage : e.AccurateBusinessCriticalErrorPercentage : 0))))],
                     @:borderColor: 'rgba(67, 66, 71)',
                     @:backgroundColor: 'rgb(67, 66, 71, 0.8)',
                     @:borderWidth: 3,
@@ -349,7 +417,7 @@
             {
                 @:{
                     @:label: 'Error Crítico de Cumplimiento',
-                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableFulfillmentCriticalErrorPercentage : 0))))],
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableFulfillmentCriticalErrorPercentage : e.AccurateFulfillmentCriticalErrorPercentage : 0))))],
                     @:borderColor: 'rgba(137, 222, 122)',
                     @:backgroundColor: 'rgb(137, 222, 122, 0.8)',
                     @:borderWidth: 3,
@@ -358,16 +426,32 @@
                     totalCount: @Model.TotalTransactions,*@
                 @:},
             }
+            @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
             {
-                label: 'Error Crítico Global',
-                data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? e.ControllableCriticalErrorPercentage : 0))))],
-                borderColor: 'rgba(255, 190, 113)',
-                backgroundColor: 'rgb(255, 190, 113, 0.8)',
-                borderWidth: 3,
-                @*successCount: [@Model.ControllableFinalUserCriticalErrorCountSuccess, @Model.ControllableBusinessCriticalErrorCountSuccess, @Model.ControllableFulfillmentCriticalErrorCountSuccess, @Model.ControllableResultCountSuccess],
-                errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
-                totalCount: @Model.TotalTransactions,*@
-            },
+                @:{
+                    @:label: 'Error No Crítico',
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableNonCriticalErrorAverageResult : e.AccurateNonCriticalErrorAverageResult : 0))))],
+                    @:borderColor: 'rgba(255, 190, 113)',
+                    @:backgroundColor: 'rgb(255, 190, 113, 0.8)',
+                    @:borderWidth: 3,
+                    @*successCount: [@Model.ControllableFinalUserCriticalErrorCountSuccess, @Model.ControllableBusinessCriticalErrorCountSuccess, @Model.ControllableFulfillmentCriticalErrorCountSuccess, @Model.ControllableResultCountSuccess],
+                    errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
+                    totalCount: @Model.TotalTransactions,*@
+                @:},
+            }
+            @if (Model.RequestObject.ErrorTypeIDArray.Contains((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE))
+            {
+                @:{
+                    @:label: 'Error Crítico Global',
+                    @:data: [@Html.Raw(String.Join(",", Model.AccuracyTrendByPeriodList.Select(e => String.Format(CultureInfo.InvariantCulture, "{0:0.#}", e.TransactionCount > 0 ? isControllable ? e.ControllableCriticalErrorPercentage : e.AccurateCriticalErrorPercentage : 0))))],
+                    @:borderColor: 'rgb(128, 133, 233)',
+                    @:backgroundColor: 'rgb(128, 133, 233, 0.8)',
+                    @:borderWidth: 3,
+                    @*successCount: [@Model.ControllableFinalUserCriticalErrorCountSuccess, @Model.ControllableBusinessCriticalErrorCountSuccess, @Model.ControllableFulfillmentCriticalErrorCountSuccess, @Model.ControllableResultCountSuccess],
+                    errorTypeIDs: [@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE), @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)],
+                    totalCount: @Model.TotalTransactions,*@
+                @:},
+            }
         ]
     };
 
@@ -399,6 +483,69 @@
 
     Chart.register([ChartDataLabels, chartAreaBorder, backgroundColorPlugin]);
 
+    @{ 
+        double minScale = 100;
+
+        if (isControllable)
+        {
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableFinalUserCriticalErrorPercentage).Min() < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableFinalUserCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableBusinessCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableBusinessCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableFulfillmentCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableFulfillmentCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableNonCriticalErrorAverageResult).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableNonCriticalErrorAverageResult).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.ControllableCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.ControllableCriticalErrorPercentage).Min(e => e);
+            }
+        }
+        else
+        {
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateFinalUserCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateFinalUserCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateBusinessCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateBusinessCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateFulfillmentCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateFulfillmentCriticalErrorPercentage).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateNonCriticalErrorAverageResult).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateNonCriticalErrorAverageResult).Min(e => e);
+            }
+
+            if (Model.AccuracyTrendByPeriodList.Count() > 0 ? Model.AccuracyTrendByPeriodList.Select(e => e.AccurateCriticalErrorPercentage).Min(e => e) < minScale : false)
+            {
+                minScale = Model.AccuracyTrendByPeriodList.Select(e => e.AccurateCriticalErrorPercentage).Min(e => e);
+            }
+        }
+
+        minScale = minScale >= 10 ? (minScale - (minScale % 10)) : 0;
+    }
+
+    let minScale = @minScale;
+
     let myChart = new Chart(ctx, {
         type: 'line',
         data: DEFAULT_DATA,
@@ -418,9 +565,10 @@
                         display: $('input[name="rdVertical"]:checked').val()
                     },
                     beginAtZero: true,
+                    min: minScale,
                     max: 100,
                     ticks: {
-                        stepSize: 25,
+                        stepSize: minScale < 50 ? 25 : 10,
                         callback: function (value) {
                             return value + '%';
                         }
@@ -503,7 +651,8 @@
                 tooltip: {
                     callbacks: {
                         label: (context) => {
-                            return `${context.label}: ${context.formattedValue.replace(',', '.')}%`;
+                            console.log(context);
+                            return `${context.dataset.label} - ${context.label}: ${context.formattedValue.replace(',', '.')}%`;
                         }
                     }
                 },

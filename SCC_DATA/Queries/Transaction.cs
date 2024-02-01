@@ -62,6 +62,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "@evaluatorUserID";
 					public const string EVALUATIONDATE = "@evaluationDate";
 					public const string TRANSACTIONDATE = "@transactionDate";
+					public const string LOAD_DATE = "@loadDate";
 					public const string FORMID = "@formID";
 					public const string COMMENT = "@comment";
 					public const string GENERALRESULTID = "@generalResultID";
@@ -108,6 +109,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "EvaluatorUserID";
 					public const string EVALUATIONDATE = "EvaluationDate";
 					public const string TRANSACTIONDATE = "TransactionDate";
+					public const string LOAD_DATE = "LoadDate";
 					public const string FORMID = "FormID";
 					public const string COMMENT = "Comment";
 					public const string GENERALRESULTID = "GeneralResultID";
@@ -132,6 +134,21 @@ namespace SCC_DATA.Queries
 				}
 			}
 
+			public struct GetProgramID
+			{
+				public const string NAME = "[dbo].[usp_TransactionGetProgramID]";
+
+				public struct Parameters
+				{
+					public const string TRANSACTION_ID = "@transactionID";
+				}
+
+				public struct ResultFields
+				{
+					public const string PROGRAM_ID = "ProgramID";
+				}
+			}
+
 			public struct SelectByIdentifier
 			{
 				public const string NAME = "[dbo].[usp_TransactionSelectByIdentifier]";
@@ -149,6 +166,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "EvaluatorUserID";
 					public const string EVALUATIONDATE = "EvaluationDate";
 					public const string TRANSACTIONDATE = "TransactionDate";
+					public const string LOAD_DATE = "LoadDate";
 					public const string FORMID = "FormID";
 					public const string COMMENT = "Comment";
 					public const string GENERALRESULTID = "GeneralResultID";
@@ -190,6 +208,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "EvaluatorUserID";
 					public const string EVALUATIONDATE = "EvaluationDate";
 					public const string TRANSACTIONDATE = "TransactionDate";
+					public const string LOAD_DATE = "LoadDate";
 					public const string FORMID = "FormID";
 					public const string COMMENT = "Comment";
 					public const string GENERALRESULTID = "GeneralResultID";
@@ -226,6 +245,7 @@ namespace SCC_DATA.Queries
 					public const string EVALUATORUSERID = "@evaluatorUserID";
 					public const string EVALUATIONDATE = "@evaluationDate";
 					public const string TRANSACTIONDATE = "@transactionDate";
+					public const string LOAD_DATE = "@loadDate";
 					public const string FORMID = "@formID";
 					public const string COMMENT = "@comment";
 					public const string GENERALRESULTID = "@generalResultID";

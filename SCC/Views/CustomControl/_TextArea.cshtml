@@ -64,9 +64,9 @@
             @Html.TextBoxFor(modelitem => Model.Label, null, new { @class = "property-field-control", placeholder = "Etiqueta", autocomplete = "off", required = "", pattern = SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN, id = "txtCustomControlLabel" })
         </div>
     </div>
-    <div class="row property-field d-none">
+    <div class="row property-field">
         <div class="col-4 property-field-label">
-            Descripción <span class="required">*</span>
+            Descripción @*<span class="required">*</span>*@
         </div>
         <div class="col-8">
             @Html.TextBoxFor(modelitem => Model.Description, null, new { @class = "property-field-control", placeholder = "Descripción", autocomplete = "off", required = "", pattern = SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN })

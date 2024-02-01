@@ -1,0 +1,3261 @@
+﻿@using SCC.Controllers;
+@using SCC_BL;
+
+@model SCC.ViewModels.TransactionFormViewModel
+
+@{
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    string mainControllerName = OverallController.GetControllerName(typeof(TransactionController));
+
+    bool hasModel = Model.Transaction.ID != null && Model.Transaction.ID > 0;
+
+    string formAction =
+        !hasModel ?
+            @Url.Action(nameof(TransactionController.Create), mainControllerName) :
+            @Url.Action(nameof(TransactionController.Edit), mainControllerName);
+}
+
+@Styles.Render("~/Content/radio")
+
+<style>
+    .comment-container textarea {
+        margin: 5px;
+        padding: 10px;
+    }
+
+    .attribute-checked {
+        height: 20px;
+        width: 20px;
+    }
+
+    .bifield-checked {
+        height: 20px;
+        width: 20px;
+    }
+</style>
+<div class="panel d-block">
+    <div class="row d-block text-center m-5">
+        <h3>
+            Detalles del monitoreo
+        </h3>
+        <p><b>Programa: </b>@Model.Form.ProgramName</p>
+    </div>
+    <div class="d-block text-center">
+        <p id="timer">@Model.Transaction.TimeElapsed.ToString("hh\\:mm\\:ss")</p>
+    </div>
+    <div class="row d-block text-center text-danger required-advise d-none m-5">
+        Por favor, ingrese todos los datos requeridos
+    </div>
+
+    @if (hasModel)
+    {
+        <div class="row property-field">
+            <div class="col-5 property-field-label">
+                ID del sistema
+            </div>
+            <div class="col-7">
+                <strong>@Model.Transaction.ID</strong>
+            </div>
+        </div>
+    }
+
+    <style>
+        .comment-container textarea {
+            margin: 5px;
+            padding: 10px;
+        }
+    </style>
+    <div class="row property-field">
+        <div class="col-5 property-field-label">
+            Usuario a monitorear <span class="required">*</span>
+        </div>
+        <div class="col-7">
+            @{ 
+                bool hasUserToEvaluate = Model.Transaction.UserToEvaluateID > 0;
+            }
+
+            @if (hasUserToEvaluate)
+            {
+                <span>@((ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value.Equals(Model.Transaction.UserToEvaluateID.ToString())).FirstOrDefault().Text)</span>
+            }
+
+            <div class="@(hasUserToEvaluate ? "d-none" : string.Empty)">
+                @Html.DropDownList(
+                    "userToEvaluate",
+                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value != actualUser.ID.ToString()),
+                    "Seleccione un usuario",
+                    new
+                    {
+                        @class = "property-field-control",
+                        placeholder = "Usuarios disponibles",
+                        title = "Usuarios disponibles"
+                    }
+                )
+            </div>
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-5 property-field-label">
+            Fecha de la evaluación @(!hasModel ? Html.Raw("<span class=\"required\">*</span>") : Html.Raw(string.Empty))
+        </div>
+        <div class="col-7">
+            @{
+                DateTime evaluationDate =
+                    Model.Transaction.EvaluationDate != null
+                        ? (Model.Transaction.EvaluationDate.Year > 2000
+                            ? Model.Transaction.EvaluationDate
+                            : DateTime.Now)
+                        : DateTime.Now;
+
+                Dictionary<string, object> transactionEvaluationDateAttributes = new Dictionary<string, object>();
+                transactionEvaluationDateAttributes.Add("placeholder", "Fecha de la evaluación");
+                transactionEvaluationDateAttributes.Add("title", "Fecha de la evaluación");
+                transactionEvaluationDateAttributes.Add("autocomplete", "off");
+                transactionEvaluationDateAttributes.Add("type", "date");
+                transactionEvaluationDateAttributes.Add("Value", evaluationDate.ToString("yyyy-MM-dd"));
+                transactionEvaluationDateAttributes.Add("required", "");
+
+                @*if (hasModel)*@
+                if (true)
+                {
+                    transactionEvaluationDateAttributes.Add("class", "property-field-control d-none");
+                    transactionEvaluationDateAttributes.Add("disabled", "");
+                }
+                else
+                {
+                    transactionEvaluationDateAttributes.Add("class", "property-field-control");
+                }
+            }
+
+            @*if (hasModel)*@
+            @if (true)
+            {
+                <span>@evaluationDate.ToString("dd MMM yyyy")</span>
+            }
+
+            @Html.TextBox(
+                "transactionEvaluationDate",
+                null,
+                transactionEvaluationDateAttributes
+            )
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-5 property-field-label">
+            Fecha de la transacción <span class="required">*</span>
+        </div>
+        <div class="col-7">
+            @{
+                DateTime transactionDate =
+                    Model.Transaction.TransactionDate != null
+                        ? (Model.Transaction.TransactionDate.Year > 2000
+                            ? Model.Transaction.TransactionDate
+                            : DateTime.Now)
+                        : DateTime.Now;
+            }
+
+            @Html.TextBox(
+                "transactionTransactionDate",
+                null,
+                new
+                {
+                    @class = "property-field-control",
+                    placeholder = "Fecha de la transacción",
+                    title = "Fecha de la transacción",
+                    autocomplete = "off",
+                    type = "date",
+                    @Value = transactionDate.ToString("yyyy-MM-dd"),
+                    required = ""
+                }
+            )
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-5 property-field-label">
+            Comentarios
+        </div>
+        <div class="col-7">
+            @Html.TextArea(
+                "transactionComments",
+                Model.Transaction.Comment,
+                new
+                {
+                    @class = "property-field-control",
+                    placeholder = "Comentarios",
+                    autocomplete = "off"
+                })
+        </div>
+    </div>
+    <div class="row property-field">
+        <div class="col-5 property-field-label">
+            Etiquetas para describir esta transacción
+        </div>
+        <div class="col-7">
+            @Html.TextBox(
+                "transactionLabels",
+                String.Join(", ", Model.Transaction.TransactionLabelList.Select(e => e.Description)),
+                new
+                {
+                    @class = "property-field-control",
+                    placeholder = "Separe cada etiqueta con una coma ( , )",
+                    autocomplete = "off"
+                })
+        </div>
+    </div>
+</div>
+@if (
+    (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.HasDisputation.NAME] ||
+    (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.HasInvalidation.NAME] ||
+    (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.HasDevolution.NAME])
+{
+    <div class="panel d-block">
+        <div class="accordion accordion-flush w-100 @(!(bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.HasDisputation.NAME] ? "d-none" : string.Empty)" id="accordionDisputeCommentaries">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDisputationData" aria-expanded="true" aria-controls="collapseDisputationData">
+                        <strong> Disputa</strong>
+                    </button>
+                </h2>
+                <div id="collapseDisputationData" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionDisputeCommentaries">
+                    <div class="accordion-body">
+                        <div class="row property-field">
+                            @if (Model.Transaction.DisputeCommentaries.Count() > 0)
+                            {
+                                int disputationCommentCount = 0;
+
+                                foreach (TransactionCommentary transactionCommentary in Model.Transaction.DisputeCommentaries)
+                                {
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">* Rellene el comentario</span>
+                                        </div>
+                                        @Html.TextArea(
+                                             "transactionDisputationComment-" + disputationCommentCount,
+                                             Model.Transaction.DisputeCommentaries[disputationCommentCount].Comment,
+                                             new
+                                             {
+                                                 @class = "property-field-control transaction-commentary transaction-comment-disputation",
+                                                 placeholder = "Ingrese sus comentarios de disputa",
+                                                 autocomplete = "off",
+                                                 data_transactioncommentaryid = transactionCommentary.ID,
+                                                 data_transactioncommentarytypeid = transactionCommentary.TypeID,
+                                                 data_transactioncommentarybasicinfoid = transactionCommentary.BasicInfoID
+                                             })
+                                    </div>
+
+                                    disputationCommentCount++;
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <span class="required">* Rellene el comentario</span>
+                                    </div>
+                                    @Html.TextArea(
+                                        "transactionDisputationComment-0",
+                                        new
+                                        {
+                                            @class = "property-field-control transaction-commentary transaction-comment-disputation",
+                                            placeholder = "Ingrese sus comentarios de disputa",
+                                            autocomplete = "off",
+                                            data_transactioncommentaryid = 0,
+                                            data_transactioncommentarytypeid = (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DISPUTE,
+                                            data_transactioncommentarybasicinfoid = 0
+                                        })
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DISPUTE_TRANSACTIONS))
+                            {
+                                <button id="btnSendDispute" class="btn-custom-system btn-custom-system-primary" type="button">Enviar disputa</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion accordion-flush w-100 @(!(bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.HasInvalidation.NAME] ? "d-none" : string.Empty)" id="accordionInvalidationCommentaries">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInvalidationData" aria-expanded="true" aria-controls="collapseInvalidationData">
+                        <strong> Invalidación</strong>
+                    </button>
+                </h2>
+                <div id="collapseInvalidationData" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionInvalidationCommentaries">
+                    <div class="accordion-body">
+                        <div class="row property-field">
+                            @if (Model.Transaction.InvalidationCommentaries.Count() > 0)
+                            {
+                                int invalidationCommentCount = 0;
+
+                                foreach (TransactionCommentary transactionCommentary in Model.Transaction.InvalidationCommentaries)
+                                {
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">* Rellene el comentario</span>
+                                        </div>
+                                        @Html.TextArea(
+                                            "transactionInvalidationComment-" + invalidationCommentCount,
+                                            Model.Transaction.InvalidationCommentaries[invalidationCommentCount].Comment,
+                                            new
+                                            {
+                                                @class = "property-field-control transaction-commentary transaction-comment-invalidation",
+                                                placeholder = "Ingrese sus comentarios de invalidación",
+                                                autocomplete = "off",
+                                                data_transactioncommentaryid = transactionCommentary.ID,
+                                                data_transactioncommentarytypeid = transactionCommentary.TypeID,
+                                                data_transactioncommentarybasicinfoid = transactionCommentary.BasicInfoID
+                                            })
+                                    </div>
+
+                                    invalidationCommentCount++;
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <span class="required">* Rellene el comentario</span>
+                                    </div>
+                                    @Html.TextArea(
+                                        "transactionInvalidationComment-0",
+                                        new
+                                        {
+                                            @class = "property-field-control transaction-commentary transaction-comment-invalidation",
+                                            placeholder = "Ingrese sus comentarios de invalidación",
+                                            autocomplete = "off",
+                                            data_transactioncommentaryid = 0,
+                                            data_transactioncommentarytypeid = (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.INVALIDATION,
+                                            data_transactioncommentarybasicinfoid = 0
+                                        })
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_INVALIDATE_TRANSACTIONS))
+                            {
+                                <button id="btnSendInvalidation" class="btn-custom-system btn-custom-system-primary" type="button">Enviar invalidación</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="accordion accordion-flush w-100 @(!(bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.HasDevolution.NAME] ? "d-none" : string.Empty)" id="accordionDevolutionCommentaries">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDevolutionData" aria-expanded="true" aria-controls="collapseDevolutionData">
+                        <strong> Devolución</strong>
+                    </button>
+                </h2>
+                <div id="collapseDevolutionData" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionDevolutionCommentaries">
+                    <div class="accordion-body">
+                        <div class="row d-block text-center m-5">
+                            <h5>
+                                Comentarios de devolución
+                            </h5>
+                        </div>
+                        <div class="row property-field">
+                            @if (Model.Transaction.DevolutionCommentaries.Count() > 0)
+                            {
+                                int devolutionCommentCount = 0;
+
+                                foreach (TransactionCommentary transactionCommentary in Model.Transaction.DevolutionCommentaries)
+                                {
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">* Rellene el comentario</span>
+                                        </div>
+                                        @Html.TextArea(
+                                            "transactionDevolutionComment-" + devolutionCommentCount,
+                                            Model.Transaction.DevolutionCommentaries[devolutionCommentCount].Comment,
+                                            new
+                                            {
+                                                @class = "property-field-control transaction-commentary transaction-comment-devolution",
+                                                placeholder = "Ingrese sus comentarios de devolución",
+                                                autocomplete = "off",
+                                                data_transactioncommentaryid = transactionCommentary.ID,
+                                                data_transactioncommentarytypeid = transactionCommentary.TypeID,
+                                                data_transactioncommentarybasicinfoid = transactionCommentary.BasicInfoID
+                                            })
+                                    </div>
+
+                                    devolutionCommentCount++;
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <span class="required">* Rellene el comentario</span>
+                                    </div>
+                                    @Html.TextArea(
+                                        "transactionDevolutionComment-0",
+                                        new
+                                        {
+                                            @class = "property-field-control transaction-commentary transaction-comment-devolution",
+                                            placeholder = "Ingrese sus comentarios de devolución",
+                                            autocomplete = "off",
+                                            data_transactioncommentaryid = 0,
+                                            data_transactioncommentarytypeid = (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_COMMENTARIES,
+                                            data_transactioncommentarybasicinfoid = 0
+                                        })
+                                </div>
+                            }
+                        </div>
+                        <div class="row d-block text-center m-5">
+                            <h5>
+                                Pasos de mejora
+                            </h5>
+                        </div>
+                        <div class="row property-field">
+                            @if (Model.Transaction.DevolutionImprovementSteps.Count() > 0)
+                            {
+                                int devolutionImprovementStepsCommentCount = 0;
+
+                                foreach (TransactionCommentary transactionCommentary in Model.Transaction.DevolutionImprovementSteps)
+                                {
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">* Rellene el comentario</span>
+                                        </div>
+                                        @Html.TextArea(
+                                            "transactionDevolutionImprovementStepsComment-" + devolutionImprovementStepsCommentCount,
+                                            Model.Transaction.DevolutionImprovementSteps[devolutionImprovementStepsCommentCount].Comment,
+                                            new
+                                            {
+                                                @class = "property-field-control transaction-commentary transaction-comment-devolution-improvement-steps",
+                                                placeholder = "Ingrese sus pasos de mejora",
+                                                autocomplete = "off",
+                                                data_transactioncommentaryid = transactionCommentary.ID,
+                                                data_transactioncommentarytypeid = transactionCommentary.TypeID,
+                                                data_transactioncommentarybasicinfoid = transactionCommentary.BasicInfoID
+                                            })
+                                    </div>
+
+                                    devolutionImprovementStepsCommentCount++;
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <span class="required">* Rellene el comentario</span>
+                                    </div>
+                                    @Html.TextArea(
+                                        "transactionDevolutionImprovementStepsComment-0",
+                                        new
+                                        {
+                                            @class = "property-field-control transaction-commentary transaction-comment-devolution-improvement-steps",
+                                            placeholder = "Ingrese sus pasos de mejora",
+                                            autocomplete = "off",
+                                            data_transactioncommentaryid = 0,
+                                            data_transactioncommentarytypeid = (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_IMPROVEMENT_STEPS,
+                                            data_transactioncommentarybasicinfoid = 0
+                                        })
+                                </div>
+                            }
+                        </div>
+                        <div class="row d-block text-center m-5">
+                            <h5>
+                                Fortalezas del usuario
+                            </h5>
+                        </div>
+                        <div class="row property-field">
+                            @if (Model.Transaction.DevolutionUserStrengths.Count() > 0)
+                            {
+                                int devolutionUserStrengthsCommentCount = 0;
+
+                                foreach (TransactionCommentary transactionCommentary in Model.Transaction.DevolutionUserStrengths)
+                                {
+                                    <div class="col-12">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">* Rellene el comentario</span>
+                                        </div>
+                                        @Html.TextArea(
+                                            "transactionDevolutionUserStrengthsComment-" + devolutionUserStrengthsCommentCount,
+                                            Model.Transaction.DevolutionUserStrengths[devolutionUserStrengthsCommentCount].Comment,
+                                            new
+                                            {
+                                                @class = "property-field-control transaction-commentary transaction-comment-devolution-user-strengths",
+                                                placeholder = "Ingrese las fortalezas del usuario",
+                                                autocomplete = "off",
+                                                data_transactioncommentaryid = transactionCommentary.ID,
+                                                data_transactioncommentarytypeid = transactionCommentary.TypeID,
+                                                data_transactioncommentarybasicinfoid = transactionCommentary.BasicInfoID
+                                            })
+                                    </div>
+
+                                    devolutionUserStrengthsCommentCount++;
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12">
+                                    <div class="d-flex align-items-start">
+                                        <span class="required">* Rellene el comentario</span>
+                                    </div>
+                                    @Html.TextArea(
+                                        "transactionDevolutionUserStrengthsComment-0",
+                                        new
+                                        {
+                                            @class = "property-field-control transaction-commentary transaction-comment-devolution-user-strengths",
+                                            placeholder = "Ingrese las fortalezas del usuario",
+                                            autocomplete = "off",
+                                            data_transactioncommentaryid = 0,
+                                            data_transactioncommentarytypeid = (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_USER_STRENGTHS,
+                                            data_transactioncommentarybasicinfoid = 0
+                                        })
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="accordion-footer">
+                        <div class="accordion-footer-info">
+                            <p>* Campos requeridos</p>
+                        </div>
+                        <div class="accordion-footer-buttons">
+                            @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_GIVE_DEVOLUTIONS))
+                            {
+                                <button id="btnSendDevolution" class="btn-custom-system btn-custom-system-primary" type="button">Enviar devolución</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@if (Model.Form.CustomFieldList.Count() > 0)
+{
+    <div class="panel d-block">
+        <div class="row d-block text-center m-5">
+            <h3>
+                Campos personalizados
+            </h3>
+        </div>
+
+        @foreach (CustomField customField in Model.Form.CustomFieldList.Where(e => e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED))
+        {
+            if (!Model.Form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
+            {
+                continue;
+            }
+
+            TransactionCustomFieldCatalog currentTransactionCustomFieldCatalog = null;
+
+            if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() > 0)
+            {
+                currentTransactionCustomFieldCatalog = Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).FirstOrDefault();
+            }
+
+            Dictionary<string, object> htmlAttributes = new Dictionary<string, object>();
+            htmlAttributes.Add("autocomplete", "off");
+
+            using (CustomControl customControl = Model.Form.CustomControlList.Where(e => e.ID == customField.CustomControlID).FirstOrDefault())
+            {
+                if (customControl.IsRequired)
+                {
+                    htmlAttributes.Add("required", "");
+                }
+
+                if (!string.IsNullOrEmpty(customControl.Mask))
+                {
+                    switch (customControl.Mask)
+                    {
+                        case SCC_BL.Settings.AppValues.Masks.Date1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Date1.PATTERN);
+                            htmlAttributes.Add("type", "date");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Time1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Time1.PATTERN);
+                            htmlAttributes.Add("type", "time");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.PhoneNumber1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.PhoneNumber2.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.PhoneNumber2.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Alphanumeric1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Alphanumeric1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Name1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Name1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.SurName1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.SurName1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        case SCC_BL.Settings.AppValues.Masks.Email1.MASK:
+                            htmlAttributes.Add("pattern", SCC_BL.Settings.AppValues.Masks.Email1.PATTERN);
+                            htmlAttributes.Add("type", "text");
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                string currentControlClass = "property-field-control custom-control-value " + customControl.CssClass;
+
+                htmlAttributes.Add("placeholder", customControl.Label);
+                htmlAttributes.Add("title", customControl.Description);
+                htmlAttributes.Add("class", currentControlClass);
+
+                <div class="row property-field custom-control-field" data-customcontrolid="@customControl.ID" data-customfieldid="@customField.ID" data-transactioncustomfieldid="@(currentTransactionCustomFieldCatalog != null ? currentTransactionCustomFieldCatalog.ID : 0)" >
+                    <div class="col-5 property-field-label">
+                        @customControl.Label @Html.Raw(customControl.IsRequired ? "<span class=\"required\">*</span>" : string.Empty)
+                    </div>
+                    <div class="col-7 value-container">
+                        @switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)customControl.ControlTypeID)
+                        {
+                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-text";
+
+                                htmlAttributes.Add(
+                                    "value",
+                                    currentTransactionCustomFieldCatalog != null
+                                        ? currentTransactionCustomFieldCatalog.Comment
+                                        : customControl.DefaultValue);
+
+                                @Html.TextBox(
+                                    "customControl_" + customControl.ID,
+                                    currentTransactionCustomFieldCatalog != null
+                                        ? currentTransactionCustomFieldCatalog.Comment
+                                        : customControl.DefaultValue,
+                                    htmlAttributes);
+                                break;
+                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-text";
+
+                                htmlAttributes.Add(
+                                    "rows",
+                                    customControl.NumberOfRows.ToString());
+
+                                htmlAttributes.Add(
+                                    "cols",
+                                    customControl.NumberOfColumns.ToString());
+
+                                htmlAttributes.Add(
+                                    "value",
+                                    currentTransactionCustomFieldCatalog != null
+                                        ? currentTransactionCustomFieldCatalog.Comment
+                                        : customControl.DefaultValue);
+
+                                @Html.TextArea(
+                                    "customControl_" + customControl.ID,
+                                    currentTransactionCustomFieldCatalog != null
+                                        ? currentTransactionCustomFieldCatalog.Comment
+                                        : customControl.DefaultValue,
+                                    htmlAttributes);
+                                break;
+                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-checkbox";
+
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
+
+                                <div class="radio-controls d-inline-block">
+                                    @foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
+                                    {
+                                        bool isChecked = false;
+
+                                        htmlAttributes.Remove("label");
+                                        htmlAttributes.Add("label", customControlValueCatalog.Name);
+
+                                        if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() <= 0)
+                                        {
+                                            if (customControlValueCatalog.IsDefaultValue)
+                                            {
+                                                isChecked = true;
+                                            }
+                                        }
+                                        else
+                                        if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Select(e => e.ValueID).Contains(customControlValueCatalog.ID))
+                                        {
+                                            isChecked = true;
+                                        }
+
+                                        @*if (currentTransactionCustomFieldCatalog != null)
+                                        {
+                                            if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
+                                            {
+                                                isChecked = true;
+                                            }
+                                        }*@
+
+                                        <div>
+                                            <input id="customControl_@customControlValueCatalog.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
+                                            <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
+                                        </div>
+                                        @*<input id="customControl_@customControl.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />*@
+
+                                        @*@Html.CheckBox(
+                                            "customControl_" + customControl.ID,
+                                            currentTransactionCustomFieldCatalog != null
+                                                ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
+                                                : customControlValueCatalog.IsDefaultValue,
+                                            htmlAttributes)*@
+                                    }
+                                    </div>
+                                break;
+                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.RADIO_BUTTON:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-radio";
+
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString().Replace("property-field-control", "");
+
+                                <div class="radio-controls d-inline-block">
+                                    @foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
+                                    {
+                                        bool isChecked = false;
+
+                                        if (Model.Transaction.CustomFieldList.Where(e => e.CustomFieldID == customField.ID).Count() <= 0)
+                                        {
+                                            if (customControlValueCatalog.IsDefaultValue)
+                                            {
+                                                isChecked = true;
+                                            }
+                                        }
+                                        else
+                                        if (currentTransactionCustomFieldCatalog != null)
+                                        {
+                                            if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
+                                            {
+                                                isChecked = true;
+                                            }
+                                        }
+
+                                        <div>
+                                            <input id="customControl_@customControlValueCatalog.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="radio" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
+                                            <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
+                                        </div>
+                                        @*htmlAttributes.Remove("label");
+                                        htmlAttributes.Add("label", customControlValueCatalog.Name);
+
+                                        @Html.RadioButton(
+                                            "customControl_" + customControl.ID,
+                                            customControlValueCatalog.ID,
+                                            currentTransactionCustomFieldCatalog != null
+                                                ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
+                                                : customControlValueCatalog.IsDefaultValue,
+                                            htmlAttributes)*@
+                                    }
+                                </div>
+                                break;
+                            case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
+                                htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-select";
+
+                                <select class="custom-control-multiple custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" @(customControl.IsRequired ? "required" : string.Empty) >
+                                    <option value="">Seleccionar</option>
+                                    @{
+                                        foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
+                                        {
+                                            <option value="@customControlValueCatalog.ID"
+                                                    @(currentTransactionCustomFieldCatalog != null ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID ? "selected" : string.Empty : customControlValueCatalog.IsDefaultValue ? "selected" : string.Empty)>
+                                                @customControlValueCatalog.Name
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                break;
+                            default:
+                                break;
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+}
+<div class="panel d-block">
+    <div class="row d-block text-center m-5">
+        <h3>
+            Formulario de monitoreo
+        </h3>
+    </div>
+    <div class="row">
+        <div class="col-7">
+            Atributo
+        </div>
+        <div class="col-1">
+            Pasó
+        </div>
+        <div class="col-4">
+            Comentarios
+        </div>
+    </div>
+
+    @{ 
+        int[] levelZeroAttributeIDArray = Model.Form.AttributeList.Where(e => e.ParentAttributeID == null || e.ParentAttributeID <= 0).Select(e => e.ID).ToArray();
+    }
+
+    @if (Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE).Count() > 0)
+    {
+        <div class="row bg-primary text-light my-2 p-3">
+            <span>
+                Error Crítico Usuario Final
+            </span>
+        </div>
+        <div class="attribute-container">
+            @foreach (SCC_BL.Attribute attribute in Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE))
+            {
+                int spaceCounter = 0;
+
+                SCC_BL.Attribute auxAttribute = attribute;
+
+                bool isControllable = auxAttribute.IsControllable;
+
+                while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
+                {
+                    if (!levelZeroAttributeIDArray.Contains(auxAttribute.ID))
+                    {
+                        isControllable = auxAttribute.IsControllable;
+                    }
+
+                    auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
+
+                    spaceCounter++;
+                }
+
+                TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
+
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                    <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
+                        @for (int i = 0; i < spaceCounter; i++)
+                        {
+                            <div class="attribute-marginator px-4 d-inline-block"></div>
+                        }
+                        @if (attribute.ParentAttributeID > 0)
+                        {
+                            <div class="d-flex justify-content-center align-content-center">
+                                <input class="attribute-checked me-3" type="checkbox" value="true" @(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.Checked ? "checked" : string.Empty : string.Empty) />
+                            </div>
+                        }
+                        <span>@attribute.Name</span>
+                    </div>
+                    <div class="col-1 d-flex align-items-center attribute-value-container">
+                        @if (attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0)
+                        {
+                            <select class="attribute-property-field-control attribute-chosen-select attribute-value-select" data-placeholder="Seleccione" placeholder="Seleccione" title="Seleccione un valor">
+                                @{
+                                    foreach (AttributeValueCatalog attributeValueCatalog in attribute.ValueList)
+                                    {
+                                        <option data-triggerschildvisualization="@(attributeValueCatalog.TriggersChildVisualization ? "true" : "false")" value="@attributeValueCatalog.ID" @(Model.Transaction.AttributeList.Where(e => e.ValueID == attributeValueCatalog.ID).Count() > 0 ? "selected" : string.Empty)>
+                                            @attributeValueCatalog.Name
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        }
+                    </div>
+                    <div class="col-4 attribute-comment-container">
+                        <div class="row property-field">
+                            @if (currentTransactionAttributeCatalog != null)
+                            {
+                                if (attribute.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required>@currentTransactionAttributeCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                if (!string.IsNullOrEmpty(currentTransactionAttributeCatalog.Comment))
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on d-none" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <textarea class="w-100 min-w-100" rows="4">@currentTransactionAttributeCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                if (attribute.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required></textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    @if (Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE).Count() > 0)
+    {
+        <div class="row bg-primary text-light my-2 p-3">
+            <span>
+                Error Crítico de Negocios
+            </span>
+        </div>
+        <div class="attribute-container">
+            @foreach (SCC_BL.Attribute attribute in Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE))
+            {
+                int spaceCounter = 0;
+
+                SCC_BL.Attribute auxAttribute = attribute;
+
+                bool isControllable = auxAttribute.IsControllable;
+
+                while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
+                {
+                    if (!levelZeroAttributeIDArray.Contains(auxAttribute.ID))
+                    {
+                        isControllable = auxAttribute.IsControllable;
+                    }
+
+                    auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
+
+                    spaceCounter++;
+                }
+
+                TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
+
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                    <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
+                        @for (int i = 0; i < spaceCounter; i++)
+                        {
+                            <div class="attribute-marginator px-4 d-inline-block"></div>
+                        }
+                        @if (attribute.ParentAttributeID > 0)
+                        {
+                            <div class="d-flex justify-content-center align-content-center">
+                                <input class="attribute-checked me-3" type="checkbox" value="true" @(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.Checked ? "checked" : string.Empty : string.Empty) />
+                            </div>
+                        }
+                        <span>@attribute.Name</span>
+                    </div>
+                    <div class="col-1 d-flex align-items-center attribute-value-container">
+                        @if (attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0)
+                        {
+                            <select class="attribute-property-field-control attribute-chosen-select attribute-value-select" data-placeholder="Seleccione" placeholder="Seleccione" title="Seleccione un valor">
+                                @{
+                                    foreach (AttributeValueCatalog attributeValueCatalog in attribute.ValueList)
+                                    {
+                                        <option data-triggerschildvisualization="@(attributeValueCatalog.TriggersChildVisualization ? "true" : "false")" value="@attributeValueCatalog.ID" @(Model.Transaction.AttributeList.Where(e => e.ValueID == attributeValueCatalog.ID).Count() > 0 ? "selected" : string.Empty)>
+                                            @attributeValueCatalog.Name
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        }
+                    </div>
+                    <div class="col-4 attribute-comment-container">
+                        <div class="row property-field">
+                            @if (currentTransactionAttributeCatalog != null)
+                            {
+                                if (attribute.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required>@currentTransactionAttributeCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                if (!string.IsNullOrEmpty(currentTransactionAttributeCatalog.Comment))
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on d-none" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <textarea class="w-100 min-w-100" rows="4">@currentTransactionAttributeCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                if (attribute.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required></textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    @if (Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE).Count() > 0)
+    {
+        <div class="row bg-primary text-light my-2 p-3">
+            <span>
+                Error Crítico de Cumplimiento
+            </span>
+        </div>
+        <div class="attribute-container">
+            @foreach (SCC_BL.Attribute attribute in Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE))
+            {
+                int spaceCounter = 0;
+
+                SCC_BL.Attribute auxAttribute = attribute;
+
+                bool isControllable = auxAttribute.IsControllable;
+
+                while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
+                {
+                    if (!levelZeroAttributeIDArray.Contains(auxAttribute.ID))
+                    {
+                        isControllable = auxAttribute.IsControllable;
+                    }
+
+                    auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
+
+                    spaceCounter++;
+                }
+
+                TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
+
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                    <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
+                        @for (int i = 0; i < spaceCounter; i++)
+                        {
+                            <div class="attribute-marginator px-4 d-inline-block"></div>
+                        }
+                        @if (attribute.ParentAttributeID > 0)
+                        {
+                            <div class="d-flex justify-content-center align-content-center">
+                                <input class="attribute-checked me-3" type="checkbox" value="true" @(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.Checked ? "checked" : string.Empty : string.Empty) />
+                            </div>
+                        }
+                        <span>@attribute.Name</span>
+                    </div>
+                    <div class="col-1 d-flex align-items-center attribute-value-container">
+                        @if (attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0)
+                        {
+                            <select class="attribute-property-field-control attribute-chosen-select attribute-value-select" data-placeholder="Seleccione" placeholder="Seleccione" title="Seleccione un valor">
+                                @{
+                                    foreach (AttributeValueCatalog attributeValueCatalog in attribute.ValueList)
+                                    {
+                                        <option data-triggerschildvisualization="@(attributeValueCatalog.TriggersChildVisualization ? "true" : "false")" value="@attributeValueCatalog.ID" @(Model.Transaction.AttributeList.Where(e => e.ValueID == attributeValueCatalog.ID).Count() > 0 ? "selected" : string.Empty)>
+                                            @attributeValueCatalog.Name
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        }
+                    </div>
+                    <div class="col-4 attribute-comment-container">
+                        <div class="row property-field">
+                            @if (currentTransactionAttributeCatalog != null)
+                            {
+                                if (attribute.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required>@currentTransactionAttributeCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                if (!string.IsNullOrEmpty(currentTransactionAttributeCatalog.Comment))
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on d-none" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <textarea class="w-100 min-w-100" rows="4">@currentTransactionAttributeCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                if (attribute.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required></textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    @if (Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).Count() > 0)
+    {
+        <div class="row bg-primary text-light my-2 p-3">
+            <span>
+                Error no Crítico
+            </span>
+        </div>
+        <div class="attribute-container">
+            @foreach (SCC_BL.Attribute attribute in Model.Form.AttributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE))
+            {
+                int spaceCounter = 0;
+
+                SCC_BL.Attribute auxAttribute = attribute;
+
+                bool isControllable = auxAttribute.IsControllable;
+
+                while (auxAttribute.ParentAttributeID != null && auxAttribute.ParentAttributeID > 0)
+                {
+                    if (!levelZeroAttributeIDArray.Contains(auxAttribute.ID))
+                    {
+                        isControllable = auxAttribute.IsControllable;
+                    }
+
+                    auxAttribute = Model.Form.AttributeList.Where(e => e.ID == auxAttribute.ParentAttributeID.Value).FirstOrDefault();
+
+                    spaceCounter++;
+                }
+
+                TransactionAttributeCatalog currentTransactionAttributeCatalog = Model.Transaction.AttributeList.Where(e => e.AttributeID == attribute.ID).FirstOrDefault();
+
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 attribute-row @(Model.Form.AttributeList.Where(e => e.ParentAttributeID == attribute.ID).Count() == 0 ? "no-children" : string.Empty) @(attribute.ParentAttributeID == null || attribute.ParentAttributeID <= 0 ? "level-zero-attribute" : string.Empty) @(attribute.ParentAttributeID > 0 ? "d-none" : string.Empty)" data-maxscore="@attribute.MaxScore" data-topdownscore="@attribute.TopDownScore" data-hasforcedcomment="@attribute.HasForcedComment" data-iscontrollable="@isControllable" data-basicinfoid="@attribute.BasicInfoID" data-attributeid="@attribute.ID" data-parentattributeid="@attribute.ParentAttributeID" data-errortypeid="@attribute.ErrorTypeID">
+                    <div class="col-7 d-flex align-items-center" title="@(!string.IsNullOrEmpty(attribute.Description) ? attribute.Description : attribute.Name)">
+                        @for (int i = 0; i < spaceCounter; i++)
+                        {
+                            <div class="attribute-marginator px-4 d-inline-block"></div>
+                        }
+                        <div class="d-flex justify-content-center align-content-center">
+                            <input class="attribute-checked me-3" type="checkbox" value="true" @(currentTransactionAttributeCatalog != null ? currentTransactionAttributeCatalog.Checked ? "checked" : string.Empty : "checked") />
+                        </div>
+                        <span>@attribute.Name</span>
+                    </div>
+                    <div class="col-1 d-flex align-items-center attribute-value-container text-center">
+                        <input class="attribute-property-field-control attribute-nce text-center d-none" min="0" max="@attribute.MaxScore" title="Escriba un valor" type="number" name="name" value="@(currentTransactionAttributeCatalog != null ? /*currentTransactionAttributeCatalog.ScoreValue*/ attribute.MaxScore : attribute.MaxScore)" disabled />
+                        <b><i>@attribute.MaxScore pts</i></b>
+                        <!--Agregar controles y funcionalidades de max score-->
+                    </div>
+                    <div class="col-4 attribute-comment-container">
+                        <div class="row property-field">
+                            @if (currentTransactionAttributeCatalog != null)
+                            {
+                                if (attribute.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required>@currentTransactionAttributeCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                if (!string.IsNullOrEmpty(currentTransactionAttributeCatalog.Comment))
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on d-none" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <textarea class="w-100 min-w-100" rows="4">@currentTransactionAttributeCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                if (attribute.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required></textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-attribute-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-attribute-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+@if (Model.Form.FormBIFieldCatalogList.Count() > 0)
+{
+    <div class="panel d-block">
+        <div class="row d-block text-center m-5">
+            <h3>
+                Inteligencia de negocios
+            </h3>
+        </div>
+        <div class="bifield-container">
+            @foreach (FormBIFieldCatalog formBIField in Model.Form.FormBIFieldCatalogList)
+            {
+                if (!Model.Form.BusinessIntelligenceFieldList.Select(e => e.ID).Contains(formBIField.BIFieldID))
+                {
+                    continue;
+                }
+
+                int spaceCounter = 0;
+
+                SCC_BL.BusinessIntelligenceField auxBusinessIntelligenceField =
+                    Model.Form.BusinessIntelligenceFieldList
+                        .Where(e =>
+                            e.ID == formBIField.BIFieldID)
+                        .FirstOrDefault();
+
+                while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID > 0)
+                {
+                    auxBusinessIntelligenceField =
+                        Model.Form.BusinessIntelligenceFieldList
+                            .Where(e =>
+                                e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value)
+                            .FirstOrDefault();
+
+                    spaceCounter++;
+                }
+
+                BusinessIntelligenceField currentBusinessIntelligenceField =
+                    Model.Form.BusinessIntelligenceFieldList
+                        .Where(e =>
+                            e.ID == formBIField.BIFieldID)
+                        .FirstOrDefault();
+
+                TransactionBIFieldCatalog currentTransactionBIFieldCatalog =
+                    Model.Transaction.BIFieldList
+                        .Where(e =>
+                            e.BIFieldID == currentBusinessIntelligenceField.ID)
+                        .FirstOrDefault();
+
+                <div class="row bg-secondary-light text-dark border border-secondary mt-1 bifield-row @(Model.Form.BusinessIntelligenceFieldList.Where(e => e.ParentBIFieldID == formBIField.BIFieldID).Count() == 0 ? "no-children" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID == null || currentBusinessIntelligenceField.ParentBIFieldID <= 0 ? "level-zero-bifield" : string.Empty) @(currentBusinessIntelligenceField.ParentBIFieldID > 0 ? "d-none" : string.Empty)" data-hasforcedcomment="@currentBusinessIntelligenceField.HasForcedComment" data-basicinfoid="@currentBusinessIntelligenceField.BasicInfoID" data-bifieldid="@currentBusinessIntelligenceField.ID" data-parentbifieldid="@currentBusinessIntelligenceField.ParentBIFieldID" data-order="@formBIField.Order">
+                    <div class="col-8 d-flex align-items-center" title="@(!string.IsNullOrEmpty(currentBusinessIntelligenceField.Description) ? currentBusinessIntelligenceField.Description : currentBusinessIntelligenceField.Name)">
+                        @for (int i = 0; i < spaceCounter; i++)
+                        {
+                            <div class="bifield-marginator px-4 d-inline-block"></div>
+                        }
+                        @*@if (currentBusinessIntelligenceField.ParentBIFieldID > 0)
+                        {
+                        }*@
+                        <div class="d-flex justify-content-center align-content-center">
+                            <input class="bifield-checked me-3" type="checkbox" value="true" @(currentTransactionBIFieldCatalog != null ? currentTransactionBIFieldCatalog.Checked ? "checked" : string.Empty : string.Empty) />
+                        </div>
+                        @*<span>ID-@currentBusinessIntelligenceField.ID-</span>
+                        <span>@(currentBusinessIntelligenceField.ParentBIFieldID == null || @currentBusinessIntelligenceField.ParentBIFieldID == 0 ? "P.ID-NULL" : "P.ID-" + currentBusinessIntelligenceField.ParentBIFieldID.ToString())-</span>*@
+                        <span>@currentBusinessIntelligenceField.Name</span>
+                    </div>
+                    <div class="col-4 bifield-comment-container">
+                        <div class="row property-field">
+                            @if (currentTransactionBIFieldCatalog != null)
+                            {
+                                if (currentBusinessIntelligenceField.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required>@currentTransactionBIFieldCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                if (!string.IsNullOrEmpty(currentTransactionBIFieldCatalog.Comment))
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-bifield-comment-on d-none" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-bifield-comment-off" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <textarea class="w-100 min-w-100" rows="4">@currentTransactionBIFieldCatalog.Comment</textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-bifield-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-bifield-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                if (currentBusinessIntelligenceField.HasForcedComment)
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-warning" title="Este comentario es obligatorio">
+                                            <i class='bx bx-traffic-cone'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container">
+                                        <div class="d-flex align-items-start">
+                                            <span class="required">*</span>
+                                        </div>
+                                        <textarea class="w-100 min-w-100" rows="4" required></textarea>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-1 property-field-label button-container">
+                                        <button class="btn-element-action btn-element-action-primary btn-bifield-comment-on" title="Editar comentario">
+                                            <i class='bx bxs-message-add'></i>
+                                        </button>
+                                        <button class="btn-element-action btn-element-action-dark btn-bifield-comment-off d-none" title="Ocultar comentario">
+                                            <i class='bx bxs-message-minus'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-11 comment-container d-none">
+                                        <textarea class="w-100 min-w-100" rows="4"></textarea>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+<div class="panel text-center">
+    <button class="btn-custom-system btn-custom-system-secondary" id="btnCancel" type="button">Cancelar</button>
+
+    @if (hasModel)
+    {
+        if (Model.Transaction.TypeID != (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION)
+        {
+            if (actualUser.ID == Model.Transaction.EvaluatorUserID)
+            {
+                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_TRANSACTIONS))
+                {
+                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                }
+            }
+            else
+            {
+                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USER_TRANSACTION))
+                {
+                    <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Actualizar</button>
+                }
+            }
+        }
+    }
+    else
+    {
+        if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TRANSACTIONS))
+        {
+            <button id="btnSubmit" class="btn-custom-system btn-custom-system-primary" type="submit">Crear</button>
+        }
+    }
+</div>
+<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center d-none">
+    <div class="border border-secondary shadow-lg p-3 mb-5 bg-white rounded w-100 border-bottom border-primary">
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Resultado de la transacción
+            </div>
+            <div class="d-block text-center p-2 result-general-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-general-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error Crítico Usuario Final
+            </div>
+            <div class="d-block text-center p-2 result-general-fuce-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-general-fuce-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error Crítico Negocio
+            </div>
+            <div class="d-block text-center p-2 result-general-bce-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-general-bce-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error Crítico de Cumplimiento
+            </div>
+            <div class="d-block text-center p-2 result-general-fce-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-general-fce-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error no crítico
+            </div>
+            <div class="d-block text-center p-2 result-nce">
+                <span class="bg-success p-2 border border-rounded text-light result-general-nce-score">100</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center">
+    <div class="border border-secondary shadow-lg p-3 mb-5 bg-white rounded w-100 border-bottom border-primary">
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Resultado de la transacción
+            </div>
+            <div class="d-block text-center p-2 result-controllable-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-controllable-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error Crítico Usuario Final
+            </div>
+            <div class="d-block text-center p-2 result-controllable-fuce-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-controllable-fuce-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error Crítico Negocio
+            </div>
+            <div class="d-block text-center p-2 result-controllable-bce-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-controllable-bce-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error Crítico de Cumplimiento
+            </div>
+            <div class="d-block text-center p-2 result-controllable-fce-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-controllable-fce-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error no crítico
+            </div>
+            <div class="d-block text-center p-2 result-controllable-nce">
+                <span class="bg-success p-2 border border-rounded text-light result-controllable-nce-score">100</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="result-container position-sticky sticky-bottom w-100 d-flex justify-content-center d-none">
+    <div class="border border-secondary shadow-lg p-3 mb-5 bg-white rounded w-100 border-bottom border-primary">
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Resultado de la transacción
+            </div>
+            <div class="d-block text-center p-2 result-accurate-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-accurate-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error Crítico Usuario Final
+            </div>
+            <div class="d-block text-center p-2 result-accurate-fuce-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-accurate-fuce-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error Crítico Negocio
+            </div>
+            <div class="d-block text-center p-2 result-accurate-bce-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-accurate-bce-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error Crítico de Cumplimiento
+            </div>
+            <div class="d-block text-center p-2 result-accurate-fce-success">
+                <span class="bg-success p-2 border border-rounded text-light">Pasó</span>
+            </div>
+            <div class="d-block text-center p-2 result-accurate-fce-fail d-none">
+                <span class="bg-danger p-2 border border-rounded text-light">Falló</span>
+            </div>
+        </div>
+        <div class="d-inline-block w-20">
+            <div class="d-block text-center">
+                Error no crítico
+            </div>
+            <div class="d-block text-center p-2 result-accurate-nce">
+                <span class="bg-success p-2 border border-rounded text-light result-accurate-nce-score">100</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let loadedData = false;
+
+    var countdownEL = document.getElementById('timer');
+    var time = 0;
+    var timerInterval;
+
+    function RestartTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+        timerInterval = setInterval(UpdateCountdown, 1000);
+    }
+
+    function StopTimer() {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    function UpdateCountdown() {
+        let hours = Math.floor(time / 60 / 60);
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
+
+        if (time >= 0) {
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            hours = hours < 10 ? '0' + hours : hours;
+
+            countdownEL.innerHTML = `${hours}:${minutes}:${seconds}`;
+
+            time++;
+        }
+    }
+
+    $(document).ready(function () {
+        /*fetchDatatableBasicData().then(response => {
+            let data = response;
+
+            let excelButton =
+            {
+                "title": "Excel",
+                "extend": "excel",
+                "className": "btn-sm",
+                "exportOptions": {
+                    "columns": [0, 1, 2]
+                }
+            };
+
+            let pdfButton =
+            {
+                "title": "PDF",
+                "extend": "pdfHtml5",
+                "className": "btn-sm",
+                "orientation": "landscape",
+                "pageSize": "LEGAL",
+                "exportOptions": {
+                    "columns": [0, 1, 2]
+                }
+            };
+
+            let copyButton =
+            {
+                "extend": 'copy',
+                "text": 'Copiar',
+                "exportOptions":
+                {
+                    "modifier": {
+                        page: 'current'
+                    }
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+
+            startDataTable('#tbAttributes_FUCE', data);
+            startDataTable('#tbAttributes_BCE', data);
+            startDataTable('#tbAttributes_FCE', data);
+            startDataTable('#tbAttributes_NCE', data);
+        });*/
+
+        fetchMultiSelectBasicData().then(response => {
+            let data = response;
+
+            startMultiSelect('#userToEvaluate', data);
+
+            startMultiSelect('.custom-control-chosen-select', data);
+        });
+
+        @if (Model.Transaction.TimeElapsed.TotalSeconds == 0)
+        {
+            @:RestartTimer();
+        }
+
+        @if (Model.Transaction.ID > 0)
+        {
+            @:initialLoad();
+        }
+        else
+        {
+            @:loadedData = true;
+        }
+
+        LoadTransactionCommentaries();
+    });
+
+    function LoadTransactionCommentaries() {
+        console.log('@Request["hasDisputation"]');
+        if ('@Request["hasDisputation"]' === 'true') {
+            window.location.href = '#accordionDisputeCommentaries';
+        }
+
+        if ('@Request["hasInvalidation"]' === 'true') {
+            window.location.href = '#accordionInvalidationCommentaries';
+        }
+
+        if ('@Request["hasDevolution"]' === 'true') {
+            window.location.href = '#accordionDevolutionCommentaries';
+        }
+    }
+
+    $('#btnCancel').click(() => {
+        window.open('@Url.Action(nameof(TransactionController.Edit), mainControllerName)', '_self');
+    });
+
+    $('.btn-attribute-comment-on').click((e) => {
+        showCommentField(e.currentTarget);
+    });
+
+    $('.btn-attribute-comment-off').click((e) => {
+        showCommentField(e.currentTarget, false);
+    });
+
+    function showCommentField(control, show = true) {
+        let buttonContainer = $(control).parent().parent().find('.button-container');
+        let commentContainer = $(control).parent().parent().find('.comment-container');
+
+        if (show) {
+            $(buttonContainer).find('.btn-attribute-comment-on').addClass('d-none');
+            $(buttonContainer).find('.btn-attribute-comment-off').removeClass('d-none');
+
+            $(commentContainer).removeClass('d-none');
+        } else {
+            $(buttonContainer).find('.btn-attribute-comment-on').removeClass('d-none');
+            $(buttonContainer).find('.btn-attribute-comment-off').addClass('d-none');
+
+            $(commentContainer).addClass('d-none');
+        }
+    }
+
+    $('.btn-bifield-comment-on').click((e) => {
+        showCommentField(e.currentTarget);
+    });
+
+    $('.btn-bifield-comment-off').click((e) => {
+        showCommentField(e.currentTarget, false);
+    });
+
+    function showCommentField(control, show = true) {
+        let buttonContainer = $(control).parent().parent().find('.button-container');
+        let commentContainer = $(control).parent().parent().find('.comment-container');
+
+        if (show) {
+            $(buttonContainer).find('.btn-bifield-comment-on').addClass('d-none');
+            $(buttonContainer).find('.btn-bifield-comment-off').removeClass('d-none');
+
+            $(commentContainer).removeClass('d-none');
+
+            $(control).click((e) => {
+                showCommentField(e.currentTarget, false);
+            });
+        } else {
+            $(buttonContainer).find('.btn-bifield-comment-on').removeClass('d-none');
+            $(buttonContainer).find('.btn-bifield-comment-off').addClass('d-none');
+
+            $(commentContainer).addClass('d-none');
+
+            $(control).click((e) => {
+                showCommentField(e.currentTarget);
+            });
+        }
+    }
+
+    async function initialLoad() {
+        //await showWaitingModal();
+
+        await $('.attribute-value-select').trigger('change', { eventTriggered: false });
+        await $('.attribute-checked').trigger('change', { eventTriggered: false });
+
+        await $('.bifield-checked').trigger('change', { eventTriggered: false });
+
+        await updateResults();
+        loadedData = true;
+
+        //await hideWaitingModal();
+    }
+
+    $('.attribute-value-select').on('change', (e, data = { eventTriggered: true }) => {
+        let currentSelect = e.currentTarget;
+        let selectedOption = $(currentSelect).find('option:selected');
+        let triggersChildVisualization = $(selectedOption).data('triggerschildvisualization');
+
+        let attributeContainer = $(currentSelect).parent().parent();
+        let parentAttributeID = $(attributeContainer).data('attributeid');
+
+        if (triggersChildVisualization == true) {
+            $('[data-parentattributeid=' + parentAttributeID + ']').removeClass('d-none');
+        } else {
+            $('[data-parentattributeid=' + parentAttributeID + ']').addClass('d-none');
+
+            if ($('[data-parentattributeid=' + parentAttributeID + ']').length > 0) {
+                $('[data-parentattributeid=' + parentAttributeID + '] .attribute-checked').each((index, f) => {
+                    $(f)[0].checked = false;
+                    $(f).trigger('change', { eventTriggered: false });
+                });
+            }
+        }
+
+        if (loadedData && data.eventTriggered) {
+            updateResults();
+        }
+    });
+
+    $('.attribute-checked').on('change', (e, data = { eventTriggered: true }) => {
+        let currentCheckbox = e.currentTarget;
+
+        let attributeContainer = $(currentCheckbox).parent().parent().parent();
+        let parentAttributeID = $(attributeContainer).data('attributeid');
+
+        if ($(currentCheckbox)[0].checked) {
+            $('[data-parentattributeid=' + parentAttributeID + ']').removeClass('d-none');
+        } else {
+            $('[data-parentattributeid=' + parentAttributeID + ']').addClass('d-none');
+
+            if ($('[data-parentattributeid=' + parentAttributeID + ']').length > 0) {
+                $('[data-parentattributeid=' + parentAttributeID + ']').find('.attribute-checked').each((index, f) => {
+                    $(f)[0].checked = false;
+                    $(f).trigger('change', { eventTriggered: false });
+                });
+            }
+        }
+
+        if (loadedData && data.eventTriggered) {
+            //if ($(attributeContainer).hasClass('no-children'))
+                updateResults();
+        }
+    });
+
+    $('.bifield-checked').on('change', (e, data = { eventTriggered: true }) => {
+        let currentCheckbox = e.currentTarget;
+
+        let biFieldContainer = $(currentCheckbox).parent().parent().parent();
+        let parentBIFieldID = $(biFieldContainer).data('bifieldid');
+
+        if ($(currentCheckbox)[0].checked) {
+            $('[data-parentbifieldid=' + parentBIFieldID + ']').removeClass('d-none');
+        } else {
+            $('[data-parentbifieldid=' + parentBIFieldID + ']').addClass('d-none');
+
+            if ($('[data-parentbifieldid=' + parentBIFieldID + ']').length > 0) {
+                $('[data-parentbifieldid=' + parentBIFieldID + ']').find('.bifield-checked').each((index, f) => {
+                    $(f)[0].checked = false;
+                    $(f).trigger('change', { eventTriggered: false });
+                });
+            }
+        }
+    });
+
+    /*function uncheckChildren(parentAttributeID, checked = false) {
+        $('[data-parentattributeid=' + parentAttributeID + ']').each((index, e) => {
+            $(e).find('.attribute-checked').each((index, f) => {
+                let wasAlreadyChecked = $(f)[0].checked;
+
+                $(f)[0].checked = checked;
+                if (!$(f)[0].checked && wasAlreadyChecked)
+                    $(f).trigger('change', { eventTriggered: false });
+            });
+
+            let attributeID = $(e).data('attributeid');
+
+            if ($('[data-parentattributeid=' + attributeID + ']').length > 0) {
+                uncheckChildren(attributeID);
+            }
+        });
+    }*/
+
+    function getChildrenAttributeIDList(parentAttributeID) {
+        let attributeIDList = [];
+
+        $('[data-parentattributeid=' + parentAttributeID + ']').each((index, e) => {
+            let attributeID = $(e).data('attributeid');
+
+            attributeIDList.push(attributeID);
+
+            if ($('[data-parentattributeid=' + attributeID + ']').length > 0) {
+                $(getChildrenAttributeIDList(attributeID)).each((index, f) => {
+                    attributeIDList.push(f);
+                });
+            }
+        });
+
+        return attributeIDList;
+    }
+
+    function hasChildren(parentAttributeID) {
+        if ($('[data-parentattributeid=' + parentAttributeID + ']').length > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /*const attributeLevelZeroIDList = $('.attribute-row.level-zero-attribute').map((index, e) => $(e).data('attributeid')).get();
+    const controllableAttributeLevelOneList = $('.attribute-row[data-iscontrollable="True"]').filter((e) => attributeLevelZeroIDList.includes($(e).data('parentattributeid')));
+    const controllableAttributeLevelOneIDList = $(controllableAttributeLevelOneList).map((index, e) => $(e).data('attributeid')).get();
+
+    function isAttributeControllable(attributeID) {
+        let auxCurrentAttributeID = attributeID;
+        let auxCurrentAttributeRow = $('.attribute-row[data-attributeid="' + auxCurrentAttributeID.toString() + '"]');
+        let auxCurrentParentAttributeID = $(auxCurrentAttributeRow).data("parentattributeid");
+
+        let isControllable = false;
+
+        while ((auxCurrentParentAttributeID != null && auxCurrentParentAttributeID > 0) && !controllableAttributeLevelOneIDList.includes(auxCurrentAttributeID)) {
+            auxCurrentAttributeID = auxCurrentParentAttributeID;
+            auxCurrentAttributeRow = $('.attribute-row[data-attributeid="' + auxCurrentAttributeID.toString() + '"]');
+            auxCurrentParentAttributeID = $(auxCurrentAttributeRow).data("parentattributeid");
+
+            isControllable = auxCurrentAttributeRow.data('iscontrollable') == 'True';
+        }
+
+        return isControllable;
+    }*/
+
+    const attributeLevelZeroIDList = $('.attribute-row.level-zero-attribute').map((index, e) => $(e).data('attributeid')).get();
+    const controllableAttributeLevelOneList = $('.attribute-row[data-iscontrollable="True"]').filter((e) => attributeLevelZeroIDList.includes($(e).data('parentattributeid')));
+    const controllableAttributeLevelOneIDList = $(controllableAttributeLevelOneList).map((index, e) => $(e).data('attributeid')).get();
+
+    function isAttributeControllable(attributeID) {
+        let auxCurrentAttributeID = attributeID;
+        let auxCurrentAttributeRow = $('.attribute-row[data-attributeid="' + auxCurrentAttributeID.toString() + '"]');
+        let auxCurrentParentAttributeID = $(auxCurrentAttributeRow).data("parentattributeid");
+
+        let isControllable = $(auxCurrentAttributeRow).data('iscontrollable') == 'True';
+
+        /*
+        COMPLEX METHOD:
+
+        let isControllable = auxCurrentAttributeRow.data('iscontrollable') == 'True';
+
+        while ((auxCurrentParentAttributeID != null && auxCurrentParentAttributeID > 0) && !controllableAttributeLevelOneIDList.includes(auxCurrentAttributeID)) {
+            auxCurrentAttributeID = auxCurrentParentAttributeID;
+            auxCurrentAttributeRow = $('.attribute-row[data-attributeid="' + auxCurrentAttributeID.toString() + '"]');
+            auxCurrentParentAttributeID = $(auxCurrentAttributeRow).data("parentattributeid");
+
+            isControllable = auxCurrentAttributeRow.data('iscontrollable') == 'True';
+        }*/
+
+        return isControllable;
+    }
+
+    async function hasCheckedChildren(parentAttributeID, ignoreNonControllableCE = false) {
+        let result = false;
+        let childrenAttributeIDList = [];
+
+        childrenAttributeIDList = await getChildrenAttributeIDList(parentAttributeID);
+
+        let parentAttributeRow = $('.attribute-row[data-attributeid="' + parentAttributeID + '"]');
+
+        let isControllable = false;
+        isControllable = $(parentAttributeRow).data('iscontrollable') == 'True';
+
+        $(childrenAttributeIDList).each((index, e) => {
+            isControllable = isAttributeControllable(e);
+
+            if ($('[data-attributeid=' + e + '].no-children').find('.attribute-checked:checked').length > 0) {
+                if (ignoreNonControllableCE && !isControllable) return true;
+
+                result = true;
+                return false;
+            }
+        });
+
+        //OLD
+        /*$(childrenAttributeIDList).each((index, e) => {
+            //aqui, revisar attributo de nivel cero ya que contiene el iscontrollable
+            let auxParentAttributeRow = $('.attribute-row[data-attributeid="' + e + '"]');;
+            let auxParentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
+
+            if (auxParentAttributeID == parentAttributeID) controllableCEFound = false;
+
+            let isControllable = $(auxParentAttributeRow).data('iscontrollable') == 'True';
+
+            if (isControllable) controllableCEFound = true;
+
+            if (!isControllable) {
+                while (auxParentAttributeID != null && auxParentAttributeID > 0) {
+                    auxParentAttributeRow = $('.attribute-row[data-attributeid="' + auxParentAttributeID + '"]');
+                    auxParentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
+                }
+
+                if (auxParentAttributeID == null || auxParentAttributeID == 0) {
+                    isControllable = $(auxParentAttributeRow).data('iscontrollable') == 'True';
+
+                    if (isControllable) controllableCEFound = true;
+                }
+            }
+
+            if ($('[data-attributeid=' + e + '].no-children').find('.attribute-checked:checked').length > 0) {
+                if (ignoreNonControllableCE && !controllableCEFound) return true;
+
+                result = true;
+                return false;
+            }
+        });*/
+
+        return result;
+
+        /*$('[data-parentattributeid=' + parentAttributeID + ']').each((index, e) => {
+            let attributeID = $(e).data('attributeid');
+            let breaks = false;
+
+            $(e).find('.attribute-checked').each((index, f) => {
+                if ($(f)[0].checked) {
+                    if ($('[data-parentattributeid=' + attributeID + ']').length > 0) {
+                        result = hasCheckedChildren(attributeID);
+                    } else {
+                        result = true;
+                        breaks = true;
+                        return false
+                    }
+                }
+                else if ($('[data-parentattributeid=' + attributeID + ']').length > 0) {
+                    result = hasCheckedChildren(attributeID);
+                } else {
+                    result = false;
+                }
+            });
+
+            if (breaks) return false;
+        });
+
+        return result;*/
+    }
+
+    $('.attribute-nce').on('change', (e, data = { eventTriggered: true }) => {
+        if (loadedData && data.eventTriggered) {
+            updateResults();
+        }
+    });
+
+    $('.attribute-nce').on('keyup', (e, data = { eventTriggered: true }) => {
+        if (loadedData && data.eventTriggered) {
+            updateResults();
+        }
+    });
+
+    async function updateResults() {
+        let checkFUCEAccurateAttributesResult = true;
+        let checkBCEAccurateAttributesResult = true;
+        let checkFCEAccurateAttributesResult = true;
+        let checkNCEAccurateAttributesResult = true;
+
+        let checkFUCEControllableAttributesResult = true;
+        let checkBCEControllableAttributesResult = true;
+        let checkFCEControllableAttributesResult = true;
+        let checkNCEControllableAttributesResult = true;
+
+        await checkFUCEAccurateAttributes()
+            .then(result => checkFUCEAccurateAttributesResult = result);
+        await checkBCEAccurateAttributes()
+            .then(result => checkBCEAccurateAttributesResult = result);
+        await checkFCEAccurateAttributes()
+            .then(result => checkFCEAccurateAttributesResult = result);
+        checkNCEAccurateAttributesResult = checkNCEAccurateAttributes();
+
+        await checkFUCEControllableAttributes()
+            .then(result => checkFUCEControllableAttributesResult = result);
+        await checkBCEControllableAttributes()
+            .then(result => checkBCEControllableAttributesResult = result);
+        await checkFCEControllableAttributes()
+            .then(result => checkFCEControllableAttributesResult = result);
+        checkNCEControllableAttributesResult = checkNCEControllableAttributes();
+
+        /*let checkFUCEAccurateAttributesResult = checkFUCEAccurateAttributes();
+        let checkBCEAccurateAttributesResult = checkBCEAccurateAttributes();
+        let checkFCEAccurateAttributesResult = checkFCEAccurateAttributes();
+        let checkNCEAccurateAttributesResult = checkNCEAccurateAttributes();
+
+        let checkFUCEControllableAttributesResult = checkFUCEControllableAttributes();
+        let checkBCEControllableAttributesResult = checkBCEControllableAttributes();
+        let checkFCEControllableAttributesResult = checkFCEControllableAttributes();
+        let checkNCEControllableAttributesResult = checkNCEControllableAttributes();
+
+        console.log(checkFUCEAccurateAttributesResult);
+        console.log(checkBCEAccurateAttributesResult);
+        console.log(checkFCEAccurateAttributesResult);
+        console.log(checkNCEAccurateAttributesResult);
+        console.log('--------------------------------------------------------');
+        console.log(checkFUCEControllableAttributesResult);
+        console.log(checkBCEControllableAttributesResult);
+        console.log(checkFCEControllableAttributesResult);
+        console.log(checkNCEControllableAttributesResult);*/
+
+        if (
+            !checkFUCEAccurateAttributesResult ||
+            !checkBCEAccurateAttributesResult ||
+            !checkFCEAccurateAttributesResult /*||
+            !checkNCEAccurateAttributesResult*/) {
+            $('.result-general-fail').removeClass('d-none');
+            $('.result-general-success').addClass('d-none');
+        } else {
+            $('.result-general-fail').addClass('d-none');
+            $('.result-general-success').removeClass('d-none');
+        }
+
+        if (
+            !checkFUCEControllableAttributesResult ||
+            !checkBCEControllableAttributesResult ||
+            !checkFCEControllableAttributesResult /*||
+            !checkNCEControllableAttributesResult*/) {
+            $('.result-controllable-fail').removeClass('d-none');
+            $('.result-controllable-success').addClass('d-none');
+        } else {
+            $('.result-controllable-fail').addClass('d-none');
+            $('.result-controllable-success').removeClass('d-none');
+        }
+
+        if (
+            !checkFUCEAccurateAttributesResult ||
+            !checkBCEAccurateAttributesResult ||
+            !checkFCEAccurateAttributesResult /*||
+            !checkNCEAccurateAttributesResult*/) {
+            $('.result-accurate-fail').removeClass('d-none');
+            $('.result-accurate-success').addClass('d-none');
+        } else {
+            $('.result-accurate-fail').addClass('d-none');
+            $('.result-accurate-success').removeClass('d-none');
+        }
+
+        /*let generalFailAttributeCount = 0;
+
+        let controllableFailAttributeCount = 0;
+
+        let accurateFailAttributeCount = 0;
+
+        $('.attribute-row').each((index, e) => {
+            let attributeID = $(e).data('attributeid');
+
+            let isControllable = $(e).data('iscontrollable') == 'True';
+
+            let currentSelect = $(e).find('.attribute-value-container .attribute-value-select');
+            let selectedOption = $(currentSelect).find('option:selected');
+            let triggersChildVisualization =
+                $(selectedOption).data('triggerschildvisualization') != null
+                    ? $(selectedOption).data('triggerschildvisualization')
+                    : false;
+
+            let foundCheckedChildren =
+                triggersChildVisualization
+                    ? hasCheckedChildren(attributeID)
+                    : false;
+
+            if (foundCheckedChildren && triggersChildVisualization) {
+                generalFailAttributeCount++;
+                accurateFailAttributeCount++;
+                if (isControllable) controllableFailAttributeCount++;
+            }
+
+            if (generalFailAttributeCount > 0) {
+                $('.result-general-fail').removeClass('d-none');
+                $('.result-general-success').addClass('d-none');
+            } else {
+                $('.result-general-fail').addClass('d-none');
+                $('.result-general-success').removeClass('d-none');
+            }
+
+            if (controllableFailAttributeCount > 0) {
+                $('.result-controllable-fail').removeClass('d-none');
+                $('.result-controllable-success').addClass('d-none');
+            } else {
+                $('.result-controllable-fail').addClass('d-none');
+                $('.result-controllable-success').removeClass('d-none');
+            }
+
+            if (accurateFailAttributeCount > 0) {
+                $('.result-accurate-fail').removeClass('d-none');
+                $('.result-accurate-success').addClass('d-none');
+            } else {
+                $('.result-accurate-fail').addClass('d-none');
+                $('.result-accurate-success').removeClass('d-none');
+            }
+        });*/
+    }
+
+    async function checkFUCEAccurateAttributes() {
+        let result = true;
+        let accurateFuceFailAttributeCount = 0;
+
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE)"].level-zero-attribute');
+
+        for (let i = 0; i < elements.length; i++) {
+            const e = elements[i];
+            let isControllable = $(e).data('iscontrollable') == 'True';
+            let attributeID = $(e).data('attributeid');
+            let currentSelect = $(e).find('.attribute-value-container .attribute-value-select');
+            let selectedOption = $(currentSelect).find('option:selected');
+            let triggersChildVisualization = $(selectedOption).data('triggerschildvisualization') || false;
+
+            if (triggersChildVisualization) {
+                //let foundCheckedChildren = hasCheckedChildren(attributeID);
+                let foundCheckedChildren = await hasCheckedChildren(attributeID);
+
+                if (foundCheckedChildren) {
+                    accurateFuceFailAttributeCount++;
+                    break;
+                }
+            }
+        }
+
+        if (accurateFuceFailAttributeCount > 0) {
+            $('.result-general-fuce-fail').removeClass('d-none');
+            $('.result-general-fuce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-general-fuce-fail').addClass('d-none');
+            $('.result-general-fuce-success').removeClass('d-none');
+        }
+
+        if (accurateFuceFailAttributeCount > 0) {
+            $('.result-accurate-fuce-fail').removeClass('d-none');
+            $('.result-accurate-fuce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-accurate-fuce-fail').addClass('d-none');
+            $('.result-accurate-fuce-success').removeClass('d-none');
+        }
+
+        return result;
+    }
+
+    async function checkBCEAccurateAttributes() {
+        let result = true;
+        let accurateBceFailAttributeCount = 0;
+
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE)"].level-zero-attribute');
+
+        for (let i = 0; i < elements.length; i++) {
+            const e = elements[i];
+            let isControllable = $(e).data('iscontrollable') == 'True';
+            let attributeID = $(e).data('attributeid');
+            let currentSelect = $(e).find('.attribute-value-container .attribute-value-select');
+            let selectedOption = $(currentSelect).find('option:selected');
+            let triggersChildVisualization = $(selectedOption).data('triggerschildvisualization') || false;
+
+            if (triggersChildVisualization) {
+                //let foundCheckedChildren = hasCheckedChildren(attributeID);
+                let foundCheckedChildren = await hasCheckedChildren(attributeID);
+
+                if (foundCheckedChildren) {
+                    accurateBceFailAttributeCount++;
+                    break;
+                }
+            }
+        };
+
+        if (accurateBceFailAttributeCount > 0) {
+            $('.result-general-bce-fail').removeClass('d-none');
+            $('.result-general-bce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-general-bce-fail').addClass('d-none');
+            $('.result-general-bce-success').removeClass('d-none');
+        }
+
+        if (accurateBceFailAttributeCount > 0) {
+            $('.result-accurate-bce-fail').removeClass('d-none');
+            $('.result-accurate-bce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-accurate-bce-fail').addClass('d-none');
+            $('.result-accurate-bce-success').removeClass('d-none');
+        }
+
+        return result;
+    }
+
+    async function checkFCEAccurateAttributes() {
+        let result = true;
+        let accurateFceFailAttributeCount = 0;
+
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE)"].level-zero-attribute');
+
+        for (let i = 0; i < elements.length; i++) {
+            const e = elements[i];
+            let isControllable = $(e).data('iscontrollable') == 'True';
+            let attributeID = $(e).data('attributeid');
+            let currentSelect = $(e).find('.attribute-value-container .attribute-value-select');
+            let selectedOption = $(currentSelect).find('option:selected');
+            let triggersChildVisualization = $(selectedOption).data('triggerschildvisualization') || false;
+
+            if (triggersChildVisualization) {
+                //let foundCheckedChildren = hasCheckedChildren(attributeID);
+                let foundCheckedChildren = await hasCheckedChildren(attributeID);
+
+                if (foundCheckedChildren) {
+                    accurateFceFailAttributeCount++;
+                    break;
+                }
+            }
+        };
+
+        if (accurateFceFailAttributeCount > 0) {
+            $('.result-general-fce-fail').removeClass('d-none');
+            $('.result-general-fce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-general-fce-fail').addClass('d-none');
+            $('.result-general-fce-success').removeClass('d-none');
+        }
+
+        if (accurateFceFailAttributeCount > 0) {
+            $('.result-accurate-fce-fail').removeClass('d-none');
+            $('.result-accurate-fce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-accurate-fce-fail').addClass('d-none');
+            $('.result-accurate-fce-success').removeClass('d-none');
+        }
+
+        return result;
+    }
+
+    function checkNCEAccurateAttributes() {
+        let result = true;
+        let accurateNceMinimumScore = @SCC_BL.Settings.AppValues.TRANSACTION_MINIMUM_NCE_SCORE;
+        let accurateNceFailAttributeCount = 0;
+
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].level-zero-attribute');
+
+        if (elements.length <= 0) return result;
+
+        for (let i = 0; i < elements.length; i++) {
+            const e = elements[i];
+            let isControllable = $(e).data('iscontrollable') == 'True';
+            let attributeID = $(e).data('attributeid');
+            let currentScoreBox = $(e).find('.attribute-value-container .attribute-nce');
+            let scoreValue = $(currentScoreBox).val() != '' ? parseInt($(currentScoreBox).val()) : 0;
+            let isChecked = $(e).find('.attribute-checked')[0].checked;
+
+            if (isChecked) {
+                accurateNceFailAttributeCount += scoreValue;
+            }
+        };
+
+        if (accurateNceFailAttributeCount < accurateNceMinimumScore) {
+            $('.result-accurate-nce-score').removeClass('bg-success');
+            $('.result-accurate-nce-score').addClass('bg-danger');
+            result = false;
+        } else {
+            $('.result-accurate-nce-score').removeClass('bg-danger');
+            $('.result-accurate-nce-score').addClass('bg-success');
+            result = true;
+        }
+
+        $('.result-accurate-nce-score').html(accurateNceFailAttributeCount);
+
+        if (accurateNceFailAttributeCount < accurateNceMinimumScore) {
+            $('.result-general-nce-score').removeClass('bg-success');
+            $('.result-general-nce-score').addClass('bg-danger');
+            result = false;
+        } else {
+            $('.result-general-nce-score').removeClass('bg-danger');
+            $('.result-general-nce-score').addClass('bg-success');
+            result = true;
+        }
+
+        $('.result-general-nce-score').html(accurateNceFailAttributeCount);
+
+        return result;
+    }
+
+    async function checkFUCEControllableAttributes() {
+        let result = true;
+        let controllableFuceFailAttributeCount = 0;
+
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE)"].level-zero-attribute');
+
+        for (let i = 0; i < elements.length; i++) {
+            const e = elements[i];
+            let attributeID = $(e).data('attributeid');
+            let currentSelect = $(e).find('.attribute-value-container .attribute-value-select');
+            let selectedOption = $(currentSelect).find('option:selected');
+            let triggersChildVisualization = $(selectedOption).data('triggerschildvisualization') || false;
+
+            if (triggersChildVisualization) {
+                //let foundCheckedChildren = hasCheckedChildren(attributeID);
+                let foundCheckedChildren = await hasCheckedChildren(attributeID, true);
+
+                if (foundCheckedChildren) {
+                    controllableFuceFailAttributeCount++;
+                    break;
+                }
+            }
+        };
+
+        if (controllableFuceFailAttributeCount > 0) {
+            $('.result-controllable-fuce-fail').removeClass('d-none');
+            $('.result-controllable-fuce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-controllable-fuce-fail').addClass('d-none');
+            $('.result-controllable-fuce-success').removeClass('d-none');
+        }
+
+        return result;
+    }
+
+    async function checkBCEControllableAttributes() {
+        let result = true;
+        let controllableBceFailAttributeCount = 0;
+
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE)"].level-zero-attribute');
+
+        for (let i = 0; i < elements.length; i++) {
+            const e = elements[i];
+            let attributeID = $(e).data('attributeid');
+            let currentSelect = $(e).find('.attribute-value-container .attribute-value-select');
+            let selectedOption = $(currentSelect).find('option:selected');
+            let triggersChildVisualization = $(selectedOption).data('triggerschildvisualization') || false;
+
+            if (triggersChildVisualization) {
+                //let foundCheckedChildren = hasCheckedChildren(attributeID);
+                let foundCheckedChildren = await hasCheckedChildren(attributeID, true);
+
+                if (foundCheckedChildren) {
+                    controllableBceFailAttributeCount++;
+                    break;
+                }
+            }
+        };
+
+        if (controllableBceFailAttributeCount > 0) {
+            $('.result-controllable-bce-fail').removeClass('d-none');
+            $('.result-controllable-bce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-controllable-bce-fail').addClass('d-none');
+            $('.result-controllable-bce-success').removeClass('d-none');
+        }
+
+        return result;
+    }
+
+    async function checkFCEControllableAttributes() {
+        let result = true;
+        let controllableFceFailAttributeCount = 0;
+
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE)"].level-zero-attribute');
+
+        for (let i = 0; i < elements.length; i++) {
+            const e = elements[i];
+            let attributeID = $(e).data('attributeid');
+            let currentSelect = $(e).find('.attribute-value-container .attribute-value-select');
+            let selectedOption = $(currentSelect).find('option:selected');
+            let triggersChildVisualization = $(selectedOption).data('triggerschildvisualization') || false;
+
+            if (triggersChildVisualization) {
+                //let foundCheckedChildren = hasCheckedChildren(attributeID);
+                let foundCheckedChildren = await hasCheckedChildren(attributeID, true);
+
+                if (foundCheckedChildren) {
+                    controllableFceFailAttributeCount++;
+                    break;
+                }
+            }
+        };
+
+        if (controllableFceFailAttributeCount > 0) {
+            $('.result-controllable-fce-fail').removeClass('d-none');
+            $('.result-controllable-fce-success').addClass('d-none');
+            result = false;
+            //return false;
+        } else {
+            $('.result-controllable-fce-fail').addClass('d-none');
+            $('.result-controllable-fce-success').removeClass('d-none');
+        }
+
+        return result;
+    }
+
+    function checkNCEControllableAttributes() {
+        let result = true;
+        let controllableNceMinimumScore = @SCC_BL.Settings.AppValues.TRANSACTION_MINIMUM_NCE_SCORE;
+        let controllableNceFailAttributeCount = 0;
+
+        const elements = $('[data-errortypeid="@((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)"].level-zero-attribute');
+
+        if (elements.length <= 0) return result;
+
+        for (let i = 0; i < elements.length; i++) {
+            const e = elements[i];
+            let isControllable = $(e).data('iscontrollable') == 'True';
+            let attributeID = $(e).data('attributeid');
+            let currentScoreBox = $(e).find('.attribute-value-container .attribute-nce');
+            let scoreValue = $(currentScoreBox).val() != '' ? parseInt($(currentScoreBox).val()) : 0;
+            let isChecked = $(e).find('.attribute-checked')[0].checked;
+
+            if (isChecked) {
+                controllableNceFailAttributeCount += scoreValue;
+            }
+        };
+
+        if (controllableNceFailAttributeCount < controllableNceMinimumScore) {
+            $('.result-controllable-nce-score').removeClass('bg-success');
+            $('.result-controllable-nce-score').addClass('bg-danger');
+            result = false;
+        } else {
+            $('.result-controllable-nce-score').removeClass('bg-danger');
+            $('.result-controllable-nce-score').addClass('bg-success');
+            result = true;
+        }
+
+        $('.result-controllable-nce-score').html(controllableNceFailAttributeCount);
+
+        return result;
+    }
+
+    function validateForm() {
+        const formContainer = document.querySelector('#formContainer');
+        const requiredElements = formContainer.querySelectorAll('[required]');
+
+        let firstMissingElement = null;
+
+        for (var i = 0; i < requiredElements.length; i++) {
+            if (!requiredElements[i].value) {
+                if (!firstMissingElement) {
+                    firstMissingElement = requiredElements[i];
+                }
+                requiredElements[i].classList.add('missing');
+            } else {
+                requiredElements[i].classList.remove('missing');
+            }
+        }
+
+        if (firstMissingElement) {
+            firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        return true;
+    }
+
+    $('#btnSubmit').click((e) => {
+        let requiredAdviseElement = $('.required-advise');
+
+        /*if (
+            ($('#moduleList').val() == '' || $('#moduleList').val() == null)
+        ) {
+            $(requiredAdviseElement).removeClass('d-none');
+            return false;
+        }*/
+
+        if (
+            ($('#userToEvaluate').val() == '' || $('#userToEvaluate').val() == null)
+        ) {
+            alert('Por favor, ingrese todos los datos requeridos');
+            $(requiredAdviseElement).removeClass('d-none');
+            window.scrollTo(0, 0);
+            return false;
+        }
+
+        if (!validateForm()) {
+            alert('Por favor, ingrese todos los campos requeridos');
+            return false;
+        }
+
+        /*const customControlMultipleElements = $('.custom-control-multiple[required]');
+
+        for (let i = 0; i < customControlMultipleElements.length; i++) {
+            const currentElement = $(customControlMultipleElements[i]);
+
+            if ($(currentElement).val() == '' || $(currentElement).val() == null) {
+                alert('Seleccione valores para las listas desplegables requeridas');
+                currentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return false;
+            }
+        }*/
+
+        let message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+
+        showWaitingModal();
+
+        StopTimer();
+
+        getFormObject()
+            .then((response) => {
+                $('#btnSubmit').prop('disabled', true);
+                //console.log(response);
+                //return false;
+                $.ajax({
+                    "url": '@formAction',
+                    "contentType": 'application/json',
+                    "data": JSON.stringify(response),
+                    "method": 'POST',
+                    "timeout": 0,
+                    "success": function(response) {
+                        window.open(response.url, '_self');
+                    },
+                    "error": function (response) {
+                        window.open(response.url, '_self');
+                    },
+                    "complete": function (response) {
+                        window.open(response.url, '_self');
+                    }
+                });
+            })
+            .catch((reject) => {
+                alert(reject);
+                console.error(reject);
+            })
+            .finally(() => {
+                $('#btnSubmit').prop('disabled', false);
+                hideWaitingModal();
+            });
+
+        return false;
+    });
+
+    function getFormObject() {
+        return new Promise(async (resolve, reject) => {
+            let formObject = {};
+
+            let transaction = {};
+
+            let transactionAttributeList = [];
+            let transactionCustomFieldIDList = [];
+            let transactionBIFieldList = [];
+            let transactionCommentaryList = [];
+            let transactionLabelArray = $('#transactionLabels').val().split(',');
+
+            let generalResultID =
+                $('.result-general-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL.SUCCESS);
+
+            let generalFuceResultID =
+                $('.result-general-fuce-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL_USER_CRITICAL_ERROR.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS);
+
+            let generalBceResultID =
+                $('.result-general-bce-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_BUSINESS_CRITICAL_ERROR.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS);
+
+            let generalFceResultID =
+                $('.result-general-fce-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_GENERAL_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS);
+
+            let generalNceScore = $('.result-general-nce-score').text() != '' ? parseInt($('.result-general-nce-score').text()) : 0;
+
+            let accurateResultID =
+                $('.result-accurate-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FINAL.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FINAL.SUCCESS);
+
+            let accurateFuceResultID =
+                $('.result-accurate-fuce-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FINAL_USER_CRITICAL_ERROR.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS);
+
+            let accurateBceResultID =
+                $('.result-accurate-bce-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_BUSINESS_CRITICAL_ERROR.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS);
+
+            let accurateFceResultID =
+                $('.result-accurate-fce-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_ACCURATE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS);
+
+            let accurateNceScore = $('.result-accurate-nce-score').text() != '' ? parseInt($('.result-accurate-nce-score').text()) : 0;
+
+            let controllableResultID =
+                $('.result-controllable-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL.SUCCESS);
+
+            let controllableFuceResultID =
+                $('.result-controllable-fuce-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS);
+
+            let controllableBceResultID =
+                $('.result-controllable-bce-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS);
+
+            let controllableFceResultID =
+                $('.result-controllable-fce-success').hasClass('d-none')
+                    ? @((int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL)
+                    : @((int)SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS);
+
+            let controllableNceScore = $('.result-controllable-nce-score').text() != '' ? parseInt($('.result-controllable-nce-score').text()) : 0;
+
+            transaction =
+            {
+                "ID": @Model.Transaction.ID,
+                "Identifier": '@Model.Transaction.Identifier',
+                "UserToEvaluateID": $('#userToEvaluate').val(),
+                "EvaluatorUserID": @Model.Transaction.EvaluatorUserID,
+                "EvaluationDate": $('#transactionEvaluationDate').val(),
+                "TransactionDate": $('#transactionTransactionDate').val(),
+                "FormID": @Model.Form.ID,
+                "Comment": $('#transactionComments').val() ? $('#transactionComments').val() : '',
+
+                "GeneralResultID": generalResultID,
+                "GeneralFinalUserCriticalErrorResultID": generalFuceResultID,
+                "GeneralBusinessCriticalErrorResultID": generalBceResultID,
+                "GeneralFulfillmentCriticalErrorResultID": generalFceResultID,
+                "GeneralNonCriticalErrorResult": generalNceScore,
+
+                "AccurateResultID": accurateResultID,
+                "AccurateFinalUserCriticalErrorResultID": accurateFuceResultID,
+                "AccurateBusinessCriticalErrorResultID": accurateBceResultID,
+                "AccurateFulfillmentCriticalErrorResultID": accurateFceResultID,
+                "AccurateNonCriticalErrorResult": accurateNceScore,
+
+                "ControllableResultID": controllableResultID,
+                "ControllableFinalUserCriticalErrorResultID": controllableFuceResultID,
+                "ControllableBusinessCriticalErrorResultID": controllableBceResultID,
+                "ControllableFulfillmentCriticalErrorResultID": controllableFceResultID,
+                "ControllableNonCriticalErrorResult": controllableNceScore,
+
+                "TimeElapsed": $('#timer').text(),
+                "BasicInfoID": @Model.Transaction.BasicInfoID,
+
+                "TypeID": @Model.Transaction.TypeID,
+                "CalibratedTransactionID": @(Model.Transaction.CalibratedTransactionID != null ? Model.Transaction.CalibratedTransactionID.ToString() : "null")
+            };
+
+            $('.attribute-row').each((index, e) => {
+                let currentRow = e;
+                let currentCheck = $(currentRow).find('.attribute-checked');
+                let currentScoreBox = $(currentRow).find('.attribute-nce');
+                let currentSelect = $(currentRow).find('.attribute-value-container .attribute-value-select');
+                let currentComment = $(currentRow).find('.attribute-comment-container .comment-container textarea');
+
+                let maxScore = $(currentRow).data('maxscore');
+                let topDownScore = $(currentRow).data('topdownscore');
+                let hasForcedComment = $(currentRow).data('hasforcedcomment');
+                let isControllable = $(currentRow).data('iscontrollable') == 'True';
+                let basicInfoID = $(currentRow).data('basicinfoid');
+                let attributeID = $(currentRow).data('attributeid');
+                let parentAttributeID = $(currentRow).data('parentattributeid');
+
+                if (!isControllable) {
+                    let auxParentAttributeRow = currentRow;
+                    let parentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
+
+                    while (parentAttributeID != null && parentAttributeID > 0) {
+                        auxParentAttributeRow = $('.attribute-row[data-attributeid="' + parentAttributeID + '"]');
+                        parentAttributeID = $(auxParentAttributeRow).data('parentattributeid');
+                    }
+
+                    if (parentAttributeID == null || parentAttributeID == 0) {
+                        isControllable = $(auxParentAttributeRow).data('iscontrollable') == 'True';
+                    }
+                }
+
+                let scoreValue =
+                    currentScoreBox != null
+                        ? $(currentScoreBox).val() > 0
+                            ? $(currentScoreBox).val()
+                            : 0
+                        : 0;
+
+                let checked =
+                    currentCheck != null
+                        ? $(currentCheck).is(':checked')
+                        : false;
+
+                let transactionAttribute =
+                {
+                    "ID": 0,
+                    "TransactionID": @Model.Transaction.ID,
+                    "AttributeID": attributeID,
+                    "Comment": $(currentComment).val(),
+                    "ValueID":
+                        $(currentSelect).find('option:selected').length > 0
+                            ? $(currentSelect).val()
+                            : null,
+                    "ScoreValue": scoreValue,
+                    "Checked": checked,
+                    "BasicInfoID": 0
+                };
+
+                transactionAttributeList.push(transactionAttribute);
+            });
+
+            $('.custom-control-field').each((index, e) => {
+                let currentRow = e;
+                let valueContainer = $(currentRow).find('.value-container');
+                let valueID = 0;
+                let valueIDArray = [];
+                let comment = '';
+
+                @*if ($(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').length > 0) {
+                    comment = $(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').val();
+                }
+                else
+                if ($(valueContainer).find('input[type="radio"]:checked').length > 0) {
+                    valueID = $(valueContainer).find('input[type="radio"]:checked').val();
+                }
+                else
+                if ($(valueContainer).find('input[type="checkbox"]:checked').length > 0) {
+                    let elementList = $(valueContainer).find('input[type="checkbox"]:checked');
+                    if (elementList.length > 0) {
+                        for (let index = 0; index < elementList.length; index++) {
+                            valueIDArray.push(parseInt($(elementList[index]).val()));
+                            /*valueID =
+                                valueID != null && valueID != ''
+                                    ? (valueID + ',' + $(elementList[index]).val())
+                                    : $(elementList[index]).val();*/
+                        }
+                    }
+                }
+                else
+                if ($(valueContainer).find('select option:selected').length > 0) {
+                    valueID = $(valueContainer).find('select option:selected').val();
+                }*@
+
+                if ($(valueContainer).find('.custom-control-value-text').length > 0) {
+                    comment = $(valueContainer).find('input[type="text"], input[type="date"], input[type="time"], textarea').val();
+                }
+                else
+                if ($(valueContainer).find('.custom-control-value-radio').length > 0) {
+                    valueID = $(valueContainer).find('input[type="radio"]:checked').val();
+                }
+                else
+                if ($(valueContainer).find('.custom-control-value-checkbox').length > 0) {
+                    let elementList = $(valueContainer).find('input[type="checkbox"]:checked');
+                    if (elementList.length > 0) {
+                        for (let index = 0; index < elementList.length; index++) {
+                            valueIDArray.push(parseInt($(elementList[index]).val()));
+                            /*valueID =
+                                valueID != null && valueID != ''
+                                    ? (valueID + ',' + $(elementList[index]).val())
+                                    : $(elementList[index]).val();*/
+                        }
+                    }
+                }
+                else
+                if ($(valueContainer).find('.custom-control-value-select').length > 0) {
+                    if ($(valueContainer).find('select option:selected').length > 0) {
+                        valueID = $(valueContainer).find('select option:selected').val();
+                    } else {
+                        valueID = null;
+                    }
+                }
+
+                let transactionCustomFieldID = $(e).data('transactioncustomfieldid');
+                let customFieldID = $(e).data('customfieldid');
+
+                let transactionCustomField = {};
+
+                if (valueIDArray.length > 0) {
+                    for (var i = 0; i < valueIDArray.length; i++) {
+                        transactionCustomField =
+                        {
+                            "ID": transactionCustomFieldID ?? 0,
+                            "TransactionID": @Model.Transaction.ID,
+                            "CustomFieldID": customFieldID,
+                            "Comment": comment,
+                            "ValueID": valueIDArray[i],
+                            "BasicInfoID": 0
+                        };
+
+                        transactionCustomFieldIDList.push(transactionCustomField);
+                    }
+                }
+                else
+                {
+                    transactionCustomField =
+                    {
+                        "ID": transactionCustomFieldID ?? 0,
+                        "TransactionID": @Model.Transaction.ID,
+                        "CustomFieldID": customFieldID,
+                        "Comment": comment,
+                        "ValueID": valueID,
+                        "BasicInfoID": 0
+                    };
+
+                    transactionCustomFieldIDList.push(transactionCustomField);
+                }
+            });
+
+            $('.bifield-row').each((index, e) => {
+                let currentRow = e;
+                let currentCheck = $(currentRow).find('.bifield-checked');
+                let currentComment = $(currentRow).find('.bifield-comment-container .comment-container textarea');
+
+                let hasForcedComment = $(currentRow).data('hasforcedcomment');
+                let basicInfoID = $(currentRow).data('basicinfoid');
+                let biFieldID = $(currentRow).data('bifieldid');
+                let parentBIFieldID = $(currentRow).data('parentbifieldid');
+
+                let checked = currentCheck != null ? $(currentCheck).is(':checked') : false;
+
+                let transactionBIField =
+                {
+                    "ID": 0,
+                    "TransactionID": @Model.Transaction.ID,
+                    "BIFieldID": biFieldID,
+                    "Comment": $(currentComment).val(),
+                    "Checked": checked,
+                    "BasicInfoID": 0
+                };
+
+                transactionBIFieldList.push(transactionBIField);
+            });
+
+            $('.transaction-commentary').each((index, e) => {
+                let currentElement = e;
+
+                let transactionCommentID = $(currentElement).data('transactioncommentaryid');
+                let transactionCommentTypeID = $(currentElement).data('transactioncommentarytypeid');
+                let transactionID = @Model.Transaction.ID;
+                let transactionComment = $(currentElement).val();
+                let transactionCommentBasicInfoID = $(currentElement).data('transactioncommentarybasicinfoid');
+
+                let transactionCommentary =
+                {
+                    "ID": transactionCommentID,
+                    "TypeID": transactionCommentTypeID,
+                    "TransactionID": transactionID,
+                    "Comment": transactionComment,
+                    "BasicInfoID": transactionCommentBasicInfoID
+                };
+
+                transactionCommentaryList.push(transactionCommentary);
+            });
+
+            const attributesToCheck = transactionAttributeList.filter(e => e.ValueID != null || e.Checked);
+
+            for (var i = 0; i < attributesToCheck.length; i++) {
+                const currentAttribute = attributesToCheck[i];
+
+                if (hasChildren(currentAttribute.AttributeID)) {
+                    let foundCheckedChildren = await hasCheckedChildren(currentAttribute.AttributeID);
+
+                    if (currentAttribute.ValueID != null) {
+                        const optionSelected = $('.attribute-row[data-attributeid="' + currentAttribute.AttributeID + '"]').find('option[value="' + currentAttribute.ValueID + '"]');
+
+                        if (optionSelected != null) {
+                            if ($(optionSelected).data('triggerschildvisualization') == false) {
+                                continue;
+                            }
+                        }
+                    }
+
+                    if (!foundCheckedChildren) {
+                        reject('Existen atributos seleccionados con ningún causal seleccionado');
+                        break;
+                    }
+                }
+            }
+
+            formObject['transaction'] = transaction;
+            formObject['transactionAttributeList'] = transactionAttributeList;
+            formObject['transactionCustomFieldIDList'] = transactionCustomFieldIDList;
+            formObject['transactionBIFieldList'] = transactionBIFieldList;
+            formObject['transactionCommentaryList'] = transactionCommentaryList;
+            formObject['transactionLabelArray'] = transactionLabelArray;
+
+            resolve(formObject);
+        });
+    }
+
+    $('#btnSendDispute').click((e) => {
+        showWaitingModal();
+
+        let message = '¿Quieres enviar la disputa?';
+
+        if (confirm(message) == true) {
+            const transactionID = @Model.Transaction.ID;
+            const comments = [];
+
+            const elements = $('.transaction-comment-disputation');
+
+            for (var i = 0; i < elements.length; i++) {
+                const currentElement = elements[i];
+
+                const currentComment = {
+                    "ID": $(currentElement).data('transactioncommentaryid'),
+                    "TypeID": $(currentElement).data('transactioncommentarytypeid'),
+                    "TransactionID": transactionID,
+                    "Comment": $(currentElement).val(),
+                    "BasicInfoID": $(currentElement).data('transactioncommentarybasicinfoid')
+                };
+
+                comments.push(currentComment);
+            }
+
+            const data = {
+                "commentaryList": comments
+            };
+
+            $.ajax({
+                "url": '@Url.Action(nameof(TransactionController.SaveDisputation), mainControllerName)',
+                "contentType": 'application/json',
+                "data": JSON.stringify(data),
+                "method": 'POST',
+                "timeout": 0,
+                "success": function(response) {
+                    window.open(response.url, '_self');
+                },
+                "error": function (error) {
+                    window.open(response.url, '_self');
+                },
+                "complete": function (response) {
+                    window.open(response.url, '_self');
+                    hideWaitingModal();
+                }
+            });
+        }
+    });
+
+    $('#btnSendInvalidation').click((e) => {
+        showWaitingModal();
+
+        let message = '¿Quieres enviar la invalidación?';
+
+        if (confirm(message) == true) {
+            const transactionID = @Model.Transaction.ID;
+            const comments = [];
+
+            const elements = $('.transaction-comment-invalidation');
+
+            for (var i = 0; i < elements.length; i++) {
+                const currentElement = elements[i];
+
+                const currentComment = {
+                    "ID": $(currentElement).data('transactioncommentaryid'),
+                    "TypeID": $(currentElement).data('transactioncommentarytypeid'),
+                    "TransactionID": transactionID,
+                    "Comment": $(currentElement).val(),
+                    "BasicInfoID": $(currentElement).data('transactioncommentarybasicinfoid')
+                };
+
+                comments.push(currentComment);
+            }
+
+            const data = {
+                "commentaryList": comments
+            };
+
+            $.ajax({
+                "url": '@Url.Action(nameof(TransactionController.SaveInvalidation), mainControllerName)',
+                "contentType": 'application/json',
+                "data": JSON.stringify(data),
+                "method": 'POST',
+                "timeout": 0,
+                "success": function(response) {
+                    window.open(response.url, '_self');
+                },
+                "error": function (error) {
+                    window.open(response.url, '_self');
+                },
+                "complete": function (response) {
+                    window.open(response.url, '_self');
+                    hideWaitingModal();
+                }
+            });
+        }
+    });
+
+    $('#btnSendDevolution').click((e) => {
+        let message = '¿Quieres enviar la devolución?';
+
+        if (confirm(message) == true) {
+            showWaitingModal();
+
+            const transactionID = @Model.Transaction.ID;
+            const comments = [];
+
+            const elements = $('.transaction-comment-devolution, .transaction-comment-devolution-improvement-steps, .transaction-comment-devolution-user-strengths');
+
+            for (var i = 0; i < elements.length; i++) {
+                const currentElement = elements[i];
+
+                const currentComment = {
+                    "ID": $(currentElement).data('transactioncommentaryid'),
+                    "TypeID": $(currentElement).data('transactioncommentarytypeid'),
+                    "TransactionID": transactionID,
+                    "Comment": $(currentElement).val(),
+                    "BasicInfoID": $(currentElement).data('transactioncommentarybasicinfoid')
+                };
+
+                comments.push(currentComment);
+            }
+
+            const data = {
+                "commentaryList": comments
+            };
+
+            $.ajax({
+                "url": '@Url.Action(nameof(TransactionController.SaveDevolution), mainControllerName)',
+                "contentType": 'application/json',
+                "data": JSON.stringify(data),
+                "method": 'POST',
+                "timeout": 0,
+                "success": function(response) {
+                    window.open(response.url, '_self');
+                },
+                "error": function (error) {
+                    window.open(response.url, '_self');
+                },
+                "complete": function (response) {
+                    window.open(response.url, '_self');
+                    hideWaitingModal();
+                }
+            });
+        }
+    });
+</script>

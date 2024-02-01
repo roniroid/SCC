@@ -104,6 +104,24 @@ namespace SCC_DATA.Repositories
 			}
 		}
 
+		public System.Data.DataTable SelectAll()
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					return
+						db.Select(
+							Queries.ProgramFormCatalog.StoredProcedures.SelectAll.NAME
+						);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+
 		public System.Data.DataTable SelectByFormID(int formID)
 		{
 			try

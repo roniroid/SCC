@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID;
 
 namespace SCC_BL
 {
@@ -101,7 +102,16 @@ namespace SCC_BL
             this.ProgramFormCatalogList = ProgramFormCatalog.ProgramFormCatalogWithFormID(this.ID).SelectByFormID();
         }
 
-		void SetCustomControlList()
+		void SetCustomFieldList()
+        {
+            this.CustomFieldList = 
+				CustomField.CustomFieldWithFormID(this.ID)
+					.SelectByFormID()
+					.OrderBy(e => e.Order)
+					.ToList();
+        }
+
+		void SetCustomControlList(bool includeDeleted = false)
         {
 			this.CustomControlList = new List<CustomControl>();
 
@@ -112,9 +122,10 @@ namespace SCC_BL
 					customControl.SetDataByID();
 
 					if (
-						customControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED ||
-                        customControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DISABLED
-					)
+						(customControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED ||
+                        customControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DISABLED) &&
+                        !includeDeleted
+                    )
 					{
 						continue;
 					}
@@ -126,9 +137,19 @@ namespace SCC_BL
 
 		void SetBusinessIntelligenceFieldList()
         {
-			this.BusinessIntelligenceFieldList = new List<BusinessIntelligenceField>();
+            this.BusinessIntelligenceFieldList = new List<BusinessIntelligenceField>();
 
-            foreach (FormBIFieldCatalog formBIFieldCatalog in this.FormBIFieldCatalogList)
+            using (BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField())
+                this.BusinessIntelligenceFieldList = businessIntelligenceField.SelectHierarchyByFormID(this.ID, true);
+
+			this.BusinessIntelligenceFieldList =
+				this.BusinessIntelligenceFieldList
+					.Where(e =>
+						e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED &&
+						e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DISABLED)
+					.ToList();
+
+            /*foreach (FormBIFieldCatalog formBIFieldCatalog in this.FormBIFieldCatalogList)
             {
                 using (BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField(formBIFieldCatalog.BIFieldID))
                 {
@@ -144,8 +165,17 @@ namespace SCC_BL
 
                     this.BusinessIntelligenceFieldList.Add(businessIntelligenceField);
                 }
-            }
+            }*/
 		}
+
+		void SetBIFieldList()
+        {
+            this.FormBIFieldCatalogList = 
+				FormBIFieldCatalog.FormBIFieldCatalogWithFormID(this.ID)
+					.SelectByFormID()
+					.OrderBy(e => e.Order)
+					.ToList();
+        }
 
 		public void SetDataByID(bool simpleData = false)
 		{
@@ -164,9 +194,9 @@ namespace SCC_BL
 
 				if (!simpleData)
 				{
-					this.CustomFieldList = CustomField.CustomFieldWithFormID(this.ID).SelectByFormID();
-					this.FormBIFieldCatalogList = FormBIFieldCatalog.FormBIFieldCatalogWithFormID(this.ID).SelectByFormID();
-                    this.SetAttributeList();
+					this.SetCustomFieldList();
+					this.SetBIFieldList();
+                    this.SetAttributeList(simpleData);
                     this.SetProgramFormCatalogList();
 
 					this.SetProgramName();
@@ -195,7 +225,25 @@ namespace SCC_BL
 				}
 			});
         }*/
-        void SetAttributeList()
+
+        void SetAttributeList(bool simpleData = false)
+        {
+            if (!simpleData)
+            {
+                this.AttributeList = new List<Attribute>();
+
+                using (Attribute attribute = Attribute.AttributeWithFormID(this.ID))
+                    this.AttributeList = attribute.SelectHierarchyByFormID(simpleData);
+
+                this.AttributeList =
+                    this.AttributeList
+                        .Where(e => e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.DELETED)
+                        .OrderBy(e => e.Order)
+                        .ToList();
+            }
+        }
+
+        /*void SetAttributeList()
         {
             //this.AttributeList = Attribute.AttributeWithFormID(this.ID).SelectByFormID();
 
@@ -234,7 +282,7 @@ namespace SCC_BL
 				this.AttributeList
 					.OrderBy(e => e.Order)
 					.ToList();
-        }
+        }*/
 
         public void SetDataByName(bool simpleData = false)
 		{
@@ -258,9 +306,9 @@ namespace SCC_BL
 				this.BasicInfo.SetDataByID();
 
 				if (!simpleData)
-				{
-					this.CustomFieldList = CustomField.CustomFieldWithFormID(this.ID).SelectByFormID();
-					this.FormBIFieldCatalogList = FormBIFieldCatalog.FormBIFieldCatalogWithFormID(this.ID).SelectByFormID();
+                {
+                    this.SetCustomFieldList();
+                    this.SetBIFieldList();
                     this.SetAttributeList();
                     this.SetProgramFormCatalogList();
 
@@ -326,9 +374,9 @@ namespace SCC_BL
 					form.BasicInfo.SetDataByID();
 
                     if (!simpleData)
-					{
-						form.CustomFieldList = CustomField.CustomFieldWithFormID(form.ID).SelectByFormID();
-						form.FormBIFieldCatalogList = FormBIFieldCatalog.FormBIFieldCatalogWithFormID(form.ID).SelectByFormID();
+                    {
+                        form.SetCustomFieldList();
+                        form.SetBIFieldList();
                         form.SetAttributeList();
 						form.SetProgramFormCatalogList();
 
@@ -346,7 +394,8 @@ namespace SCC_BL
 				.ToList();
 		}
 
-		public Results.Form.UpdateCustomFieldList.CODE UpdateCustomFieldList(int[] customControlIDList, int creationUserID)
+		//OLD
+		/*public Results.Form.UpdateCustomFieldList.CODE UpdateCustomFieldList(int[] customControlIDList, int creationUserID)
 		{
 			try
 			{
@@ -393,6 +442,104 @@ namespace SCC_BL
                         if (customControlIDList.Contains(e.CustomControlID))
                         {
                             CustomField customField = new CustomField(e.ID, this.ID, e.CustomControlID, cont, e.BasicInfoID, creationUserID, (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.UPDATED);
+                            customField.Update();
+
+                            cont++;
+                        }
+                    });
+
+                return Results.Form.UpdateCustomFieldList.CODE.SUCCESS;
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}*/
+
+		public Results.Form.UpdateCustomFieldList.CODE UpdateCustomFieldList(int[] customControlIDList, int creationUserID)
+		{
+			try
+			{
+				if (customControlIDList == null) customControlIDList = new int[0];
+
+				//Delete old ones
+				this.CustomFieldList
+					.ForEach(e => {
+						if (!customControlIDList.Contains(e.CustomControlID))
+                            try
+                            {
+                                e.DeleteByID();
+                            }
+                            catch (Exception ex)
+                            {
+                                e.BasicInfo.ModificationUserID = creationUserID;
+                                e.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED;
+                                e.BasicInfo.Update();
+                            }
+                    });
+
+                int cont = 1;
+
+                foreach (int customControlID in customControlIDList)
+				{
+                    //Create if it does not exist
+                    if (!this.CustomFieldList.Select(e => e.CustomControlID).Contains(customControlID))
+                    {
+                        CustomField customField = 
+							CustomField.CustomFieldForInsert(
+								this.ID, 
+								customControlID, 
+								cont, 
+								creationUserID, 
+								(int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.CREATED);
+
+                        customField.Insert();
+                    }
+					else
+                    //Update if it does exist
+                    if (this.CustomFieldList.Select(e => e.CustomControlID).Contains(customControlID))
+                    {
+						CustomField currentCustomField = 
+							this.CustomFieldList
+								.Where(e => 
+									e.CustomControlID == customControlID)
+								.FirstOrDefault();
+
+                        CustomField customField = 
+							new CustomField(
+								currentCustomField.ID, 
+								this.ID, 
+								customControlID, 
+								cont, 
+								currentCustomField.BasicInfoID, 
+								creationUserID, 
+								(int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.CREATED);
+
+                        customField.Update();
+                    }
+
+                    cont++;
+                }
+
+                //Activate old and deleted ones
+                this.CustomFieldList
+                    .Where(e =>
+                        e.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED ||
+                        e.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED)
+                    .ToList()
+                    .ForEach(e => {
+                        if (customControlIDList.Contains(e.CustomControlID))
+                        {
+                            CustomField customField = 
+								new CustomField(
+									e.ID, 
+									this.ID, 
+									e.CustomControlID, 
+									cont, 
+									e.BasicInfoID, 
+									creationUserID, 
+									(int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.UPDATED);
+
                             customField.Update();
 
                             cont++;
@@ -486,12 +633,13 @@ namespace SCC_BL
 				//Delete old ones
 				this.AttributeList
 					.ForEach(e => {
-						if (!attributeList
+                        if (!attributeList
 							.Where(w => 
 								w.ID != null && 
 								w.ID > 0)
 							.Select(s => s.ID)
 							.Contains(e.ID))
+						{
                             try
                             {
                                 e.DeleteByID();
@@ -502,24 +650,37 @@ namespace SCC_BL
                                 e.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.DELETED;
                                 e.BasicInfo.Update();
                             }
+                        }
 					});
 
 				//Update existing ones
 				List<Attribute> updatedAttributeList = new List<Attribute>();
 
-				foreach (Attribute attribute in attributeList)
-				{
-					if (this.AttributeList.Select(e => e.ID).Contains(attribute.ID))
-					{
-						int currentBasicInfoID = 0;
+				foreach (Attribute attribute in attributeList.Where(e => e.HasChanged))
+                {
+                    if (this.AttributeList.Select(e => e.ID).Contains(attribute.ID))
+                    {
+                        int currentBasicInfoID = 0;
 
 						using (Attribute auxAttribute = new Attribute(attribute.ID))
 						{
 							auxAttribute.SetDataByID();
 							currentBasicInfoID = auxAttribute.BasicInfoID;
-						}
+                        }
 
-						Attribute newAttribute = new Attribute(
+                        /*int parentID = 0;
+
+                        if (attribute.ParentAttributeGhostID >= SCC_BL.Settings.Overall.MIN_EXISTING_ATTRIBUTE_GHOST_ID)
+                        {
+                            parentID = attributeList.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID).First().ID;
+                        }
+                        else
+                        if (attribute.ParentAttributeGhostID >= SCC_BL.Settings.Overall.MIN_NON_EXISTING_ATTRIBUTE_GHOST_ID)
+                        {
+                            parentID = updatedAttributeList.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID).First().ID;
+                        }*/
+
+                        Attribute newAttribute = new Attribute(
 							attribute.ID,
 							this.ID, 
 							attribute.Name, 
@@ -537,7 +698,8 @@ namespace SCC_BL
 							creationUserID,
 							(int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.UPDATED);
 
-						int result = newAttribute.Update();
+
+                        int result = newAttribute.Update();
 
                         if (result > 0)
 						{
@@ -558,21 +720,28 @@ namespace SCC_BL
 				//Create new ones
 				List<Attribute> insertedAttributeList = new List<Attribute>();
 
-				foreach (Attribute attribute in attributeList)
+				foreach (Attribute attribute in attributeList/*.Where(e => e.HasChanged)*/)
 				{
 					if (!this.AttributeList.Select(e => e.ID).Contains(attribute.ID))
-					{
-						Attribute newAttribute = new Attribute(
+                    {
+						int? parentID = attribute.ParentAttributeID;
+
+						if (attribute.ParentAttributeGhostID >= SCC_BL.Settings.Overall.MIN_EXISTING_ATTRIBUTE_GHOST_ID)
+						{
+							parentID = attributeList.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID).First().ID;
+						}
+                        else
+                        if (attribute.ParentAttributeGhostID >= SCC_BL.Settings.Overall.MIN_NON_EXISTING_ATTRIBUTE_GHOST_ID)
+                        {
+                            parentID = insertedAttributeList.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID).First().ID;
+                        }
+
+                        Attribute newAttribute = new Attribute(
 							this.ID, 
 							attribute.Name, 
 							attribute.Description, 
-							attribute.ErrorTypeID, 
-							attribute.ParentAttributeGhostID > 0 
-								? insertedAttributeList
-									.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID)
-									.Select(e => e.ID)
-									.FirstOrDefault()
-								: new int?(),
+							attribute.ErrorTypeID,
+                            parentID,
 							attribute.MaxScore,
 							attribute.TopDownScore,
 							attribute.HasForcedComment,
@@ -583,7 +752,7 @@ namespace SCC_BL
 							creationUserID,
 							(int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.CREATED);
 
-						int result = newAttribute.Insert();
+                        int result = newAttribute.Insert();
 
                         if (result > 0)
 						{
@@ -663,14 +832,21 @@ namespace SCC_BL
                     }
                 }
 
-				//Create new ones
-				int count = Convert.ToInt32($"{ this.ID }1");
+                int count = Convert.ToInt32($"{ this.ID }1");
 
 				foreach (int biFieldID in biFieldIDList)
-				{
-					if (!this.FormBIFieldCatalogList.Select(e => e.BIFieldID).Contains(biFieldID))
+                {
+                    //Create new ones
+                    if (!this.FormBIFieldCatalogList.Select(e => e.BIFieldID).Contains(biFieldID))
 					{
-						FormBIFieldCatalog biFieldCatalog = FormBIFieldCatalog.FormBIFieldCatalogForInsert(this.ID, biFieldID, count, creationUserID, (int)SCC_BL.DBValues.Catalog.STATUS_FORM_BI_FIELD_CATALOG.CREATED);
+						FormBIFieldCatalog biFieldCatalog = 
+							FormBIFieldCatalog.FormBIFieldCatalogForInsert(
+								this.ID, 
+								biFieldID, 
+								count, 
+								creationUserID, 
+								(int)SCC_BL.DBValues.Catalog.STATUS_FORM_BI_FIELD_CATALOG.CREATED);
+
 						biFieldCatalog.Insert();
 
 						//Insert children
@@ -692,17 +868,80 @@ namespace SCC_BL
                             }
 						}
                     }
+                    else
+                    //Update if it does exist
+                    if (this.FormBIFieldCatalogList.Select(e => e.BIFieldID).Contains(biFieldID))
+                    {
+                        FormBIFieldCatalog currentFormBIField =
+							this.FormBIFieldCatalogList
+                                .Where(e =>
+                                    e.BIFieldID == biFieldID)
+                                .FirstOrDefault();
+
+                        FormBIFieldCatalog formBIField =
+                            new FormBIFieldCatalog(
+								currentFormBIField.ID,
+                                this.ID,
+                                biFieldID,
+                                count,
+                                currentFormBIField.BasicInfoID,
+                                creationUserID,
+                                (int)SCC_BL.DBValues.Catalog.STATUS_FORM_BI_FIELD_CATALOG.CREATED);
+
+                        formBIField.Update();
+                    }
 
                     count++;
-				}
+                }
 
-				return Results.Form.UpdateBIFieldList.CODE.SUCCESS;
+                //Activate old and deleted ones
+                this.FormBIFieldCatalogList
+                    .Where(e =>
+                        e.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_FORM_BI_FIELD_CATALOG.DISABLED ||
+                        e.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_FORM_BI_FIELD_CATALOG.DELETED)
+                    .ToList()
+                    .ForEach(e => {
+                        if (biFieldIDList.Contains(e.BIFieldID))
+                        {
+                            FormBIFieldCatalog formBIFieldCatalog =
+                                new FormBIFieldCatalog(
+                                    e.ID,
+                                    this.ID,
+                                    e.BIFieldID,
+                                    count,
+                                    e.BasicInfoID,
+                                    creationUserID,
+                                    (int)SCC_BL.DBValues.Catalog.STATUS_FORM_BI_FIELD_CATALOG.UPDATED);
+
+                            formBIFieldCatalog.Update();
+
+                            count++;
+                        }
+                    });
+
+                return Results.Form.UpdateBIFieldList.CODE.SUCCESS;
 			}
 			catch (Exception ex)
 			{
 				throw ex;
 			}
 		}
+
+		public static Results.Form.CheckNCEScore.CODE CheckNCEScore(List<Attribute> attributeList)
+		{
+			Results.Form.CheckNCEScore.CODE result = Results.Form.CheckNCEScore.CODE.SUCCESS;
+
+			if (attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).Sum(e => e.MaxScore) > 100)
+			{
+				result = Results.Form.CheckNCEScore.CODE.ERROR_GREATER_THAN_100;
+            }
+			else if (attributeList.Where(e => e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE).Sum(e => e.MaxScore) < 100)
+            {
+                result = Results.Form.CheckNCEScore.CODE.ERROR_LESS_THAN_100;
+            }
+
+			return result;
+        }
 
 		public void Dispose()
 		{

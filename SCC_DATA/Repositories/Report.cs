@@ -141,6 +141,66 @@ namespace SCC_DATA.Repositories
 			}
 		}
 		
+		public System.Data.DataTable CalibratorComparisonWithAttributes(DateTime? calibrationStartDate, DateTime? calibrationEndDate, string programIDList, string calibratedUserIDArray, string calibratedSupervisorUserIDArray, string calibratorUserIDArray, string calibrationTypeIDArray, string errorTypeIDArray)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					SqlParameter[] parameters = new SqlParameter[] {
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.Parameters.CALIBRATION_START_DATE, calibrationStartDate, System.Data.SqlDbType.DateTime),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.Parameters.CALIBRATION_END_DATE, calibrationEndDate, System.Data.SqlDbType.DateTime),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.Parameters.PROGRAM_ID_LIST, programIDList, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.Parameters.CALIBRATED_USER_ID_LIST, calibratedUserIDArray, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.Parameters.CALIBRATED_SUPERVISOR_USER_ID_LIST, calibratedSupervisorUserIDArray, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.Parameters.CALIBRATOR_USER_ID_LIST, calibratorUserIDArray, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.Parameters.CALIBRATION_TYPE_ID_LIST, calibrationTypeIDArray, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.Parameters.ERROR_TYPE_ID_LIST, errorTypeIDArray, System.Data.SqlDbType.VarChar)
+					};
+
+					return
+						db.Select(
+							Queries.Report.StoredProcedures.CalibratorComparisonWithAttributes.NAME,
+							parameters
+						);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+		
+		public System.Data.DataTable CalibratorComparisonByError(DateTime? calibrationStartDate, DateTime? calibrationEndDate, string programIDList, string calibratedUserIDArray, string calibratedSupervisorUserIDArray, string calibratorUserIDArray, string calibrationTypeIDArray, string errorTypeIDArray)
+		{
+			try
+			{
+				using (DBDriver db = new DBDriver())
+				{
+					SqlParameter[] parameters = new SqlParameter[] {
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonByError.Parameters.CALIBRATION_START_DATE, calibrationStartDate, System.Data.SqlDbType.DateTime),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonByError.Parameters.CALIBRATION_END_DATE, calibrationEndDate, System.Data.SqlDbType.DateTime),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonByError.Parameters.PROGRAM_ID_LIST, programIDList, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonByError.Parameters.CALIBRATED_USER_ID_LIST, calibratedUserIDArray, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonByError.Parameters.CALIBRATED_SUPERVISOR_USER_ID_LIST, calibratedSupervisorUserIDArray, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonByError.Parameters.CALIBRATOR_USER_ID_LIST, calibratorUserIDArray, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonByError.Parameters.CALIBRATION_TYPE_ID_LIST, calibrationTypeIDArray, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.CalibratorComparisonByError.Parameters.ERROR_TYPE_ID_LIST, errorTypeIDArray, System.Data.SqlDbType.VarChar)
+					};
+
+					return
+						db.Select(
+							Queries.Report.StoredProcedures.CalibratorComparisonByError.NAME,
+							parameters
+						);
+				}
+			}
+			catch (Exception ex)
+			{
+				throw ex;
+			}
+		}
+		
 		public System.Data.DataTable AccuracyTrend(DateTime? transactionStartDate, DateTime? transactionEndDate, DateTime? evaluationStartDate, DateTime? evaluationEndDate, string programIDList, string userIDArray, string supervisorUserIDArray, string evaluatorUserIDArray, string errorTypeIDArray, bool? attributeControllable, bool? attributeKnown, string transactionCustomFieldCatalogList)
 		{
 			try
@@ -226,14 +286,15 @@ namespace SCC_DATA.Repositories
 			}
 		}
 		
-		public System.Data.DataTable AccuracyBySubattribute(string transactionAttributeIDList)
+		public System.Data.DataTable AccuracyBySubattribute(string selectedAttributeID, string transactionAttributeIDList)
 		{
 			try
 			{
 				using (DBDriver db = new DBDriver())
 				{
 					SqlParameter[] parameters = new SqlParameter[] {
-						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyBySubattribute.Parameters.TRANSACTION_ATTRIBUTE_ID_LIST, transactionAttributeIDList, System.Data.SqlDbType.VarChar)
+						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyBySubattribute.Parameters.TRANSACTION_ATTRIBUTE_ID_LIST, transactionAttributeIDList, System.Data.SqlDbType.VarChar),
+						db.CreateParameter(Queries.Report.StoredProcedures.AccuracyBySubattribute.Parameters.SELECTED_ATTRIBUTE_ID, selectedAttributeID, System.Data.SqlDbType.VarChar)
 					};
 
 					return

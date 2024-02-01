@@ -119,10 +119,7 @@
 </div>
 
 @{
-    bool isControllable =
-        Model.RequestObject.AttributeControllable != null
-            ? Model.RequestObject.AttributeControllable.Value
-            : false;
+    bool isControllable = (bool)ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.IS_CONTROLLABLE];
 }
 
 <div class="tableContainer mt-4">
@@ -145,21 +142,18 @@
         </thead>
         <tbody>
             @{
-                List<int> processedID = new List<int>();
+                List<string> processedNames = new List<string>();
             }
 
-            @foreach (SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult in Model.AccuracyByAttributeResultList.OrderBy(e => e.AttributeID))
+            @foreach (SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult in Model.AccuracyByAttributeResultList.OrderBy(e => e.AttributeName))
             {
-                if (processedID.Where(e => e == accuracyByAttributeResult.AttributeID).Count() <= 0)
+                if (processedNames.Where(e => e == accuracyByAttributeResult.AttributeName).Count() <= 0)
                 {
-                    int successfulResultCount = 
+                    int successfulResultCount =
                         Model.AccuracyByAttributeResultList
-                            .Where(e => 
-                                e.AttributeID == accuracyByAttributeResult.AttributeID && 
-                                e.SuccessFulResult &&
-                                (isControllable 
-                                    ? !e.IsControllable
-                                    : true))
+                            .Where(e =>
+                                e.AttributeName == accuracyByAttributeResult.AttributeName &&
+                                e.SuccessFulResult)
                             .Count();
 
                     <tr>
@@ -178,7 +172,7 @@
                     </tr>
                 }
 
-                processedID.Add(accuracyByAttributeResult.AttributeID);
+                processedNames.Add(accuracyByAttributeResult.AttributeName);
             }
         </tbody>
     </table>
@@ -248,11 +242,19 @@
 
     const ctx = document.getElementById('myChart');
 
+    @{ 
+        string currentAttributeIDArray = string.Empty;
+        string currentTransactionAttributeIDArray = string.Empty;
+
+        currentAttributeIDArray = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.AttributeID) + "]"));
+        currentTransactionAttributeIDArray = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.TransactionAttributeID) + "]"));
+    }
+
     const DEFAULT_DATA = {
         labels: [
             @Html.Raw(
                 String.Join(
-                    ",", 
+                    ",",
                     Model.ResultByAttributeList
                         .Select(e => $"\"{ e.AttributeName }\"")))],
         datasets: [
@@ -278,12 +280,16 @@
                     'rgb(255, 190, 113, 0.8)'
                 ],
                 borderWidth: 1,
-                successCount: [
-                    @String.Join(
-                        ",", 
-                        Model.ResultByAttributeList
-                            .Select(e => e.Quantity))],
-                totalCount: @Model.TotalTransactions,
+                customData: {
+                    successCount: [
+                        @String.Join(
+                            ",",
+                            Model.ResultByAttributeList
+                                .Select(e => e.Quantity))],
+                    totalCount: @Model.TotalTransactions,
+                    currentAttributeID: [@currentAttributeIDArray],
+                    currentTransactionAttributeID: [@currentTransactionAttributeIDArray],
+                }
             }
         ]
     };
@@ -411,7 +417,7 @@
                 },
                 tooltip: {
                     callbacks: {
-                        label: (context) => `${context.formattedValue.replace(',', '.')}% (${context.dataset.successCount[context.dataIndex]}/${context.dataset.totalCount})`
+                        label: (context) => `${context.formattedValue.replace(',', '.')}% (${context.dataset.customData.successCount[context.dataIndex]}/${context.dataset.customData.totalCount})`
                     }
                 },
                 chartAreaBorder: {
@@ -444,15 +450,24 @@
 
         if (points.length) {
             const firstPoint = points[0];
+            const datasetIndex = firstPoint.datasetIndex;
+            const dataIndex = firstPoint.index;
+
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
+
+            const selectedAttributeID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
+            const selectedTransactionAttributeID = myChart.data.datasets[datasetIndex].customData.currentTransactionAttributeID[dataIndex];
 
             const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
 
             const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
 
-            $($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyByAttributeResultList.Select(e => e.TransactionAttributeID))" /> ');
+            $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedAttributeID.join() + '" /> ');
+            @*$($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyByAttributeResultList.Select(e => e.TransactionAttributeID))" /> ');*@
+            $($form).append('<input type="hidden" name="transactionIDList" value="' + selectedTransactionAttributeID.join() + '" /> ');
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+            $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');
 
             $(document.body).append($form);
 

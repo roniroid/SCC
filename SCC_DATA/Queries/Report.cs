@@ -82,16 +82,19 @@ namespace SCC_DATA.Queries
                     public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
                     public const string GENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
                     public const string GENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
+                    public const string GENERALNONCRITICALERRORRESULT = "GeneralNonCriticalErrorResult";
 
                     public const string ACCURATERESULTID = "AccurateResultID";
                     public const string ACCURATEFINALUSERCRITICALERRORRESULTID = "AccurateFinalUserCriticalErrorResultID";
                     public const string ACCURATEBUSINESSCRITICALERRORRESULTID = "AccurateBusinessCriticalErrorResultID";
                     public const string ACCURATEFULFILLMENTCRITICALERRORRESULTID = "AccurateFulfillmentCriticalErrorResultID";
+                    public const string ACCURATENONCRITICALERRORRESULT = "AccurateNonCriticalErrorResult";
 
                     public const string CONTROLLABLERESULTID = "ControllableResultID";
                     public const string CONTROLLABLEFINALUSERCRITICALERRORRESULTID = "ControllableFinalUserCriticalErrorResultID";
                     public const string CONTROLLABLEBUSINESSCRITICALERRORRESULTID = "ControllableBusinessCriticalErrorResultID";
                     public const string CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID = "ControllableFulfillmentCriticalErrorResultID";
+                    public const string CONTROLLABLENONCRITICALERRORRESULT = "ControllableNonCriticalErrorResult";
 
                     public const string USER_ID = "UserID";
 				}
@@ -179,6 +182,79 @@ namespace SCC_DATA.Queries
 				}
 			}
 			
+			public struct CalibratorComparisonWithAttributes
+            {
+				public const string NAME = "[dbo].[usp_ReportCalibratorComparisonWithAttributes]";
+
+				public struct Parameters
+				{
+					public const string CALIBRATION_START_DATE = "@calibrationStartDate";
+					public const string CALIBRATION_END_DATE = "@calibrationEndDate";
+					public const string PROGRAM_ID_LIST = "@programIDList";
+					public const string CALIBRATED_USER_ID_LIST = "@calibratedUserIDArray";
+					public const string CALIBRATED_SUPERVISOR_USER_ID_LIST = "@calibratedSupervisorUserIDArray";
+					public const string CALIBRATOR_USER_ID_LIST = "@calibratorUserIDArray";
+					public const string CALIBRATION_TYPE_ID_LIST = "@calibrationTypeIDArray";
+					public const string ERROR_TYPE_ID_LIST = "@errorTypeIDArray";
+				}
+
+				public struct ResultFields
+				{
+					public const string TRANSACTION_ID = "TransactionID";
+
+                    public const string ERROR_TYPE_ID = "ErrorTypeID";
+                    public const string ATTRIBUTE_ID = "AttributeID";
+                    public const string VALUE_ID = "ValueID";
+                    public const string CHECKED = "Checked";
+
+					public const string CALIBRATOR_USER_ID = "CalibratorUserID";
+					public const string IS_EXPERTS_CALIBRATION = "IsExpertsCalibration";
+				}
+			}
+			
+			public struct CalibratorComparisonByError
+            {
+				public const string NAME = "[dbo].[usp_ReportCalibratorComparisonByError]";
+
+				public struct Parameters
+				{
+					public const string CALIBRATION_START_DATE = "@calibrationStartDate";
+					public const string CALIBRATION_END_DATE = "@calibrationEndDate";
+					public const string PROGRAM_ID_LIST = "@programIDList";
+					public const string CALIBRATED_USER_ID_LIST = "@calibratedUserIDArray";
+					public const string CALIBRATED_SUPERVISOR_USER_ID_LIST = "@calibratedSupervisorUserIDArray";
+					public const string CALIBRATOR_USER_ID_LIST = "@calibratorUserIDArray";
+					public const string CALIBRATION_TYPE_ID_LIST = "@calibrationTypeIDArray";
+					public const string ERROR_TYPE_ID_LIST = "@errorTypeIDArray";
+				}
+
+				public struct ResultFields
+				{
+					public const string TRANSACTION_ID = "TransactionID";
+
+                    public const string GLOBALGENERALRESULTID = "GeneralResultID";
+                    public const string GLOBALGENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
+                    public const string GLOBALGENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
+                    public const string GLOBALGENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
+                    public const string GLOBALGENERALNONCRITICALERRORRESULTID = "GeneralNonCriticalErrorResult";
+
+                    public const string GLOBALACCURATERESULTID = "AccurateResultID";
+                    public const string GLOBALACCURATEFINALUSERCRITICALERRORRESULTID = "AccurateFinalUserCriticalErrorResultID";
+                    public const string GLOBALACCURATEBUSINESSCRITICALERRORRESULTID = "AccurateBusinessCriticalErrorResultID";
+                    public const string GLOBALACCURATEFULFILLMENTCRITICALERRORRESULTID = "AccurateFulfillmentCriticalErrorResultID";
+                    public const string GLOBALACCURATENONCRITICALERRORRESULTID = "AccurateNonCriticalErrorResult";
+
+                    public const string GLOBALCONTROLLABLERESULTID = "ControllableResultID";
+                    public const string GLOBALCONTROLLABLEFINALUSERCRITICALERRORRESULTID = "ControllableFinalUserCriticalErrorResultID";
+                    public const string GLOBALCONTROLLABLEBUSINESSCRITICALERRORRESULTID = "ControllableBusinessCriticalErrorResultID";
+                    public const string GLOBALCONTROLLABLEFULFILLMENTCRITICALERRORRESULTID = "ControllableFulfillmentCriticalErrorResultID";
+                    public const string GLOBALCONTROLLABLENONCRITICALERRORRESULTID = "ControllableNonCriticalErrorResult";
+
+                    public const string CALIBRATOR_USER_ID = "CalibratorUserID";
+					public const string IS_EXPERTS_CALIBRATION = "IsExpertsCalibration";
+				}
+			}
+			
 			public struct AccuracyTrend
 			{
 				public const string NAME = "[dbo].[usp_ReportAccuracyTrend]";
@@ -208,17 +284,20 @@ namespace SCC_DATA.Queries
                     public const string GENERALFINALUSERCRITICALERRORRESULTID = "GeneralFinalUserCriticalErrorResultID";
 					public const string GENERALBUSINESSCRITICALERRORRESULTID = "GeneralBusinessCriticalErrorResultID";
 					public const string GENERALFULFILLMENTCRITICALERRORRESULTID = "GeneralFulfillmentCriticalErrorResultID";
+					public const string GENERALNONCRITICALERRORRESULT = "GeneralNonCriticalErrorResult";
 
                     public const string ACCURATERESULTID = "AccurateResultID";
                     public const string ACCURATEFINALUSERCRITICALERRORRESULTID = "AccurateFinalUserCriticalErrorResultID";
 					public const string ACCURATEBUSINESSCRITICALERRORRESULTID = "AccurateBusinessCriticalErrorResultID";
 					public const string ACCURATEFULFILLMENTCRITICALERRORRESULTID = "AccurateFulfillmentCriticalErrorResultID";
+                    public const string ACCURATENONCRITICALERRORRESULT = "AccurateNonCriticalErrorResult";
 
                     public const string CONTROLLABLERESULTID = "ControllableResultID";
                     public const string CONTROLLABLEFINALUSERCRITICALERRORRESULTID = "ControllableFinalUserCriticalErrorResultID";
 					public const string CONTROLLABLEBUSINESSCRITICALERRORRESULTID = "ControllableBusinessCriticalErrorResultID";
 					public const string CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID = "ControllableFulfillmentCriticalErrorResultID";
-				}
+                    public const string CONTROLLABLENONCRITICALERRORRESULT = "ControllableNonCriticalErrorResult";
+                }
 			}
 			
 			public struct AccuracyTrendByAttribute
@@ -258,6 +337,7 @@ namespace SCC_DATA.Queries
 				public struct ResultFields
 				{
 					public const string TRANSACTION_ATTRIBUTE_ID = "TransactionAttributeID";
+					public const string TRANSACTION_ID = "TransactionID";
 					public const string ATTRIBUTE_ID = "AttributeID";
 					public const string ATTRIBUTE_NAME = "AttributeName";
 					public const string SUCCESSFUL_RESULT = "SuccessfulResult";
@@ -270,12 +350,14 @@ namespace SCC_DATA.Queries
 
 				public struct Parameters
 				{
+					public const string SELECTED_ATTRIBUTE_ID = "@selectedAttributeID";
 					public const string TRANSACTION_ATTRIBUTE_ID_LIST = "@transactionAttributeIDList";
 				}
 
 				public struct ResultFields
 				{
 					public const string TRANSACTION_ATTRIBUTE_ID = "TransactionAttributeID";
+					public const string TRANSACTION_ID = "TransactionID";
 					public const string ATTRIBUTE_ID = "AttributeID";
 					public const string ATTRIBUTE_NAME = "AttributeName";
 					public const string SUCCESSFUL_RESULT = "SuccessfulResult";

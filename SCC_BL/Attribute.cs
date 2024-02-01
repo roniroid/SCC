@@ -30,6 +30,7 @@ namespace SCC_BL
 		public List<Attribute> ChildrenList { get; set; } = new List<Attribute>();
 		public int AttributeGhostID { get; set; } = 0;
 		public int ParentAttributeGhostID { get; set; } = 0;
+		public bool HasChanged { get; set; } = false;
 
 		public Attribute()
 		{
@@ -142,12 +143,7 @@ namespace SCC_BL
 			}
 		}
 
-		void SetIsControllable()
-		{
-
-		}
-
-		public Attribute(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE attributeErrorType, int formID, int attributeNameIndex, int attributeDataStartIndex, int actualGhostID, int parentAttributeGhostID, int order, int creationUserID)
+		public Attribute (DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE attributeErrorType, int formID, int attributeNameIndex, int attributeDataStartIndex, int actualGhostID, int parentAttributeGhostID, int order, int creationUserID)
         {
 			this.ErrorTypeID = (int)attributeErrorType;
 
@@ -314,6 +310,81 @@ namespace SCC_BL
 			return attributeList;
 		}
 
+		public List<Attribute> SelectHierarchyByFormID(bool simplifiedInfo = false)
+		{
+			List<Attribute> attributeList = new List<Attribute>();
+
+			using (SCC_DATA.Repositories.Attribute repoAttribute = new SCC_DATA.Repositories.Attribute())
+			{
+				DataTable dt = repoAttribute.SelectHierarchyByFormID(this.FormID);
+
+				foreach (DataRow dr in dt.Rows)
+				{
+					int?
+						parentAttributeID = null,
+						maxScore = null;
+
+					bool topDownScore = false;
+
+                    try { parentAttributeID = Convert.ToInt32(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.PARENTATTRIBUTEID]); } catch (Exception) { }
+                    try { maxScore = Convert.ToInt32(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.MAXSCORE]); } catch (Exception) { }
+                    try { topDownScore = Convert.ToBoolean(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.TOPDOWNSCORE]); } catch (Exception) { }
+
+					Attribute attribute = new Attribute(
+						Convert.ToInt32(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.ID]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.FORMID]),
+						Convert.ToString(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.NAME]),
+						Convert.ToString(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.DESCRIPTION]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.ERRORTYPEID]),
+						parentAttributeID,
+						maxScore,
+						topDownScore,
+						Convert.ToBoolean(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.HASFORCEDCOMMENT]),
+						Convert.ToBoolean(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.ISKNOWN]),
+						Convert.ToBoolean(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.ISCONTROLLABLE]),
+						Convert.ToBoolean(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.ISSCORABLE]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.ORDER]),
+						Convert.ToInt32(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectHierarchyByFormID.ResultFields.BASICINFOID])
+					);
+
+					attribute.BasicInfo = new BasicInfo(attribute.BasicInfoID);
+					attribute.BasicInfo.SetDataByID();
+
+					attribute.SetValueList();
+
+					/*if (!simplifiedInfo)
+                        attribute.SetChildrenList();*/
+
+                    attributeList.Add(attribute);
+				}
+			}
+
+			for (int i = 0; i < attributeList.Count; i++)
+            {
+                if (!simplifiedInfo)
+                {
+					attributeList[i].ChildrenList = GetChildren(attributeList[i].ID, attributeList);
+                }
+            }
+
+			return attributeList;
+		}
+
+		private List<Attribute> GetChildren(int attributeID, List<Attribute> attributeList) 
+		{
+			List<Attribute> result = new List<Attribute>();
+
+            result =
+                attributeList
+                    .Where(e =>
+                        e.ParentAttributeID == attributeID &&
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.DELETED &&
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.DISABLED)
+                    .ToList();
+
+            return result;
+		}
+
 		public int[] SelectIDArrayByFormID()
 		{
 			int[] idArray = new int[0];
@@ -439,7 +510,7 @@ namespace SCC_BL
 
 			using (SCC_DATA.Repositories.Attribute repoAttribute = new SCC_DATA.Repositories.Attribute())
 			{
-				DataTable dt = repoAttribute.SelectByLevel(this.FormID, level);
+				DataTable dt = repoAttribute.SelectByLevel(this.ID, level);
 
 				foreach (DataRow dr in dt.Rows)
 				{
@@ -488,19 +559,21 @@ namespace SCC_BL
 
 		public int[] SelectParentIDArrayByID()
 		{
-			List<int> parentAttributeIDList = new List<int>();
+			int[] parentAttributeIDList = new int[0];
 
 			using (SCC_DATA.Repositories.Attribute repoAttribute = new SCC_DATA.Repositories.Attribute())
 			{
 				DataTable dt = repoAttribute.SelectParentIDListByID(this.ID);
 
-				foreach (DataRow dr in dt.Rows)
-				{
-					parentAttributeIDList.Add(Convert.ToInt32(dr[SCC_DATA.Queries.Attribute.StoredProcedures.SelectParentIDListByID.ResultFields.ID]));
-				}
+                parentAttributeIDList = new int[dt.Rows.Count];
+
+				for (int i = 0; i < dt.Rows.Count; i++)
+                {
+                    parentAttributeIDList[i] = Convert.ToInt32(dt.Rows[i][SCC_DATA.Queries.Attribute.StoredProcedures.SelectParentIDListByID.ResultFields.ID]);
+                }
 			}
 
-			return parentAttributeIDList.ToArray();
+			return parentAttributeIDList;
 		}
 
 		public void SetDataByID()
@@ -723,7 +796,7 @@ namespace SCC_BL
 			}
 		}
 
-		public List<Attribute> GetAttributeListFromExcel(IEnumerable<DocumentFormat.OpenXml.Spreadsheet.Row> rows, SCC_BL.CustomTools.FormUploadInfo formUploadInfo, int headersCount, int formID, int creationUserID)
+		public List<Attribute> GetAttributeListFromExcel(IEnumerable<DocumentFormat.OpenXml.Spreadsheet.Row> rows, SCC_BL.CustomTools.FormUploadInfo formUploadInfo, int headersCount, int creationUserID)
 		{
 			List<Attribute> attributeList = new List<Attribute>();
 
@@ -758,7 +831,18 @@ namespace SCC_BL
 					{
 						DocumentFormat.OpenXml.Spreadsheet.Cell[] auxCurrentCells = excelParser.GetRowCells(rows.ElementAt(attributeInfo.RowIndex), headersCount).ToArray();
 
-						Attribute attribute = new Attribute(auxCurrentCells, errorTypeInfo.ErrorTypeEnum, formID, attributeInfo.ColumnIndex, errorTypeInfo.DescriptionIndex, ghostIDCount, parentList.Count > 0 ? parentList.Last().AttributeGhostID : 0, order, creationUserID);
+                        Attribute attribute = new Attribute(
+							auxCurrentCells, 
+							errorTypeInfo.ErrorTypeEnum, 
+							0, 
+							attributeInfo.ColumnIndex, 
+							errorTypeInfo.DescriptionIndex, 
+							ghostIDCount, 
+							parentList.Count > 0 
+								? parentList.Last().AttributeGhostID 
+								: 0, 
+							order, 
+							creationUserID);
 
 						attributeList.Add(attribute);
 
@@ -780,6 +864,73 @@ namespace SCC_BL
             }
 
 			return attributeList;
+		}
+
+		public static List<Catalog> GetAttributeErrorType(bool includeGlobal = false)
+		{
+			List<Catalog> errorTypeList = new List<Catalog>();
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.ATTRIBUTE_ERROR_TYPE))
+                errorTypeList =
+                    catalog.SelectByCategoryID()
+                        .Where(e => e.Active)
+                        .ToList();
+
+			if (!includeGlobal)
+			{
+				errorTypeList =
+					errorTypeList
+						.Where(e => e.ID != (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.GCE)
+						.ToList();
+            }
+
+			return errorTypeList;
+        }
+
+		public int GetLevel(int attributeID, List<Attribute> attributeList) 
+		{
+			int result = 0;
+
+			Attribute currentAttribute = attributeList.Find(e => e.ID == attributeID);
+
+			while (currentAttribute.ParentAttributeID != null && currentAttribute.ParentAttributeID != 0)
+			{
+				if (currentAttribute.ParentAttributeID > 0)
+                {
+                    result++;
+                    currentAttribute = attributeList.Find(e => e.ID == currentAttribute.ParentAttributeID);
+                }
+			}
+
+			return result;
+		}
+
+		public int GetMaxLevel(List<Attribute> attributeList) 
+		{
+			int result = 0;
+
+            for (int i = 0; i < attributeList.Count(); i++)
+            {
+				int currentLevelCount = 0;
+
+                Attribute currentAttribute = attributeList[i];
+
+                while (currentAttribute.ParentAttributeID != null && currentAttribute.ParentAttributeID != 0)
+                {
+                    if (currentAttribute.ParentAttributeID > 0)
+                    {
+                        currentLevelCount++;
+                        currentAttribute = attributeList.Find(e => e.ID == currentAttribute.ParentAttributeID);
+                    }
+                }
+
+				if (currentLevelCount > result)
+				{
+					result = currentLevelCount;
+                }
+            }
+
+			return result;
 		}
 
 		public void Dispose()
