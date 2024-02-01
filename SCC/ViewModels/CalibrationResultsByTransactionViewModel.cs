@@ -476,10 +476,13 @@ namespace SCC.ViewModels
 
             /*int totalTransactionCount = this.CalibrationSession.TransactionList.Count;
             int totalExpected = totalTransactionCount * userList.Count();*/
-            int totalUserCount = userList.Count();
-            int totalExpected = totalUserCount * this.CalibrationSession.TransactionList.Count;
 
-            foreach(CalibrationTransactionCatalog calibrationTransactionCatalog in this.CalibrationSession.TransactionList)
+            int totalUserCount = userList.Count();
+
+            //int totalExpected = totalUserCount * this.CalibrationSession.TransactionList.Count;
+            int totalExpected = 0;
+
+            foreach (CalibrationTransactionCatalog calibrationTransactionCatalog in this.CalibrationSession.TransactionList)
             {
                 List<Transaction> calibrationList = new List<Transaction>();
                 calibrationList = this.CalibrationList
@@ -494,7 +497,12 @@ namespace SCC.ViewModels
                     userList.Count(),
                     this.Form);
 
-                this.ResultsByTransactionList.Add(resultsByTransaction);
+                //if (resultsByTransaction.CalibrationList.Count() > 0)
+                //{
+                    this.ResultsByTransactionList.Add(resultsByTransaction);
+                //}
+
+                totalExpected += calibrationList.Count();
             }
 
             this.FUCE = new Result(SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE, this.CalibrationList, this.ExpertEvaluationList, totalExpected, this.Form);

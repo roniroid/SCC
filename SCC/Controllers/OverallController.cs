@@ -1,11 +1,17 @@
-﻿using SCC_BL;
+﻿using PdfSharp;
+using PdfSharp.Pdf;
+using SCC_BL;
 using SCC_BL.Settings;
 using SCC_BL.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using System.Web;
 using System.Web.Mvc;
+using TheArtOfDev.HtmlRenderer.Core;
+using TheArtOfDev.HtmlRenderer.PdfSharp;
 
 namespace SCC.Controllers
 {
@@ -717,6 +723,64 @@ namespace SCC.Controllers
         protected void ExecuteInitialActions()
         {
             ProcessPrograms();
+        }
+
+        private CssData CssFromFiles(string path, string[] cssFileNames)
+        {
+            string resultCss = "";
+
+            foreach (string fileName in cssFileNames)
+            {
+                string filePath =
+                    AppDomain.CurrentDomain.BaseDirectory +
+                    System.Web.Configuration.WebConfigurationManager.AppSettings[SCC_BL.Settings.Overall.TRANSACTION_DOWNLOAD_CSS_FILES_PATH] +
+                    fileName;
+
+                if (!string.IsNullOrEmpty(resultCss))
+                {
+                    resultCss += "\n";
+                }
+
+                try
+                {
+                    resultCss += System.IO.File.ReadAllText(filePath);
+                }
+                catch (Exception ex)
+                {
+                }
+            }
+
+            return PdfGenerator.ParseStyleSheet(resultCss);
+        }
+
+        public void ProduceReportOutput(string filePath, string htmlContent)
+        {
+            try
+            {
+                CssData css = 
+                    CssFromFiles(
+                        System.Web.Configuration.WebConfigurationManager.AppSettings[SCC_BL.Settings.Overall.TRANSACTION_DOWNLOAD_CSS_FILES_PATH], 
+                        new string[] { "download-pdf.css" });
+
+                PdfDocument pdf = PdfGenerator.GeneratePdf(htmlContent, PageSize.Letter, 30, css);
+                pdf.Save(filePath);
+                pdf.Close();
+            }
+            catch (Exception exc)
+            {
+                if (exc is ThreadAbortException) return;
+                throw new Exception(
+                    SCC_BL.Results.Transaction.DownloadPDF.Error.LOCAL_LOG
+                        .Replace(
+                            SCC_BL.Results.CommonElements.REPLACE_EXCEPTION_MESSAGE,
+                            exc.ToString()));
+            }
+        }
+
+        public FileResult ConvertAndDownloadToPDF(string filePath, string htmlContent)
+        {
+            ProduceReportOutput(filePath, htmlContent);
+            return DownLoadFileFromServer(filePath, SCC_BL.Settings.AppValues.File.ContentType.PDF_FILES);
         }
     }
 }

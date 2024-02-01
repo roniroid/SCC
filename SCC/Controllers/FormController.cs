@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.Office2016.Excel;
 using SCC.ViewModels;
 using SCC_BL;
+using SCC_BL.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -776,6 +777,27 @@ namespace SCC.Controllers
             }
 
             return RedirectToAction(nameof(FormController.FormBinding), _mainControllerName);
+        }
+
+        [HttpPost]
+        public ActionResult ExportFormToExcel(int formID)
+        {
+            Form currentForm = new Form(formID);
+            currentForm.SetDataByID();
+
+            string newFileName = $"Plantilla de formulario - { currentForm.Name } {DateTime.Now.ToString("yyyyMMddHHmmss")}.xlsx";
+
+            string filePath =
+                AppDomain.CurrentDomain.BaseDirectory +
+                SCC_BL.Settings.Paths.Form.FORM_EXPORT_FOLDER.Substring(SCC_BL.Settings.Paths.Form.FORM_EXPORT_FOLDER.IndexOf('/') + 1) +
+                newFileName;
+
+            using (ExcelParser excelParser = new ExcelParser())
+            {
+                excelParser.ExportFormToExcel(currentForm, filePath);
+            }
+
+            return DownLoadFileFromServer(filePath, SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX);
         }
     }
 }

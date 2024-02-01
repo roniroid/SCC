@@ -11,6 +11,7 @@ namespace SCC_BL.Settings
         public const int WRITE_LOG_MAX_ATTEMPTS = 10;
         public const string DEFAULT_LOG_NAME = "SCC";
         public const string LOG_PATH = "LOG_PATH";
+        public const string TRANSACTION_DOWNLOAD_CSS_FILES_PATH = "TRANSACTION_DOWNLOAD_CSS_FILES_PATH";
         public const string TEST_MAIL = "TEST_MAIL";
         public const string LOG_DATE_FORMAT = "_yyyyMMdd";
         public const string SHOW_MESSAGE = "(() => { ShowMessage(%title%, %content%, %footerContent%, %type%); })();";

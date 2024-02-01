@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using SCC.ViewModels;
 using SCC_BL;
 using SCC_BL.Tools;
@@ -9,10 +10,21 @@ using System;
 using System.Collections.Generic;
 using System.Data.OleDb;
 using System.Linq;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 using static SCC_BL.Settings.AppValues.ViewData.Transaction.FormView;
+
+using TheArtOfDev.HtmlRenderer.Core;
+using System.IO;
+using TheArtOfDev.HtmlRenderer.PdfSharp;
+using TheArtOfDev.HtmlRenderer.Core.Entities;
+using PdfSharp;
+using PdfSharp.Pdf;
+using static SCC_BL.Settings.AppValues.ViewData.Calibration.Edit;
+using DocumentFormat.OpenXml.Presentation;
 
 namespace SCC.Controllers
 {
@@ -192,6 +204,7 @@ namespace SCC.Controllers
                 {
                     transactionFormViewModel.Form = new Form(formID.Value);
                     transactionFormViewModel.Form.SetDataByID();
+                    LoadCalibratedTransactionCallID();
                     return PartialView(transactionFormViewModel);
                 }
                 else
@@ -201,40 +214,58 @@ namespace SCC.Controllers
                     {
                         transactionFormViewModel.Form.ID = programFormCatalog.SelectByProgramID().LastOrDefault().FormID;
                         transactionFormViewModel.Form.SetDataByID();
+                        LoadCalibratedTransactionCallID();
                         return PartialView(transactionFormViewModel);
                     }
                 }
 
-                if (calibratedTransactionID != null)
-                {
-                    string callID = string.Empty;
-
-                    int callIDCustomControlID =
-                        transactionFormViewModel.Form.CustomControlList
-                            .Where(e =>
-                                e.Label.Trim().Substring(0, 2).ToUpper().Equals("ID") &&
-                                e.Label.ToLower().Contains("llamada") &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DISABLED)
-                            .FirstOrDefault().ID;
-
-                    int callIDCustomFieldID =
-                        transactionFormViewModel.Form.CustomFieldList
-                            .Where(e =>
-                                e.CustomControlID == callIDCustomControlID &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED &&
-                                e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED)
-                            .FirstOrDefault().ID;
-
-                    callID = currentCalibratedTransaction.CustomFieldList
-                        .Where(e => e.CustomFieldID == callIDCustomFieldID)
-                        .FirstOrDefault().Comment;
-
-                    ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.CustomControlID.NAME] = callIDCustomControlID;
-                    ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.Content.NAME] = callID;
-                }
-
                 SaveProcessingInformation<SCC_BL.Results.Transaction.FormView.Error>();
+
+                void LoadCalibratedTransactionCallID()
+                {
+                    if (calibratedTransactionID != null)
+                    {
+                        string callID = string.Empty;
+
+                        if (currentCalibratedTransaction.CustomFieldList.Count() <= 0)
+                        {
+                            currentCalibratedTransaction.CustomFieldList = 
+                                TransactionCustomFieldCatalog.TransactionCustomFieldCatalogWithTransactionID(currentCalibratedTransaction.ID)
+                                    .SelectByTransactionID();
+                        }
+
+                        try
+                        {
+                            int callIDCustomControlID =
+                                transactionFormViewModel.Form.CustomControlList
+                                    .Where(e =>
+                                        e.Label.Trim().Substring(0, 2).ToUpper().Equals("ID") &&
+                                        e.Label.ToLower().Contains("llamada") &&
+                                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED &&
+                                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DISABLED)
+                                    .FirstOrDefault().ID;
+
+                            int callIDCustomFieldID =
+                                transactionFormViewModel.Form.CustomFieldList
+                                    .Where(e =>
+                                        e.CustomControlID == callIDCustomControlID &&
+                                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED &&
+                                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED)
+                                    .FirstOrDefault().ID;
+
+                            callID = currentCalibratedTransaction.CustomFieldList
+                                .Where(e => 
+                                e.CustomFieldID == callIDCustomFieldID)
+                                .FirstOrDefault().Comment;
+
+                            ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.CustomControlID.NAME] = callIDCustomControlID;
+                            ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.Content.NAME] = callID;
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -4686,6 +4717,987 @@ namespace SCC.Controllers
             }
 
             return DownLoadFileFromServer(filePath, SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX);
+        }
+
+        [HttpPost]
+        public ActionResult ExportTransactionToPDF(int transactionID)
+        {
+            string newFileName = SCC_BL.Settings.AppValues.Export.Transaction.PDF.NAME;
+            string now = DateTime.Now.ToString(SCC_BL.Settings.AppValues.Export.Transaction.PDF.REPLACE_CONTENT);
+
+            newFileName = 
+                newFileName
+                    .Replace(SCC_BL.Settings.AppValues.Export.Transaction.PDF.REPLACE_CONTENT, now);
+
+            string filePath =
+                AppDomain.CurrentDomain.BaseDirectory +
+                SCC_BL.Settings.Paths.Transaction.TRANSACTION_EXPORT_PDF_FOLDER.Substring(SCC_BL.Settings.Paths.Transaction.TRANSACTION_EXPORT_PDF_FOLDER.IndexOf('/') + 1) +
+                newFileName;
+
+            Transaction transaction = new Transaction(transactionID);
+            transaction.SetDataByID();
+
+            string htmlContent = GenerateHTMLFromTransaction(transaction);
+
+            return Content(htmlContent);
+            return ConvertAndDownloadToPDF(filePath, htmlContent);
+        }
+
+        private string GenerateHTMLFromTransaction(Transaction transaction)
+        {
+            Form form = new Form(transaction.FormID);
+            form.SetDataByID();
+
+            String version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+
+            string cssFilePath = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.CSS_PATH;
+            cssFilePath = cssFilePath.Substring(cssFilePath.IndexOf('/') + 1);
+
+            cssFilePath =
+                AppDomain.CurrentDomain.BaseDirectory +
+                cssFilePath;
+
+            string cssContent = System.IO.File.ReadAllText(cssFilePath);
+
+            string filePath = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.PATH;
+            filePath = filePath.Substring(filePath.IndexOf('/') + 1);
+
+            filePath =
+                AppDomain.CurrentDomain.BaseDirectory +
+                filePath;
+
+            string htmlContent = System.IO.File.ReadAllText(filePath);
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.STYLE_CONTENT,
+                        cssContent);
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.VERSION,
+                        version);
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_IDENTIFIER,
+                        transaction.Identifier);
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.PROGRAM_NAME,
+                        transaction.Program.Name);
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.EVALUATED_USER_PERSON_NAME,
+                        $"{ transaction.UserToEvaluate.Person.SurName }, { transaction.UserToEvaluate.Person.FirstName } ({ transaction.UserToEvaluate.Person.Identification })");
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.EVALUATOR_USER_PERSON_NAME,
+                        $"{ transaction.EvaluatorUser.Person.SurName }, { transaction.EvaluatorUser.Person.FirstName } ({ transaction.EvaluatorUser.Person.Identification })");
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.EVALUATION_DATE,
+                        transaction.EvaluationDate.ToString("MMM dd, yyyy, hh:mm:ss tt"));
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_DATE,
+                        transaction.TransactionDate.ToString("MMM dd, yyyy, hh:mm:ss tt"));
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_COMMENT,
+                        transaction.Comment);
+
+            string disputationComments = string.Empty;
+            string invalidationComments = string.Empty;
+            string devolutionComments = string.Empty;
+            string strengthComments = string.Empty;
+            string improvementStepsComments = string.Empty;
+
+            string finalTransactionCommentariesContent = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.FULL_TRANSACTION_COMMENTARIES_CONTENT;
+
+            string disputationCommentariesContent = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_DISPUTATION_CONTAINER;
+            string invalidationCommentariesContent = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_INVALIDATION_CONTAINER;
+            string devolutionCommentariesContent = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_DEVOLUTION_CONTAINER;
+
+            for (int i = 0; i < transaction.DisputeCommentaries.Count; i++)
+            {
+                TransactionCommentary currentTransactionCommentary = transaction.DisputeCommentaries[i];
+                User currentTransactionCommentaryCreator = new SCC_BL.User(currentTransactionCommentary.BasicInfo.CreationUserID.Value);
+
+                currentTransactionCommentaryCreator.SetDataByID();
+
+                disputationComments +=
+                    $"{ i + 1 } - [{ currentTransactionCommentaryCreator.Person.SurName }, { currentTransactionCommentaryCreator.Person.FirstName } - { currentTransactionCommentary.BasicInfo.CreationDate.ToString("dd-MM-yyyy hh:mm:ss tt") }] " + currentTransactionCommentary.Comment + "\r\n";
+            }
+
+            disputationCommentariesContent =
+                disputationCommentariesContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_DISPUTATION_COMMENT_CONTENT,
+                        !string.IsNullOrEmpty(disputationComments) ? disputationComments : string.Empty);
+
+            finalTransactionCommentariesContent =
+                finalTransactionCommentariesContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_DISPUTATION_CONTAINER_CONTENT,
+                        !string.IsNullOrEmpty(disputationComments) ? disputationCommentariesContent : string.Empty);
+
+            for (int i = 0; i < transaction.InvalidationCommentaries.Count; i++)
+            {
+                TransactionCommentary currentTransactionCommentary = transaction.InvalidationCommentaries[i];
+                User currentTransactionCommentaryCreator = new SCC_BL.User(currentTransactionCommentary.BasicInfo.CreationUserID.Value);
+
+                currentTransactionCommentaryCreator.SetDataByID();
+
+                invalidationComments +=
+                    $"{ i + 1 } - [{currentTransactionCommentaryCreator.Person.SurName}, {currentTransactionCommentaryCreator.Person.FirstName} - {currentTransactionCommentary.BasicInfo.CreationDate.ToString("dd-MM-yyyy hh:mm:ss tt")}] " + currentTransactionCommentary.Comment + "\r\n";
+            }
+
+            invalidationCommentariesContent =
+                invalidationCommentariesContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_INVALIDATION_COMMENT_CONTENT,
+                        !string.IsNullOrEmpty(invalidationComments) ? invalidationComments : string.Empty);
+
+            finalTransactionCommentariesContent =
+                finalTransactionCommentariesContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_INVALIDATION_CONTAINER_CONTENT,
+                        !string.IsNullOrEmpty(invalidationComments) ? invalidationCommentariesContent : string.Empty);
+
+            for (int i = 0; i < transaction.DevolutionCommentaries.Count; i++)
+            {
+                TransactionCommentary currentTransactionCommentary = transaction.DevolutionCommentaries[i];
+                User currentTransactionCommentaryCreator = new SCC_BL.User(currentTransactionCommentary.BasicInfo.CreationUserID.Value);
+
+                currentTransactionCommentaryCreator.SetDataByID();
+
+                devolutionComments +=
+                    $"{ i + 1 } - [{currentTransactionCommentaryCreator.Person.SurName}, {currentTransactionCommentaryCreator.Person.FirstName} - {currentTransactionCommentary.BasicInfo.CreationDate.ToString("dd-MM-yyyy hh:mm:ss tt")}] " + currentTransactionCommentary.Comment + "\r\n";
+            }
+
+            devolutionCommentariesContent =
+                devolutionCommentariesContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_DEVOLUTION_COMMENT_CONTENT,
+                        !string.IsNullOrEmpty(devolutionComments) ? devolutionComments : string.Empty);
+
+            for (int i = 0; i < transaction.DevolutionUserStrengths.Count; i++)
+            {
+                TransactionCommentary currentTransactionCommentary = transaction.DevolutionUserStrengths[i];
+                User currentTransactionCommentaryCreator = new SCC_BL.User(currentTransactionCommentary.BasicInfo.CreationUserID.Value);
+
+                currentTransactionCommentaryCreator.SetDataByID();
+
+                strengthComments +=
+                    $"{ i + 1 } - [{currentTransactionCommentaryCreator.Person.SurName}, {currentTransactionCommentaryCreator.Person.FirstName} - {currentTransactionCommentary.BasicInfo.CreationDate.ToString("dd-MM-yyyy hh:mm:ss tt")}] " + currentTransactionCommentary.Comment + "\r\n";
+            }
+
+            devolutionCommentariesContent =
+                devolutionCommentariesContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_DEVOLUTION_STRENGTHS_CONTENT,
+                        !string.IsNullOrEmpty(strengthComments) ? strengthComments : string.Empty);
+
+            for (int i = 0; i < transaction.DevolutionImprovementSteps.Count; i++)
+            {
+                TransactionCommentary currentTransactionCommentary = transaction.DevolutionImprovementSteps[i];
+                User currentTransactionCommentaryCreator = new SCC_BL.User(currentTransactionCommentary.BasicInfo.CreationUserID.Value);
+
+                currentTransactionCommentaryCreator.SetDataByID();
+
+                improvementStepsComments +=
+                    $"{ i + 1 } - [{currentTransactionCommentaryCreator.Person.SurName}, {currentTransactionCommentaryCreator.Person.FirstName} - {currentTransactionCommentary.BasicInfo.CreationDate.ToString("dd-MM-yyyy hh:mm:ss tt")}] " + currentTransactionCommentary.Comment + "\r\n";
+            }
+
+            devolutionCommentariesContent =
+                devolutionCommentariesContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_DEVOLUTION_IMPROVEMENT_STEPS_CONTENT,
+                        !string.IsNullOrEmpty(improvementStepsComments) ? improvementStepsComments : string.Empty);
+
+            finalTransactionCommentariesContent =
+                finalTransactionCommentariesContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.TRANSACTION_DEVOLUTION_CONTAINER_CONTENT,
+                        (
+                            !string.IsNullOrEmpty(devolutionComments) ||
+                            !string.IsNullOrEmpty(strengthComments) ||
+                            !string.IsNullOrEmpty(improvementStepsComments)) 
+                                ? devolutionCommentariesContent 
+                                : string.Empty);
+
+            if (
+                !string.IsNullOrEmpty(disputationComments) ||
+                !string.IsNullOrEmpty(invalidationComments) ||
+                !string.IsNullOrEmpty(devolutionComments) ||
+                !string.IsNullOrEmpty(strengthComments) ||
+                !string.IsNullOrEmpty(improvementStepsComments)
+            )
+            {
+                htmlContent =
+                    htmlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.FULL_TRANSACTION_COMMENTARIES,
+                            finalTransactionCommentariesContent);
+            }
+            else
+            {
+                htmlContent =
+                    htmlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Commentaries.FULL_TRANSACTION_COMMENTARIES,
+                            string.Empty);
+            }
+
+            switch ((SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR)transaction.ControllableFinalUserCriticalErrorResultID)
+            {
+                case SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR.SUCCESS:
+                    htmlContent =
+                        htmlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT_FUCE,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResultFUCE.SUCCESS);
+                    break;
+                case SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL_USER_CRITICAL_ERROR.FAIL:
+                    htmlContent =
+                        htmlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT_FUCE,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResultFUCE.FAIL);
+                    break;
+                default:
+                    break;
+            }
+
+            switch ((SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR)transaction.ControllableBusinessCriticalErrorResultID)
+            {
+                case SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR.SUCCESS:
+                    htmlContent =
+                        htmlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT_BCE,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResultBCE.SUCCESS);
+                    break;
+                case SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_BUSINESS_CRITICAL_ERROR.FAIL:
+                    htmlContent =
+                        htmlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT_BCE,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResultBCE.FAIL);
+                    break;
+                default:
+                    break;
+            }
+
+            switch ((SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR)transaction.ControllableFulfillmentCriticalErrorResultID)
+            {
+                case SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.SUCCESS:
+                    htmlContent =
+                        htmlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT_FCE,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResultFCE.SUCCESS);
+                    break;
+                case SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FULFILLMENT_CRITICAL_ERROR.FAIL:
+                    htmlContent =
+                        htmlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT_FCE,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResultFCE.FAIL);
+                    break;
+                default:
+                    break;
+            }
+
+            if (transaction.ControllableNonCriticalErrorResult >= SCC_BL.Settings.AppValues.TRANSACTION_MINIMUM_NCE_SCORE)
+            {
+                htmlContent =
+                    htmlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT_NCE,
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResultNCE.SUCCESS);
+            }
+            else
+            {
+                htmlContent =
+                    htmlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT_NCE,
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResultNCE.FAIL);
+            }
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResultNCE.REPLACE_NCR_SCORE,
+                        transaction.ControllableNonCriticalErrorResult.ToString());
+
+            switch ((SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL)transaction.ControllableResultID)
+            {
+                case SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL.SUCCESS:
+                    htmlContent =
+                        htmlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResult.SUCCESS);
+                    break;
+                case SCC_BL.DBValues.Catalog.TRANSACTION_CONTROLLABLE_RESULT_FINAL.FAIL:
+                    htmlContent =
+                        htmlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_GLOBAL_RESULT,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TransactionResults.TransactionResult.FAIL);
+                    break;
+                default:
+                    break;
+            }
+
+            string customControlContent = string.Empty;
+
+            for (int i = 0; i < transaction.CustomFieldList.Count; i++)
+            {
+                TransactionCustomFieldCatalog currentTransactionCustomFieldCatalog = transaction.CustomFieldList[i];
+
+                if (currentTransactionCustomFieldCatalog.CustomField == null)
+                {
+                    currentTransactionCustomFieldCatalog.SetCustomField();
+                }
+
+                CustomControl currentCustomControl = new CustomControl(currentTransactionCustomFieldCatalog.CustomField.CustomControlID);
+
+                if (form.CustomControlList.Where(e => e.ID == currentCustomControl.ID).Count() > 0)
+                {
+                    currentCustomControl = form.CustomControlList.Where(e => e.ID == currentCustomControl.ID).FirstOrDefault();
+                }
+                else
+                {
+                    currentCustomControl.SetDataByID();
+                }
+
+                const string CUSTOM_CONTROL_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.CustomControl.CONTENT;
+                string currentCustomControlContent = CUSTOM_CONTROL_CONTENT;
+
+                switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)currentCustomControl.ControlTypeID)
+                {
+                    case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
+                    case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_AREA:
+                        currentCustomControlContent =
+                            currentCustomControlContent
+                                .Replace(
+                                    SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.CustomControl.CUSTOM_CONTROL_COUNT,
+                                    (i + 1).ToString());
+
+                        currentCustomControlContent =
+                            currentCustomControlContent
+                                .Replace(
+                                    SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.CustomControl.CUSTOM_CONTROL_LABEL,
+                                    currentCustomControl.Label);
+
+                        currentCustomControlContent =
+                            currentCustomControlContent
+                                .Replace(
+                                    SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.CustomControl.CUSTOM_CONTROL_VALUE,
+                                    currentTransactionCustomFieldCatalog.Comment);
+                        break;
+                    case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.CHECKBOX:
+                    case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.RADIO_BUTTON:
+                    case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
+                        CustomControlValueCatalog currentCustomControlValueCatalog = new CustomControlValueCatalog(currentTransactionCustomFieldCatalog.ValueID.Value);
+
+                        if (currentCustomControl.ValueList.Where(e => e.ID == currentCustomControlValueCatalog.ID).Count() > 0)
+                        {
+                            currentCustomControlValueCatalog = currentCustomControl.ValueList.Where(e => e.ID == currentCustomControlValueCatalog.ID).FirstOrDefault();
+                        }
+                        else
+                        {
+                            currentCustomControlValueCatalog.SetDataByID();
+                        }
+
+                        currentCustomControlContent =
+                            currentCustomControlContent
+                                .Replace(
+                                    SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.CustomControl.CUSTOM_CONTROL_COUNT,
+                                    (i + 1).ToString());
+
+                        currentCustomControlContent =
+                            currentCustomControlContent
+                                .Replace(
+                                    SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.CustomControl.CUSTOM_CONTROL_LABEL,
+                                    currentCustomControl.Label);
+
+                        currentCustomControlContent =
+                            currentCustomControlContent
+                                .Replace(
+                                    SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.CustomControl.CUSTOM_CONTROL_VALUE,
+                                    currentCustomControlValueCatalog != null ? currentCustomControlValueCatalog.Name : string.Empty);
+                        break;
+                    default:
+                        break;
+                }
+
+                customControlContent += currentCustomControlContent;
+            }
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_CUSTOM_CONTROL_CONTENT,
+                        customControlContent);
+
+            string finalAttributeContent = string.Empty;
+
+            const string ATTRIBUTE_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.CONTENT;
+            const string ATTRIBUTE_TYPE_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.AttributeType.CONTENT;
+
+            List<SCC_BL.Attribute> attributeListFUCE = new List<SCC_BL.Attribute>();
+            List<SCC_BL.Attribute> attributeListBCE = new List<SCC_BL.Attribute>();
+            List<SCC_BL.Attribute> attributeListFCE = new List<SCC_BL.Attribute>();
+            List<SCC_BL.Attribute> attributeListNCE = new List<SCC_BL.Attribute>();
+
+            attributeListFUCE =
+                form.AttributeList
+                    .Where(e =>
+                        e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE)
+                    .ToList();
+
+            attributeListBCE =
+                form.AttributeList
+                    .Where(e =>
+                        e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE)
+                    .ToList();
+
+            attributeListFCE =
+                form.AttributeList
+                    .Where(e =>
+                        e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE)
+                    .ToList();
+
+            attributeListNCE =
+                form.AttributeList
+                    .Where(e =>
+                        e.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
+                    .ToList();
+
+            string currentAttributeContent = ATTRIBUTE_CONTENT;
+
+            if (
+                transaction.AttributeList
+                    .Where(e => 
+                        attributeListFUCE
+                            .Select(s => s.ID)
+                        .Contains(e.AttributeID))
+                    .Count() > 0)
+            {
+                string attributeControlContent = string.Empty;
+                AttributeValueCatalog currentParentAttributeValueCatalog = null;
+                TransactionAttributeCatalog currentTransactionAttributeCatalog = null;
+
+                foreach (SCC_BL.Attribute currentAttribute in attributeListFUCE)
+                {
+                    (string, AttributeValueCatalog, TransactionAttributeCatalog) result = GetAttributeContent(currentAttribute);
+
+                    string attributeContent = result.Item1;
+                    currentTransactionAttributeCatalog = result.Item3;
+
+                    bool isParent = currentAttribute.ParentAttributeID == 0 || currentAttribute.ParentAttributeID == null;
+
+                    if (isParent)
+                    {
+                        attributeControlContent += attributeContent;
+                        currentParentAttributeValueCatalog = result.Item2;
+                    }
+                    else if (currentParentAttributeValueCatalog != null)
+                    {
+                        if (currentParentAttributeValueCatalog.TriggersChildVisualization && currentTransactionAttributeCatalog.Checked)
+                        {
+                            attributeControlContent += attributeContent;
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(attributeControlContent))
+                {
+                    string attributeTypeContent = ATTRIBUTE_TYPE_CONTENT
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_TYPE,
+                            "Error crítico de usuario final");
+
+                    currentAttributeContent = ATTRIBUTE_CONTENT;
+
+                    currentAttributeContent =
+                        currentAttributeContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_PARENT_ATTRIBUTE_TYPE_CONTENT,
+                                attributeTypeContent);
+
+                    currentAttributeContent =
+                        currentAttributeContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_BODY_CONTENT,
+                                attributeControlContent);
+
+                    finalAttributeContent += currentAttributeContent;
+                }
+            }
+
+            if (
+                transaction.AttributeList
+                    .Where(e =>
+                        attributeListBCE
+                            .Select(s => s.ID)
+                        .Contains(e.AttributeID))
+                    .Count() > 0)
+            {
+                string attributeControlContent = string.Empty;
+                AttributeValueCatalog currentParentAttributeValueCatalog = null;
+                TransactionAttributeCatalog currentTransactionAttributeCatalog = null;
+
+                foreach (SCC_BL.Attribute currentAttribute in attributeListBCE)
+                {
+                    (string, AttributeValueCatalog, TransactionAttributeCatalog) result = GetAttributeContent(currentAttribute);
+
+                    string attributeContent = result.Item1;
+                    currentTransactionAttributeCatalog = result.Item3;
+
+                    bool isParent = currentAttribute.ParentAttributeID == 0 || currentAttribute.ParentAttributeID == null;
+
+                    if (isParent)
+                    {
+                        attributeControlContent += attributeContent;
+                        currentParentAttributeValueCatalog = result.Item2;
+                    }
+                    else if (currentParentAttributeValueCatalog != null)
+                    {
+                        if (currentParentAttributeValueCatalog.TriggersChildVisualization && currentTransactionAttributeCatalog.Checked)
+                        {
+                            attributeControlContent += attributeContent;
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(attributeControlContent))
+                {
+                    string attributeTypeContent = ATTRIBUTE_TYPE_CONTENT
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_TYPE,
+                            "Error crítico de negocio");
+
+                    currentAttributeContent = ATTRIBUTE_CONTENT;
+
+                    currentAttributeContent =
+                        currentAttributeContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_PARENT_ATTRIBUTE_TYPE_CONTENT,
+                                attributeTypeContent);
+
+                    currentAttributeContent =
+                        currentAttributeContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_BODY_CONTENT,
+                                attributeControlContent);
+
+                    finalAttributeContent += currentAttributeContent;
+                }
+            }
+
+            if (
+                transaction.AttributeList
+                    .Where(e =>
+                        attributeListFCE
+                            .Select(s => s.ID)
+                        .Contains(e.AttributeID))
+                    .Count() > 0)
+            {
+                string attributeControlContent = string.Empty;
+                AttributeValueCatalog currentParentAttributeValueCatalog = null;
+                TransactionAttributeCatalog currentTransactionAttributeCatalog = null;
+
+                foreach (SCC_BL.Attribute currentAttribute in attributeListFCE)
+                {
+                    (string, AttributeValueCatalog, TransactionAttributeCatalog) result = GetAttributeContent(currentAttribute);
+
+                    string attributeContent = result.Item1;
+                    currentTransactionAttributeCatalog = result.Item3;
+
+                    bool isParent = currentAttribute.ParentAttributeID == 0 || currentAttribute.ParentAttributeID == null;
+
+                    if (isParent)
+                    {
+                        attributeControlContent += attributeContent;
+                        currentParentAttributeValueCatalog = result.Item2;
+                    }
+                    else if (currentParentAttributeValueCatalog != null)
+                    {
+                        if (currentParentAttributeValueCatalog.TriggersChildVisualization && currentTransactionAttributeCatalog.Checked)
+                        {
+                            attributeControlContent += attributeContent;
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(attributeControlContent))
+                {
+                    string attributeTypeContent = ATTRIBUTE_TYPE_CONTENT
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_TYPE,
+                            "Error crítico de cumplimiento");
+
+                    currentAttributeContent = ATTRIBUTE_CONTENT;
+
+                    currentAttributeContent =
+                        currentAttributeContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_PARENT_ATTRIBUTE_TYPE_CONTENT,
+                                attributeTypeContent);
+
+                    currentAttributeContent =
+                        currentAttributeContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_BODY_CONTENT,
+                                attributeControlContent);
+
+                    finalAttributeContent += currentAttributeContent;
+                }
+            }
+
+            if (
+                transaction.AttributeList
+                    .Where(e =>
+                        attributeListNCE
+                            .Select(s => s.ID)
+                        .Contains(e.AttributeID))
+                    .Count() > 0)
+            {
+                string attributeControlContent = string.Empty;
+                TransactionAttributeCatalog currentParentTransactionAttributeCatalog = null;
+                TransactionAttributeCatalog currentTransactionAttributeCatalog = null;
+
+                foreach (SCC_BL.Attribute currentAttribute in attributeListNCE)
+                {
+                    (string, AttributeValueCatalog, TransactionAttributeCatalog) result = GetAttributeContent(currentAttribute);
+
+                    string attributeContent = result.Item1;
+                    currentTransactionAttributeCatalog = result.Item3;
+
+                    bool isParent = currentAttribute.ParentAttributeID == 0 || currentAttribute.ParentAttributeID == null;
+
+                    if (isParent)
+                    {
+                        attributeControlContent += attributeContent;
+                        currentParentTransactionAttributeCatalog = result.Item3;
+                    }
+                    else if (currentParentTransactionAttributeCatalog != null)
+                    {
+                        if (currentParentTransactionAttributeCatalog.Checked && currentTransactionAttributeCatalog.Checked)
+                        {
+                            attributeControlContent += attributeContent;
+                        }
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(attributeControlContent))
+                {
+                    string attributeTypeContent = ATTRIBUTE_TYPE_CONTENT
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_TYPE,
+                            "Error no crítico");
+
+                    currentAttributeContent = ATTRIBUTE_CONTENT;
+
+                    currentAttributeContent =
+                        currentAttributeContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_PARENT_ATTRIBUTE_TYPE_CONTENT,
+                                attributeTypeContent);
+
+                    currentAttributeContent =
+                        currentAttributeContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_BODY_CONTENT,
+                                attributeControlContent);
+
+                    finalAttributeContent += currentAttributeContent;
+                }
+            }
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_ATTRIBUTE_CONTENT,
+                        finalAttributeContent);
+
+            string fullBusinessIntelligenceContent = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.FULL_TRANSACTION_BUSINESS_INTELLIGENCE_CONTENT;
+
+            string finalBusinessIntelligenceContent = string.Empty;
+
+            List<BusinessIntelligenceField> businessIntelligenceFieldList = new List<BusinessIntelligenceField>();
+
+            businessIntelligenceFieldList = form.BusinessIntelligenceFieldList;
+
+            if (
+                transaction.BIFieldList
+                    .Where(e =>
+                        businessIntelligenceFieldList
+                            .Select(s => s.ID)
+                        .Contains(e.BIFieldID))
+                    .Count() > 0)
+            {
+                string businessIntelligenceControlContent = string.Empty;
+                TransactionBIFieldCatalog currentParentTransactionBIFieldCatalog = null;
+                TransactionBIFieldCatalog currentTransactionBIFieldCatalog = null;
+
+                foreach (BusinessIntelligenceField currentBusinessIntelligenceField in businessIntelligenceFieldList)
+                {
+                    (string, TransactionBIFieldCatalog) result = GetBusinessIntelligenceContent(currentBusinessIntelligenceField);
+
+                    string businessIntelligenceContent = result.Item1;
+                    currentTransactionBIFieldCatalog = result.Item2;
+
+                    bool isParent = currentBusinessIntelligenceField.ParentBIFieldID == 0 || currentBusinessIntelligenceField.ParentBIFieldID == null;
+
+                    if (isParent)
+                    {
+                        businessIntelligenceControlContent += businessIntelligenceContent;
+                        currentParentTransactionBIFieldCatalog = result.Item2;
+                    }
+                    else if (currentParentTransactionBIFieldCatalog != null)
+                    {
+                        if (currentParentTransactionBIFieldCatalog.Checked && currentTransactionBIFieldCatalog.Checked)
+                        {
+                            businessIntelligenceControlContent += businessIntelligenceContent;
+                        }
+                    }
+                }
+            }
+
+            fullBusinessIntelligenceContent =
+                fullBusinessIntelligenceContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.ReplaceableValues.TRANSACTION_BUSINESS_INTELLIGENCE_CONTENT,
+                        finalBusinessIntelligenceContent);
+
+            htmlContent =
+                htmlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.FULL_TRANSACTION_BUSINESS_INTELLIGENCE,
+                        !string.IsNullOrEmpty(finalBusinessIntelligenceContent) ? finalBusinessIntelligenceContent : string.Empty);
+
+            return htmlContent;
+
+            (string, AttributeValueCatalog, TransactionAttributeCatalog) GetAttributeContent(SCC_BL.Attribute currentAttribute)
+            {
+                const string ATTRIBUTE_PARENT_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ParentAttribute.CONTENT;
+                const string ATTRIBUTE_CHILD_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ChildAttribute.CONTENT;
+
+                string attributeControlContent = string.Empty;
+                AttributeValueCatalog currentAttributeValueCatalog = null;
+
+                TransactionAttributeCatalog currentTransactionAttributeCatalog =
+                    transaction.AttributeList
+                        .Where(e =>
+                            e.AttributeID == currentAttribute.ID)
+                        .FirstOrDefault();
+
+                if (currentTransactionAttributeCatalog == null)
+                {
+                    return (attributeControlContent, currentAttributeValueCatalog, currentTransactionAttributeCatalog);
+                }
+
+                bool isParent = currentAttribute.ParentAttributeID == 0 || currentAttribute.ParentAttributeID == null;
+
+                string currentAttributeName = currentAttribute.Name;
+                string currentAttributeValue = string.Empty;
+                string currentAttributeComment = currentTransactionAttributeCatalog.Comment;
+                bool currentAttributeChecked = currentTransactionAttributeCatalog.Checked;
+
+                if (currentAttribute.ErrorTypeID == (int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
+                {
+                    if (currentAttribute.MaxScore > 0)
+                    {
+                        if (currentAttributeChecked)
+                        {
+                            currentAttributeValue = currentAttribute.MaxScore.ToString() + " pts";
+                        }
+                        else
+                        {
+                            currentAttributeValue = "0 pts";
+                        }
+                    }
+                }
+                else if (isParent)
+                {
+                    currentAttributeValueCatalog =
+                        currentAttribute.ValueList
+                            .Where(e =>
+                                e.ID == currentTransactionAttributeCatalog.ValueID.Value)
+                            .FirstOrDefault();
+
+                    /*AttributeValueCatalog currentAttributeValueCatalog =
+                        new AttributeValueCatalog(currentTransactionAttributeCatalog.ValueID.Value);
+                    currentAttributeValueCatalog.SetDataByID();*/
+
+                    currentAttributeValue = currentAttributeValueCatalog.Name;
+                }
+
+                if (isParent)
+                {
+                    attributeControlContent = ATTRIBUTE_PARENT_CONTENT;
+
+                    attributeControlContent = attributeControlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_NAME,
+                            currentAttributeName);
+
+                    attributeControlContent = attributeControlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_COMMENT,
+                            currentAttributeComment);
+
+                    attributeControlContent = attributeControlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_VALUE,
+                            currentAttributeValue);
+                }
+                else
+                {
+                    attributeControlContent = ATTRIBUTE_CHILD_CONTENT;
+
+                    int parentCount = currentAttribute.SelectParentIDArrayByID().Count();
+
+                    attributeControlContent = attributeControlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_NAME,
+                            currentAttributeName);
+
+                    attributeControlContent = attributeControlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_COMMENT,
+                            currentAttributeComment);
+
+                    attributeControlContent = attributeControlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_VALUE,
+                            currentAttributeValue);
+
+                    if (currentAttributeChecked)
+                    {
+                        attributeControlContent = attributeControlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_CHECKED,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.CHECKED_SYMBOL);
+                                //"checked");
+                    }
+                    else
+                    {
+                        attributeControlContent = attributeControlContent
+                            .Replace(
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.Attribute.ATTRIBUTE_CHECKED,
+                                SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.UNCHECKED_SYMBOL);
+                                //string.Empty);
+                    }
+
+                    string replicatedString = string.Concat(Enumerable.Repeat(SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TAB_VALUE, parentCount));
+
+                    attributeControlContent = attributeControlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TAB_CONTENT,
+                            replicatedString);
+                }
+
+                return (attributeControlContent, currentAttributeValueCatalog, currentTransactionAttributeCatalog);
+            }
+
+            (string, TransactionBIFieldCatalog) GetBusinessIntelligenceContent(BusinessIntelligenceField currentBusinessIntelligenceField)
+            {
+                const string BUSINESS_INTELLIGENCE_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.CONTENT;
+                const string BUSINESS_INTELLIGENCE_TITLE_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.TITLE_CONTENT;
+
+                string businessIntelligenceFieldControlContent = string.Empty;
+                TransactionBIFieldCatalog currentTransactionBIFieldCatalog = null;
+
+                currentTransactionBIFieldCatalog =
+                    transaction.BIFieldList
+                        .Where(e =>
+                            e.BIFieldID == currentBusinessIntelligenceField.ID)
+                        .FirstOrDefault();
+
+                if (currentTransactionBIFieldCatalog == null)
+                {
+                    return (businessIntelligenceFieldControlContent, currentTransactionBIFieldCatalog);
+                }
+
+                bool isParent = currentBusinessIntelligenceField.ParentBIFieldID == 0 || currentBusinessIntelligenceField.ParentBIFieldID == null;
+
+                string currentBusinessIntelligenceFieldName = currentBusinessIntelligenceField.Name;
+                bool currentBusinessIntelligenceFieldChecked = currentTransactionBIFieldCatalog.Checked;
+
+                int parentCount = 0;
+                BusinessIntelligenceField auxBusinessIntelligenceField = currentBusinessIntelligenceField;
+
+                while (auxBusinessIntelligenceField.ParentBIFieldID != null && auxBusinessIntelligenceField.ParentBIFieldID != 0)
+                {
+                    /*using (BusinessIntelligenceField businessIntelligenceField = new BusinessIntelligenceField(auxBusinessIntelligenceField.ParentBIFieldID.Value))
+                    {
+                        businessIntelligenceField.SetDataByID();
+                        auxBusinessIntelligenceField = businessIntelligenceField;
+                    }*/
+
+                    auxBusinessIntelligenceField = form.BusinessIntelligenceFieldList
+                        .Where(e => e.ID == auxBusinessIntelligenceField.ParentBIFieldID.Value)
+                        .FirstOrDefault();
+
+                    parentCount++;
+                }
+
+                businessIntelligenceFieldControlContent = BUSINESS_INTELLIGENCE_CONTENT;
+
+                string replicatedString = string.Concat(Enumerable.Repeat(SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TAB_VALUE, parentCount));
+
+                businessIntelligenceFieldControlContent = businessIntelligenceFieldControlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.BUSINESS_INTELLIGENCE_NAME,
+                        currentBusinessIntelligenceFieldName);
+
+                if (currentBusinessIntelligenceFieldChecked)
+                {
+                    businessIntelligenceFieldControlContent = businessIntelligenceFieldControlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.BUSINESS_INTELLIGENCE_CHECKED,
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.CHECKED_SYMBOL);
+                            //"checked");
+                }
+                else
+                {
+                    businessIntelligenceFieldControlContent = businessIntelligenceFieldControlContent
+                        .Replace(
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.BUSINESS_INTELLIGENCE_CHECKED,
+                            SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.UNCHECKED_SYMBOL);
+                            //string.Empty);
+                }
+
+                businessIntelligenceFieldControlContent = businessIntelligenceFieldControlContent
+                    .Replace(
+                        SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.TAB_CONTENT,
+                        replicatedString);
+
+                return (businessIntelligenceFieldControlContent, currentTransactionBIFieldCatalog);
+            }
         }
     }
 }

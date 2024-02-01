@@ -234,3 +234,7 @@ table {
 .min-w-100 {
     min-width: 100%;
 }
+
+.text-danger {
+    color: orangered;
+}

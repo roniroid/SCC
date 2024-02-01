@@ -38,12 +38,14 @@ namespace SCC_BL.Settings
         public struct Form
         {
             public const string FORM_UPLOAD_FOLDER = "~/Content/files/uploaded/FormUpload/";
+            public const string FORM_EXPORT_FOLDER = "~/Content/files/generated/Form/Export/";
         }
 
         public struct Transaction
         {
             public const string TRANSACTION_IMPORT_FOLDER = "~/Content/files/uploaded/ImportData/";
             public const string TRANSACTION_EXPORT_FOLDER = "~/Content/files/generated/Transaction/Export/";
+            public const string TRANSACTION_EXPORT_PDF_FOLDER = "~/Content/files/generated/Transaction/Export/PDF/";
             public const string TRANSACTION_GENERATED_IMPORT_RESULTS_FOLDER = "~/Content/files/generated/Transaction/Import/";
         }
 

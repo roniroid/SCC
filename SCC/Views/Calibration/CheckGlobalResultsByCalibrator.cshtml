@@ -108,6 +108,8 @@
     <div class="text-center">
         <h3 class="report-title">
             @ViewBag.Title
+            <br />
+            <button class="h6 p-1" id="generatePDF">Exportar a PDF</button>
         </h3>
     </div>
     <table id="tbInfo">
@@ -121,8 +123,19 @@
                 </th>
                 @foreach (User calibratorUser in Model.ResultsByCalibratorList.Select(e => e.CalibratorUser).ToList())
                 {
+                    CalibrationResultsByCalibratorViewModel.ResultsByCalibrator currentResults = Model.ResultsByCalibratorList.Where(e => e.CalibratorUser.ID == calibratorUser.ID).FirstOrDefault();
+                    int calibrationCount = currentResults.CalibrationList.Count();
+
                     <th class="darker-background text-center">
                         @calibratorUser.Person.SurName, @calibratorUser.Person.FirstName
+
+                        @if (calibrationCount < currentResults.CalibratedTransactionList.Count())
+                        {
+                            @: - 
+                            <span class="text-danger">
+                                Faltan @(currentResults.CalibratedTransactionList.Count() - calibrationCount) de @currentResults.CalibratedTransactionList.Count()
+                            </span>
+                        }
                     </th>
                 }
             </tr>
@@ -1031,6 +1044,14 @@
             $(currentControl).addClass('d-none');
 
             $('[data-parentbifieldid=' + biFieldID + ']').addClass('d-none');
+        });
+
+        document.getElementById('generatePDF').addEventListener('click', function () {
+            let message = '¿Quieres descargar los resultados de la transacción en formato PDF?';
+
+            if (confirm(message) == true) {
+                window.print();
+            }
         });
     </script>
 </body>

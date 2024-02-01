@@ -675,6 +675,24 @@ namespace SCC_BL.Results
 			};
 		}
 
+		public struct DownloadPDF
+        {
+            public struct Error
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.ERROR;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.ERROR;
+                public const string LOCAL_LOG = "Ha ocurrido un error al descargar el archivo PDF para la transacción.\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                public const string DATABASE_LOG = "ERROR - Ha ocurrido un error al descargar el archivo PDF para la transacción.\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                public const string MESSAGE_TITLE = "Error";
+                public const string MESSAGE_CONTENT = "Ha ocurrido un error al descargar el archivo PDF para la transacción";
+            };
+        }
+
 		public struct ImportData
 		{
 			public enum CODE

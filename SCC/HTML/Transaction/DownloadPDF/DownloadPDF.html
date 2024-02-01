@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html style="margin: 0 auto;" lang="en">
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/export.css" rel="stylesheet">
+    <!--<link rel="stylesheet" href="Content/Custom/Transaction/download-pdf.css?%VERSION%" />-->
+    <style>
+        @media print {
+            @page {
+                margin: 0;
+            }
+        }
+    </style>
+    <style>
+        %STYLE_CONTENT%
+    </style>
+</head>
+<body>
+    <fieldset class="border border-secondary">
+        <legend>
+            <strong>
+                <u>
+                    Monitoreo de transacción Id: %TRANSACTION_IDENTIFIER% - Programa %PROGRAM_NAME%
+                </u>
+            </strong>
+        </legend>
+        <div class="grid-container grid-items-two border border-bottom border-secondary-dark">
+            <p>
+                Usuario monitoreado: %EVALUATED_USER_PERSON_NAME%
+            </p>
+            <p>
+                Cargado por: %EVALUATOR_USER_PERSON_NAME%
+            </p>
+        </div>
+        <div class="grid-container grid-items-two border border-bottom border-secondary-dark">
+            <p>
+                Fecha de evaluación: %EVALUATION_DATE%
+            </p>
+            <p>
+                Fecha de la transacción: %TRANSACTION_DATE%
+            </p>
+        </div>
+        <div class="grid-container border border-bottom border-secondary-dark">
+            <p>
+                Comentarios: %TRANSACTION_COMMENT%
+            </p>
+        </div>
+        %FULL_TRANSACTION_COMMENTARIES%
+        <fieldset>
+            <legend>
+                <b>
+                    <u>
+                        Resultados
+                    </u>
+                </b>
+            </legend>
+            <ul>
+                <li>
+                    Error Crítico Usuario Final: %TRANSACTION_GLOBAL_RESULT_FUCE%
+                </li>
+                <li>
+                    Error Crítico Negocio: %TRANSACTION_GLOBAL_RESULT_BCE%
+                </li>
+                <li>
+                    Error Crítico de Cumplimiento: %TRANSACTION_GLOBAL_RESULT_FCE%
+                </li>
+                <li>
+                    Error no crítico: %TRANSACTION_GLOBAL_RESULT_NCE%
+                </li>
+                <li>
+                    Resultado de la transacción: %TRANSACTION_GLOBAL_RESULT%
+                </li>
+            </ul>
+        </fieldset>
+        <hr />
+        <!--<div class="result-container w-90 grid-container grid-items-five grid-column-gap justify-content-center border border-full border-secondary-dark my-5 py-5 bg-white border-rounded">
+            <div class="d-inline-block result-2 text-center m-2">-->
+                <!--<div class="d-block m-2">
+                    Error Crítico Usuario Final
+                </div>-->
+                <!--Error Crítico Usuario Final: %TRANSACTION_GLOBAL_RESULT_FUCE%
+            </div>
+            <div class="d-inline-block result-3 text-center m-2">-->
+                <!--<div class="d-block m-2">
+                    Error Crítico Negocio
+                </div>-->
+                <!--Error Crítico Negocio: %TRANSACTION_GLOBAL_RESULT_BCE%
+            </div>
+            <div class="d-inline-block result-4 text-center m-2">-->
+                <!--<div class="d-block m-2">
+                    Error Crítico de Cumplimiento
+                </div>-->
+                <!--Error Crítico de Cumplimiento: %TRANSACTION_GLOBAL_RESULT_FCE%
+            </div>
+            <div class="d-inline-block result-5 text-center m-2">-->
+                <!--<div class="d-block m-2">
+                    Error no crítico
+                </div>-->
+                <!--Error no crítico: %TRANSACTION_GLOBAL_RESULT_NCE%
+            </div>
+            <div class="d-inline-block result-1 text-center m-2">-->
+                <!--<div class="d-block m-2">
+                    <b>
+                        <u>
+                            Resultado de la transacción
+                        </u>
+                    </b>
+                </div>-->
+                <!--<b>
+                    <u>
+                        Resultado de la transacción: %TRANSACTION_GLOBAL_RESULT%
+                    </u>
+                </b>
+            </div>
+        </div>-->
+        <fieldset class="border border-secondary">
+            <legend>
+                <strong>
+                    <u>
+                        Campos personalizados
+                    </u>
+                </strong>
+            </legend>
+            <div class="grid-container grid-items-two">
+                %TRANSACTION_CUSTOM_CONTROL_CONTENT%
+            </div>
+        </fieldset>
+        <div class="form-container">
+            <strong class="p-2">
+                Formulario de Monitoreo
+            </strong>
+            <table class="w-100 text-start">
+                <thead class="bg-secondary-dark">
+                    <tr>
+                        <th class="p-2">
+                            Atributo
+                        </th>
+                        <th class="p-2">
+                            Pasó
+                        </th>
+                        <th class="p-2">
+                            Comentarios
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    %TRANSACTION_ATTRIBUTE_CONTENT%
+                </tbody>
+            </table>
+        </div>
+        %FULL_TRANSACTION_BUSINESS_INTELLIGENCE%
+        <fieldset>
+            <legend>
+                <b>
+                    <u>
+                        Firma
+                    </u>
+                </b>
+            </legend>
+            <table class="border border-secondary-dark w-100 text-center">
+                <tbody>
+                    <tr class="h-150px">
+                        <td class="border border-full border-secondary-dark">
+                        </td>
+                        <td class="border border-full border-secondary-dark">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Firma y aclaración de líder
+                        </td>
+                        <td>
+                            Firma y aclaración del agente
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td class="text-dark p-2">
+                            <i>
+                                Acepto haber leído el coaching recibido
+                            </i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </fieldset>
+    </fieldset>
+    <div class="p-3 text-center w-100">
+        <p>
+            <i>
+                Esta evaluación ha sido copiado tal como estaba almacenada en el sistema al momento de la exportación. Si fueran hechas modificaciones, esos cambios no se reflejarán en la versión exportada.
+            </i>
+        </p>
+    </div>
+    <script>
+        setTimeout(
+            () => {
+                window.print();
+            },
+            500
+        );
+        /*document.addEventListener('DOMContentLoaded', function () {
+            window.print();
+        });*/
+    </script>
+</body>
+</html>

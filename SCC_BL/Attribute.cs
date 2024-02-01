@@ -352,14 +352,37 @@ namespace SCC_BL
 
 					attribute.SetValueList();
 
-					if (!simplifiedInfo)
-                        attribute.SetChildrenList();
+					/*if (!simplifiedInfo)
+                        attribute.SetChildrenList();*/
 
                     attributeList.Add(attribute);
 				}
 			}
 
+			for (int i = 0; i < attributeList.Count; i++)
+            {
+                if (!simplifiedInfo)
+                {
+					attributeList[i].ChildrenList = GetChildren(attributeList[i].ID, attributeList);
+                }
+            }
+
 			return attributeList;
+		}
+
+		private List<Attribute> GetChildren(int attributeID, List<Attribute> attributeList) 
+		{
+			List<Attribute> result = new List<Attribute>();
+
+            result =
+                attributeList
+                    .Where(e =>
+                        e.ParentAttributeID == attributeID &&
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.DELETED &&
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ATTRIBUTE.DISABLED)
+                    .ToList();
+
+            return result;
 		}
 
 		public int[] SelectIDArrayByFormID()
@@ -863,6 +886,52 @@ namespace SCC_BL
 
 			return errorTypeList;
         }
+
+		public int GetLevel(int attributeID, List<Attribute> attributeList) 
+		{
+			int result = 0;
+
+			Attribute currentAttribute = attributeList.Find(e => e.ID == attributeID);
+
+			while (currentAttribute.ParentAttributeID != null && currentAttribute.ParentAttributeID != 0)
+			{
+				if (currentAttribute.ParentAttributeID > 0)
+                {
+                    result++;
+                    currentAttribute = attributeList.Find(e => e.ID == currentAttribute.ParentAttributeID);
+                }
+			}
+
+			return result;
+		}
+
+		public int GetMaxLevel(List<Attribute> attributeList) 
+		{
+			int result = 0;
+
+            for (int i = 0; i < attributeList.Count(); i++)
+            {
+				int currentLevelCount = 0;
+
+                Attribute currentAttribute = attributeList[i];
+
+                while (currentAttribute.ParentAttributeID != null && currentAttribute.ParentAttributeID != 0)
+                {
+                    if (currentAttribute.ParentAttributeID > 0)
+                    {
+                        currentLevelCount++;
+                        currentAttribute = attributeList.Find(e => e.ID == currentAttribute.ParentAttributeID);
+                    }
+                }
+
+				if (currentLevelCount > result)
+				{
+					result = currentLevelCount;
+                }
+            }
+
+			return result;
+		}
 
 		public void Dispose()
 		{

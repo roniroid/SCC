@@ -1105,16 +1105,16 @@ namespace SCC_BL.Tools
                         switch ((SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE)auxAttribute.ErrorTypeID)
                         {
                             case DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE:
-                                errorType = "EUCE";
+                                errorType = SCC_BL.Settings.Overall.ErrorType.EUCE;
                                 break;
                             case DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE:
-                                errorType = "BCE";
+                                errorType = SCC_BL.Settings.Overall.ErrorType.BCE;
                                 break;
                             case DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE:
-                                errorType = "CCE";
+                                errorType = SCC_BL.Settings.Overall.ErrorType.CCE;
                                 break;
                             case DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE:
-                                errorType = "NCE";
+                                errorType = SCC_BL.Settings.Overall.ErrorType.NCE;
                                 break;
                             default:
                                 break;
@@ -1441,6 +1441,157 @@ namespace SCC_BL.Tools
                         dataRow.Append(CreateCell(businessIntelligenceFieldChildren));
                         dataRow.Append(CreateCell(businessIntelligenceFieldComment));
                     }
+
+                    sheetData.Append(dataRow);
+                }
+
+                worksheetPart.Worksheet.Save();
+                spreadsheetDocument.Save();
+                spreadsheetDocument.Close();
+            }
+        }
+
+        private int CountMaxAttributeBranches(List<Attribute> attributeList) 
+        {
+            int result = 0;
+
+            using (Attribute auxAttribute = new Attribute())
+            {
+                result = auxAttribute.GetMaxLevel(attributeList);
+            }
+
+            return result;
+        }
+
+        public void ExportFormToExcel(Form form, string filePath)
+        {
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Create(filePath, SpreadsheetDocumentType.Workbook))
+            {
+                WorkbookPart workbookPart = spreadsheetDocument.AddWorkbookPart();
+                workbookPart.Workbook = new Workbook();
+
+                WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+                Sheets sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
+
+                Sheet sheet = new Sheet()
+                {
+                    Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart),
+                    SheetId = 1,
+                    Name = "Form Attributes"
+                };
+
+                sheets.Append(sheet);
+
+                SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                Row headerRow = new Row();
+
+                int maxAttributeCount = CountMaxAttributeBranches(form.AttributeList) + 1;
+
+                headerRow.Append(CreateCell("Error Type"));
+                headerRow.Append(CreateCell("Attributes"));
+
+                for (int i = 0; i < maxAttributeCount - 1; i++)
+                {
+                    headerRow.Append(CreateCell(string.Empty));
+                }
+
+                headerRow.Append(CreateCell("Attribute Description"));
+                headerRow.Append(CreateCell("Max Score"));
+                headerRow.Append(CreateCell("Top Down Score"));
+                headerRow.Append(CreateCell("Force Comment"));
+                headerRow.Append(CreateCell("Define Answer Type"));
+                headerRow.Append(CreateCell("Apply"));
+                headerRow.Append(CreateCell("Known"));
+                headerRow.Append(CreateCell("Controllable"));
+                headerRow.Append(CreateCell("Scorable"));
+
+                sheetData.Append(headerRow);
+
+                foreach (Attribute currentAttribute in form.AttributeList)
+                {
+                    bool isParent = currentAttribute.ParentAttributeID == null || currentAttribute.ParentAttributeID == 0;
+
+                    Row dataRow = new Row();
+
+                    int currentLevel = 0;
+                    string errorType = string.Empty;
+
+                    if (isParent)
+                    {
+                        currentLevel = 0;
+
+                        switch ((SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE)currentAttribute.ErrorTypeID)
+                        {
+                            case DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE:
+                                errorType = SCC_BL.Settings.Overall.ErrorType.UCE;
+                                break;
+                            case DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE:
+                                errorType = SCC_BL.Settings.Overall.ErrorType.BCE;
+                                break;
+                            case DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE:
+                                errorType = SCC_BL.Settings.Overall.ErrorType.CCE;
+                                break;
+                            case DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE:
+                                errorType = SCC_BL.Settings.Overall.ErrorType.NCE;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        currentLevel = currentAttribute.GetLevel(currentAttribute.ID, form.AttributeList);
+                    }
+
+                    dataRow.Append(CreateCell(errorType));
+
+                    for (int i = 0; i < currentLevel; i++)
+                    {
+                        dataRow.Append(CreateCell(string.Empty));
+                    }
+
+                    dataRow.Append(CreateCell(currentAttribute.Name));
+
+                    for (int i = 0; i < maxAttributeCount - (currentLevel + 1); i++)
+                    {
+                        dataRow.Append(CreateCell(string.Empty));
+                    }
+
+                    dataRow.Append(CreateCell(currentAttribute.Description));
+
+                    if ((SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE)currentAttribute.ErrorTypeID == DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE)
+                    {
+                        dataRow.Append(CreateCell(currentAttribute.MaxScore != null ? currentAttribute.MaxScore.Value.ToString() : string.Empty));
+                    }
+                    else
+                    {
+                        dataRow.Append(CreateCell(currentAttribute.MaxScore != null && currentAttribute.MaxScore > 0 ? currentAttribute.MaxScore.Value.ToString() : string.Empty));
+                    }
+
+                    dataRow.Append(CreateCell(isParent ? currentAttribute.TopDownScore.ToString().ToUpper() : string.Empty));
+                    dataRow.Append(CreateCell(isParent ? currentAttribute.HasForcedComment.ToString().ToUpper() : string.Empty));
+
+                    string definedAnswers = string.Empty;
+
+                    foreach (AttributeValueCatalog currentAttributeValueCatalog in currentAttribute.ValueList)
+                    {
+                        definedAnswers += currentAttributeValueCatalog.Name.ToUpper();
+
+                        if (currentAttributeValueCatalog != currentAttribute.ValueList.Last())
+                        {
+                            definedAnswers += "/";
+                        }
+                    }
+
+                    dataRow.Append(CreateCell(isParent ? definedAnswers : string.Empty));
+
+                    dataRow.Append(CreateCell(isParent ? true.ToString().ToUpper() : string.Empty));
+                    dataRow.Append(CreateCell(isParent ? currentAttribute.IsKnown.ToString().ToUpper() : string.Empty));
+                    dataRow.Append(CreateCell(currentAttribute.IsControllable.ToString().ToUpper()));
+                    dataRow.Append(CreateCell(isParent ? currentAttribute.IsScorable.ToString().ToUpper() : string.Empty));
 
                     sheetData.Append(dataRow);
                 }

@@ -108,6 +108,8 @@
     <div class="text-center">
         <h3 class="report-title">
             @ViewBag.Title
+            <br />
+            <button class="h6 p-1" id="generatePDF">Exportar a PDF</button>
         </h3>
     </div>
     <table id="tbInfo">
@@ -121,8 +123,46 @@
                 </th>
                 @for (int i = 1; i <= Model.ResultsByTransactionList.Count; i++)
                 {
+                    CalibrationResultsByTransactionViewModel.ResultsByTransaction currentResults = Model.ResultsByTransactionList[i - 1];
+
+                    Transaction currentTransaction =
+                        Model.CalibratedTransactionList
+                            .Where(e =>
+                                e.ID == currentResults.TransactionID)
+                            .FirstOrDefault();
+
+                    List<User> missingUsers = new List<User>();
+
+                    List<Transaction> currentCalibrationList =
+                        Model.CalibrationList
+                            .Where(e =>
+                                e.CalibratedTransactionID == currentTransaction.ID)
+                            .ToList();
+
+                    foreach (User calibratorUser in Model.CalibrationSession.CalibratorUserList)
+                    {
+                        List<Transaction> currentCalibrationListByUser =
+                            currentCalibrationList
+                                .Where(e =>
+                                    e.EvaluatorUserID == calibratorUser.ID)
+                                .ToList();
+
+                        if (currentCalibrationListByUser.Count() == 0)
+                        {
+                            missingUsers.Add(calibratorUser);
+                        }
+                    }
+
                     <th class="darker-background text-center">
                         Transacción #@i
+
+                        @if (missingUsers.Count() > 0)
+                        {
+                            @: -
+                            <span class="text-danger">
+                                Faltan: @String.Join(",", missingUsers.Select(e => $"{ e.Person.SurName }, { e.Person.FirstName }"))
+                            </span>
+                        }
                     </th>
                 }
             </tr>
@@ -1031,6 +1071,14 @@
             $(currentControl).addClass('d-none');
 
             $('[data-parentbifieldid=' + biFieldID + ']').addClass('d-none');
+        });
+
+        document.getElementById('generatePDF').addEventListener('click', function () {
+            let message = '¿Quieres descargar los resultados de la transacción en formato PDF?';
+
+            if (confirm(message) == true) {
+                window.print();
+            }
         });
     </script>
 </body>

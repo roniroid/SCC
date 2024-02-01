@@ -17,11 +17,19 @@
 
     int? calibratedTransactionCallIDCustomControlID = null;
     string calibratedTransactionCallID = string.Empty;
+}
 
+@{ 
     if (Model.Transaction.CalibratedTransactionID != null)
     {
-        calibratedTransactionCallIDCustomControlID = (int)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.CustomControlID.NAME];
-        calibratedTransactionCallID = ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.Content.NAME].ToString();
+        try
+        {
+            calibratedTransactionCallIDCustomControlID = (int)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.CustomControlID.NAME];
+            calibratedTransactionCallID = ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.CustomControlList.CallID.Content.NAME].ToString();
+        }
+        catch (Exception ex)
+        {
+        }
     }
 }
 
@@ -53,7 +61,7 @@
             <br />
             @if (hasModel)
             {
-                <button class="h6 p-1 d-none" id="generate-pdf">Exportar a PDF</button>
+                <button class="h6 p-1" id="generatePDF">Exportar a PDF</button>
             }
         </h3>
         <p><b>Programa: </b>@Model.Form.ProgramName</p>
@@ -588,7 +596,7 @@
             </h3>
         </div>
 
-        @foreach (CustomField customField in Model.Form.CustomFieldList.Where(e => e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED))
+        @foreach (CustomField customField in Model.Form.CustomFieldList.Where(e => e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED).OrderBy(e => e.Order))
         {
             if (!Model.Form.CustomControlList.Select(e => e.ID).Contains(customField.CustomControlID))
             {
@@ -2045,10 +2053,9 @@
     const hasModel = @hasModel.ToString().ToLower();
 
     if (hasModel) {
-        document.getElementById('generate-pdf').addEventListener('click', function () {
-            const element = document.body; // You can change this to the specific element you want to convert to PDF
+        @*document.getElementById('generatePDF').addEventListener('click', function () {
+            const element = document.body;
 
-            // Define the PDF options
             const options = {
                 margin: 10,
                 filename: 'webpage.pdf',
@@ -2057,15 +2064,56 @@
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            // Use html2pdf.js to generate the PDF
             html2pdf()
                 .from(element)
                 .set(options)
                 .outputPdf()
                 .then(function (pdf) {
-                    // Save the PDF or display it in a new window
                     pdf.save();
                 });
+        });*@
+
+        document.getElementById('generatePDF').addEventListener('click', function () {
+            let message = '¿Quieres descargar la transacción en formato PDF?';
+
+            if (confirm(message) == true) {
+                showWaitingModal();
+
+                const transactionID = @Model.Transaction.ID;
+
+                const data = {
+                    "transactionID": transactionID
+                };
+
+                $.ajax({
+                    "url": '@Url.Action(nameof(TransactionController.ExportTransactionToPDF), mainControllerName)',
+                    "contentType": 'application/json',
+                    "data": JSON.stringify(data),
+                    "method": 'POST',
+                    "timeout": 0,
+                    "success": function (response) {
+                        printToPDF(response);
+                        //window.open(response, '_blank');
+                    },
+                    "error": function (error) {
+                        window.open(response, '_blank');
+                    },
+                    "complete": function (response) {
+                        //window.open(response, '_blank');
+                        hideWaitingModal();
+                    }
+                });
+            }
+        });
+    }
+
+    function printToPDF(content) {
+        var printWindow = window.open('', '_blank');
+
+        printWindow.document.write(content);
+
+        printWindow.document.addEventListener('DOMContentLoaded', function () {
+            printWindow.print();
         });
     }
 

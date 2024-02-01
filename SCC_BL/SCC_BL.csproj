@@ -78,6 +78,7 @@
     <Compile Include="Reports\Results\CalibratorComparisonByError.cs" />
     <Compile Include="Reports\Results\CalibratorComparisonWithAttributes.cs" />
     <Compile Include="Settings\HTML Content\Calibration\CalibrationCreated.cs" />
+    <Compile Include="Settings\HTML Content\Transaction\DownloadPDF.cs" />
     <Compile Include="Settings\HTML Content\Transaction\Transaction.cs" />
     <Compile Include="Tools\ExcelParser_bak_20231011210000.cs" />
     <Compile Include="UserNotification.cs" />

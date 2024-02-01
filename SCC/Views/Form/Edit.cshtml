@@ -378,32 +378,51 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (CustomControl customControl in customControlList)
+                            @{
+                                string customFieldTableRowClass = "custom-control-table-row";
+                            }
+                            @foreach (CustomField currentCustomField in Model.CustomFieldList.OrderBy(e => e.Order))
                             {
-                                if (Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED).Count() > 0)
+                                CustomControl currentCustomControl = Model.CustomControlList.Where(e => e.ID == currentCustomField.CustomControlID).FirstOrDefault();
+                                int orderValue = currentCustomField.Order;
+
+                                if (
+                                    currentCustomField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && 
+                                    currentCustomField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED)
                                 {
-                                    string tableRowClass = string.Empty;
-                                    if (customControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED)
+                                    if (currentCustomControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED)
                                     {
-                                        tableRowClass +=
-                                            string.IsNullOrEmpty(tableRowClass) ?
+                                        customFieldTableRowClass +=
+                                            string.IsNullOrEmpty(customFieldTableRowClass) ?
                                                 "strikethrough" :
                                                 " strikethrough";
                                     }
 
-                                    <tr class="@tableRowClass" data-customcontrolid="@customControl.ID" data-selected="@(Model.CustomFieldList.Where(e => e.CustomControlID == customControl.ID).Count() > 0 ? "true" : "false")">
-                                        <td class="text-center td-buttons">
-                                            <button class="btn-element-action btn-element-action-danger btn-custom-control-deselect" title="Deseleccionar" onclick="removeCustomControl(this);">
-                                                <i class="bx bxs-x-circle"></i>
-                                            </button>
+                                    <tr class="@customFieldTableRowClass" data-customcontrolid="@currentCustomControl.ID" data-customfieldorder="@orderValue" data-selected="@(Model.CustomFieldList.Where(e => e.CustomControlID == currentCustomControl.ID).Count() > 0 ? "true" : "false")">
+                                        <td class="text-center td-buttons" data-order="@orderValue">
+                                            <span>
+                                                <button class="btn-element-action btn-element-action-danger btn-custom-control-deselect" title="Deseleccionar" onclick="removeCustomControl(this);">
+                                                    <i class="bx bxs-x-circle"></i>
+                                                </button>
+                                            </span>
+                                            <span class="custom-control-climb-up">
+                                                <button class="btn-element-action btn-element-action-secondary btn-custom-control-climb-up" title="Subir">
+                                                    <i class='bx bxs-up-arrow'></i>
+                                                </button>
+                                            </span>
+                                            <span class="custom-control-go-down">
+                                                <button class="btn-element-action btn-element-action-secondary btn-custom-control-go-down" title="Bajar">
+                                                    <i class='bx bxs-down-arrow'></i>
+                                                </button>
+                                            </span>
                                         </td>
-                                        <td>@customControl.ID</td>
-                                        <td>@customControl.Label</td>
-                                        <td>@customControl.ControlTypeName</td>
-                                        <td>@customControl.Mask</td>
+                                        <td>@currentCustomControl.ID</td>
+                                        <td>@currentCustomControl.Label</td>
+                                        <td>@currentCustomControl.ControlTypeName</td>
+                                        <td>@currentCustomControl.Mask</td>
                                         <td>
                                             <ol>
-                                                @foreach (CustomControlValueCatalog value in customControl.ValueList.OrderBy(e => e.Order))
+                                                @foreach (CustomControlValueCatalog value in currentCustomControl.ValueList.OrderBy(e => e.Order))
                                                 {
                                                     <li>
                                                         @value.Name
@@ -411,9 +430,9 @@
                                                 }
                                             </ol>
                                         </td>
-                                        <td>@customControl.ModuleName</td>
+                                        <td>@currentCustomControl.ModuleName</td>
                                         <td>
-                                            @if (customControl.IsRequired)
+                                            @if (currentCustomControl.IsRequired)
                                             {
                                                 @:SI
                                             }
@@ -467,28 +486,53 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (BusinessIntelligenceField biField in biFieldList)
+                            @{
+                                string biFieldTableRowClass = "bifield-table-row";
+                            }
+                            @foreach (FormBIFieldCatalog currentFormBIField in Model.FormBIFieldCatalogList.OrderBy(e => e.Order))
                             {
-                                if (Model.FormBIFieldCatalogList.Where(e => e.BIFieldID == biField.ID).Count() > 0)
+                                BusinessIntelligenceField currentBusinessIntelligenceField = biFieldList.Where(e => e.ID == currentFormBIField.BIFieldID).FirstOrDefault();
+
+                                if (currentBusinessIntelligenceField == null)
                                 {
-                                    string tableRowClass = string.Empty;
-                                    if (biField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)
+                                    continue;
+                                }
+
+                                int orderValue = currentFormBIField.Order;
+
+                                if (
+                                    currentFormBIField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_FORM_BI_FIELD_CATALOG.DISABLED &&
+                                    currentFormBIField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_FORM_BI_FIELD_CATALOG.DELETED)
+                                {
+                                    if (currentBusinessIntelligenceField.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED)
                                     {
-                                        tableRowClass +=
-                                            string.IsNullOrEmpty(tableRowClass) ?
+                                        biFieldTableRowClass +=
+                                            string.IsNullOrEmpty(biFieldTableRowClass) ?
                                                 "strikethrough" :
                                                 " strikethrough";
                                     }
 
-                                    <tr class="@tableRowClass" data-bifieldid="@biField.ID" data-selected="@(Model.FormBIFieldCatalogList.Where(e => e.BIFieldID == biField.ID).Count() > 0 ? "true" : "false")">
-                                        <td class="text-center td-buttons">
-                                            <button class="btn-element-action btn-element-action-danger btn-bifield-deselect" title="Deseleccionar" onclick="removeBIField(this);">
-                                                <i class="bx bxs-x-circle"></i>
-                                            </button>
+                                    <tr class="@biFieldTableRowClass" data-bifieldid="@currentBusinessIntelligenceField.ID" data-bifieldorder="@orderValue" data-selected="@(Model.FormBIFieldCatalogList.Where(e => e.BIFieldID == currentBusinessIntelligenceField.ID).Count() > 0 ? "true" : "false")">
+                                        <td class="text-center td-buttons" data-order="@orderValue">
+                                            <span>
+                                                <button class="btn-element-action btn-element-action-danger btn-bifield-deselect" title="Deseleccionar" onclick="removeBIField(this);">
+                                                    <i class="bx bxs-x-circle"></i>
+                                                </button>
+                                            </span>
+                                            <span class="bi-field-climb-up">
+                                                <button class="btn-element-action btn-element-action-secondary btn-bifield-climb-up" title="Subir">
+                                                    <i class='bx bxs-up-arrow'></i>
+                                                </button>
+                                            </span>
+                                            <span class="bi-field-go-down">
+                                                <button class="btn-element-action btn-element-action-secondary btn-bifield-go-down" title="Bajar">
+                                                    <i class='bx bxs-down-arrow'></i>
+                                                </button>
+                                            </span>
                                         </td>
-                                        <td>@biField.ID</td>
-                                        <td>@biField.Name</td>
-                                        <td>@(biField.HasForcedComment ? "SI" : "NO")</td>
+                                        <td>@currentBusinessIntelligenceField.ID</td>
+                                        <td>@currentBusinessIntelligenceField.Name</td>
+                                        <td>@(currentBusinessIntelligenceField.HasForcedComment ? "SI" : "NO")</td>
                                     </tr>
                                 }
                             }
@@ -981,7 +1025,7 @@
 
     $(document).ready(() => {
         //const { ID } = require("../../Content/DataTables/pdfmake-0.1.36/pdfmake");
-        fetchDatatableBasicData().then(response => {
+        fetchDatatableBasicData().then(async (response) => {
             let data = response;
 
             let customData;
@@ -993,16 +1037,16 @@
             const dataCustomControlTable = data;
             dataCustomControlTable['order'] = [[2, 'asc']];
 
-            const dataSelectedCustomControlTable = { ...data, 'order': [[2, 'asc']], 'scrollY': '500px', 'scrollCollapse': true };
+            const dataSelectedCustomControlTable = { ...data, 'order': [[0, 'asc']], 'scrollY': '500px', 'scrollCollapse': true };
 
-            startDataTable('#tbCustomControlList', dataCustomControlTable);
-            startDataTable('#tbSelectedCustomControlList', dataSelectedCustomControlTable);
+            await startDataTable('#tbCustomControlList', dataCustomControlTable);
+            await startDataTable('#tbSelectedCustomControlList', dataSelectedCustomControlTable);
 
             const dataBIFieldTable = data;
-            dataBIFieldTable['order'] = [[2, 'asc']];
+            dataBIFieldTable['order'] = [[0, 'asc']];
 
-            startDataTable('#tbBIFieldList', dataBIFieldTable);
-            startDataTable('#tbSelectedBIFieldList', data);
+            await startDataTable('#tbBIFieldList', dataBIFieldTable);
+            await startDataTable('#tbSelectedBIFieldList', data);
 
             let dataTemp = data;
 
@@ -1059,6 +1103,8 @@
         });
 
         initAttributeTableButtons();
+        initCustomFieldTableButtons();
+        initBIFieldTableButtons();
 
         getAttributeList()
             .then((response) => {
@@ -1071,6 +1117,44 @@
 
         //initDragger();
     });
+
+    function stopOrdering(tableName) {
+        let thElements = $('#' + tableName + '_wrapper thead th');
+
+        /*$('#' + tableName + '_wrapper thead th').resizable({
+
+            handles: "e",
+
+            alsoResize: '#' + tableName + '_wrapper table', //Not essential but makes the resizing smoother
+
+            start: function (e) {
+                console.log('started resizing')
+
+                document.querySelectorAll('th').forEach(target => {
+                    target.addEventListener("click", preventOrdering, true);
+                })
+
+            },
+
+            stop: function (e) {
+                console.log("Stopped resizing");
+                saveColumnSettings(table, tableName);
+                document.querySelectorAll('th').forEach(target => {
+                    target.removeEventListener("click", preventOrdering, true);
+                })
+            }
+        });*/
+
+        $(thElements).each((target, element) => {
+            $(element).off('click');
+        });
+    }
+
+    function preventOrdering(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+    }
 
     function decode(str) {
 
@@ -1186,6 +1270,70 @@
 
             $(currentButton).addClass('d-none');
             $(currentButtonContainer).find('.attribute-show-children').removeClass('d-none');
+        });
+    }
+
+    function initCustomFieldTableButtons() {
+        $('.btn-custom-control-climb-up').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent();
+            let previousRow = $(actualRow).prev();
+
+            let orderActualRow = $(actualRow).data('customfieldorder');
+            let orderPreviousRow = $(previousRow).data('customfieldorder');
+
+            if (orderPreviousRow != null) {
+                $(actualRow).data('customfieldorder', orderPreviousRow)
+                $(previousRow).data('customfieldorder', orderActualRow)
+
+                $(previousRow).before($(actualRow));
+            }
+        });
+
+        $('.btn-custom-control-go-down').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent();
+            let nextRow = $(actualRow).next();
+
+            let orderActualRow = $(actualRow).data('customfieldorder');
+            let orderNextRow = $(nextRow).data('customfieldorder');
+
+            if (orderNextRow != null) {
+                $(actualRow).data('customfieldorder', orderNextRow)
+                $(nextRow).data('customfieldorder', orderActualRow)
+
+                $(nextRow).after($(actualRow));
+            }
+        });
+    }
+
+    function initBIFieldTableButtons() {
+        $('.btn-bifield-climb-up').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent();
+            let previousRow = $(actualRow).prev();
+
+            let orderActualRow = $(actualRow).data('bifieldorder');
+            let orderPreviousRow = $(previousRow).data('bifieldorder');
+
+            if (orderPreviousRow != null) {
+                $(actualRow).data('bifieldorder', orderPreviousRow)
+                $(previousRow).data('bifieldorder', orderActualRow)
+
+                $(previousRow).before($(actualRow));
+            }
+        });
+
+        $('.btn-bifield-go-down').off('click').on('click', function (e) {
+            let actualRow = $(e.currentTarget).parent().parent().parent();
+            let nextRow = $(actualRow).next();
+
+            let orderActualRow = $(actualRow).data('bifieldorder');
+            let orderNextRow = $(nextRow).data('bifieldorder');
+
+            if (orderNextRow != null) {
+                $(actualRow).data('bifieldorder', orderNextRow)
+                $(nextRow).data('bifieldorder', orderActualRow)
+
+                $(nextRow).after($(actualRow));
+            }
         });
     }
 
@@ -1349,6 +1497,36 @@
 
             resolve(max);
         });
+    }
+
+    function getCustomFieldMaxOrder(elements) {
+        let max = 0;
+
+        //const elements = $('#tbSelectedCustomControlList tbody tr.custom-control-table-row');
+
+        if (elements.length > 0) {
+            $(elements).each(function () {
+                let value = parseInt($(this).data('customfieldorder'));
+                max = (value > max) ? value : max;
+            });
+        }
+
+        return max;
+    }
+
+    function getBIFieldMaxOrder(elements) {
+        let max = 0;
+
+        //const elements = $('#tbSelectedBIFieldList tbody tr.custom-control-table-row');
+
+        if (elements.length > 0) {
+            $(elements).each(function () {
+                let value = parseInt($(this).data('bifieldorder'));
+                max = (value > max) ? value : max;
+            });
+        }
+
+        return max;
     }
 
     $('#btnAddNewAttribute').click(() => {
@@ -1628,10 +1806,12 @@
         customFieldSelectedArray = [];
     });
 
-    $('.btn-custom-control-update').click(() => {
+    $('.btn-custom-control-update').click(async () => {
         customFieldSelectedArray = [...new Set(customFieldSelectedArray)];
 
-        let btnDeselect = '<button class="btn-element-action btn-element-action-danger btn-custom-control-deselect" title="Deseleccionar" onclick="removeCustomControl(this);"><i class="bx bxs-x-circle"></i></button>';
+        let btnDeselect = '<span><button class="btn-element-action btn-element-action-danger btn-custom-control-deselect" title="Deseleccionar" onclick="removeCustomControl(this);"><i class="bx bxs-x-circle"></i></button></span>';
+        let btnClimbUp = '<span class="custom-control-climb-up"><button class="btn-element-action btn-element-action-secondary btn-custom-control-climb-up" title="Subir"><i class="bx bxs-up-arrow"></i></button></span>';
+        let btnGoDown = '<span class="custom-control-go-down"><button class="btn-element-action btn-element-action-secondary btn-custom-control-go-down" title="Bajar"><i class="bx bxs-down-arrow"></i></button></span>';
 
         let currentPage = $('#tbCustomControlList').DataTable().page.info().page;
         let currentSearch = $('#tbCustomControlList').DataTable().search();
@@ -1642,11 +1822,26 @@
         for (let i = 0; i < customFieldSelectedArray.length; i++) {
             let tableRow = $('#tbCustomControlList tbody tr[data-customcontrolid="' + customFieldSelectedArray[i] + '"]');
 
-            let newTableRow = $(tableRow).clone();
+            //With jQuery
+            /*let newTableRow = $(tableRow).clone();
+            let newValue = await getCustomFieldMaxOrder() + 1;
+            $($(newTableRow)[0]).data('customfieldorder', newValue);
+            $($(newTableRow)[0]).addClass('custom-control-table-row');*/
+
+            //With DOM
+            let newTableRow = tableRow[0].cloneNode(true);
+            let newValue = await getCustomFieldMaxOrder($('#tbSelectedCustomControlList').DataTable().rows().nodes().toArray()) + 1;
+            newTableRow.dataset.customfieldorder = newValue;
+            newTableRow.dataset.order = newValue;
+            newTableRow.classList.add('custom-control-table-row');
+
             $(newTableRow).find('.btn-custom-control-select').replaceWith(btnDeselect);
             $(newTableRow).find('.btn-custom-control-already-selected').remove();
 
-            $('#tbSelectedCustomControlList').DataTable().row.add(newTableRow);
+            $(newTableRow).find('.td-buttons').append(btnClimbUp);
+            $(newTableRow).find('.td-buttons').append(btnGoDown);
+
+            await $('#tbSelectedCustomControlList').DataTable().row.add(newTableRow);
         }
 
         $('#tbCustomControlList').DataTable().page.len(10).draw();
@@ -1656,6 +1851,8 @@
         $('#tbSelectedCustomControlList').DataTable().draw();
 
         customFieldSelectedArray = [];
+
+        initCustomFieldTableButtons();
     });
 
     function removeCustomControl(e) {
@@ -1665,7 +1862,7 @@
         $('#tbSelectedCustomControlList').DataTable().search('', false, false).draw();
 
         let currentControl = e;
-        let tableRow = $(currentControl).parent().parent();
+        let tableRow = $(currentControl).parent().parent().parent();
         let customControlID = parseInt($(tableRow).data('customcontrolid'));
         let rowToRemove = $('#tbSelectedCustomControlList').DataTable().row('[data-customcontrolid="' + customControlID + '"]');
 
@@ -1695,10 +1892,12 @@
         biFieldSelectedArray = [];
     });
 
-    $('.btn-bifield-update').click(() => {
+    $('.btn-bifield-update').click(async () => {
         biFieldSelectedArray = [...new Set(biFieldSelectedArray)];
 
-        let btnDeselect = '<button class="btn-element-action btn-element-action-danger btn-bifield-deselect" title="Deseleccionar" onclick="removeBIField(this);"><i class="bx bxs-x-circle"></i></button>';
+        let btnDeselect = '<span><button class="btn-element-action btn-element-action-danger btn-bifield-deselect" title="Deseleccionar" onclick="removeBIField(this);"><i class="bx bxs-x-circle"></i></button></span>';
+        let btnClimbUp = '<span class="bifield-climb-up"><button class="btn-element-action btn-element-action-secondary btn-bifield-climb-up" title="Subir"><i class="bx bxs-up-arrow"></i></button></span>';
+        let btnGoDown = '<span class="bifield-go-down"><button class="btn-element-action btn-element-action-secondary btn-bifield-go-down" title="Bajar"><i class="bx bxs-down-arrow"></i></button></span>';
 
         let currentPage = $('#tbBIFieldList').DataTable().page.info().page;
         let currentSearch = $('#tbBIFieldList').DataTable().search();
@@ -1708,11 +1907,20 @@
         for (let i = 0; i < biFieldSelectedArray.length; i++) {
             let tableRow = $('#tbBIFieldList tbody tr[data-bifieldid="' + biFieldSelectedArray[i] + '"]');
 
-            let newTableRow = $(tableRow).clone();
+            //With DOM
+            let newTableRow = tableRow[0].cloneNode(true);
+            let newValue = await getBIFieldMaxOrder($('#tbSelectedBIFieldList').DataTable().rows().nodes().toArray()) + 1;
+            newTableRow.dataset.bifieldorder = newValue;
+            newTableRow.dataset.order = newValue;
+            newTableRow.classList.add('bifield-table-row');
+
             $(newTableRow).find('.btn-bifield-select').replaceWith(btnDeselect);
             $(newTableRow).find('.btn-bifield-already-selected').remove();
 
-            $('#tbSelectedBIFieldList').DataTable().row.add(newTableRow);
+            $(newTableRow).find('.td-buttons').append(btnClimbUp);
+            $(newTableRow).find('.td-buttons').append(btnGoDown);
+
+            await $('#tbSelectedBIFieldList').DataTable().row.add(newTableRow);
         }
 
         $('#tbBIFieldList').DataTable().page.len(10).draw();
@@ -1722,6 +1930,8 @@
         $('#tbSelectedBIFieldList').DataTable().draw();
 
         biFieldSelectedArray = [];
+
+        initBIFieldTableButtons();
     });
 
     function removeBIField(e) {
@@ -1731,7 +1941,7 @@
         $('#tbSelectedBIFieldList').DataTable().search('', false, false).draw();
 
         let currentControl = e;
-        let tableRow = $(currentControl).parent().parent();
+        let tableRow = $(currentControl).parent().parent().parent();
         let biFieldID = parseInt($(tableRow).data('bifieldid'));
         let rowToRemove = $('#tbSelectedBIFieldList').DataTable().row('[data-bifieldid="' + biFieldID + '"]');
 
@@ -1927,16 +2137,33 @@
     async function getSelectedCustomControlList() {
         let response = [];
 
-        let currentPage = $('#tbSelectedCustomControlList').DataTable().page.info().page;
-        let currentSearch = $('#tbSelectedCustomControlList').DataTable().search();
-        $('#tbSelectedCustomControlList').DataTable().page.len(-1).draw();
-        $('#tbSelectedCustomControlList').DataTable().search('', false, false).draw();
+        // Store the current state
+        let currentState = $('#tbSelectedCustomControlList').DataTable().state();
 
-        response = $('#tbSelectedCustomControlList').find('tbody tr').map((index, e) => $(e).data('customcontrolid')).get();
+        // Temporarily disable ordering, searching, and pagination
+        $('#tbSelectedCustomControlList').DataTable().order([0, 'asc']).search('').page.len(-1).draw();
 
-        $('#tbSelectedCustomControlList').DataTable().page.len(10).draw();
-        $('#tbSelectedCustomControlList').DataTable().page(currentPage).draw('page');
-        $('#tbSelectedCustomControlList').DataTable().search(currentSearch, false, false).draw();
+        const elements = $('#tbSelectedCustomControlList').find('tbody tr');
+        let selectedControlIDs = [];
+
+        for (let i = 0; i < elements.length; i++) {
+            const currentElement = elements[i];
+            selectedControlIDs.push(
+                {
+                    "CustomControlID": $(currentElement).data('customcontrolid'),
+                    "Order": parseInt($(currentElement).data('customfieldorder'), 10) || 0
+                });
+        }
+
+        selectedControlIDs = selectedControlIDs.sort((a, b) => a.Order - b.Order);
+
+        //response = $('#tbSelectedCustomControlList').find('tbody tr').map((index, e) => $(e).data('customcontrolid')).get();
+
+        response = selectedControlIDs.map(e => e["CustomControlID"]);
+
+        // Restore the previous state and redraw the table
+        $('#tbSelectedCustomControlList').DataTable().state(currentState);
+        $('#tbSelectedCustomControlList').DataTable().order([[0, 'asc']]).draw();
 
         return await response;
     }
@@ -2154,16 +2381,33 @@
     async function getSelectedBIFieldList() {
         let response = [];
 
-        let currentPage = $('#tbSelectedBIFieldList').DataTable().page.info().page;
-        let currentSearch = $('#tbSelectedBIFieldList').DataTable().search();
-        $('#tbSelectedBIFieldList').DataTable().page.len(-1).draw();
-        $('#tbSelectedBIFieldList').DataTable().search('', false, false).draw();
+        // Store the current state
+        let currentState = $('#tbSelectedBIFieldList').DataTable().state();
 
-        response = $('#tbSelectedBIFieldList').find('tbody tr').map((index, e) => $(e).data('bifieldid')).get();
+        // Temporarily disable ordering, searching, and pagination
+        $('#tbSelectedBIFieldList').DataTable().order([0, 'asc']).search('').page.len(-1).draw();
 
-        $('#tbSelectedBIFieldList').DataTable().page.len(10).draw();
-        $('#tbSelectedBIFieldList').DataTable().page(currentPage).draw('page');
-        $('#tbSelectedBIFieldList').DataTable().search(currentSearch, false, false).draw();
+        const elements = $('#tbSelectedBIFieldList').find('tbody tr');
+        let selectedControlIDs = [];
+
+        for (let i = 0; i < elements.length; i++) {
+            const currentElement = elements[i];
+            selectedControlIDs.push(
+                {
+                    "BusinessIntelligenceFieldID": $(currentElement).data('bifieldid'),
+                    "Order": parseInt($(currentElement).data('bifieldorder'), 10) || 0
+                });
+        }
+
+        selectedControlIDs = selectedControlIDs.sort((a, b) => a.Order - b.Order);
+
+        //response = $('#tbSelectedBIFieldList').find('tbody tr').map((index, e) => $(e).data('bifieldid')).get();
+
+        response = selectedControlIDs.map(e => e["BusinessIntelligenceFieldID"]);
+
+        // Restore the previous state and redraw the table
+        $('#tbSelectedBIFieldList').DataTable().state(currentState);
+        $('#tbSelectedBIFieldList').DataTable().order([[0, 'asc']]).draw();
 
         return await response;
     }

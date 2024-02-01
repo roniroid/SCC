@@ -340,7 +340,7 @@
         const elementID = element.dataset.transactiontocalibrateid;
 
         if (confirm(message) == true) {
-            window.open('@Url.Action(nameof(TransactionController.Edit), transactionControllerName)?calibratedTransactionID=' + elementID + '&typeID=' + @((int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION), '_self');
+            window.open('@Url.Action(nameof(TransactionController.Edit), transactionControllerName)?calibratedTransactionID=' + elementID + '&typeID=' + @((int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION), '_blank');
         }
     });
 

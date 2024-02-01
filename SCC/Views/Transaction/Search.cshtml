@@ -795,6 +795,9 @@
                 <th class="rotate">
                     Devolución
                 </th>
+                <th>
+                    Acciones
+                </th>
             </tr>
         </thead>
         <tbody>
@@ -886,6 +889,11 @@
                     <td class="text-center">
                         <button class="btn-element-action @(transaction.DevolutionCommentaries.Count() > 0 ? "btn-element-action-primary" : "btn-element-action-secondary") btn-transaction-devolution" type="button" title="@(transaction.DevolutionCommentaries.Count() > 0 ? "Existen devoluciones" : "No hay devoluciones")">
                             <i class='bx bx-link-external'></i>
+                        </button>
+                    </td>
+                    <td>
+                        <button data-elementid="@transaction.ID" class="btn-element-action btn-element-action-primary btn-transaction-download-pdf" title="Descargar PDF">
+                            <i class='bx bxs-download'></i>
                         </button>
                     </td>
                 </tr>
@@ -1183,4 +1191,47 @@
         return rowIndexes.join(',');
     }
 
+    $('.btn-transaction-download-pdf').click((e) => {
+        let message = '¿Quieres descargar la transacción en formato PDF?';
+
+        if (confirm(message) == true) {
+            showWaitingModal();
+
+            const element = e.currentTarget;
+            const elementID = $(element).data('elementid');
+
+            const data = {
+                "transactionID": elementID
+            };
+
+            $.ajax({
+                "url": '@Url.Action(nameof(TransactionController.ExportTransactionToPDF), mainControllerName)',
+                "contentType": 'application/json',
+                "data": JSON.stringify(data),
+                "method": 'POST',
+                "timeout": 0,
+                "success": function (response) {
+                    printToPDF(response);
+                    //window.open(response, '_blank');
+                },
+                "error": function (error) {
+                    window.open(response, '_blank');
+                },
+                "complete": function (response) {
+                    //window.open(response, '_blank');
+                    hideWaitingModal();
+                }
+            });
+        }
+    });
+
+    function printToPDF(content) {
+        var printWindow = window.open('', '_blank');
+
+        printWindow.document.write(content);
+
+        printWindow.document.addEventListener('DOMContentLoaded', function () {
+            printWindow.print();
+        });
+    }
 </script>

@@ -62,6 +62,19 @@ namespace SCC_BL.Settings
                 public const string EXCEL_FILES_XLS = "application/vnd.ms-excel";
                 public const string TEXT_FILES = "text/plain";
                 public const string OCTET_STREAM = "application/octet-stream";
+                public const string PDF_FILES = "application/pdf";
+            }
+        }
+
+        public struct Export
+        {
+            public struct Transaction
+            {
+                public struct PDF
+                {
+                    public const string REPLACE_CONTENT = "yyyyMMddhhmmss";
+                    public const string NAME = "Transacción - " + REPLACE_CONTENT + ".pdf";
+                }
             }
         }
 
