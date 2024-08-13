@@ -227,9 +227,32 @@ namespace SCC_DATA.Repositories
 			{
 				throw ex;
 			}
-		}
+        }
 
-		public System.Data.DataTable SelectByPermissionID(int permissionID)
+        public System.Data.DataTable SelectByProgramID(int programID)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.User.StoredProcedures.SelectByProgramID.Parameters.PROGRAM_ID, programID, System.Data.SqlDbType.Int)
+                    };
+
+                    return
+                        db.Select(
+                            Queries.User.StoredProcedures.SelectByProgramID.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public System.Data.DataTable SelectByPermissionID(int permissionID)
 		{
 			try
 			{

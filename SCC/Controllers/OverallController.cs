@@ -80,7 +80,7 @@ namespace SCC.Controllers
 
             jsonInfoString = @object != null ? Serialize(@object) : "NULL";
 
-            actualUsername = GetActualUser() != null ? GetActualUser().Username : "NULL";
+            actualUsername = GetCurrentUser() != null ? GetCurrentUser().Username : "NULL";
 
             exceptionMessage = ex != null ? ex.ToString() : "NULL";
 
@@ -201,7 +201,7 @@ namespace SCC.Controllers
             {
                 int? actualUserID = null;
 
-                if (GetActualUser() != null) actualUserID = GetActualUser().ID;
+                if (GetCurrentUser() != null) actualUserID = GetCurrentUser().ID;
 
                 Log log = new Log(
                     (int)elementCategory,
@@ -247,12 +247,12 @@ namespace SCC.Controllers
             }
         }
 
-        public User GetActualUser()
+        public User GetCurrentUser()
         {
             return _actualUser;
         }
 
-        public void SetActualUser(User user)
+        public void SetCurrentUser(User user)
         {
             _actualUser = user;
         }
@@ -539,7 +539,7 @@ namespace SCC.Controllers
                     string extension = new System.IO.FileInfo(filePath).Extension;
                     //string fileName, string extension, byte[] data, int creationUserID, int statusID
 
-                    using (UploadedFile uploadedFile = new UploadedFile(name, extension, buffer, GetActualUser().ID, statusID))
+                    using (UploadedFile uploadedFile = new UploadedFile(name, extension, buffer, GetCurrentUser().ID, statusID))
                     {
                         result = uploadedFile.Insert();
                     }
@@ -603,7 +603,7 @@ namespace SCC.Controllers
 
             try
             {
-                using (UserNotification userNotification = new UserNotification(userID, message, typeID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_NOTIFICATION.CREATED))
+                using (UserNotification userNotification = new UserNotification(userID, message, typeID, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_NOTIFICATION.CREATED))
                 {
                     int auxResult = userNotification.Insert();
 
@@ -613,13 +613,13 @@ namespace SCC.Controllers
                         {
                             foreach (UserNotificationUrl userNotificationUrl in userNotificationUrlList)
                             {
-                                using (UserNotificationUrl newUserNotificationUrl = new UserNotificationUrl(userNotificationUrl.Content, userNotificationUrl.Description, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_NOTIFICATION_URL.CREATED))
+                                using (UserNotificationUrl newUserNotificationUrl = new UserNotificationUrl(userNotificationUrl.Content, userNotificationUrl.Description, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_NOTIFICATION_URL.CREATED))
                                 {
                                     auxResult = newUserNotificationUrl.Insert();
 
                                     if (auxResult > 0)
                                     {
-                                        using (UserNotificationUrlCatalog userNotificationUrlCatalog = UserNotificationUrlCatalog.UserNotificationUrlCatalogForInsert(userNotification.ID, newUserNotificationUrl.ID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_NOTIFICATION_URL_CATALOG.CREATED))
+                                        using (UserNotificationUrlCatalog userNotificationUrlCatalog = UserNotificationUrlCatalog.UserNotificationUrlCatalogForInsert(userNotification.ID, newUserNotificationUrl.ID, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_NOTIFICATION_URL_CATALOG.CREATED))
                                         {
                                             auxResult = userNotificationUrlCatalog.Insert();
                                         }

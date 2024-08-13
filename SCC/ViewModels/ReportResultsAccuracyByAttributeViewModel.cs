@@ -94,6 +94,13 @@ namespace SCC.ViewModels
                     resultByAttribute.AttributeName = accuracyByAttributeResult.AttributeName;
                     resultByAttribute.Quantity = successfulResultCount;
 
+                    resultByAttribute.ChildrenAttributeIDList =
+                        this.AccuracyByAttributeResultList
+                            .Where(e =>
+                                e.AttributeName.Equals(accuracyByAttributeResult.AttributeName))
+                            .SelectMany(e => e.ChildrenAttributeIDList)
+                            .ToArray();
+
                     this.ResultByAttributeList.Add(resultByAttribute);
                 }
             }
@@ -105,6 +112,7 @@ namespace SCC.ViewModels
             public int[] AttributeID { get; set; }
             public string AttributeName { get; set; }
             public int Quantity { get; set; }
+            public int[] ChildrenAttributeIDList { get; set; }
         }
     }
 }

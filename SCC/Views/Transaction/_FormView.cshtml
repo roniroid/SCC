@@ -4,6 +4,8 @@
 @model SCC.ViewModels.TransactionFormViewModel
 
 @{
+    User userToEvaluate = (User)ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserToEvaluate.NAME];
+
     User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
 
     string mainControllerName = OverallController.GetControllerName(typeof(TransactionController));
@@ -100,7 +102,8 @@
                 bool hasUserToEvaluate = Model.Transaction.UserToEvaluateID > 0;
             }
 
-            @if (hasUserToEvaluate)
+            @*OLD - SCC*@
+            @*@if (hasUserToEvaluate)
             {
                 <span>@((ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value.Equals(Model.Transaction.UserToEvaluateID.ToString())).FirstOrDefault().Text)</span>
             }
@@ -109,6 +112,26 @@
                 @Html.DropDownList(
                     "userToEvaluate",
                     (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value != actualUser.ID.ToString()),
+                    "Seleccione un usuario",
+                    new
+                    {
+                        @class = "property-field-control",
+                        placeholder = "Usuarios disponibles",
+                        title = "Usuarios disponibles"
+                    }
+                )
+            </div>*@
+
+            @if (hasUserToEvaluate)
+            {
+                @*<span>@((ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value.Equals(Model.Transaction.UserToEvaluateID.ToString())).FirstOrDefault().Text)</span>*@
+                <span>@($"{userToEvaluate.Person.Identification} - {userToEvaluate.Person.SurName} {userToEvaluate.Person.FirstName}")</span>
+            }
+
+            <div class="@(hasUserToEvaluate ? "d-none" : string.Empty)">
+                @Html.DropDownList(
+                    "userToEvaluate",
+                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserListByProgram.NAME] as SelectList).Where(e => e.Value != actualUser.ID.ToString()),
                     "Seleccione un usuario",
                     new
                     {

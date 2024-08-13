@@ -111,7 +111,17 @@ namespace SCC_BL
 					.ToList();
         }
 
-		void SetCustomControlList(bool includeDeleted = false)
+        public int? GetProgramID()
+        {
+            if (this.ProgramFormCatalogList.Count > 0)
+            {
+                return this.ProgramFormCatalogList.LastOrDefault().ProgramID;
+            }
+
+            return null;
+        }
+
+        public void SetCustomControlList(bool includeDeleted = false)
         {
 			this.CustomControlList = new List<CustomControl>();
 
@@ -735,6 +745,8 @@ namespace SCC_BL
                         {
                             parentID = insertedAttributeList.Where(e => e.AttributeGhostID == attribute.ParentAttributeGhostID).First().ID;
                         }
+
+                        parentID = parentID == 0 ? null : parentID;
 
                         Attribute newAttribute = new Attribute(
 							this.ID, 

@@ -31,12 +31,15 @@ namespace SCC.ViewModels
         public List<ResultByAttribute> ResultByAttributeList { get; set; } = new List<ResultByAttribute>();
         public List<CalibrationResultsByTransactionViewModel.ResultByBIField> ResultByBIFieldList { get; set; } = new List<CalibrationResultsByTransactionViewModel.ResultByBIField>();
         public Form Form { get; set; }
+        public int FormID { get; set; }
 
         public CalibrationResultsByTransactionViewModel(Calibration calibrationSession/*, List<SCC_BL.Transaction> calibrationList*/, List<SCC_BL.Transaction> calibratedTransactionList)
         {
             this.CalibrationSession = calibrationSession;
             /*this.CalibrationList = calibrationList;*/
             this.CalibratedTransactionList = calibratedTransactionList;
+
+            this.FormID = this.CalibrationList[0].FormID;
 
             this.ExpertEvaluationList =
                 this.CalibrationSession.CalibrationList
@@ -212,7 +215,14 @@ namespace SCC.ViewModels
                         break;
                 }
 
-                this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                try
+                {
+                    this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                }
+                catch (Exception ex)
+                {
+                    string exceptionMessage = ex.ToString();
+                }
             }
 
             /*public void Calculate(int totalTransactionCount)
@@ -313,9 +323,16 @@ namespace SCC.ViewModels
                         break;
                     default:
                         break;
-                }
+                }            
 
-                this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                try
+                {
+                    this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                }
+                catch (Exception ex)
+                {
+                    string exceptionMessage = ex.ToString();
+                }
             }*/
         }
 
@@ -392,7 +409,14 @@ namespace SCC.ViewModels
                 total += this.FCE.Total;
                 //total += this.NCE.Total;
 
-                percentageScore = (Convert.ToDecimal(success) / total) * 100;
+                try
+                {
+                    percentageScore = (Convert.ToDecimal(success) / total) * 100;
+                }
+                catch (Exception ex)
+                {
+                    string exceptionMessage = ex.ToString();
+                }
 
                 return percentageScore;
             }
@@ -402,7 +426,7 @@ namespace SCC.ViewModels
                 public int AttributeID { get; set; }
                 public int Success { get; set; } = 0;
                 public int Total { get; set; }
-                public decimal PercentageScore { get; set; }
+                public decimal PercentageScore { get; set; } = 0;
 
                 public ResultByAttribute(int attributeID, List<SCC_BL.Transaction> calibrationList, List<SCC_BL.Transaction> expertEvaluationList, int totalUserCount)
                 {
@@ -461,14 +485,22 @@ namespace SCC.ViewModels
                         }
                     }
 
-                    this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                    try
+                    {
+                        this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                    }
+                    catch (Exception ex)
+                    {
+                        string exceptionMessage = ex.ToString();
+                    }
                 }
             }
         }
 
         void Calculate()
         {
-            this.Form = new Form(this.CalibrationList.FirstOrDefault().FormID);
+            //this.Form = new Form(this.CalibrationList.FirstOrDefault().FormID);
+            this.Form = new Form(this.FormID);
             this.Form.SetDataByID();
 
             List<User> userList = new List<User>();
@@ -541,7 +573,14 @@ namespace SCC.ViewModels
             total += this.FCE.Total;
             //total += this.NCE.Total;
 
-            percentageScore = (Convert.ToDecimal(success) / total) * 100;
+            try
+            {
+                percentageScore = (Convert.ToDecimal(success) / total) * 100;
+            }
+            catch (Exception ex)
+            {
+                string exceptionMessage = ex.ToString();
+            }
 
             return percentageScore;
         }
@@ -551,7 +590,7 @@ namespace SCC.ViewModels
             public int AttributeID { get; set; }
             public int Success { get; set; } = 0;
             public int Total { get; set; }
-            public decimal PercentageScore { get; set; }
+            public decimal PercentageScore { get; set; } = 0;
 
             public ResultByAttribute(int attributeID, List<SCC_BL.Transaction> calibrationList, List<SCC_BL.Transaction> expertEvaluationList, int totalTransactionCount)
             {
@@ -593,7 +632,14 @@ namespace SCC.ViewModels
                     }
                 }
 
-                this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                try
+                {
+                    this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                }
+                catch (Exception ex)
+                {
+                    string exceptionMessage = ex.ToString();
+                }
             }
         }
 
@@ -602,7 +648,7 @@ namespace SCC.ViewModels
             public int BIFieldID { get; set; }
             public int Success { get; set; } = 0;
             public int Total { get; set; }
-            public decimal PercentageScore { get; set; }
+            public decimal PercentageScore { get; set; } = 0;
 
             public ResultByBIField(int biFieldID, List<SCC_BL.Transaction> calibrationList, List<SCC_BL.Transaction> expertEvaluationList, int totalTransactionCount)
             {
@@ -644,7 +690,14 @@ namespace SCC.ViewModels
                     }*/
                 }
 
-                this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                try
+                {
+                    this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                }
+                catch (Exception ex)
+                {
+                    string exceptionMessage = ex.ToString();
+                }
             }
         }
     }

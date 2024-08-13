@@ -59,8 +59,8 @@ namespace SCC.Controllers
         public ActionResult LogFiles()
         {
             bool allowedUser =
-                GetActualUser().HasRole(SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER) ||
-                GetActualUser().HasRole(SCC_BL.DBValues.Catalog.USER_ROLE.ADMINISTRATOR);
+                GetCurrentUser().HasRole(SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER) ||
+                GetCurrentUser().HasRole(SCC_BL.DBValues.Catalog.USER_ROLE.ADMINISTRATOR);
 
 
             if (!allowedUser)

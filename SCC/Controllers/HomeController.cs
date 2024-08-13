@@ -13,9 +13,9 @@ namespace SCC.Controllers
         {
             List<UserNotification> userNotificationList = new List<UserNotification>();
 
-            using (UserNotification userNotification = UserNotification.UserNotificationWithUserID(GetActualUser().ID))
+            using (UserNotification userNotification = UserNotification.UserNotificationWithUserID(GetCurrentUser().ID))
             {
-                userNotificationList = userNotification.SelectByUserID(GetActualUser().ID);
+                userNotificationList = userNotification.SelectByUserID(GetCurrentUser().ID);
             }
 
             return View(userNotificationList);

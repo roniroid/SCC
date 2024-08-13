@@ -13,15 +13,21 @@ namespace SCC_BL.Reports.Results
         public int AttributeID { get; set; } = 0;
         public string AttributeName { get; set; }
         public bool SuccessFulResult { get; set; }
+        public int[] ChildrenAttributeIDList { get; set; } = new int[0];
         public bool IsControllable { get; set; } = true;
 
-        public AccuracyByAttribute(int transactionAttributeID, int transactionID, int attributeID, string attributeName, bool successFulResult, bool mustBeControllable)
+        public AccuracyByAttribute(int transactionAttributeID, int transactionID, int attributeID, string attributeName, bool successFulResult, bool mustBeControllable, string childrenAttributeIDList)
         {
             this.TransactionAttributeID = transactionAttributeID;
             this.TransactionID = transactionID;
             this.AttributeID = attributeID;
             this.AttributeName = attributeName;
             this.SuccessFulResult = successFulResult;
+
+            this.ChildrenAttributeIDList = 
+                !string.IsNullOrEmpty(childrenAttributeIDList) 
+                    ? childrenAttributeIDList.Split(',').Select(e => Convert.ToInt32(e)).ToArray()
+                    : new int[0];
 
             if (mustBeControllable)
                 this.SetIsControllable();

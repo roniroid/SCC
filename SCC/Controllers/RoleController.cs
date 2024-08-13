@@ -14,7 +14,7 @@ namespace SCC.Controllers
 
         public ActionResult Manage(int? roleID, bool filterActiveElements = false)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ROLES) && !GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_ROLES))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ROLES) && !GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_ROLES))
             {
                 SaveProcessingInformation<SCC_BL.Results.Role.Manage.NotAllowedToSeeOrCreateRoles>();
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
@@ -63,7 +63,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (role.UpdatePermissionList(permissionList, GetActualUser().ID))
+                switch (role.UpdatePermissionList(permissionList, GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.Role.UpdatePermissionList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Role.UpdatePermissionList.Success>(role.ID, role.BasicInfo.StatusID, role);
@@ -82,7 +82,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(RoleManagementViewModel roleManagementViewModel, int[] permissionList)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_ROLES))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_ROLES))
             {
                 SaveProcessingInformation<SCC_BL.Results.Role.Update.NotAllowedToModifyRoles>();
                 return RedirectToAction(nameof(RoleController.Manage), GetControllerName(typeof(RoleController)));
@@ -91,14 +91,14 @@ namespace SCC.Controllers
             Role oldRole = new Role(roleManagementViewModel.Role.ID);
             oldRole.SetDataByID();
 
-            Role newRole = new Role(roleManagementViewModel.Role.ID, roleManagementViewModel.Role.Identifier, roleManagementViewModel.Role.Name, roleManagementViewModel.Role.BasicInfoID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.UPDATED);
+            Role newRole = new Role(roleManagementViewModel.Role.ID, roleManagementViewModel.Role.Identifier, roleManagementViewModel.Role.Name, roleManagementViewModel.Role.BasicInfoID, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.UPDATED);
             try
             {
                 int result = newRole.Update();
 
                 if (result > 0)
                 {
-                    if (GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_ROLES))
+                    if (GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_ROLES))
                     {
                         if (permissionList == null)
                             permissionList = new int[0];
@@ -139,20 +139,20 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(RoleManagementViewModel roleManagementViewModel, int[] permissionList)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_ROLES))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_ROLES))
             {
                 SaveProcessingInformation<SCC_BL.Results.Role.Insert.NotAllowedToCreateRoles>();
                 return RedirectToAction(nameof(RoleController.Manage), GetControllerName(typeof(RoleController)));
             }
 
-            Role newRole = new Role(roleManagementViewModel.Role.Identifier, roleManagementViewModel.Role.Name, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.CREATED);
+            Role newRole = new Role(roleManagementViewModel.Role.Identifier, roleManagementViewModel.Role.Name, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.CREATED);
             try
             {
                 int result = newRole.Insert();
 
                 if (result > 0)
                 {
-                    if (GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_ROLES))
+                    if (GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_ROLES))
                     {
                         if (permissionList == null)
                             permissionList = new int[0];
@@ -193,7 +193,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Delete(int roleID)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_ROLES))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_ROLES))
             {
                 SaveProcessingInformation<SCC_BL.Results.Role.Delete.NotAllowedToDeleteRoles>();
                 return RedirectToAction(nameof(RoleController.Manage), GetControllerName(typeof(RoleController)));
@@ -206,7 +206,7 @@ namespace SCC.Controllers
             {
                 //role.Delete();
 
-                role.BasicInfo.ModificationUserID = GetActualUser().ID;
+                role.BasicInfo.ModificationUserID = GetCurrentUser().ID;
                 role.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED;
 
                 int result = role.BasicInfo.Update();

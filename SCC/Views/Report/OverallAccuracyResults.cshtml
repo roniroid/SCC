@@ -656,11 +656,31 @@
                 }
             },
             onClick: clickHandler,
-            onHover: (event, chartElement) => {
-                event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
-            }
+            onHover: barHoverHandler
         }
     });
+
+    function barHoverHandler(event, chartElement) {
+        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+
+        @*const points = myChart.getElementsAtEventForMode(event, 'nearest', { intersect: true }, true);
+
+        if (points.length) {
+            const firstPoint = points[0];
+            const dataset = myChart.data.datasets[firstPoint.datasetIndex];
+            let errorTypeID = dataset.errorTypeIDs[firstPoint.index];
+
+            const allowedErrorTypeIDArray = [
+                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE),
+                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE),
+                @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE),
+            ];
+
+            if (allowedErrorTypeIDArray.includes(errorTypeID)) {
+                event.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+            }
+        }*@
+    }
 
     function clickHandler(evt) {
         const points = myChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
@@ -682,7 +702,7 @@
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
             $($form).append('<input type="hidden" name="isControllable" value="@isControllable.ToString().ToLower()" /> ');
-
+            +
             $(document.body).append($form);
 
             $form.submit();

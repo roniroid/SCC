@@ -157,8 +157,8 @@ namespace SCC.Controllers
                     userManagementViewModel.User.UserWorkspaceCatalogList.Select(s => s.WorkspaceID));
 
             if (
-                !GetActualUser().RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.ADMINISTRATOR) &&
-                !GetActualUser().RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER))
+                !GetCurrentUser().RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.ADMINISTRATOR) &&
+                !GetCurrentUser().RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER))
             {
                 roleList =
                     roleList
@@ -304,12 +304,12 @@ namespace SCC.Controllers
                                 ? new int[0]
                                 : permissionArray;
 
-                        tempUser.UpdateRoleList(roleArray, GetActualUser().ID);
+                        tempUser.UpdateRoleList(roleArray, GetCurrentUser().ID);
                         //tempUser.UpdateRoleList(roleArray, GetActualUser().ID, true);
 
-                        if (GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_USERS))
+                        if (GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_USERS))
                         {
-                            tempUser.UpdatePermissionList(permissionArray, GetActualUser().ID);
+                            tempUser.UpdatePermissionList(permissionArray, GetCurrentUser().ID);
                             //tempUser.UpdatePermissionList(permissionArray, GetActualUser().ID, true);
                         }
                         else
@@ -434,8 +434,8 @@ namespace SCC.Controllers
                                 ? new int[0]
                                 : programGroupArray;
 
-                        tempUser.UpdateProgramList(programArray, GetActualUser().ID);
-                        tempUser.UpdateProgramGroupList(programGroupArray, GetActualUser().ID);
+                        tempUser.UpdateProgramList(programArray, GetCurrentUser().ID);
+                        tempUser.UpdateProgramGroupList(programGroupArray, GetCurrentUser().ID);
 
                         SaveProcessingInformation<SCC_BL.Results.User.AsignProgramsAndProgramGroups.Success>(null, null, tempUser);
                     }
@@ -455,7 +455,7 @@ namespace SCC.Controllers
 
         public ActionResult NotificationMatrix()
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CHANGE_NOTIFICATION_ALARMS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CHANGE_NOTIFICATION_ALARMS))
             {
                 SaveProcessingInformation<SCC_BL.Results.NotificationMatrix.Manage.NotAllowedToChangeNotificationAlarms>();
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
@@ -692,7 +692,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (user.UpdateRoleList(roleList != null ? roleList : new int[0], GetActualUser().ID))
+                switch (user.UpdateRoleList(roleList != null ? roleList : new int[0], GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.User.UpdateRoleList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.User.UpdateRoleList.Success>(user.ID, user.BasicInfo.StatusID, user);
@@ -712,7 +712,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (user.UpdateSupervisorList(supervisorList != null ? supervisorList : new int[0], startDate, GetActualUser().ID))
+                switch (user.UpdateSupervisorList(supervisorList != null ? supervisorList : new int[0], startDate, GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.User.UpdateSupervisorList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.User.UpdateSupervisorList.Success>(user.ID, user.BasicInfo.StatusID, user);
@@ -732,7 +732,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (user.UpdateWorkspaceList(workspaceList != null ? workspaceList : new int[0], startDate, GetActualUser().ID))
+                switch (user.UpdateWorkspaceList(workspaceList != null ? workspaceList : new int[0], startDate, GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.User.UpdateWorkspaceList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.User.UpdateWorkspaceList.Success>(user.ID, user.BasicInfo.StatusID, user);
@@ -752,7 +752,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (user.UpdateGroupList(groupList != null ? groupList : new int[0], GetActualUser().ID))
+                switch (user.UpdateGroupList(groupList != null ? groupList : new int[0], GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.User.UpdateGroupList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.User.UpdateGroupList.Success>(user.ID, user.BasicInfo.StatusID, user);
@@ -772,7 +772,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (user.UpdateProgramList(programList != null ? programList : new int[0], GetActualUser().ID))
+                switch (user.UpdateProgramList(programList != null ? programList : new int[0], GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.User.UpdateProgramList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.User.UpdateProgramList.Success>(user.ID, user.BasicInfo.StatusID, user);
@@ -791,7 +791,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(UserPersonViewModel userPerson, int? userStatus, int[] supervisorList, DateTime? supervisorStartDate, int[] workspaceList, DateTime? workspaceStartDate, int[] roleList, int[] groupList, int[] programList)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
             {
                 SaveProcessingInformation<SCC_BL.Results.User.Update.NotAllowedToModifyUsers>();
                 return RedirectToAction(nameof(UserController.Manage), GetControllerName(typeof(UserController)));
@@ -811,7 +811,7 @@ namespace SCC.Controllers
                 userPerson.Person.SurName,
                 userPerson.Person.CountryID, 
                 userPerson.Person.BasicInfoID, 
-                GetActualUser().ID, 
+                GetCurrentUser().ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.UPDATED);
             try
             {
@@ -852,7 +852,7 @@ namespace SCC.Controllers
                         TEMP: 
                     */
 
-                    User newUser = new User(userPerson.User.ID, userPerson.User.Username, userPerson.User.Email, userPerson.User.StartDate, userPerson.User.LanguageID, userPerson.User.HasPassPermission, userPerson.User.BasicInfoID, GetActualUser().ID, newStatusID);
+                    User newUser = new User(userPerson.User.ID, userPerson.User.Username, userPerson.User.Email, userPerson.User.StartDate, userPerson.User.LanguageID, userPerson.User.HasPassPermission, userPerson.User.BasicInfoID, GetCurrentUser().ID, newStatusID);
 
                     try
                     {
@@ -983,7 +983,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(UserPersonViewModel userPerson, int[] supervisorList, DateTime? supervisorStartDate, int[] workspaceList, DateTime? workspaceStartDate, int[] roleList, int[] groupList, int[] programList)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS))
             {
                 SaveProcessingInformation<SCC_BL.Results.User.Insert.NotAllowedToCreateUsers>();
                 return RedirectToAction(nameof(UserController.Manage), GetControllerName(typeof(UserController)));
@@ -998,7 +998,7 @@ namespace SCC.Controllers
                 userPerson.Person.FirstName, 
                 userPerson.Person.SurName, 
                 userPerson.Person.CountryID, 
-                GetActualUser().ID, 
+                GetCurrentUser().ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
 
             try
@@ -1041,7 +1041,7 @@ namespace SCC.Controllers
                         TEMP: 
                     */
 
-                    User newUser = new User(newPerson.ID, userPerson.User.Username, hashedPassword, salt, userPerson.User.Email, userPerson.User.StartDate, userPerson.User.LanguageID, userPerson.User.HasPassPermission, DateTime.Now, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_USER.CREATED);
+                    User newUser = new User(newPerson.ID, userPerson.User.Username, hashedPassword, salt, userPerson.User.Email, userPerson.User.StartDate, userPerson.User.LanguageID, userPerson.User.HasPassPermission, DateTime.Now, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_USER.CREATED);
 
                     try
                     {
@@ -1094,7 +1094,7 @@ namespace SCC.Controllers
 
         public ActionResult LogIn()
         {
-            if (GetActualUser() == null)
+            if (GetCurrentUser() == null)
                 return View();
             else
                 return RedirectToAction(nameof(Index), GetControllerName(typeof(HomeController)));
@@ -1128,9 +1128,9 @@ namespace SCC.Controllers
 
                     user.SetTotalPermissions();
 
-                    SetActualUser(user);
+                    SetCurrentUser(user);
 
-                    user.UpdateLastLogin(GetActualUser().ID);
+                    user.UpdateLastLogin(GetCurrentUser().ID);
 
                     SaveProcessingInformation<SCC_BL.Results.User.LogIn.Success>(user.ID, user.BasicInfo.StatusID, user);
 
@@ -1264,7 +1264,7 @@ namespace SCC.Controllers
 
                 if (result > 0)
                 {
-                    SetActualUser(user);
+                    SetCurrentUser(user);
 
                     SendMail(SCC_BL.Settings.AppValues.MailTopic.USER_CREATION, user, password);
 
@@ -1303,7 +1303,7 @@ namespace SCC.Controllers
 
         public ActionResult MassiveImport()
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MASSIVELY_IMPORT_USERS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MASSIVELY_IMPORT_USERS))
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
 
             List<UploadedFile> uploadedFileList = new List<UploadedFile>();
@@ -1331,7 +1331,7 @@ namespace SCC.Controllers
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
             }*/
             
-            if (GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
+            if (GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
             {
                 using (User user = new User())
                 {
@@ -1344,7 +1344,7 @@ namespace SCC.Controllers
             }
             else
             {
-                userList.Add(GetActualUser());
+                userList.Add(GetCurrentUser());
             }
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.MassivePasswordChange.User.NAME] =
@@ -1352,8 +1352,8 @@ namespace SCC.Controllers
                     userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
-                    !GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS)
-                        ? new int[] { GetActualUser().ID }
+                    !GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS)
+                        ? new int[] { GetCurrentUser().ID }
                         : null);
             
             /*Dictionary<int, string> userListDictionary = new Dictionary<int, string>();
@@ -1385,7 +1385,7 @@ namespace SCC.Controllers
                     return;
                 }
 
-                switch (user.ProcessPasswordRecovery(password, GetActualUser().ID, user.BasicInfo.StatusID))
+                switch (user.ProcessPasswordRecovery(password, GetCurrentUser().ID, user.BasicInfo.StatusID))
                 {
                     case SCC_BL.Results.User.PasswordRecovery.CODE.SUCCESS:
                         //SendMail(SCC_BL.Settings.AppValues.MailTopic.CHANGE_PASSWORD, user, password);
@@ -1654,7 +1654,7 @@ namespace SCC.Controllers
                                     user.Person.SurName,
                                     user.Person.CountryID,
                                     existingPerson.BasicInfoID,
-                                    GetActualUser().ID,
+                                    GetCurrentUser().ID,
                                     (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.UPDATED);
 
                                 user.Person.ID = existingPersonID;
@@ -1723,7 +1723,7 @@ namespace SCC.Controllers
                                             user.LanguageID,
                                             user.HasPassPermission,
                                             existingUser.BasicInfoID,
-                                            GetActualUser().ID,
+                                            GetCurrentUser().ID,
                                             (int)SCC_BL.DBValues.Catalog.STATUS_USER.UPDATED);
 
                                         user.ID = existingUserID;
@@ -1904,7 +1904,7 @@ namespace SCC.Controllers
                             {
                                 var newRow = excelParser.GetRowCells(row, headersCount).ToArray();
 
-                                User user = new User(newRow, rowCount, GetActualUser().ID, allUserList, allWorkspaceList, allRoleList, allGroupList, allProgramList, allCountryList);
+                                User user = new User(newRow, rowCount, GetCurrentUser().ID, allUserList, allWorkspaceList, allRoleList, allGroupList, allProgramList, allCountryList);
 
                                 elementList.Add(user);
                             }
@@ -1929,7 +1929,7 @@ namespace SCC.Controllers
 
         public ActionResult LogOut()
         {
-            SetActualUser(null);
+            SetCurrentUser(null);
             return RedirectToAction(nameof(UserController.LogIn), _mainControllerName);
         }
 
@@ -1953,7 +1953,7 @@ namespace SCC.Controllers
                     SaveProcessingInformation<SCC_BL.Results.User.PasswordRecovery.PasswordsDoNotMatch>(user.ID, user.BasicInfo.StatusID, user);
                 }
 
-                switch (user.ProcessPasswordRecovery(password, GetActualUser().ID, user.BasicInfo.StatusID))
+                switch (user.ProcessPasswordRecovery(password, GetCurrentUser().ID, user.BasicInfo.StatusID))
                 {
                     case SCC_BL.Results.User.PasswordRecovery.CODE.SUCCESS:
                         SendMail(SCC_BL.Settings.AppValues.MailTopic.CHANGE_PASSWORD, user, password);
@@ -1978,7 +1978,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Delete(int userID)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_USERS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_USERS))
             {
                 SaveProcessingInformation<SCC_BL.Results.User.Delete.NotAllowedToDeleteUsers>();
                 return RedirectToAction(nameof(UserController.Manage), GetControllerName(typeof(UserController)));
@@ -1991,7 +1991,7 @@ namespace SCC.Controllers
             {
                 //user.Delete();
 
-                user.BasicInfo.ModificationUserID = GetActualUser().ID;
+                user.BasicInfo.ModificationUserID = GetCurrentUser().ID;
                 user.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED;
 
                 int result = user.BasicInfo.Update();
@@ -2024,7 +2024,7 @@ namespace SCC.Controllers
                 else
                     user.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED;
 
-                user.BasicInfo.ModificationUserID = GetActualUser().ID;
+                user.BasicInfo.ModificationUserID = GetCurrentUser().ID;
 
                 int result = user.BasicInfo.Update();
 

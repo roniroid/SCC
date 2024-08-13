@@ -155,7 +155,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(CustomControl customControl, List<CustomControlValueCatalog> valueList = null, int maskID = 0)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS))
             {
                 SaveProcessingInformation<SCC_BL.Results.CustomControl.Update.NotAllowedToCreateCustomFields>();
                 return RedirectToAction(nameof(CustomControlController.Manage), GetControllerName(typeof(CustomControlController)));
@@ -210,7 +210,7 @@ namespace SCC.Controllers
                 customControl.NumberOfRows, 
                 customControl.NumberOfColumns, 
                 customControl.BasicInfoID, 
-                GetActualUser().ID, 
+                GetCurrentUser().ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.UPDATED);
 
             newCustomControl.SetValueList();
@@ -227,7 +227,7 @@ namespace SCC.Controllers
 
                     try
                     {
-                        response = newCustomControl.UpdateCustomControlValueCatalogList(valueList, GetActualUser().ID);
+                        response = newCustomControl.UpdateCustomControlValueCatalogList(valueList, GetCurrentUser().ID);
                     }
                     catch (Exception ex)
                     {
@@ -274,7 +274,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(CustomControl customControl, List<CustomControlValueCatalog> valueList = null, int maskID = 0)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS))
             {
                 SaveProcessingInformation<SCC_BL.Results.CustomControl.Insert.NotAllowedToCreateCustomFields>();
                 return RedirectToAction(nameof(CustomControlController.Manage), GetControllerName(typeof(CustomControlController)));
@@ -324,7 +324,7 @@ namespace SCC.Controllers
                 customControl.DefaultValue ?? string.Empty,
                 customControl.NumberOfRows,
                 customControl.NumberOfColumns,
-                GetActualUser().ID,
+                GetCurrentUser().ID,
                 (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.CREATED);
 
             try
@@ -339,7 +339,7 @@ namespace SCC.Controllers
 
                     try
                     {
-                        response = newCustomControl.UpdateCustomControlValueCatalogList(valueList, GetActualUser().ID);
+                        response = newCustomControl.UpdateCustomControlValueCatalogList(valueList, GetCurrentUser().ID);
                     }
                     catch (Exception ex)
                     {
@@ -393,7 +393,7 @@ namespace SCC.Controllers
             {
                 //customControl.Delete();
 
-                customControl.BasicInfo.ModificationUserID = GetActualUser().ID;
+                customControl.BasicInfo.ModificationUserID = GetCurrentUser().ID;
                 customControl.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED;
 
                 //int result = customControl.BasicInfo.Update();

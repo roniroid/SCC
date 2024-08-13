@@ -64,7 +64,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (programGroup.UpdateProgramList(programList != null ? programList : new int[0], GetActualUser().ID))
+                switch (programGroup.UpdateProgramList(programList != null ? programList : new int[0], GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.ProgramGroup.UpdateProgramList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.ProgramGroup.UpdateProgramList.Success>(programGroup.ID, programGroup.BasicInfo.StatusID, programGroup);
@@ -86,7 +86,7 @@ namespace SCC.Controllers
             ProgramGroup oldProgramGroup = new ProgramGroup(programGroupManagementViewModel.ProgramGroup.ID);
             oldProgramGroup.SetDataByID();
 
-            ProgramGroup newProgramGroup = new ProgramGroup(programGroupManagementViewModel.ProgramGroup.ID, programGroupManagementViewModel.ProgramGroup.Identifier, programGroupManagementViewModel.ProgramGroup.Name, programGroupManagementViewModel.ProgramGroup.BasicInfoID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.UPDATED);
+            ProgramGroup newProgramGroup = new ProgramGroup(programGroupManagementViewModel.ProgramGroup.ID, programGroupManagementViewModel.ProgramGroup.Identifier, programGroupManagementViewModel.ProgramGroup.Name, programGroupManagementViewModel.ProgramGroup.BasicInfoID, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.UPDATED);
 
             try
             {
@@ -127,7 +127,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(ProgramGroupManagementViewModel programGroupManagementViewModel, int[] programList)
         {
-            ProgramGroup newProgramGroup = new ProgramGroup(programGroupManagementViewModel.ProgramGroup.Identifier, programGroupManagementViewModel.ProgramGroup.Name, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.CREATED);
+            ProgramGroup newProgramGroup = new ProgramGroup(programGroupManagementViewModel.ProgramGroup.Identifier, programGroupManagementViewModel.ProgramGroup.Name, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.CREATED);
 
             try
             {
@@ -175,7 +175,7 @@ namespace SCC.Controllers
             {
                 //programGroup.Delete();
 
-                programGroup.BasicInfo.ModificationUserID = GetActualUser().ID;
+                programGroup.BasicInfo.ModificationUserID = GetCurrentUser().ID;
                 programGroup.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.DELETED;
 
                 int result = programGroup.BasicInfo.Update();
