@@ -341,6 +341,7 @@ namespace SCC_DATA.Queries
 					public const string ATTRIBUTE_ID = "AttributeID";
 					public const string ATTRIBUTE_NAME = "AttributeName";
 					public const string SUCCESSFUL_RESULT = "SuccessfulResult";
+					public const string CHILDREN_ATTRIBUTE_ID_LIST = "ChildrenAttributeIDList";
 				}
 			}
 
@@ -361,7 +362,7 @@ namespace SCC_DATA.Queries
 					public const string ATTRIBUTE_ID = "AttributeID";
 					public const string ATTRIBUTE_NAME = "AttributeName";
 					public const string SUCCESSFUL_RESULT = "SuccessfulResult";
-					public const string HAS_CHILDREN = "HasChildren";
+					public const string CHILDREN_ATTRIBUTE_ID_LIST = "ChildrenAttributeIDList";
 					public const string ERROR_TYPE_ID = "ErrorTypeID";
 				}
 			}

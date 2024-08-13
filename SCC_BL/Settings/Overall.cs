@@ -23,9 +23,13 @@ namespace SCC_BL.Settings
         public const int DEFAULT_PASSWORD_LENGTH = 15;
 
         public const int DEFAULT_ORDER_LENGTH = 5;
+        public const int DEFAULT_BI_ORDER_LENGTH = 3;
 
         public const int MIN_NON_EXISTING_ATTRIBUTE_GHOST_ID = 1000;
         public const int MIN_EXISTING_ATTRIBUTE_GHOST_ID = 4000;
+
+        public const int MIN_NON_EXISTING_BI_FIELD_GHOST_ID = 1000;
+        public const int MIN_EXISTING_BI_FIELD_GHOST_ID = 4000;
 
         public static readonly string[] NEUTRAL_VALUES = {
                 "NA",
@@ -59,6 +63,8 @@ namespace SCC_BL.Settings
         }
 
         public const int InitialAttributeGhostID = 1000;
+
+        public const int InitialBIFieldGhostID = 1000;
 
         public struct ImportTasks
         {

@@ -62,6 +62,7 @@
     <Compile Include="CustomControl.cs" />
     <Compile Include="CustomControlValueCatalog.cs" />
     <Compile Include="CustomField.cs" />
+    <Compile Include="CustomTools\BIFieldUploadInfo.cs" />
     <Compile Include="CustomTools\FormUploadInfo.cs" />
     <Compile Include="DBValues\Catalog.cs" />
     <Compile Include="Form.cs" />

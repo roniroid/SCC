@@ -441,9 +441,80 @@ namespace SCC_BL
 				.OrderBy(o => o.Person.SurName)
 				.ThenBy(o => o.Person.FirstName)
 				.ToList();
-		}
+        }
 
-		public void SetDataByID(bool simplifiedData = false)
+        public List<User> SelectByProgramID(int programID, bool simplifiedData = false, bool mustSetWorkspaces = false)
+        {
+            List<User> userList = new List<User>();
+
+            using (SCC_DATA.Repositories.User repoUser = new SCC_DATA.Repositories.User())
+            {
+                DataTable dt = repoUser.SelectByProgramID(programID);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    User user = new User(
+                        Convert.ToInt32(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.ID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.PERSONID]),
+                        Convert.ToString(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.USERNAME]),
+                        /*(byte[])(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.PASSWORD]),
+						(byte[])(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.SALT]),*/
+                        Convert.ToString(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.EMAIL]),
+                        Convert.ToDateTime(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.STARTDATE]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.LANGUAGEID]),
+                        Convert.ToBoolean(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.HASPASSPERMISSION]),
+                        Convert.ToDateTime(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.LASTLOGINDATE]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.User.StoredProcedures.SelectByProgramID.ResultFields.BASICINFOID])
+                    );
+
+                    user.BasicInfo = new BasicInfo(user.BasicInfoID);
+                    user.BasicInfo.SetDataByID();
+
+                    user.Person = new Person(user.PersonID);
+                    user.Person.SetDataByID();
+
+                    if (!simplifiedData)
+                    {
+                        /*user.UserWorkspaceCatalogList = await SCC_BL.UserWorkspaceCatalog.UserWorkspaceCatalogWithUserID(user.ID).SelectByUserID();
+                        user.SupervisorList = await UserSupervisorCatalog.UserSupervisorCatalogWithUserID(user.ID).SelectByUserID();
+                        user.RoleList = await UserRoleCatalog.UserRoleCatalogWithUserID(user.ID).SelectByUserID();
+                        user.PermissionList = await UserPermissionCatalog.UserPermissionCatalogWithUserID(user.ID).SelectByUserID();
+                        user.GroupList = await UserGroupCatalog.UserGroupCatalogWithUserID(user.ID).SelectByUserID();
+                        user.ProgramList = await UserProgramCatalog.UserProgramCatalogWithUserID(user.ID).SelectByUserID();
+                        user.ProgramGroupList = await UserProgramGroupCatalog.UserProgramGroupCatalogWithUserID(user.ID).SelectByUserID();*/
+
+                        user.SupervisorList = UserSupervisorCatalog.UserSupervisorCatalogWithUserID(user.ID).SelectByUserID();
+                        user.RoleList = UserRoleCatalog.UserRoleCatalogWithUserID(user.ID).SelectByUserID();
+                        user.PermissionList = UserPermissionCatalog.UserPermissionCatalogWithUserID(user.ID).SelectByUserID();
+                        user.GroupList = UserGroupCatalog.UserGroupCatalogWithUserID(user.ID).SelectByUserID();
+                        user.ProgramList = UserProgramCatalog.UserProgramCatalogWithUserID(user.ID).SelectByUserID();
+                        user.ProgramGroupList = UserProgramGroupCatalog.UserProgramGroupCatalogWithUserID(user.ID).SelectByUserID();
+                        user.SetCurrentProgramList();
+
+                        mustSetWorkspaces = true;
+                    }
+
+                    if (mustSetWorkspaces)
+                    {
+                        user.UserWorkspaceCatalogList = SCC_BL.UserWorkspaceCatalog.UserWorkspaceCatalogWithUserID(user.ID).SelectByUserID();
+                        user.SetWorkspaceList();
+                    }
+
+                    userList.Add(user);
+                }
+            }
+
+            /*return userList
+				.OrderBy(o => new { o.Person.SurName, o.Person.FirstName })
+				.ToList();*/
+
+            return userList
+                .OrderBy(o => o.Person.SurName)
+                .ThenBy(o => o.Person.FirstName)
+                .ToList();
+        }
+
+        public void SetDataByID(bool simplifiedData = false)
 		{
 			using (SCC_DATA.Repositories.User repoUser = new SCC_DATA.Repositories.User())
 			{
@@ -695,7 +766,7 @@ namespace SCC_BL
 			string excelFieldLanguage = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.LANGUAGE]).ToString().Trim();
 			string excelFieldWorkspace = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.WORKSPACE]).ToString().Trim();
 			string excelFieldSupervisor = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.SUPERVISOR]).ToString().Trim();
-			string excelFieldSupervisorStartDate = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.SUPERVISOR_START_DATE]).ToString().Trim();
+			string excelFieldSupervisorStartDates = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.SUPERVISOR_START_DATE]).ToString().Trim();
 			string excelFieldRole = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.ROLE]).ToString().Trim();
 			string excelFieldGroup = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.GROUP]).ToString().Trim();
 			string excelFieldProgram = excelParser.GetCellValue(cells[(int)SCC_BL.Settings.AppValues.ExcelTasks.User.MassiveImport.Fields.PROGRAM]).ToString().Trim();
@@ -781,7 +852,30 @@ namespace SCC_BL
                 string[] roleIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldRole, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
                 string[] groupIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldGroup, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
                 string[] programIdentifierList = System.Text.RegularExpressions.Regex.Split(excelFieldProgram, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
-                string[] workspaceStartDateList = System.Text.RegularExpressions.Regex.Split(excelFieldWorkspaceStartDates, "[,\r\n]").Select(e => e.Trim()).Where(e => !string.IsNullOrEmpty(e)).ToArray();
+                string[] workspaceStartDateList = 
+					System.Text.RegularExpressions.Regex.Split(
+						excelFieldWorkspaceStartDates, 
+						"[,\r\n]")
+						.Select(e =>
+                        {
+							string result = e;
+
+							try
+							{
+								result = excelParser.FormatDate(result);
+                            }
+							catch (Exception ex)
+							{
+								string exceptionMessage = ex.ToString();
+							}
+
+                            result = result.Trim();
+
+							return result;
+                        })
+						.Where(e => 
+							!string.IsNullOrEmpty(e))
+						.ToArray();
 
                 List<User> supervisorList = new List<User>();
 

@@ -96,9 +96,52 @@ namespace SCC_BL
 			this.HasForcedComment = hasForcedComment;
 			this.BasicInfoID = basicInfoID;
 			this.Order = order;
-		}
+        }
 
-		/*public void SetValueList()
+        string TranslateBoolean(string word)
+        {
+            switch (word)
+            {
+                case "verdadero":
+                    return "true";
+                case "falso":
+                    return "false";
+                default:
+                    return word;
+            }
+        }
+
+        public BusinessIntelligenceField(DocumentFormat.OpenXml.Spreadsheet.Cell[] cells, int biFieldNameIndex, int biFieldDataStartIndex, int currentGhostID, int parentBIFieldGhostID, int order, int creationUserID)
+        {
+            using (SCC_BL.Tools.ExcelParser excelParser = new Tools.ExcelParser())
+            {
+                string name = excelParser.GetCellValue(cells[biFieldNameIndex]).ToString().Trim();
+                this.Name = name;
+
+                string description = excelParser.GetCellValue(cells[biFieldDataStartIndex + (int)SCC_BL.Settings.AppValues.ExcelTasks.BusinessIntelligenceField.MassiveUpload.Fields.DESCRIPTION]).ToString().Trim();
+                this.Description = 
+                    !string.IsNullOrEmpty(description)
+                        ? description
+                        : this.Name;
+
+                string forceCommentCellValue = excelParser.GetCellValue(cells[biFieldDataStartIndex + (int)SCC_BL.Settings.AppValues.ExcelTasks.BusinessIntelligenceField.MassiveUpload.Fields.FORCE_COMMENT]).ToString().Trim().ToLower();
+                forceCommentCellValue = TranslateBoolean(forceCommentCellValue);
+
+                bool forceComment =
+                    !string.IsNullOrEmpty(forceCommentCellValue)
+                    ? Convert.ToBoolean(forceCommentCellValue)
+                    : false;
+                this.HasForcedComment = forceComment;
+            }
+
+            this.BIFieldGhostID = currentGhostID;
+            this.ParentBIFieldGhostID = parentBIFieldGhostID;
+            this.Order = order;
+
+            this.BasicInfo = new BasicInfo(creationUserID, (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.CREATED);
+        }
+
+        /*public void SetValueList()
 		{
 			this.ValueList =
 				BusinessIntelligenceValueCatalog.BusinessIntelligenceValueCatalogWithBIFieldID(this.ID).SelectByBIFieldID()
@@ -108,7 +151,7 @@ namespace SCC_BL
 					.ToList();
 		}*/
 
-		public void SetChildList()
+        public void SetChildList()
 		{
 			this.ChildList = this.SelectChildren();
 		}
@@ -608,7 +651,82 @@ namespace SCC_BL
             }
         }
 
-		public void Dispose()
+        public List<BusinessIntelligenceField> GetBIFieldListFromExcel(IEnumerable<DocumentFormat.OpenXml.Spreadsheet.Row> rows, SCC_BL.CustomTools.BIFieldUploadInfo biFieldUploadInfo, int headersCount, int creationUserID)
+        {
+            List<BusinessIntelligenceField> biFieldList = new List<BusinessIntelligenceField>();
+
+            int order = 1;
+            int ghostIDCount = Settings.Overall.InitialBIFieldGhostID;
+
+            List<BusinessIntelligenceField> parentList = new List<BusinessIntelligenceField>();
+
+            foreach (SCC_BL.CustomTools.BIFieldUploadInfo.UploadInfo uploadInfo in biFieldUploadInfo.UploadInfoList)
+            {
+                int previousColumnIndex = 0;
+
+                foreach (SCC_BL.CustomTools.BIFieldUploadInfo.UploadInfo.BIFieldListInfo biFieldInfo in uploadInfo.BIFieldList)
+                {
+                    if (biFieldInfo.ColumnIndex == 0) parentList = new List<BusinessIntelligenceField>();
+
+                    if (previousColumnIndex > biFieldInfo.ColumnIndex)
+                    {
+                        parentList.Remove(parentList.Last());
+                        for (int i = 0; i < previousColumnIndex - biFieldInfo.ColumnIndex; i++)
+                        {
+                            try
+                            {
+                                parentList.Remove(parentList.Last());
+                            }
+                            catch (Exception ex)
+                            {
+                            }
+                        }
+                    }
+
+                    using (SCC_BL.Tools.ExcelParser excelParser = new Tools.ExcelParser())
+                    {
+                        DocumentFormat.OpenXml.Spreadsheet.Cell[] auxCurrentCells = excelParser.GetRowCells(rows.ElementAt(biFieldInfo.RowIndex), headersCount).ToArray();
+
+                        try
+                        {
+                            BusinessIntelligenceField newBusinessIntelligenceField = new BusinessIntelligenceField(
+                                auxCurrentCells,
+                                biFieldInfo.ColumnIndex,
+                                uploadInfo.DescriptionIndex,
+                                ghostIDCount,
+                                parentList.Count > 0
+                                    ? parentList.Last().BIFieldGhostID
+                                    : 0,
+                                order,
+                                creationUserID);
+
+                            biFieldList.Add(newBusinessIntelligenceField);
+
+                            try
+                            {
+                                if (!excelParser.CellHasData(excelParser.GetRowCells(rows.ElementAt(biFieldInfo.RowIndex + 1), headersCount).ToArray(), biFieldInfo.ColumnIndex))
+                                    parentList.Add(newBusinessIntelligenceField);
+                            }
+                            catch (Exception ex)
+                            {
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+
+                    previousColumnIndex = biFieldInfo.ColumnIndex;
+
+                    order++;
+                    ghostIDCount++;
+                }
+            }
+
+            return biFieldList;
+        }
+
+        public void Dispose()
 		{
 		}
 	}

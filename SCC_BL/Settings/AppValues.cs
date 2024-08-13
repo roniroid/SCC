@@ -125,6 +125,18 @@ namespace SCC_BL.Settings
                 }
             }
 
+            public struct BusinessIntelligenceField
+            {
+                public struct MassiveUpload
+                {
+                    public enum Fields
+                    {
+                        DESCRIPTION = 0,
+                        FORCE_COMMENT = 1,
+                    }
+                }
+            }
+
             public struct Transaction
             {
                 public struct ImportData
@@ -503,6 +515,21 @@ namespace SCC_BL.Settings
                                 public const string NAME = "EDIT_TRANSACTION_CUSTOM_CONTROL_LIST_CALL_ID_CONTENT";
                             }
                         }
+                    }
+                    public struct UserListByProgram
+                    {
+                        public const string NAME = "EDIT_TRANSACTION_USER_LIST_BY_PROGRAM";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "FullName";
+                            public const string VALUE = "ID";
+                        }
+                    }
+
+                    public struct UserToEvaluate
+                    {
+                        public const string NAME = "EDIT_TRANSACTION_USER_TO_EVALUATE";
                     }
                 }
 

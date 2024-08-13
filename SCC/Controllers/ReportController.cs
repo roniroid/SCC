@@ -15,7 +15,7 @@ namespace SCC.Controllers
 
         public ActionResult Index()
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Report.Index.NotAllowedToSeeReports>();
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));

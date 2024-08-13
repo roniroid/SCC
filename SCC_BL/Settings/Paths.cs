@@ -35,6 +35,11 @@ namespace SCC_BL.Settings
             public const string DB_PROCESSED_FILES_FOLDER = "~/Content/files/uploaded/DBProcessedFiles/";
         }
 
+        public struct BusinessIntelligenceField
+        {
+            public const string BI_FIELD_UPLOAD_FOLDER = "~/Content/files/uploaded/BIField/MassiveImport/";
+        }
+
         public struct Form
         {
             public const string FORM_UPLOAD_FOLDER = "~/Content/files/uploaded/FormUpload/";

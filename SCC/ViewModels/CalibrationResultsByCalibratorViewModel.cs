@@ -1,4 +1,5 @@
-﻿using SCC_BL;
+﻿using DocumentFormat.OpenXml.Vml;
+using SCC_BL;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,12 +30,15 @@ namespace SCC.ViewModels
         public List<ResultsByCalibrator> ResultsByCalibratorList { get; set; } = new List<ResultsByCalibrator>();
         public List<ResultByAttribute> ResultByAttributeList { get; set; } = new List<ResultByAttribute>();
         public Form Form { get; set; }
+        public int FormID { get; set; }
 
         public CalibrationResultsByCalibratorViewModel(Calibration calibrationSession, List<SCC_BL.Transaction> calibrationList, List<SCC_BL.Transaction> calibratedTransactionList)
         {
             this.CalibrationSession = calibrationSession;
             this.CalibrationList = calibrationList;
             this.CalibratedTransactionList = calibratedTransactionList;
+
+            this.FormID = this.CalibrationList[0].FormID;
 
             this.ExpertEvaluationList =
                 calibrationList
@@ -422,7 +426,8 @@ namespace SCC.ViewModels
 
         void Calculate()
         {
-            this.Form = new Form(this.CalibrationList.FirstOrDefault().FormID);
+            //this.Form = new Form(this.CalibrationList.FirstOrDefault().FormID);
+            this.Form = new Form(this.FormID);
             this.Form.SetDataByID();
 
             List<User> userList = new List<User>();
@@ -499,7 +504,14 @@ namespace SCC.ViewModels
             total += this.FCE.Total;
             //total += this.NCE.Total;
 
-            percentageScore = (Convert.ToDecimal(success) / total) * 100;
+            try
+            {
+                percentageScore = (Convert.ToDecimal(success) / total) * 100;
+            }
+            catch (Exception ex)
+            {
+                string exceptionMessage = ex.ToString();
+            }
 
             return percentageScore;
         }
@@ -551,7 +563,14 @@ namespace SCC.ViewModels
                     }
                 }
 
-                this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                try
+                {
+                    this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                }
+                catch (Exception ex)
+                {
+                    string exceptionMessage = ex.ToString();
+                }
             }
         }
     }

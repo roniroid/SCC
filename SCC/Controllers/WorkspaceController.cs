@@ -38,7 +38,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(WorkspaceManagementViewModel workspaceManagementViewModel)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_WORKSPACES))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_WORKSPACES))
             {
                 SaveProcessingInformation<SCC_BL.Results.Workspace.Update.NotAllowedToModifyWorkspaces>();
                 return RedirectToAction(nameof(WorkspaceController.Manage), GetControllerName(typeof(WorkspaceController)));
@@ -47,7 +47,7 @@ namespace SCC.Controllers
             Workspace oldWorkspace = new Workspace(workspaceManagementViewModel.Workspace.ID);
             oldWorkspace.SetDataByID();
 
-            Workspace newWorkspace = new Workspace(workspaceManagementViewModel.Workspace.ID, workspaceManagementViewModel.Workspace.Identifier, workspaceManagementViewModel.Workspace.Name, workspaceManagementViewModel.Workspace.Monitorable, workspaceManagementViewModel.Workspace.BasicInfoID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.UPDATED);
+            Workspace newWorkspace = new Workspace(workspaceManagementViewModel.Workspace.ID, workspaceManagementViewModel.Workspace.Identifier, workspaceManagementViewModel.Workspace.Name, workspaceManagementViewModel.Workspace.Monitorable, workspaceManagementViewModel.Workspace.BasicInfoID, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.UPDATED);
 
             try
             {
@@ -86,13 +86,13 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(WorkspaceManagementViewModel workspaceManagementViewModel)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_WORKSPACES))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_WORKSPACES))
             {
                 SaveProcessingInformation<SCC_BL.Results.Workspace.Insert.NotAllowedToCreateWorkspaces>();
                 return RedirectToAction(nameof(WorkspaceController.Manage), GetControllerName(typeof(WorkspaceController)));
             }
 
-            Workspace newWorkspace = new Workspace(workspaceManagementViewModel.Workspace.Identifier, workspaceManagementViewModel.Workspace.Name, workspaceManagementViewModel.Workspace.Monitorable, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.CREATED);
+            Workspace newWorkspace = new Workspace(workspaceManagementViewModel.Workspace.Identifier, workspaceManagementViewModel.Workspace.Name, workspaceManagementViewModel.Workspace.Monitorable, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.CREATED);
 
             try
             {
@@ -131,7 +131,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Delete(int workspaceID)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_WORKSPACES))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_WORKSPACES))
             {
                 SaveProcessingInformation<SCC_BL.Results.Workspace.Delete.NotAllowedToDeleteWorkspaces>();
                 return RedirectToAction(nameof(WorkspaceController.Manage), GetControllerName(typeof(WorkspaceController)));
@@ -144,7 +144,7 @@ namespace SCC.Controllers
             {
                 //workspace.Delete();
 
-                workspace.BasicInfo.ModificationUserID = GetActualUser().ID;
+                workspace.BasicInfo.ModificationUserID = GetCurrentUser().ID;
                 workspace.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED;
 
                 int result = workspace.BasicInfo.Update();

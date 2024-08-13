@@ -86,7 +86,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (group.UpdateUserList(userList, GetActualUser().ID))
+                switch (group.UpdateUserList(userList, GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.Group.UpdateUserList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Group.UpdateUserList.Success>(group.ID, group.BasicInfo.StatusID, group);
@@ -104,7 +104,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(GroupManagementViewModel groupManagementViewModel, int[] userList)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_GROUPS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_GROUPS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Group.Update.NotAllowedToCreateGroups>();
                 return RedirectToAction(nameof(GroupController.Manage), GetControllerName(typeof(GroupController)));
@@ -113,7 +113,7 @@ namespace SCC.Controllers
             Group oldGroup = new Group(groupManagementViewModel.Group.ID);
             oldGroup.SetDataByID();
 
-            Group newGroup = new Group(groupManagementViewModel.Group.ID, groupManagementViewModel.Group.Name, groupManagementViewModel.Group.ApplicableModuleID, groupManagementViewModel.Group.BasicInfoID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.UPDATED);
+            Group newGroup = new Group(groupManagementViewModel.Group.ID, groupManagementViewModel.Group.Name, groupManagementViewModel.Group.ApplicableModuleID, groupManagementViewModel.Group.BasicInfoID, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.UPDATED);
 
             try
             {
@@ -151,13 +151,13 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(GroupManagementViewModel groupManagementViewModel, int[] userList)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_GROUPS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_GROUPS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Group.Insert.NotAllowedToCreateGroups>();
                 return RedirectToAction(nameof(GroupController.Manage), GetControllerName(typeof(GroupController)));
             }
 
-            Group newGroup = new Group(groupManagementViewModel.Group.Name, groupManagementViewModel.Group.ApplicableModuleID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.CREATED);
+            Group newGroup = new Group(groupManagementViewModel.Group.Name, groupManagementViewModel.Group.ApplicableModuleID, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.CREATED);
 
             try
             {
@@ -202,7 +202,7 @@ namespace SCC.Controllers
             {
                 //group.Delete();
 
-                group.BasicInfo.ModificationUserID = GetActualUser().ID;
+                group.BasicInfo.ModificationUserID = GetCurrentUser().ID;
                 group.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DELETED;
 
                 int result = group.BasicInfo.Update();

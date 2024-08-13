@@ -56,7 +56,7 @@ namespace SCC.Controllers
                 programManagementViewModel.Program.StartDate, 
                 programManagementViewModel.Program.EndDate, 
                 programManagementViewModel.Program.BasicInfoID, 
-                GetActualUser().ID, 
+                GetCurrentUser().ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.UPDATED);
 
             try
@@ -94,7 +94,7 @@ namespace SCC.Controllers
                 programManagementViewModel.Program.Name, 
                 programManagementViewModel.Program.StartDate, 
                 programManagementViewModel.Program.EndDate, 
-                GetActualUser().ID, 
+                GetCurrentUser().ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.CREATED);
 
             try
@@ -135,7 +135,7 @@ namespace SCC.Controllers
             {
                 //program.Delete();
 
-                program.BasicInfo.ModificationUserID = GetActualUser().ID;
+                program.BasicInfo.ModificationUserID = GetCurrentUser().ID;
                 program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED;
 
                 int result = program.BasicInfo.Update();
@@ -165,7 +165,7 @@ namespace SCC.Controllers
             {
                 //program.Delete();
 
-                program.BasicInfo.ModificationUserID = GetActualUser().ID;
+                program.BasicInfo.ModificationUserID = GetCurrentUser().ID;
 
                 switch ((SCC_BL.DBValues.Catalog.STATUS_PROGRAM)program.BasicInfo.StatusID)
                 {

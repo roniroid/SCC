@@ -293,6 +293,7 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\BIFieldManagementViewModel.cs" />
+    <Compile Include="ViewModels\BIFieldsUploadViewModel.cs" />
     <Compile Include="ViewModels\CalibrationCheckResultsByCalibratorViewModel.cs" />
     <Compile Include="ViewModels\CalibrationCheckResultsViewModel.cs" />
     <Compile Include="ViewModels\CalibrationEditViewModel.cs" />
@@ -980,6 +981,7 @@
     <Content Include="Views\Report\AccuracyByAttributeResults_bak_20231018102900.cshtml" />
     <Content Include="Views\Report\AccuracyTrendByAttributeResults_bak_20231018102900.cshtml" />
     <Content Include="Views\Report\AccuracyBySubattributeResults_bak_20231018102900.cshtml" />
+    <Content Include="Views\BIField\UploadBIFields.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
@@ -988,6 +990,8 @@
     <Folder Include="Content\files\generated\Form\Export\" />
     <Folder Include="Content\files\generated\Transaction\Export\" />
     <Folder Include="Content\files\generated\Transaction\Import\" />
+    <Folder Include="Content\files\generated\User\Export\" />
+    <Folder Include="Content\files\uploaded\BIField\MassiveImport\" />
     <Folder Include="Content\files\uploaded\FormUpload\" />
     <Folder Include="Content\files\uploaded\ImportData\" />
     <Folder Include="Content\files\uploaded\UserMassiveImports\" />

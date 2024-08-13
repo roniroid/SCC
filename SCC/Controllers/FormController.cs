@@ -125,7 +125,7 @@ namespace SCC.Controllers
 
         public ActionResult Edit(int? formID)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Form.Update.NotAllowedToCreateTemplateForms>();
                 return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
@@ -195,7 +195,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (form.UpdateProgramFormCatalogList(programFormCatalogList, GetActualUser().ID))
+                switch (form.UpdateProgramFormCatalogList(programFormCatalogList, GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.Form.UpdateProgramFormCatalogList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Form.UpdateProgramFormCatalogList.Success>(form.ID, form.BasicInfo.StatusID, form);
@@ -221,7 +221,7 @@ namespace SCC.Controllers
 
                     try
                     {
-                        switch (program.UpdateProgramFormCatalogList(programFormCatalogList.Where(e => e.ProgramID == programID).ToList(), GetActualUser().ID))
+                        switch (program.UpdateProgramFormCatalogList(programFormCatalogList.Where(e => e.ProgramID == programID).ToList(), GetCurrentUser().ID))
                         {
                             case SCC_BL.Results.Program.UpdateProgramFormCatalogList.CODE.SUCCESS:
                                 SaveProcessingInformation<SCC_BL.Results.Program.UpdateProgramFormCatalogList.Success>(program.ID, program.BasicInfo.StatusID, program);
@@ -242,7 +242,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (form.UpdateAttributeList(attributeList, attributeValueCatalogList, GetActualUser().ID))
+                switch (form.UpdateAttributeList(attributeList, attributeValueCatalogList, GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.Form.UpdateAttributeList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Form.UpdateAttributeList.Success>(form.ID, form.BasicInfo.StatusID, form);
@@ -262,7 +262,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (form.UpdateCustomFieldList(customControlList, GetActualUser().ID))
+                switch (form.UpdateCustomFieldList(customControlList, GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.Form.UpdateCustomFieldList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Form.UpdateCustomFieldList.Success>(form.ID, form.BasicInfo.StatusID, form);
@@ -282,7 +282,7 @@ namespace SCC.Controllers
         {
             try
             {
-                switch (form.UpdateBIFieldList(biFieldList, GetActualUser().ID))
+                switch (form.UpdateBIFieldList(biFieldList, GetCurrentUser().ID))
                 {
                     case SCC_BL.Results.Form.UpdateBIFieldList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Form.UpdateBIFieldList.Success>(form.ID, form.BasicInfo.StatusID, form);
@@ -310,7 +310,7 @@ namespace SCC.Controllers
 
                 for (int j = 0; j < programIDArray.Length; j++)
                 {
-                    programFormCatalogList.Add(new ProgramFormCatalog(programIDArray[j], form.ID, startDate, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_FORM_CATALOG.CREATED));
+                    programFormCatalogList.Add(new ProgramFormCatalog(programIDArray[j], form.ID, startDate, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_FORM_CATALOG.CREATED));
                 }
 
                 try
@@ -334,7 +334,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(Form form, List<SCC_BL.Attribute> attributeList, List<AttributeValueCatalog> attributeValueCatalogList, int[] customFieldIDArray = null, int[] biFieldArray = null)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Form.Insert.NotAllowedToCreateTemplateForms>();
                 return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
@@ -361,7 +361,7 @@ namespace SCC.Controllers
                 }
             }
 
-            Form newForm = new Form(form.Name, form.TypeID, form.Comment, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_FORM.CREATED);
+            Form newForm = new Form(form.Name, form.TypeID, form.Comment, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_FORM.CREATED);
 
             try
             {
@@ -403,7 +403,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(Form form, List<SCC_BL.Attribute> attributeList, List<AttributeValueCatalog> attributeValueCatalogList, int[] customFieldIDArray = null, int[] biFieldArray = null)
         {
-            if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))
+            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Form.Insert.NotAllowedToCreateTemplateForms>();
                 return RedirectToAction(nameof(FormController.Manage), GetControllerName(typeof(FormController)));
@@ -433,7 +433,7 @@ namespace SCC.Controllers
             Form oldForm = new Form(form.ID);
             oldForm.SetDataByID(true);
 
-            Form newForm = new Form(form.ID, form.Name, form.TypeID, form.Comment, oldForm.BasicInfoID, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_FORM.UPDATED);
+            Form newForm = new Form(form.ID, form.Name, form.TypeID, form.Comment, oldForm.BasicInfoID, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_FORM.UPDATED);
 
             try
             {
@@ -512,7 +512,7 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult UploadForm(Form form, HttpPostedFileBase file)
         {
-            Form newForm = new Form(form.Name, form.TypeID, form.Comment, GetActualUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_FORM.CREATED);
+            Form newForm = new Form(form.Name, form.TypeID, form.Comment, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_FORM.CREATED);
 
             string filePath = SaveUploadedFile(file, SCC_BL.Settings.Paths.Form.FORM_UPLOAD_FOLDER);
 
@@ -658,7 +658,7 @@ namespace SCC.Controllers
 
                         using (SCC_BL.Attribute attribute = new SCC_BL.Attribute())
                         {
-                            elementList = attribute.GetAttributeListFromExcel(rows.Skip(1), formUploadInfo, headersCount, GetActualUser().ID);
+                            elementList = attribute.GetAttributeListFromExcel(rows.Skip(1), formUploadInfo, headersCount, GetCurrentUser().ID);
                         }
 
                         foreach (SCC_BL.Attribute attribute in elementList)
@@ -725,7 +725,7 @@ namespace SCC.Controllers
             {
                 //form.Delete();
 
-                form.BasicInfo.ModificationUserID = GetActualUser().ID;
+                form.BasicInfo.ModificationUserID = GetCurrentUser().ID;
                 form.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_FORM.DELETED;
 
                 int result = form.BasicInfo.Update();
@@ -763,7 +763,7 @@ namespace SCC.Controllers
                     }
                     catch (Exception ex)
                     {
-                        programFormCatalog.BasicInfo.ModificationUserID = GetActualUser().ID;
+                        programFormCatalog.BasicInfo.ModificationUserID = GetCurrentUser().ID;
                         programFormCatalog.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_FORM_CATALOG.DELETED;
                         programFormCatalog.BasicInfo.Update();
 

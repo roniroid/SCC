@@ -299,7 +299,8 @@ namespace SCC_BL
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.ATTRIBUTE_ID]),
 						Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.ATTRIBUTE_NAME]),
 						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.SUCCESSFUL_RESULT]),
-                        mustBeControllable);
+                        mustBeControllable,
+                        Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.CHILDREN_ATTRIBUTE_ID_LIST]));
 
 					accuracyByAttributeResultList.Add(accuracyByAttributeResult);
 				}
@@ -353,7 +354,7 @@ namespace SCC_BL
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ATTRIBUTE_ID]),
 						Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ATTRIBUTE_NAME]),
 						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.SUCCESSFUL_RESULT]),
-						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.HAS_CHILDREN]),
+						Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.CHILDREN_ATTRIBUTE_ID_LIST]),
 						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ERROR_TYPE_ID]),
                         mustBeControllable);
 

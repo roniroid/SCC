@@ -38,7 +38,7 @@ namespace SCC.ViewModels
                     resultBySubattribute.AttributeID = accuracyBySubattributeResult.AttributeID;
                     resultBySubattribute.AttributeName = accuracyBySubattributeResult.AttributeName;
                     resultBySubattribute.Quantity = failResultCount;
-                    resultBySubattribute.HasChildren = accuracyBySubattributeResult.HasChildren;
+                    resultBySubattribute.ChildrenAttributeIDList = accuracyBySubattributeResult.HasChildren;
                     resultBySubattribute.ErrorTypeID = accuracyBySubattributeResult.ErrorTypeID;
 
                     this.ResultBySubattributeList.Add(resultBySubattribute);
@@ -119,8 +119,14 @@ namespace SCC.ViewModels
 
                     resultBySubattribute.AttributeName = accuracyBySubattributeResult.AttributeName;
                     resultBySubattribute.Quantity = failResultCount;
-                    resultBySubattribute.HasChildren = accuracyBySubattributeResult.HasChildren;
                     resultBySubattribute.ErrorTypeID = accuracyBySubattributeResult.ErrorTypeID;
+
+                    resultBySubattribute.ChildrenAttributeIDList =
+                        this.AccuracyBySubattributeResultList
+                            .Where(e =>
+                                e.AttributeName.Equals(accuracyBySubattributeResult.AttributeName))
+                            .SelectMany(e => e.ChildrenAttributeIDList)
+                            .ToArray();
 
                     this.ResultBySubattributeList.Add(resultBySubattribute);
                 }
@@ -165,7 +171,7 @@ namespace SCC.ViewModels
             public int[] AttributeID { get; set; }
             public string AttributeName { get; set; }
             public int Quantity { get; set; }
-            public bool HasChildren { get; set; }
+            public int[] ChildrenAttributeIDList { get; set; }
             public int ErrorTypeID { get; set; }
         }
     }

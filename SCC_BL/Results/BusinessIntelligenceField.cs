@@ -238,6 +238,109 @@ namespace SCC_BL.Results
 				public const string MESSAGE_TITLE = "Error";
 				public const string MESSAGE_CONTENT = "Ha ocurrido un error al actualizar la lista de respuestas";
 			};
-		}
-	}
+        }
+
+        public static class MassiveImport
+        {
+            public enum CODE
+            {
+                SUCCESS,
+                ERROR
+            }
+
+            public const string REPLACE_MAX_SIZE = "%maxSize%";
+
+            public const string NO_FILE_FOUND = "No se ha encontrado ningún archivo";
+            public const string WRONG_FILE_EXTENSION = "No se permite subir archivos con esa extensión";
+            public const string MAX_SIZE_EXCEEDED = "Se ha sobrepasado el tamaño máximo del archivo (" + REPLACE_MAX_SIZE + ")";
+
+            public struct Success
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.SUCCESS;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.INFO;
+                public const string LOCAL_LOG = "Se ha realizado la carga de los campos de inteligencia de negocios de manera correcta";
+
+                public const string DATABASE_LOG = "Se ha realizado la carga de los campos de inteligencia de negocios de manera correcta";
+
+                public const string MESSAGE_TITLE = "Éxito";
+                public const string MESSAGE_CONTENT = "Se ha realizado la carga de los campos de inteligencia de negocios de manera correcta";
+            };
+
+            public struct Error
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.ERROR;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.ERROR;
+                public const string LOCAL_LOG = "Ha ocurrido un error al cargar los campos de inteligencia de negocios. \r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                //public const string DATABASE_LOG = "ERROR - Ha ocurrido un error al cargar el formulario. \r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                public const string MESSAGE_TITLE = "Error";
+                public const string MESSAGE_CONTENT = "Ha ocurrido un error al cargar los campos de inteligencia de negocios";
+            };
+
+            public struct ErrorSingleRow
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.ERROR;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.ERROR;
+                public const string LOCAL_LOG = "Ha ocurrido un error al encapsular los datos de los campos de inteligencia de negocios.\r\n\tDatos del objeto: " + REPLACE_JSON_INFO + ".\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                //public const string DATABASE_LOG = "ERROR - Ha ocurrido un error al cargar el formulario. \r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                public const string MESSAGE_TITLE = "Error";
+                public const string MESSAGE_CONTENT = "Ha ocurrido un error al encapsular los datos de los campos de inteligencia de negocios";
+
+                public const string CUSTOM_ERROR_EXCEL_LINES = "Se encontraron errores en las líneas:" + REPLACE_CUSTOM_CONTENT;
+                public const string CUSTOM_ERROR_FORM_NOT_LOADED = "Ocurrió un error al tratar de cargar los campos de inteligencia de negocios.\r\nDatos del objeto: " + REPLACE_JSON_INFO;
+                public const string CUSTOM_ERROR_ATTRIBUTES_NOT_CREATED = "Ocurrió un error al tratar de ingresar los atributos de los campos de inteligencia de negocios.\r\nDatos del objeto: " + REPLACE_JSON_INFO;
+            };
+        }
+
+        public static class MassiveUpdate
+        {
+            public enum CODE
+            {
+                SUCCESS,
+                ERROR
+            }
+
+            public struct Success
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.SUCCESS;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.INFO;
+                public const string LOCAL_LOG = "Se actualizó la lista de campos de inteligencia de negocios de manera correcta";
+
+                public const string DATABASE_LOG = "Campos de inteligencia de negocios actualizados correctamente";
+
+                public const string MESSAGE_TITLE = "Éxito";
+                public const string MESSAGE_CONTENT = "Se actualizó la lista de campos de inteligencia de negocios de manera correcta";
+            };
+
+            public struct Error
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.ERROR;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.ERROR;
+                public const string LOCAL_LOG = "Ha ocurrido un error al actualizar la lista de campos de inteligencia de negocios.\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                public const string DATABASE_LOG = "ERROR - Ha ocurrido un error al actualizar la lista de campos de inteligencia de negocios.\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                public const string MESSAGE_TITLE = "Error";
+                public const string MESSAGE_CONTENT = "Ha ocurrido un error al actualizar la lista de campos de inteligencia de negocios";
+            };
+        }
+    }
 }

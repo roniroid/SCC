@@ -450,6 +450,7 @@ namespace SCC_BL.DBValues
             LOADED_FILE_USER_IMPORT = 1295,
             LOADED_FILE_UPLOAD_FORM = 1347,
             LOADED_FILE_DATA_IMPORT = 1409,
+            LOADED_FILE_BI_FIELD_IMPORT = 3423,
         }
 
         public enum STATUS_USER

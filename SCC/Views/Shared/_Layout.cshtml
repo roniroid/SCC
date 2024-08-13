@@ -212,6 +212,7 @@
                         {
                             <li class="with-separator"></li>
                             <li><a href="@Url.Action(nameof(BIFieldController.Manage), OverallController.GetControllerName(typeof(BIFieldController)))">Preguntas IN</a></li>
+                            <li><a href="@Url.Action(nameof(BIFieldController.UploadBIFields), OverallController.GetControllerName(typeof(BIFieldController)))">Subir campos</a></li>
                         }
                         @*<li><a href="#">Opciones de devolución</a></li>*@
                         @if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_TEMPLATE_FORMS))

@@ -387,15 +387,23 @@
                                 int orderValue = currentCustomField.Order;
 
                                 if (
-                                    currentCustomField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED && 
+                                    currentCustomField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED &&
                                     currentCustomField.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED)
                                 {
-                                    if (currentCustomControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED)
+                                    try
                                     {
-                                        customFieldTableRowClass +=
-                                            string.IsNullOrEmpty(customFieldTableRowClass) ?
-                                                "strikethrough" :
-                                                " strikethrough";
+                                        if (currentCustomControl.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED)
+                                        {
+                                            customFieldTableRowClass +=
+                                                string.IsNullOrEmpty(customFieldTableRowClass) ?
+                                                    "strikethrough" :
+                                                    " strikethrough";
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+
+                                        throw;
                                     }
 
                                     <tr class="@customFieldTableRowClass" data-customcontrolid="@currentCustomControl.ID" data-customfieldorder="@orderValue" data-selected="@(Model.CustomFieldList.Where(e => e.CustomControlID == currentCustomControl.ID).Count() > 0 ? "true" : "false")">
@@ -769,9 +777,9 @@
     let jsonDefineAnswerTypeList = [];
 
     $('#btnSubmit').click(async () => {
-        /*if (!validateNCEAttributeScore()) {
+        if (!validateNCEAttributeScore()) {
             return false;
-        }*/
+        }
 
         await getAttributeList()
             .then((response) => {
@@ -786,9 +794,9 @@
 
     function validateNCEAttributeScore() {
         let result = true;
-        let elements = $('.attribute-table-row');
+        let attributeRows = $('.attribute-table-row');
 
-        elements = elements.filter(e => $(e).find('.select-error-type-select').val() == @SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE);
+        let elements = attributeRows.filter((index, e) => $(e).find('.td-error-type .select-error-type-select').val() == @((int)SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE));
 
         if (elements.length > 0) {
             elements = $(elements).find('.td-max-score .attribute-max-score');
@@ -1987,7 +1995,7 @@
 
         getFormObject()
             .then((response) => {
-                console.log(response);
+                //console.log(response);
 
                 $.ajax({
                     "url": '@formAction',
@@ -2207,6 +2215,7 @@
 
                         parentAttributeGhostID = parseInt($(auxControl).data('attributeghostid'));
                         parentAttributeID = parseInt($(auxControl).data('attributeid'));
+                        parentAttributeID = parentAttributeID == 0 ? null : parentAttributeID;
                     }
 
                     let name = $(currentElement).find('td.td-name').find('input.attribute-control').first().val();
