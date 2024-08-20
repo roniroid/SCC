@@ -37,8 +37,8 @@ namespace SCC_BL.Settings
             public const string HOST = "smtp-relay.sendinblue.com\r\n";
             public const int PORT = 587;
             public const bool ENABLE_SSL = false;
-            public const string SYSTEM_EMAIL_ADDRESS = "jenalo7376@fitwl.com";
-            public const string PASSWORD = "?284R1Dy35..?@";
+            public const string SYSTEM_EMAIL_ADDRESS = "";
+            public const string PASSWORD = "";
             public const bool IS_BODY_HTML = true;
         }
     }
