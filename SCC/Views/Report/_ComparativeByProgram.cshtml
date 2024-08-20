@@ -417,7 +417,7 @@
                                                         case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
                                                             htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-select";
 
-                                                            <select class="custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description">
+                                                            <select class="custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" multiple>
                                                                 <option value="">Seleccionar</option>
                                                                 @{
                                                                     foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
@@ -636,7 +636,9 @@
                     "BasicInfoID": 0
                 };
 
-                transactionCustomFieldList.push(transactionCustomField);
+                if ((transactionCustomField.ValueID > 0) || (transactionCustomField.Comment != '')) {
+                    transactionCustomFieldList.push(transactionCustomField);
+                }
             }
         });
 

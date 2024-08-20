@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_BL.Settings
 {
@@ -33,6 +33,8 @@ namespace SCC_BL.Settings
             public const string MASSIVE_IMPORT_FOLDER = "~/Content/files/uploaded/UserMassiveImports/";
 
             public const string DB_PROCESSED_FILES_FOLDER = "~/Content/files/uploaded/DBProcessedFiles/";
+
+            public const string EXPORT = "~/Content/files/generated/User/Export/";
         }
 
         public struct BusinessIntelligenceField

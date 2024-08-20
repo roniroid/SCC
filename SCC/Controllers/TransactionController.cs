@@ -12,7 +12,7 @@ using System.Data.OleDb;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+
 using System.Web;
 using System.Web.Mvc;
 using static SCC_BL.Settings.AppValues.ViewData.Transaction.FormView;
@@ -25,6 +25,7 @@ using PdfSharp;
 using PdfSharp.Pdf;
 using static SCC_BL.Settings.AppValues.ViewData.Calibration.Edit;
 using DocumentFormat.OpenXml.Presentation;
+using System.Threading.Tasks;
 
 namespace SCC.Controllers
 {
@@ -32,11 +33,13 @@ namespace SCC.Controllers
     {
         string _mainControllerName = GetControllerName(typeof(TransactionController));
 
-        public ActionResult Edit(int? transactionID, int? calibratedTransactionID = null, int typeID = (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.EVALUATION)
+        public ActionResult Edit(int? transactionID, int? calibratedTransactionID = null, int typeID = (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.EVALUATION, string callIdentifier = null)
         {
+            User currentUser = GetCurrentUser();
+
             if (calibratedTransactionID != null)
             {
-                if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
+                if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CALIBRATE_IN_CALIBRATION_SESSIONS))
                 {
                     SaveProcessingInformation<SCC_BL.Results.Calibration.Insert.NotAllowedToCalibrate>();
                     return RedirectToAction(nameof(CalibrationController.Manage), GetControllerName(typeof(CalibrationController)));
@@ -45,7 +48,7 @@ namespace SCC.Controllers
 
             int? transactionProgram = null;
             Transaction transaction = new Transaction((SCC_BL.DBValues.Catalog.TRANSACTION_TYPE)typeID, calibratedTransactionID);
-            transaction.EvaluatorUserID = GetCurrentUser().ID;
+            transaction.EvaluatorUserID = currentUser.ID;
             transaction.SetIdentifier();
 
             if (transactionID != null && transactionID > 0)
@@ -53,11 +56,11 @@ namespace SCC.Controllers
                 transaction = new Transaction(transactionID.Value);
                 transaction.SetDataByID();
 
-                if (GetCurrentUser().ID != transaction.UserToEvaluateID)
+                if (currentUser.ID != transaction.UserToEvaluateID)
                 {
-                    if (GetCurrentUser().ID == transaction.EvaluatorUserID)
+                    if (currentUser.ID == transaction.EvaluatorUserID)
                     {
-                        if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_OWN_MONITORING))
+                        if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_OWN_MONITORING))
                         {
                             SaveProcessingInformation<SCC_BL.Results.Transaction.Update.NotAllowedToSeeOwnMonitorings>();
                             return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
@@ -65,7 +68,7 @@ namespace SCC.Controllers
                     }
                     else
                     {
-                        if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MONITOR))
+                        if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MONITOR))
                         {
                             SaveProcessingInformation<SCC_BL.Results.Transaction.Update.NotAllowedToMonitorTransactions>();
                             return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
@@ -77,6 +80,23 @@ namespace SCC.Controllers
                 {
                     transactionProgram = programFormCatalog.SelectByFormID().LastOrDefault().ProgramID;
                 }
+            }
+
+            if (!string.IsNullOrEmpty(callIdentifier))
+            {
+                CalibrationCallIdentifierCatalog auxCalibrationCallIdentifierCatalog = CalibrationCallIdentifierCatalog.CalibrationCallIdentifierCatalogWithCallIdentifier(callIdentifier);
+
+                List<CalibrationCallIdentifierCatalog> calibrationCallIdentifierCatalogList = new List<CalibrationCallIdentifierCatalog>();
+
+                calibrationCallIdentifierCatalogList = auxCalibrationCallIdentifierCatalog.SelectByCallIdentifier();
+
+                CalibrationCallIdentifierCatalog idealCalibrationCallIdentifierCatalog =
+                    calibrationCallIdentifierCatalogList
+                        .FirstOrDefault();
+
+                transactionProgram = idealCalibrationCallIdentifierCatalog.ProgramID;
+
+                ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.Edit.ProgramID.NAME] = transactionProgram;
             }
 
             List<Program> programList = new List<Program>();
@@ -106,11 +126,11 @@ namespace SCC.Controllers
                         e.EndDate >= DateTime.Now)
                     .ToList();
 
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS))
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS))
             {
                 programList =
                     programList
-                        .Where(e => GetCurrentUser().CurrentProgramList.Select(s => s.ID).Contains(e.ID))
+                        .Where(e => currentUser.CurrentProgramList.Select(s => s.ID).Contains(e.ID))
                         .ToList();
             }
 
@@ -405,7 +425,6 @@ namespace SCC.Controllers
                 }
 
                 ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserToEvaluate.NAME] = userToEvaluate;
-
                 ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.HasDisputation.NAME] = hasDisputation;
                 ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.HasInvalidation.NAME] = hasInvalidation;
                 ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.HasDevolution.NAME] = hasDevolution;
@@ -446,7 +465,8 @@ namespace SCC.Controllers
                         if (currentCalibratedTransaction.CustomFieldList.Count() <= 0)
                         {
                             currentCalibratedTransaction.CustomFieldList =
-                                TransactionCustomFieldCatalog.TransactionCustomFieldCatalogWithTransactionID(currentCalibratedTransaction.ID).SelectByTransactionID();
+                                TransactionCustomFieldCatalog.TransactionCustomFieldCatalogWithTransactionID(currentCalibratedTransaction.ID)
+                                    .SelectByTransactionID();
                         }
 
                         try
@@ -582,6 +602,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult SaveDisputation(List<TransactionCommentary> commentaryList)
         {
+            User currentUser = GetCurrentUser();
+
             int? transactionID = null;
 
             if (commentaryList.Count() > 0) transactionID = commentaryList.FirstOrDefault().TransactionID;
@@ -596,7 +618,7 @@ namespace SCC.Controllers
                         transactionCommentary.TransactionID,
                         transactionCommentary.Comment,
                         transactionCommentary.BasicInfoID,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.UPDATED);
 
                     try
@@ -643,7 +665,7 @@ namespace SCC.Controllers
                         (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DISPUTE,
                         transactionCommentary.TransactionID,
                         transactionCommentary.Comment,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.CREATED);
 
                     try
@@ -690,6 +712,8 @@ namespace SCC.Controllers
 
         void SendDisputeNotifications(int transactionID, string transactionIDentifier, int[] userIDList, bool isNew = true, string oldCommentary = null)
         {
+            User currentUser = GetCurrentUser();
+
             string url = Url.Action(nameof(TransactionController.Edit), GetControllerName(typeof(TransactionController)), new { transactionID = transactionID, hasDisputation = "true" }, Request.Url.Scheme);
 
             List<UserNotificationUrl> userNotificationUrlList = new List<UserNotificationUrl>() {
@@ -698,7 +722,7 @@ namespace SCC.Controllers
 
             for (int i = 0; i < userIDList.Length; i++)
             {
-                if (userIDList[i] == GetCurrentUser().ID)
+                if (userIDList[i] == currentUser.ID)
                     SaveNotification(
                         userIDList[i],
                         (int)SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.DISPUTE_AGENT,
@@ -732,6 +756,8 @@ namespace SCC.Controllers
 
         void SendInvalidationNotifications(int transactionID, string transactionIDentifier, int[] userIDList, bool isNew = true, string oldCommentary = null)
         {
+            User currentUser = GetCurrentUser();
+
             string url = Url.Action(nameof(TransactionController.Edit), GetControllerName(typeof(TransactionController)), new { transactionID = transactionID, hasInvalidation = "true" }, Request.Url.Scheme);
 
             List<UserNotificationUrl> userNotificationUrlList = new List<UserNotificationUrl>() {
@@ -740,7 +766,7 @@ namespace SCC.Controllers
 
             for (int i = 0; i < userIDList.Length; i++)
             {
-                if (userIDList[i] == GetCurrentUser().ID)
+                if (userIDList[i] == currentUser.ID)
                     SaveNotification(
                         userIDList[i],
                         (int)SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.INVALIDATION_AGENT,
@@ -774,6 +800,8 @@ namespace SCC.Controllers
 
         void SendDevolutionNotifications(int transactionID, string transactionIDentifier, int[] userIDList, bool isNew = true, string oldCommentary = null)
         {
+            User currentUser = GetCurrentUser();
+
             string url = Url.Action(nameof(TransactionController.Edit), GetControllerName(typeof(TransactionController)), new { transactionID = transactionID, hasDevolution = "true" }, Request.Url.Scheme);
 
             List<UserNotificationUrl> userNotificationUrlList = new List<UserNotificationUrl>() {
@@ -782,7 +810,7 @@ namespace SCC.Controllers
 
             for (int i = 0; i < userIDList.Length; i++)
             {
-                if (userIDList[i] == GetCurrentUser().ID)
+                if (userIDList[i] == currentUser.ID)
                     SaveNotification(
                         userIDList[i],
                         (int)SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.DEVOLUTION_AGENT,
@@ -817,6 +845,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult SaveInvalidation(List<TransactionCommentary> commentaryList)
         {
+            User currentUser = GetCurrentUser();
+
             int? transactionID = null;
 
             if (commentaryList.Count() > 0) transactionID = commentaryList.FirstOrDefault().TransactionID;
@@ -831,7 +861,7 @@ namespace SCC.Controllers
                         transactionCommentary.TransactionID,
                         transactionCommentary.Comment,
                         transactionCommentary.BasicInfoID,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.UPDATED);
 
                     try
@@ -878,7 +908,7 @@ namespace SCC.Controllers
                         (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.INVALIDATION,
                         transactionCommentary.TransactionID,
                         transactionCommentary.Comment,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.CREATED);
 
                     try
@@ -926,6 +956,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult SaveDevolution(List<TransactionCommentary> commentaryList)
         {
+            User currentUser = GetCurrentUser();
+
             int? transactionID = null;
 
             if (commentaryList.Count() > 0) transactionID = commentaryList.FirstOrDefault().TransactionID;
@@ -940,7 +972,7 @@ namespace SCC.Controllers
                         transactionCommentary.TransactionID,
                         transactionCommentary.Comment,
                         transactionCommentary.BasicInfoID,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.UPDATED);
 
                     try
@@ -987,7 +1019,7 @@ namespace SCC.Controllers
                         transactionCommentary.TypeID,
                         transactionCommentary.TransactionID,
                         transactionCommentary.Comment,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.CREATED);
 
                     try
@@ -1041,6 +1073,8 @@ namespace SCC.Controllers
             List<SCC_BL.TransactionCommentary> transactionCommentaryList,
             string[] transactionLabelArray)
         {
+            User currentUser = GetCurrentUser();
+
             Transaction newTransaction = new Transaction(
                 transaction.Identifier,
                 transaction.UserToEvaluateID,
@@ -1066,7 +1100,7 @@ namespace SCC.Controllers
                 transaction.ControllableFulfillmentCriticalErrorResultID,
                 transaction.ControllableNonCriticalErrorResult,
                 transaction.TimeElapsed,
-                GetCurrentUser().ID,
+                currentUser.ID,
                 (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION.CREATED,
                 transaction.TypeID,
                 transaction.CalibratedTransactionID);
@@ -1112,12 +1146,12 @@ namespace SCC.Controllers
 
                     if (newTransaction.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION)
                     {
-                        User currentUser = new User(newTransaction.EvaluatorUserID);
-                        currentUser.SetDataByID(true);
+                        User currentTransactionUser = new User(newTransaction.EvaluatorUserID);
+                        currentTransactionUser.SetDataByID(true);
 
                         string message =
                             SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.Creation.AGENT_CALIBRATION
-                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
+                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_CALIBRATING_USER, $"{currentTransactionUser.Person.Identification} - {currentTransactionUser.Person.SurName}, {currentTransactionUser.Person.FirstName}")
                                 .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_TRANSACTION_IDENTIFIER, newTransaction.Identifier);
 
                         int[] usersToNotify = GetUsersToNotify(SCC_BL.DBValues.Catalog.NOTIFICATION_MATRIX_ACTION.CALIBRATION, newTransaction.ID);
@@ -1152,9 +1186,11 @@ namespace SCC.Controllers
 
         void UpdateAttributeList(Transaction transaction, List<SCC_BL.TransactionAttributeCatalog> transactionAttributeList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (transaction.UpdateAttributeList(transactionAttributeList, GetCurrentUser().ID))
+                switch (transaction.UpdateAttributeList(transactionAttributeList, currentUser.ID))
                 {
                     case SCC_BL.Results.Transaction.UpdateAttributeList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Transaction.UpdateAttributeList.Success>(transaction.ID, transaction.BasicInfo.StatusID, transaction);
@@ -1171,9 +1207,11 @@ namespace SCC.Controllers
 
         void UpdateTransactionCustomFieldCatalogList(Transaction transaction, List<SCC_BL.TransactionCustomFieldCatalog> transactionCustomFieldCatalog)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (transaction.UpdateCustomFieldList(transactionCustomFieldCatalog, GetCurrentUser().ID))
+                switch (transaction.UpdateCustomFieldList(transactionCustomFieldCatalog, currentUser.ID))
                 {
                     case SCC_BL.Results.Transaction.UpdateCustomFieldList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Transaction.UpdateCustomFieldList.Success>(transaction.ID, transaction.BasicInfo.StatusID, transaction);
@@ -1190,9 +1228,11 @@ namespace SCC.Controllers
 
         void UpdateTransactionBIFieldCatalogList(Transaction transaction, List<SCC_BL.TransactionBIFieldCatalog> transactionBIFieldCatalog)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (transaction.UpdateBIFieldList(transactionBIFieldCatalog, GetCurrentUser().ID))
+                switch (transaction.UpdateBIFieldList(transactionBIFieldCatalog, currentUser.ID))
                 {
                     case SCC_BL.Results.Transaction.UpdateBIFieldList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Transaction.UpdateBIFieldList.Success>(transaction.ID, transaction.BasicInfo.StatusID, transaction);
@@ -1209,9 +1249,11 @@ namespace SCC.Controllers
 
         void UpdateDisputeCommentList(Transaction transaction, List<SCC_BL.TransactionCommentary> transactionCommentaryList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (transaction.UpdateDisputeCommentList(transactionCommentaryList, GetCurrentUser().ID))
+                switch (transaction.UpdateDisputeCommentList(transactionCommentaryList, currentUser.ID))
                 {
                     case SCC_BL.Results.Transaction.UpdateDisputeCommentList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Transaction.UpdateDisputeCommentList.Success>(transaction.ID, transaction.BasicInfo.StatusID, transaction);
@@ -1228,9 +1270,11 @@ namespace SCC.Controllers
 
         void UpdateInvalidationCommentList(Transaction transaction, List<SCC_BL.TransactionCommentary> transactionCommentaryList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (transaction.UpdateInvalidationCommentList(transactionCommentaryList, GetCurrentUser().ID))
+                switch (transaction.UpdateInvalidationCommentList(transactionCommentaryList, currentUser.ID))
                 {
                     case SCC_BL.Results.Transaction.UpdateInvalidationCommentList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Transaction.UpdateInvalidationCommentList.Success>(transaction.ID, transaction.BasicInfo.StatusID, transaction);
@@ -1247,9 +1291,11 @@ namespace SCC.Controllers
 
         void UpdateDevolutionCommentList(Transaction transaction, List<SCC_BL.TransactionCommentary> transactionCommentaryList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (transaction.UpdateDevolutionCommentList(transactionCommentaryList, GetCurrentUser().ID))
+                switch (transaction.UpdateDevolutionCommentList(transactionCommentaryList, currentUser.ID))
                 {
                     case SCC_BL.Results.Transaction.UpdateDevolutionCommentList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Transaction.UpdateDevolutionCommentList.Success>(transaction.ID, transaction.BasicInfo.StatusID, transaction);
@@ -1266,9 +1312,11 @@ namespace SCC.Controllers
 
         void UpdateTransactionLabelList(Transaction transaction, string[] labelList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (transaction.UpdateTransactionLabelList(labelList, GetCurrentUser().ID))
+                switch (transaction.UpdateTransactionLabelList(labelList, currentUser.ID))
                 {
                     case SCC_BL.Results.Transaction.UpdateTransactionLabelList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Transaction.UpdateTransactionLabelList.Success>(transaction.ID, transaction.BasicInfo.StatusID, transaction);
@@ -1292,9 +1340,11 @@ namespace SCC.Controllers
             List<SCC_BL.TransactionCommentary> transactionCommentaryList,
             string[] transactionLabelArray)
         {
-            if (GetCurrentUser().ID == transaction.EvaluatorUserID)
+            User currentUser = GetCurrentUser();
+
+            if (currentUser.ID == transaction.EvaluatorUserID)
             {
-                if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_TRANSACTIONS))
+                if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_TRANSACTIONS))
                 {
                     SaveProcessingInformation<SCC_BL.Results.Transaction.Update.NotAllowedToModifyTransactions>();
                     return RedirectToAction(nameof(TransactionController.Edit), GetControllerName(typeof(TransactionController)), new { transactionID = transaction.ID });
@@ -1302,7 +1352,7 @@ namespace SCC.Controllers
             }
             else
             {
-                if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USER_TRANSACTION))
+                if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USER_TRANSACTION))
                 {
                     SaveProcessingInformation<SCC_BL.Results.Transaction.Update.NotAllowedToModifyOtherUsersTransactions>();
                     return RedirectToAction(nameof(TransactionController.Edit), GetControllerName(typeof(TransactionController)), new { transactionID = transaction.ID });
@@ -1339,7 +1389,7 @@ namespace SCC.Controllers
                 transaction.ControllableNonCriticalErrorResult,
                 transaction.TimeElapsed,
                 transaction.BasicInfoID,
-                GetCurrentUser().ID,
+                currentUser.ID,
                 (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION.UPDATED);
 
             try
@@ -1383,12 +1433,12 @@ namespace SCC.Controllers
 
                     if (newTransaction.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION)
                     {
-                        User currentUser = new User(newTransaction.EvaluatorUserID);
-                        currentUser.SetDataByID(true);
+                        User currentTransactionUser = new User(newTransaction.EvaluatorUserID);
+                        currentTransactionUser.SetDataByID(true);
 
                         string message =
                             SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.Update.AGENT_CALIBRATION
-                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_CALIBRATING_USER, $"{currentUser.Person.Identification} - {currentUser.Person.SurName}, {currentUser.Person.FirstName}")
+                                .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_CALIBRATING_USER, $"{currentTransactionUser.Person.Identification} - {currentTransactionUser.Person.SurName}, {currentTransactionUser.Person.FirstName}")
                                 .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_TRANSACTION_IDENTIFIER, oldTransaction.Identifier)
                                 .Replace(SCC_BL.Results.NotificationMatrix.UserNotification.Transaction.Calibration.REPLACE_OBJECT_INFO, Serialize(oldTransaction));
 
@@ -1424,7 +1474,9 @@ namespace SCC.Controllers
 
         public ActionResult Search(SCC_BL.Helpers.Transaction.Search.TransactionSearchHelper transactionSearchHelper = null)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_TRANSACTIONS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_TRANSACTIONS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Transaction.Search.NotAllowedToSearchTransactions>();
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
@@ -1449,6 +1501,16 @@ namespace SCC.Controllers
 
                 using (Transaction transaction = new Transaction())
                 {
+                    if (transactionSearchHelper.EvaluationDateTo != null)
+                    {
+                        transactionSearchHelper.EvaluationDateTo = transactionSearchHelper.EvaluationDateTo.Value.AddDays(1).AddSeconds(-1);
+                    }
+
+                    if (transactionSearchHelper.TransactionDateTo != null)
+                    {
+                        transactionSearchHelper.TransactionDateTo = transactionSearchHelper.TransactionDateTo.Value.AddDays(1).AddSeconds(-1);
+                    }
+
                     transactionSearchViewModel.TransactionList = transaction.Search(transactionSearchHelper);
                 }
 
@@ -1551,11 +1613,11 @@ namespace SCC.Controllers
                             e.First())
                         .ToList();
 
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS))
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS))
             {
                 programList =
                     programList
-                        .Where(e => GetCurrentUser().CurrentProgramList.Select(s => s.ID).Contains(e.ID))
+                        .Where(e => currentUser.CurrentProgramList.Select(s => s.ID).Contains(e.ID))
                         .ToList();
             }
 
@@ -1934,8 +1996,8 @@ namespace SCC.Controllers
 
                     return View(nameof(ErrorList), transactionImportResults);
                 }
-                else
-                    return RedirectToAction(nameof(TransactionController.ImportData), new { programID = programID });
+                /*else
+                    return RedirectToAction(nameof(TransactionController.ImportData), new { programID = programID });*/
             }
             catch (Exception ex1)
             {
@@ -2098,6 +2160,8 @@ namespace SCC.Controllers
 
         void ProcessRow(List<string> headerList, System.Data.DataRow row, int currentRowCount, DateTime? minDate, DateTime? maxDate, int programID, int firstAttributeIndex, int lastAttributeIndex, int customControlStartIndex, int customControlEndIndex, int biFieldStartIndex, int biFieldEndIndex)
         {
+            User currentUser = GetCurrentUser();
+
             bool hasError = false;
 
             User agentUser = new User();
@@ -2211,7 +2275,7 @@ namespace SCC.Controllers
                                 importTransactionCustomControlHelper.CustomField.ID,
                                 importTransactionCustomControlHelper.CustomControlComment,
                                 tempCustomControlValueCatalogID,
-                                GetCurrentUser().ID,
+                                currentUser.ID,
                                 (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_CUSTOM_FIELD_CATALOG.CREATED);
 
                         transactionCustomFieldCatalogList.Add(transactionCustomFieldCatalog);
@@ -2229,7 +2293,7 @@ namespace SCC.Controllers
                                 importTransactionBusinessIntelligenceFieldHelper.BusinessIntelligenceField.ID,
                                 importTransactionBusinessIntelligenceFieldHelper.BusinessIntelligenceValueTransactionComment,
                                 true,
-                                GetCurrentUser().ID,
+                                currentUser.ID,
                                 (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_BI_FIELD_CATALOG.CREATED);
 
                         transactionBIFieldCatalogList.Add(transactionBIFieldCatalog);
@@ -2259,7 +2323,7 @@ namespace SCC.Controllers
                                 tempAttributeValueCatalogID,
                                 0,
                                 true,
-                                GetCurrentUser().ID,
+                                currentUser.ID,
                                 (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_ATTRIBUTE_CATALOG.CREATED);
 
                         transactionAttributeCatalogList.Add(transactionAttributeCatalog);
@@ -2319,6 +2383,8 @@ namespace SCC.Controllers
 
         List<TransactionCommentary> GetTransactionCommentaryListFromRow(System.Data.DataRow row)
         {
+            User currentUser = GetCurrentUser();
+
             SCC_BL.Tools.ExcelParser excelParser = new SCC_BL.Tools.ExcelParser();
 
             List<TransactionCommentary> transactionCommentaryList = new List<TransactionCommentary>();
@@ -2341,7 +2407,7 @@ namespace SCC.Controllers
                         (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DISPUTE,
                         0,
                         disputationComment,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.CREATED
                     );
 
@@ -2362,7 +2428,7 @@ namespace SCC.Controllers
                         (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.INVALIDATION,
                         0,
                         invalidationComment,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.CREATED
                     );
 
@@ -2383,7 +2449,7 @@ namespace SCC.Controllers
                         (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_COMMENTARIES,
                         0,
                         devolutionGeneralComment,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.CREATED
                     );
 
@@ -2404,7 +2470,7 @@ namespace SCC.Controllers
                         (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_IMPROVEMENT_STEPS,
                         0,
                         devolutionImprovementStepsComment,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.CREATED
                     );
 
@@ -2425,7 +2491,7 @@ namespace SCC.Controllers
                         (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_USER_STRENGTHS,
                         0,
                         devolutionUserStrengthsComment,
-                        GetCurrentUser().ID,
+                        currentUser.ID,
                         (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION_COMMENTARY.CREATED
                     );
 
@@ -2939,6 +3005,8 @@ namespace SCC.Controllers
 
         Transaction CreateTransactionFromRow(System.Data.DataRow row, int userToEvaluateID, int supervisorUserID, int evaluatorUserID, int formID, int currentRowCount)
         {
+            User currentUser = GetCurrentUser();
+
             bool hasError = false;
 
             string transactionImportErrorElementName = "Transaction";
@@ -3521,8 +3589,8 @@ namespace SCC.Controllers
                 controllableBCEResultID, 
                 controllableFCEResultID,
                 controllableNCEResultValue, 
-                timeElapsedValue, 
-                GetCurrentUser().ID, 
+                timeElapsedValue,
+                currentUser.ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_TRANSACTION.CREATED, 
                 (int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.EVALUATION, 
                 null);
@@ -4958,7 +5026,7 @@ namespace SCC.Controllers
             string htmlContent = GenerateHTMLFromTransaction(transaction);
 
             return Content(htmlContent);
-            return ConvertAndDownloadToPDF(filePath, htmlContent);
+            //return ConvertAndDownloadToPDF(filePath, htmlContent);
         }
 
         private string GenerateHTMLFromTransaction(Transaction transaction)
@@ -5844,7 +5912,7 @@ namespace SCC.Controllers
             (string, TransactionBIFieldCatalog) GetBusinessIntelligenceContent(BusinessIntelligenceField currentBusinessIntelligenceField)
             {
                 const string BUSINESS_INTELLIGENCE_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.CONTENT;
-                const string BUSINESS_INTELLIGENCE_TITLE_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.TITLE_CONTENT;
+                //const string BUSINESS_INTELLIGENCE_TITLE_CONTENT = SCC_BL.Settings.HTML_Content.Transaction.DownloadPDF.Content.BusinessIntelligence.TITLE_CONTENT;
 
                 string businessIntelligenceFieldControlContent = string.Empty;
                 TransactionBIFieldCatalog currentTransactionBIFieldCatalog = null;

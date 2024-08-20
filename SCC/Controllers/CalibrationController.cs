@@ -4,7 +4,7 @@ using SCC_BL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+
 using System.Web;
 using System.Web.Mvc;
 using static SCC_BL.Settings.AppValues;
@@ -17,16 +17,18 @@ namespace SCC.Controllers
 
         public ActionResult Manage()
         {
+            User currentUser = GetCurrentUser();
+
             List<Calibration> calibrationList = new List<Calibration>();
 
-            if (GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_CALIBRATION_SESSIONS))
+            if (currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_CALIBRATION_SESSIONS))
             {
                 calibrationList = new Calibration().SelectAll();
             }
             else 
-            if (GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_THEIR_PROGRAMS_CALIBRATION_SESSIONS))
+            if (currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_THEIR_PROGRAMS_CALIBRATION_SESSIONS))
             {
-                int[] allowedProgramIDArray = GetCurrentUser().CurrentProgramList.Select(s => s.ID).ToArray();
+                int[] allowedProgramIDArray = currentUser.CurrentProgramList.Select(s => s.ID).ToArray();
 
                 for (int i = 0; i < allowedProgramIDArray.Length; i++)
                 {
@@ -56,7 +58,7 @@ namespace SCC.Controllers
                 using (Calibration auxCalibration = new Calibration())
                 {
                     newCalibrationList =
-                        auxCalibration.SelectByUserID(GetCurrentUser().ID);
+                        auxCalibration.SelectByUserID(currentUser.ID);
                 }
 
                 calibrationList.AddRange(newCalibrationList);
@@ -72,7 +74,9 @@ namespace SCC.Controllers
         }
         public ActionResult CalibrationTypes(int? calibrationTypeID)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Calibration.CalibrationTypes.NotAllowedToCreateCalibrationOptions>();
                 return RedirectToAction(nameof(CalibrationController.Manage), GetControllerName(typeof(CalibrationController)));
@@ -103,6 +107,8 @@ namespace SCC.Controllers
 
         public ActionResult CheckCalibration(int calibratedTransactionID, int calibrationSessionID)
         {
+            User currentUser = GetCurrentUser();
+
             CalibrationCheckResultsViewModel calibrationCheckResultsViewModel = new CalibrationCheckResultsViewModel();
 
             calibrationCheckResultsViewModel.CalibratedTransaction = new Transaction(calibratedTransactionID);
@@ -117,7 +123,7 @@ namespace SCC.Controllers
                 calibrationCheckResultsViewModel
                     .CalibrationList
                         .Where(e => 
-                            e.EvaluatorUserID == GetCurrentUser().ID)
+                            e.EvaluatorUserID == currentUser.ID)
                         .FirstOrDefault();
 
             calibrationCheckResultsViewModel.CalibrationSession = new Calibration(calibrationSessionID);
@@ -137,7 +143,9 @@ namespace SCC.Controllers
 
         public ActionResult CheckGlobalResultsByCalibrator(int calibrationSessionID)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_CALIBRATION_RESULTS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_CALIBRATION_RESULTS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Calibration.Results.NotAllowedToSeeCalibrationResults>();
                 return RedirectToAction(nameof(CalibrationController.Manage), GetControllerName(typeof(CalibrationController)));
@@ -172,7 +180,9 @@ namespace SCC.Controllers
 
         public ActionResult CheckGlobalResultsByTransaction(int calibrationSessionID)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_CALIBRATION_RESULTS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_CALIBRATION_RESULTS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Calibration.Results.NotAllowedToSeeCalibrationResults>();
                 return RedirectToAction(nameof(CalibrationController.Manage), GetControllerName(typeof(CalibrationController)));
@@ -221,6 +231,8 @@ namespace SCC.Controllers
         [HttpGet]
         public ActionResult Edit(string transactionIDList, int? calibrationID = null)
         {
+            User currentUser = GetCurrentUser();
+
             Calibration calibration = new Calibration();
 
             if (calibrationID != null)
@@ -234,6 +246,7 @@ namespace SCC.Controllers
             List<Group> calibratorUserGroupList = new List<Group>();
             List<Catalog> catalogCalibrationTypeList = new List<Catalog>();
             List<Transaction> transactionList = new List<Transaction>();
+            List<string> callIdentifierList = new List<string>();
 
             /*using (User user = new User())
             {
@@ -331,6 +344,12 @@ namespace SCC.Controllers
                         .ToList());
             }
 
+            if (currentUser.RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER))
+            {
+                calibratorUserList.Add(currentUser);
+                expertUserList.Add(currentUser);
+            }
+
             calibratorUserList =
                 calibratorUserList
                     .GroupBy(e =>
@@ -402,6 +421,8 @@ namespace SCC.Controllers
             using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.CALIBRATION_TYPE))
                 catalogCalibrationTypeList = catalog.SelectByCategoryID();
 
+            List<CalibrationEditViewModel.CallIdentifier> packagedCallIdentifierList = new List<CalibrationEditViewModel.CallIdentifier>();
+
             if (calibration.ID > 0)
             {
                 foreach (CalibrationTransactionCatalog calibrationTransactionCatalog in calibration.TransactionList)
@@ -411,6 +432,23 @@ namespace SCC.Controllers
                         transaction.SetDataByID();
                         transactionList.Add(transaction);
                     }
+                }
+
+                foreach (CalibrationCallIdentifierCatalog calibrationCallIdentifierCatalog in calibration.CallIdentifierList)
+                {
+                    int? currentTransactionID = null;
+
+                    using (Transaction auxTransaction = new Transaction())
+                    {
+                        currentTransactionID = auxTransaction.GetIdByCallIdentifier(calibrationCallIdentifierCatalog.CallIdentifier);
+                    }
+
+                    packagedCallIdentifierList.Add(new CalibrationEditViewModel.CallIdentifier
+                    {
+                        Identifier = calibrationCallIdentifierCatalog.CallIdentifier,
+                        TransactionID = currentTransactionID,
+                        ProgramID = calibrationCallIdentifierCatalog.ProgramID,
+                    });
                 }
             }
             else
@@ -433,6 +471,24 @@ namespace SCC.Controllers
 
             if (calibration.ID > 0)
                 experiencedUserID = calibration.ExperiencedUserID;
+
+            List<Program> programList = new List<Program>();
+
+            using (Program program = new Program())
+                programList =
+                    program.SelectWithForm()
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                        .GroupBy(e =>
+                            e.ID)
+                        .Select(e =>
+                            e.First())
+                        .OrderBy(e => e.Name)
+                        .ToList();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.ProgramList.NAME] = programList;
+
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.ExpertUserList.NAME] =
                 new SelectList(
@@ -477,16 +533,61 @@ namespace SCC.Controllers
 
             calibrationEditViewModel.Calibration = calibration;
             calibrationEditViewModel.TransactionList = transactionList;
+            calibrationEditViewModel.CallIdentifierList = packagedCallIdentifierList;
 
             return View(calibrationEditViewModel);
         }
 
-        [HttpPost]
-        public ActionResult Edit(Calibration calibration, int[] calibratorUserList, int[] calibratorUserGroupList, string transactionList)
+        public class CallIdentifierHelper
+        {
+            public int ProgramID { get; set; }
+            public string CallIdentifier { get; set; }
+        }
+
+        void UpdateCallIdentifierList(Calibration calibration, (string, int)[] callIdentifierList)
         {
             User currentUser = GetCurrentUser();
 
-            int[] transactionIDArray = new int[transactionList.Split(',').Length];
+            try
+            {
+                (string, int)[] newTuppleArray = new (string, int)[callIdentifierList.Length];
+
+                newTuppleArray =
+                    callIdentifierList
+                        .Select(e => (e.Item1, e.Item2))
+                        .ToArray();
+
+                switch (calibration.UpdateCallIdentifierList(newTuppleArray, currentUser.ID))
+                {
+                    case SCC_BL.Results.Calibration.UpdateCallIdentifierList.CODE.SUCCESS:
+                        SaveProcessingInformation<SCC_BL.Results.Calibration.UpdateCallIdentifierList.Success>(calibration.ID, calibration.BasicInfo.StatusID, calibration);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveProcessingInformation<SCC_BL.Results.Calibration.UpdateCallIdentifierList.Error>(calibration.ID, calibration.BasicInfo.StatusID, calibration, ex);
+            }
+        }
+
+        [HttpPost]
+        public ActionResult Edit(Calibration calibration, int[] calibratorUserList, int[] calibratorUserGroupList, string transactionList, string callIdentifierList)
+        {
+            List<CallIdentifierHelper> deserialized = OverallController.Deserialize<List<CallIdentifierHelper>>(callIdentifierList);
+
+            User currentUser = GetCurrentUser();
+
+            (string, int)[] newTupleCallIdentifier =
+                deserialized
+                    .Select(e => (e.CallIdentifier, e.ProgramID))
+                    .ToArray();
+
+            int[] transactionIDArray =
+                !string.IsNullOrEmpty(transactionList)
+                    ? new int[transactionList.Split(',').Length]
+                    : new int[0];
 
             if (!string.IsNullOrEmpty(transactionList))
             {
@@ -537,6 +638,9 @@ namespace SCC.Controllers
                         UpdateCalibratorUserGroupList(newCalibration, calibratorUserGroupList);
 
                         UpdateTransactionList(newCalibration, transactionIDArray);
+
+                        //await UpdateCallIdentifierList(newCalibration, callIdentifierList);
+                        UpdateCallIdentifierList(oldCalibration, newTupleCallIdentifier);
 
                         if (newCalibration.HasNotificationToBeSent)
                         {
@@ -612,6 +716,9 @@ namespace SCC.Controllers
 
                         UpdateTransactionList(oldCalibration, transactionIDArray);
 
+                        //await UpdateCallIdentifierList(oldCalibration, callIdentifierArray);
+                        UpdateCallIdentifierList(oldCalibration, newTupleCallIdentifier);
+
                         if (newCalibration.HasNotificationToBeSent)
                         {
                             List<string> transactionIdentifierArray = new List<string>();
@@ -665,7 +772,9 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult EditType(Catalog catalog)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_OPTIONS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Calibration.CalibrationTypes.NotAllowedToCreateCalibrationOptions>();
                 return RedirectToAction(nameof(CalibrationController.Manage), GetControllerName(typeof(CalibrationController)));
@@ -761,9 +870,11 @@ namespace SCC.Controllers
 
         void UpdateCalibratorUserList(Calibration calibration, int[] calibratorUserIDList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (calibration.UpdateCalibratorUserList(calibratorUserIDList, GetCurrentUser().ID))
+                switch (calibration.UpdateCalibratorUserList(calibratorUserIDList, currentUser.ID))
                 {
                     case SCC_BL.Results.Calibration.UpdateCalibratorUserList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Calibration.UpdateCalibratorUserList.Success>(calibration.ID, calibration.BasicInfo.StatusID, calibration);
@@ -780,9 +891,11 @@ namespace SCC.Controllers
 
         void UpdateCalibratorUserGroupList(Calibration calibration, int[] calibratorUserGroupIDList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (calibration.UpdateCalibratorUserGroupList(calibratorUserGroupIDList, GetCurrentUser().ID))
+                switch (calibration.UpdateCalibratorUserGroupList(calibratorUserGroupIDList, currentUser.ID))
                 {
                     case SCC_BL.Results.Calibration.UpdateCalibratorUserGroupList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Calibration.UpdateCalibratorUserGroupList.Success>(calibration.ID, calibration.BasicInfo.StatusID, calibration);
@@ -799,9 +912,11 @@ namespace SCC.Controllers
 
         void UpdateTransactionList(Calibration calibration, int[] transactionIDList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (calibration.UpdateTransactionList(transactionIDList, GetCurrentUser().ID))
+                switch (calibration.UpdateTransactionList(transactionIDList, currentUser.ID))
                 {
                     case SCC_BL.Results.Calibration.UpdateTransactionList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.Calibration.UpdateTransactionList.Success>(calibration.ID, calibration.BasicInfo.StatusID, calibration);
@@ -818,7 +933,9 @@ namespace SCC.Controllers
 
         public ActionResult Search(SCC_BL.Helpers.Transaction.Search.TransactionSearchHelper transactionSearchHelper = null)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_SESSIONS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CALIBRATION_SESSIONS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Calibration.CalibrationSession.NotAllowedToCreateCalibrationSession>();
                 return RedirectToAction(nameof(CalibrationController.Manage), GetControllerName(typeof(CalibrationController)));
@@ -887,11 +1004,11 @@ namespace SCC.Controllers
                             e.First())
                         .ToList();
 
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS))
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_PROGRAMS))
             {
                 programList =
                     programList
-                        .Where(e => GetCurrentUser().CurrentProgramList.Select(s => s.ID).Contains(e.ID))
+                        .Where(e => currentUser.CurrentProgramList.Select(s => s.ID).Contains(e.ID))
                         .ToList();
             }
 
@@ -981,6 +1098,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Delete(int calibrationID)
         {
+            User currentUser = GetCurrentUser();
+
             Calibration calibration = new Calibration(calibrationID);
             calibration.SetDataByID();
 
@@ -988,7 +1107,7 @@ namespace SCC.Controllers
             {
                 //calibration.Delete();
 
-                calibration.BasicInfo.ModificationUserID = GetCurrentUser().ID;
+                calibration.BasicInfo.ModificationUserID = currentUser.ID;
                 calibration.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_CALIBRATION.DELETED;
 
                 int result = calibration.BasicInfo.Update();
@@ -1035,6 +1154,8 @@ namespace SCC.Controllers
 
         void SendCalibrationNotifications(string[] transactionIdentifierArray, int[] userIDArray, bool isNew = true, Calibration oldCalibration = null)
         {
+            User currentUser = GetCurrentUser();
+
             string url = Url.Action(nameof(CalibrationController.Manage), GetControllerName(typeof(CalibrationController)), Request.Url.Scheme);
 
             List<UserNotificationUrl> userNotificationUrlList = new List<UserNotificationUrl>() {
@@ -1043,7 +1164,7 @@ namespace SCC.Controllers
 
             for (int i = 0; i < userIDArray.Length; i++)
             {
-                if (userIDArray[i] == GetCurrentUser().ID)
+                if (userIDArray[i] == currentUser.ID)
                     SaveNotification(
                         userIDArray[i],
                         (int)SCC_BL.DBValues.Catalog.NOTIFICATION_TYPE.CALIBRATION_AGENT,

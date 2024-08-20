@@ -34,6 +34,7 @@
                  data-bs-parent="#accordionExample">
                 <form id="frmManage" action="@Url.Action(nameof(ReportController.AccuracyTrendByAttribute), mainControllerName)" method="post" target="_blank">
                     @Html.Hidden("TransactionCustomFieldCatalog")
+                    @Html.Hidden("attributeIDArray")
 
                     <div class="accordion-body">
                         <div class="row d-block text-center text-danger required-advise d-none m-5">
@@ -441,10 +442,10 @@
                                                                     htmlAttributes.Add("label", customControlValueCatalog.Name);
 
                                                                     @*@Html.RadioButton(
-                                                                        "customControl_" + customControl.ID,
-                                                                        customControlValueCatalog.ID,
-                                                                        htmlAttributes)*@
-                                                                    
+                                                        "customControl_" + customControl.ID,
+                                                        customControlValueCatalog.ID,
+                                                        htmlAttributes)*@
+
                                                                     <div>
                                                                         <input id="customControl_@customControlValueCatalog.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="radio" value="@customControlValueCatalog.ID" />
                                                                         <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
@@ -455,7 +456,7 @@
                                                         case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.SELECT_LIST:
                                                             htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-select";
 
-                                                            <select class="custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description">
+                                                            <select class="custom-control-chosen-select @htmlAttributes["class"]" data-placeholder="@customControl.Label" placeholder="@customControl.Label" title="@customControl.Description" multiple>
                                                                 <option value="">Seleccionar</option>
                                                                 @{
                                                                     foreach (CustomControlValueCatalog customControlValueCatalog in customControl.ValueList)
@@ -595,8 +596,19 @@
 
         $('#@nameof(Model.AttributeIDArray)').html('');
 
-        for (let i = 0; i < response.length; i++) {
+        @*for (let i = 0; i < response.length; i++) {
             $('#@nameof(Model.AttributeIDArray)').append(`<option value="${ response[i].ID }">${ response[i].Name }</option>`);
+        }*@
+
+        for (let i = 0; i < response.length; i++) {
+            let currentItem = response[i];
+
+            let currentValueArray = currentItem.Item1;
+            let currentName = currentItem.Item2;
+
+            let currentValue = currentValueArray.join(',');
+
+            $('#@nameof(Model.AttributeIDArray)').append(`<option value="${currentValue}">${currentName }</option>`);
         }
 
         $('#@nameof(Model.AttributeIDArray)').val('').trigger("chosen:updated");
@@ -642,6 +654,8 @@
         let transactionCustomFieldList = [];
         transactionCustomFieldList = await getTransactionCustomFieldCatalog();
         $('#TransactionCustomFieldCatalog').val(JSON.stringify(transactionCustomFieldList));
+
+        $('#attributeIDArray').val($('#@nameof(Model.AttributeIDArray)').val());
     });
 
     function getTransactionCustomFieldCatalog() {
@@ -739,7 +753,9 @@
                     "BasicInfoID": 0
                 };
 
-                transactionCustomFieldList.push(transactionCustomField);
+                if ((transactionCustomField.ValueID > 0) || (transactionCustomField.Comment != '')) {
+                    transactionCustomFieldList.push(transactionCustomField);
+                }
             }
         });
 

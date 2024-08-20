@@ -126,15 +126,139 @@ namespace SCC.ViewModels
 
                         bool isCalibrated = false;
 
-                        if (currentCalibratorResult.ValueID != null)
+                        /*if (currentCalibratorResult.ValueID != null)
                         {
                             if (currentCalibratorResult.ValueID == currentExpertResult.ValueID)
                                 isCalibrated = true;
+                        }*/
+
+                        
+
+                        if (currentCalibratorResult != null)
+                        {
+                            if (currentCalibratorResult.ValueID != null)
+                            {
+                                if (currentCalibratorResult.ValueID == currentExpertResult.ValueID)
+                                    isCalibrated = true;
+                            }
+                            else
+                            {
+                                if (currentCalibratorResult.Checked == currentExpertResult.Checked)
+                                    isCalibrated = true;
+                            }
+
+                            switch ((SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE)currentCalibratorResult.ErrorTypeID)
+                            {
+                                case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE:
+                                    if (isCalibrated)
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountSuccess += 1;
+                                        resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountSuccess += 1;
+                                    }
+                                    else
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountFail += 1;
+                                        resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountFail += 1;
+                                    }
+                                    break;
+                                case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE:
+                                    if (isCalibrated)
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountSuccess += 1;
+                                        resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountSuccess += 1;
+                                    }
+                                    else
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountFail += 1;
+                                        resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountFail += 1;
+                                    }
+                                    break;
+                                case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE:
+                                    if (isCalibrated)
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountSuccess += 1;
+                                        resultsByCalibrator.GlobalGeneralFulfillmentCriticalErrorCountSuccess += 1;
+                                    }
+                                    else
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountFail += 1;
+                                        resultsByCalibrator.GlobalGeneralFulfillmentCriticalErrorCountFail += 1;
+                                    }
+                                    break;
+                                case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE:
+                                    if (isCalibrated)
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountSuccess += 1;
+                                        resultsByCalibrator.GlobalGeneralNonCriticalErrorCountSuccess += 1;
+                                    }
+                                    else
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountFail += 1;
+                                        resultsByCalibrator.GlobalGeneralNonCriticalErrorCountFail += 1;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
                         else
                         {
-                            if (currentCalibratorResult.Checked == currentExpertResult.Checked)
-                                isCalibrated = true;
+                            SCC_BL.Attribute currentAttribute = new SCC_BL.Attribute(attributeIDArray[j]);
+                            currentAttribute.SetDataByID(true);
+
+                            switch ((SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE)currentAttribute.ErrorTypeID)
+                            {
+                                case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FUCE:
+                                    if (isCalibrated)
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountSuccess += 1;
+                                        resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountSuccess += 1;
+                                    }
+                                    else
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountFail += 1;
+                                        resultsByCalibrator.GlobalGeneralFinalUserCriticalErrorCountFail += 1;
+                                    }
+                                    break;
+                                case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.BCE:
+                                    if (isCalibrated)
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountSuccess += 1;
+                                        resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountSuccess += 1;
+                                    }
+                                    else
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountFail += 1;
+                                        resultsByCalibrator.GlobalGeneralBusinessCriticalErrorCountFail += 1;
+                                    }
+                                    break;
+                                case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.FCE:
+                                    if (isCalibrated)
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountSuccess += 1;
+                                        resultsByCalibrator.GlobalGeneralFulfillmentCriticalErrorCountSuccess += 1;
+                                    }
+                                    else
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountFail += 1;
+                                        resultsByCalibrator.GlobalGeneralFulfillmentCriticalErrorCountFail += 1;
+                                    }
+                                    break;
+                                case SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE.NCE:
+                                    if (isCalibrated)
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountSuccess += 1;
+                                        resultsByCalibrator.GlobalGeneralNonCriticalErrorCountSuccess += 1;
+                                    }
+                                    else
+                                    {
+                                        resultsByCalibrator.GlobalGeneralResultCountFail += 1;
+                                        resultsByCalibrator.GlobalGeneralNonCriticalErrorCountFail += 1;
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
 
                         switch ((SCC_BL.DBValues.Catalog.ATTRIBUTE_ERROR_TYPE)currentCalibratorResult.ErrorTypeID)

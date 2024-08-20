@@ -155,7 +155,9 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(CustomControl customControl, List<CustomControlValueCatalog> valueList = null, int maskID = 0)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS))
             {
                 SaveProcessingInformation<SCC_BL.Results.CustomControl.Update.NotAllowedToCreateCustomFields>();
                 return RedirectToAction(nameof(CustomControlController.Manage), GetControllerName(typeof(CustomControlController)));
@@ -209,8 +211,8 @@ namespace SCC.Controllers
                 customControl.DefaultValue ?? string.Empty,
                 customControl.NumberOfRows, 
                 customControl.NumberOfColumns, 
-                customControl.BasicInfoID, 
-                GetCurrentUser().ID, 
+                customControl.BasicInfoID,
+                currentUser.ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.UPDATED);
 
             newCustomControl.SetValueList();
@@ -274,7 +276,9 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(CustomControl customControl, List<CustomControlValueCatalog> valueList = null, int maskID = 0)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_CUSTOM_FIELDS))
             {
                 SaveProcessingInformation<SCC_BL.Results.CustomControl.Insert.NotAllowedToCreateCustomFields>();
                 return RedirectToAction(nameof(CustomControlController.Manage), GetControllerName(typeof(CustomControlController)));
@@ -324,7 +328,7 @@ namespace SCC.Controllers
                 customControl.DefaultValue ?? string.Empty,
                 customControl.NumberOfRows,
                 customControl.NumberOfColumns,
-                GetCurrentUser().ID,
+                currentUser.ID,
                 (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.CREATED);
 
             try
@@ -386,6 +390,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Delete(int customControlID)
         {
+            User currentUser = GetCurrentUser();
+
             CustomControl customControl = new CustomControl(customControlID);
             customControl.SetDataByID();
 
@@ -393,7 +399,7 @@ namespace SCC.Controllers
             {
                 //customControl.Delete();
 
-                customControl.BasicInfo.ModificationUserID = GetCurrentUser().ID;
+                customControl.BasicInfo.ModificationUserID = currentUser.ID;
                 customControl.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_CONTROL.DELETED;
 
                 //int result = customControl.BasicInfo.Update();

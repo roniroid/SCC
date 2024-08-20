@@ -14,6 +14,9 @@
     string logsControllerName = OverallController.GetControllerName(typeof(LogController));
     string logsActionName = nameof(LogController.Index);
 
+    List<Permission> allPermissionList = (List<Permission>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignRolesAndPermissions.AllPermissionList.NAME];
+    List<Role> allRoleList = (List<Role>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignRolesAndPermissions.AllRoleList.NAME];
+
     ViewBag.Title = "Asignación de roles y permisos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -155,8 +158,12 @@
                             {
                                 <li>
                                     @{
-                                        Role tempRole = new Role(userRoleCatalog.RoleID);
-                                        tempRole.SetDataByID();
+                                        /*Role tempRole = new Role(userRoleCatalog.RoleID);
+                                        tempRole.SetDataByID();*/
+
+                                        Role tempRole = allRoleList
+                                            .Where(e => e.ID == userRoleCatalog.RoleID)
+                                            .FirstOrDefault();
                                     }
 
                                     @tempRole.Name
@@ -170,8 +177,12 @@
                             {
                                 <li>
                                     @{
-                                        Permission tempPermission = new Permission(userPermissionCatalog.PermissionID);
-                                        tempPermission.SetDataByID();
+                                        /*Permission tempPermission = new Permission(userPermissionCatalog.PermissionID);
+                                        tempPermission.SetDataByID();*/
+
+                                        Permission tempPermission = allPermissionList
+                                            .Where(e => e.ID == userPermissionCatalog.PermissionID)
+                                            .FirstOrDefault();
                                     }
 
                                     @tempPermission.Description

@@ -4,7 +4,7 @@
 @model SCC.ViewModels.ReportResultsAccuracyByAttributeViewModel
 
 @{
-    ViewBag.Title = "Restultados por atributo";
+    ViewBag.Title = "Resultados por atributo";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
@@ -245,11 +245,11 @@
     @{
         string currentAttributeIDArray = string.Empty;
         string currentTransactionAttributeIDArray = string.Empty;
-        string childrenAttributeIDList = string.Empty;
+        //string childrenAttributeIDList = string.Empty;
 
         currentAttributeIDArray = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.AttributeID) + "]"));
         currentTransactionAttributeIDArray = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.TransactionAttributeID) + "]"));
-        childrenAttributeIDList = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.ChildrenAttributeIDList) + "]"));
+        //childrenAttributeIDList = String.Join(",", Model.ResultByAttributeList.Select(e => "[" + String.Join(",", e.ChildrenAttributeIDList) + "]"));
     }
 
     const DEFAULT_DATA = {
@@ -291,7 +291,7 @@
                     totalCount: @Model.TotalTransactions,
                     currentAttributeID: [@currentAttributeIDArray],
                     currentTransactionAttributeID: [@currentTransactionAttributeIDArray],
-                    childrenAttributeIDList: [@childrenAttributeIDList],
+                    @*childrenAttributeIDList: [@childrenAttributeIDList],*@
                 }
             }
         ]
@@ -442,7 +442,10 @@
                 }
             },
             onClick: clickHandler,
-            onHover: barHoverHandler
+            //onHover: barHoverHandler,
+            onHover: (event, chartElement) => {
+                event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+            }
         }
     });
 
@@ -494,6 +497,70 @@
 
                 $form.submit();
             }
+        }
+    }
+
+    @*function clickHandler(evt) {
+        const points = myChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+
+        if (points.length) {
+            const firstPoint = points[0];
+            const datasetIndex = firstPoint.datasetIndex;
+            const dataIndex = firstPoint.index;
+
+            /*const label = myChart.data.labels[firstPoint.index];
+            const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
+
+            const childrenAttributeIDList = myChart.data.datasets[datasetIndex].customData.childrenAttributeIDList[dataIndex];
+
+            if (childrenAttributeIDList.length > 0) {
+                const selectedAttributeID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
+                const selectedTransactionAttributeID = myChart.data.datasets[datasetIndex].customData.currentTransactionAttributeID[dataIndex];
+
+                const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
+
+                const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
+
+                $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedAttributeID.join() + '" /> ');
+                /*$($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyByAttributeResultList.Select(e => e.TransactionAttributeID))" /> ');*/
+                $($form).append('<input type="hidden" name="transactionIDList" value="' + selectedTransactionAttributeID.join() + '" /> ');
+                $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+                $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');
+
+                $(document.body).append($form);
+
+                $form.submit();
+            }
+        }
+    }*@
+
+    function clickHandler(evt) {
+        const points = myChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+
+        if (points.length) {
+            const firstPoint = points[0];
+            const datasetIndex = firstPoint.datasetIndex;
+            const dataIndex = firstPoint.index;
+
+            /*const label = myChart.data.labels[firstPoint.index];
+            const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
+
+            const selectedAttributeID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
+            const selectedTransactionAttributeID = myChart.data.datasets[datasetIndex].customData.currentTransactionAttributeID[dataIndex];
+
+            const url = '@Url.Action(nameof(ReportController.AccuracyBySubattribute), mainControllerName)';
+
+            const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
+
+            $($form).append('<input type="hidden" name="selectedAttributeID" value="' + selectedAttributeID.join() + '" /> ');
+            @*$($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyByAttributeResultList.Select(e => e.TransactionAttributeID))" /> ');*@
+            $($form).append('<input type="hidden" name="transactionIDList" value="' + selectedTransactionAttributeID.join() + '" /> ');
+            $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+            $($form).append('<input type="hidden" name="mustBeControllable" value="@isControllable.ToString().ToLower()" /> ');
+
+            $(document.body).append($form);
+
+            $form.submit();
         }
     }
 

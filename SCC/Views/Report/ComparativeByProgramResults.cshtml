@@ -5,10 +5,12 @@
 @model SCC.ViewModels.ReportResultsComparativeByProgramViewModel
 
 @{
-    ViewBag.Title = "Restultados de comparación de programas";
+    ViewBag.Title = "Resultados de comparación de programas";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+
+    List<Program> allProgramList = (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByProgramResults.AllProgramList.NAME];
 }
 
 <link href="~/Content/Custom/radio.css" rel="stylesheet" />
@@ -222,8 +224,12 @@
                 <tr>
                     <td>
                         @{
-                            Program program = new Program(resultsByProgram.ProgramID);
-                            program.SetDataByID();
+                            /*Program program = new Program(resultsByProgram.ProgramID);
+                            program.SetDataByID();*/
+
+                            Program program = allProgramList
+                                .Where(e => e.ID == resultsByProgram.ProgramID)
+                                .FirstOrDefault();
                         }
                         @($"{ program.Name }")
                     </td>
@@ -423,8 +429,12 @@
                         Model.ResultsByProgramList
                             .Select(e =>
                             {
-                                Program program = new Program(e.ProgramID);
-                                program.SetDataByID();
+                                /*Program program = new Program(e.ProgramID);
+                                program.SetDataByID();*/
+
+                                Program program = allProgramList
+                                    .Where(w => w.ID == e.ProgramID)
+                                    .FirstOrDefault();
 
                                 return $"'{ program.Name }'";
                             }));

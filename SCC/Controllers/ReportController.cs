@@ -3,6 +3,7 @@ using SCC_BL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using System.Web;
 using System.Web.Mvc;
 
@@ -15,7 +16,9 @@ namespace SCC.Controllers
 
         public ActionResult Index()
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_REPORTS))
             {
                 SaveProcessingInformation<SCC_BL.Results.Report.Index.NotAllowedToSeeReports>();
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
@@ -183,6 +186,9 @@ namespace SCC.Controllers
                         : errorTypeList.Select(e => e.ID));
 
             if (!hasModel)
+                reportOverallAccuracyViewModel = new ReportOverallAccuracyViewModel();
+
+            if (!hasModel)
                 reportOverallAccuracyViewModel.AttributeNoConstraint = true;
 
             reportOverallAccuracyViewModel.CustomControlList = customControlList;
@@ -194,7 +200,7 @@ namespace SCC.Controllers
         {
             bool hasModel = false;
 
-            string[] fieldsToIgnore = { "CustomControlByProgram" };
+            string[] fieldsToIgnore = { "CustomControlByProgram", "BusinessIntelligenceFieldByProgram" };
 
             foreach (System.Reflection.PropertyInfo propertyInfo in reportParetoBIViewModel.GetType().GetProperties())
             {
@@ -373,6 +379,9 @@ namespace SCC.Controllers
                             ? reportParetoBIViewModel.BIFieldIDArray
                             : null);
 
+            if (!hasModel)
+                reportParetoBIViewModel = new ReportParetoBIViewModel();
+
             reportParetoBIViewModel.CustomControlList = customControlList;
 
             return PartialView(nameof(_ParetoBI), reportParetoBIViewModel);
@@ -549,6 +558,9 @@ namespace SCC.Controllers
                     hasModel
                         ? reportComparativeByUserViewModel.ErrorTypeIDArray
                         : errorTypeList.Select(e => e.ID));
+
+            if (!hasModel)
+                reportComparativeByUserViewModel = new ReportComparativeByUserViewModel();
 
             if (!hasModel)
                 reportComparativeByUserViewModel.AttributeNoConstraint = true;
@@ -729,6 +741,9 @@ namespace SCC.Controllers
                     hasModel
                         ? reportComparativeByProgramViewModel.ErrorTypeIDArray
                         : errorTypeList.Select(e => e.ID));
+
+            if (!hasModel)
+                reportComparativeByProgramViewModel = new ReportComparativeByProgramViewModel();
 
             if (!hasModel)
                 reportComparativeByProgramViewModel.AttributeNoConstraint = true;
@@ -913,6 +928,9 @@ namespace SCC.Controllers
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.AttributeList.NAME] =
                 new MultiSelectList(
                     new List<object>());
+
+            if (!hasModel)
+                reportAttributeAccuracyViewModel = new ViewModels.ReportAccuracyByAttributeViewModel();
 
             if (!hasModel)
                 reportAttributeAccuracyViewModel.AttributeNoConstraint = true;
@@ -1316,9 +1334,11 @@ namespace SCC.Controllers
         {
             bool hasModel = false;
 
+            string[] fieldsToIgnore = { "IntervalTypeID" };
+
             foreach (System.Reflection.PropertyInfo propertyInfo in reportAccuracyTrendViewModel.GetType().GetProperties())
             {
-                if (propertyInfo.GetValue(reportAccuracyTrendViewModel) != null)
+                if (propertyInfo.GetValue(reportAccuracyTrendViewModel) != null && !fieldsToIgnore.Contains(propertyInfo.Name))
                 {
                     hasModel = true;
                     break;
@@ -1493,6 +1513,9 @@ namespace SCC.Controllers
 
             int? selectedInterval = null;
 
+            if (!hasModel)
+                reportAccuracyTrendViewModel = new ViewModels.ReportAccuracyTrendViewModel();
+
             if (hasModel) selectedInterval = reportAccuracyTrendViewModel.IntervalTypeID;
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyTrend.IntervalTypeList.NAME] =
@@ -1514,9 +1537,11 @@ namespace SCC.Controllers
         {
             bool hasModel = false;
 
+            string[] fieldsToIgnore = { "IntervalTypeID" };
+
             foreach (System.Reflection.PropertyInfo propertyInfo in reportAccuracyTrendByAttributeViewModel.GetType().GetProperties())
             {
-                if (propertyInfo.GetValue(reportAccuracyTrendByAttributeViewModel) != null)
+                if (propertyInfo.GetValue(reportAccuracyTrendByAttributeViewModel) != null && !fieldsToIgnore.Contains(propertyInfo.Name))
                 {
                     hasModel = true;
                     break;
@@ -1703,6 +1728,9 @@ namespace SCC.Controllers
                     nameof(Catalog.ID),
                     nameof(Catalog.Description),
                     selectedInterval);
+
+            if (!hasModel)
+                reportAccuracyTrendByAttributeViewModel = new ReportAccuracyTrendByAttributeViewModel();
 
             if (!hasModel)
                 reportAccuracyTrendByAttributeViewModel.AttributeNoConstraint = true;
@@ -1899,6 +1927,15 @@ namespace SCC.Controllers
             reportResultsComparativeByUserViewModel.RequestObject = reportComparativeByUserViewModel;
             reportResultsComparativeByUserViewModel.RequestObject.SetDescriptiveData();
 
+            List<User> allUserList = new List<User>();
+
+            using (User auxUser = new User())
+            {
+                allUserList = auxUser.SelectAll(true);
+            }
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByUserResults.AllUserList.NAME] = allUserList;
+
             return View(nameof(ReportController.ComparativeByUserResults), reportResultsComparativeByUserViewModel);
         }
 
@@ -1976,7 +2013,17 @@ namespace SCC.Controllers
             }
 
             reportResultsComparativeByProgramViewModel.RequestObject = reportComparativeByProgramViewModel;
+
             reportResultsComparativeByProgramViewModel.RequestObject.SetDescriptiveData();
+
+            List<Program> allProgramList = new List<Program>();
+
+            using (Program auxProgram = new Program())
+            {
+                allProgramList = auxProgram.SelectAll();
+            }
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByProgramResults.AllProgramList.NAME] = allProgramList;
 
             return View(nameof(ReportController.ComparativeByProgramResults), reportResultsComparativeByProgramViewModel);
         }
@@ -2237,7 +2284,7 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult AccuracyTrendByAttribute(ViewModels.ReportAccuracyTrendByAttributeViewModel reportAccuracyTrendByAttributeViewModel)
+        public ActionResult AccuracyTrendByAttribute(ViewModels.ReportAccuracyTrendByAttributeViewModel reportAccuracyTrendByAttributeViewModel, string attributeIDArray)
         {
             List<SCC_BL.Reports.Results.AccuracyTrend> resultAccuracyTrendResultList = new List<SCC_BL.Reports.Results.AccuracyTrend>();
             ViewModels.ReportResultsAccuracyTrendViewModel reportResultsAccuracyTrendViewModel = new ViewModels.ReportResultsAccuracyTrendViewModel();
@@ -2247,6 +2294,14 @@ namespace SCC.Controllers
 
             try
             {
+                string[] attributeIDStringArray = attributeIDArray.Split(',');
+                int[] attributeIDIntegerArray =
+                    attributeIDStringArray.Length > 0
+                        ? attributeIDStringArray.Select(e => Convert.ToInt32(e)).ToArray()
+                        : new int[0];
+
+                reportAccuracyTrendByAttributeViewModel.AttributeIDArray = attributeIDIntegerArray;
+
                 using (Report report = new Report())
                 {
                     if (reportAccuracyTrendByAttributeViewModel.TransactionEndDate != null)
@@ -2358,6 +2413,9 @@ namespace SCC.Controllers
             }
 
             //reportResultsAccuracyByAttributeViewModel.RequestObject = reportResultsAccuracyByAttributeViewModel;
+
+            reportResultsAccuracyByAttributeViewModel.RequestObject = reportResultsAccuracyByAttributeViewModel.RequestObject;
+
             reportResultsAccuracyByAttributeViewModel.RequestObject.SetDescriptiveData();
 
             return View(nameof(ReportController.AccuracyByAttributeResults), reportResultsAccuracyByAttributeViewModel);
@@ -2397,7 +2455,7 @@ namespace SCC.Controllers
         }
 
         [HttpPost]
-        public ActionResult AccuracyByAttribute(ViewModels.ReportAccuracyByAttributeViewModel reportAccuracyByAttributeViewModel)
+        public ActionResult AccuracyByAttribute(ViewModels.ReportAccuracyByAttributeViewModel reportAccuracyByAttributeViewModel, string attributeIDArray)
         {
             ViewData[SCC_BL.Settings.AppValues.ViewData.Report._AccuracyByAttribute.IS_CONTROLLABLE] = reportAccuracyByAttributeViewModel.AttributeControllable == true;
 
@@ -2409,6 +2467,14 @@ namespace SCC.Controllers
 
             try
             {
+                string[] attributeIDStringArray = attributeIDArray.Split(',');
+                int[] attributeIDIntegerArray =
+                    attributeIDStringArray.Length > 0
+                        ? attributeIDStringArray.Select(e => Convert.ToInt32(e)).ToArray()
+                        : new int[0];
+
+                reportAccuracyByAttributeViewModel.AttributeIDArray = attributeIDIntegerArray;
+
                 using (Report report = new Report())
                 {
                     if (reportAccuracyByAttributeViewModel.TransactionEndDate != null)
@@ -2590,6 +2656,31 @@ namespace SCC.Controllers
 
             reportResultsParetoBIViewModel.RequestObject = reportParetoBIViewModel;
             reportResultsParetoBIViewModel.RequestObject.SetDescriptiveData();
+
+            return View(nameof(ReportController.ParetoBIResults), reportResultsParetoBIViewModel);
+        }
+
+        [HttpPost]
+        public ActionResult ParetoBIWithParent(string selectedBusinessIntelligenceFieldID, string transactionIDList, int totalTransactions)
+        {
+            List<SCC_BL.Reports.Results.ParetoBI> resultParetoBI = new List<SCC_BL.Reports.Results.ParetoBI>();
+            ViewModels.ReportResultsParetoBIViewModel reportResultsParetoBIViewModel =  new ViewModels.ReportResultsParetoBIViewModel();
+
+            try
+            {
+                using (Report report = new Report())
+                {
+                    resultParetoBI = report.ParetoBI(
+                        selectedBusinessIntelligenceFieldID,
+                        transactionIDList);
+
+                    reportResultsParetoBIViewModel = new ViewModels.ReportResultsParetoBIViewModel(resultParetoBI, totalTransactions);
+                }
+            }
+            catch (Exception ex)
+            {
+                SaveProcessingInformation<SCC_BL.Results.Report.ParetoBI.Error>(null, null, reportResultsParetoBIViewModel, ex);
+            }
 
             return View(nameof(ReportController.ParetoBIResults), reportResultsParetoBIViewModel);
         }

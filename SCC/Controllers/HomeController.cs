@@ -11,11 +11,13 @@ namespace SCC.Controllers
     {
         public ActionResult Index()
         {
+            User currentUser = GetCurrentUser();
+
             List<UserNotification> userNotificationList = new List<UserNotification>();
 
-            using (UserNotification userNotification = UserNotification.UserNotificationWithUserID(GetCurrentUser().ID))
+            using (UserNotification userNotification = UserNotification.UserNotificationWithUserID(currentUser.ID))
             {
-                userNotificationList = userNotification.SelectByUserID(GetCurrentUser().ID);
+                userNotificationList = userNotification.SelectByUserID(currentUser.ID);
             }
 
             return View(userNotificationList);

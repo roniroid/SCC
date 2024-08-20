@@ -4,7 +4,7 @@
 @model SCC.ViewModels.ReportResultsAccuracyBySubattributeViewModel
 
 @{
-    ViewBag.Title = "Restultados por atributo";
+    ViewBag.Title = "Resultados por atributo";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
@@ -383,6 +383,7 @@
                 borderWidth: 2,
                 yAxisID: 'y1',
                 customData: {
+                    hasChildren: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.HasChildren.ToString().ToLower()))],
                     successCount: [@String.Join(",", resultBySubattributeListForGraph.Select(e => e.Quantity))],
                     transactionAttributeIDList: [@currentTransactionAttributeIDArray],
                     totalCount: @Model.TotalTransactions,
@@ -601,12 +602,20 @@
                     /*const label = myChart.data.labels[firstPoint.index];
                     const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
 
-                    let childrenAttributeIDList = myChart.data.datasets[firstPoint.datasetIndex].customData.childrenAttributeIDList[firstPoint.index];
+                    /*let childrenAttributeIDList = myChart.data.datasets[firstPoint.datasetIndex].customData.childrenAttributeIDList[firstPoint.index];
 
                     if (childrenAttributeIDList.length > 0) {
                         event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
                     } else {
                         event.native.target.style.cursor = 'not-allowed';
+                    }*/
+
+                    let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
+
+                    if (hasChildren) {
+                        event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+                    } else {
+                        event.native.target.style.cursor = 'default';
                     }
                 }
             }
@@ -623,9 +632,13 @@
             /*const label = myChart.data.labels[firstPoint.index];
             const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
 
-            let childrenAttributeIDList = myChart.data.datasets[firstPoint.datasetIndex].customData.childrenAttributeIDList[firstPoint.index];
+            /*let childrenAttributeIDList = myChart.data.datasets[firstPoint.datasetIndex].customData.childrenAttributeIDList[firstPoint.index];
 
-            if (childrenAttributeIDList.length > 0) {
+            if (childrenAttributeIDList.length > 0) {*/
+
+            let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
+
+            if (hasChildren) {
                 const selectedAttributeID = myChart.data.datasets[datasetIndex].customData.currentAttributeID[dataIndex];
                 const selectedTransactionAttributeID = myChart.data.datasets[datasetIndex].customData.transactionAttributeIDList[dataIndex];
 

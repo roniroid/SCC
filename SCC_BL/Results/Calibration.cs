@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_BL.Results
 {
@@ -409,5 +409,44 @@ namespace SCC_BL.Results
                 public const string MESSAGE_CONTENT = "Usted no cuenta con los permisos para ver los resultados de las calibraciones";
             }
         }
-	}
+
+        public static class UpdateCallIdentifierList
+        {
+            public enum CODE
+            {
+                SUCCESS,
+                ERROR
+            }
+
+            public struct Success
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.SUCCESS;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.INFO;
+                public const string LOCAL_LOG = "Se actualizó la lista llamadas para la sesión de calibración de manera correcta";
+
+                public const string DATABASE_LOG = "Llamadas actualizadas correctamente";
+
+                public const string MESSAGE_TITLE = "Éxito";
+                public const string MESSAGE_CONTENT = "Se actualizó la lista de llamadas para la sesión de calibración de manera correcta";
+            };
+
+            public struct Error
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.ERROR;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.ERROR;
+                public const string LOCAL_LOG = "Ha ocurrido un error al actualizar la lista de llamadas.\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                public const string DATABASE_LOG = "ERROR - Ha ocurrido un error al actualizar la lista de llamadas.\r\n\tExcepción: " + REPLACE_EXCEPTION_MESSAGE;
+
+                public const string MESSAGE_TITLE = "Error";
+                public const string MESSAGE_CONTENT = "Ha ocurrido un error al actualizar la lista de llamadas";
+            };
+        }
+    }
 }

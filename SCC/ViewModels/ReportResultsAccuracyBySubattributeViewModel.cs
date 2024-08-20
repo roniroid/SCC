@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using System.Web;
 
 namespace SCC.ViewModels
@@ -99,7 +100,7 @@ namespace SCC.ViewModels
             {
                 if (this.ResultBySubattributeList.Select(e => e.AttributeName).Where(e => e.Equals(accuracyBySubattributeResult.AttributeName)).Count() <= 0)
                 {
-                    int failResultCount = AccuracyBySubattributeResultList.Where(e => e.AttributeName.Equals(accuracyBySubattributeResult.AttributeName) && !e.SuccessfulResult).Count();
+                    int failResultCount = this.AccuracyBySubattributeResultList.Where(e => e.AttributeName.Equals(accuracyBySubattributeResult.AttributeName) && !e.SuccessfulResult).Count();
 
                     ResultBySubattribute resultBySubattribute = new ResultBySubattribute();
 
@@ -119,14 +120,8 @@ namespace SCC.ViewModels
 
                     resultBySubattribute.AttributeName = accuracyBySubattributeResult.AttributeName;
                     resultBySubattribute.Quantity = failResultCount;
+                    resultBySubattribute.HasChildren = accuracyBySubattributeResult.HasChildren;
                     resultBySubattribute.ErrorTypeID = accuracyBySubattributeResult.ErrorTypeID;
-
-                    resultBySubattribute.ChildrenAttributeIDList =
-                        this.AccuracyBySubattributeResultList
-                            .Where(e =>
-                                e.AttributeName.Equals(accuracyBySubattributeResult.AttributeName))
-                            .SelectMany(e => e.ChildrenAttributeIDList)
-                            .ToArray();
 
                     this.ResultBySubattributeList.Add(resultBySubattribute);
                 }
@@ -171,7 +166,7 @@ namespace SCC.ViewModels
             public int[] AttributeID { get; set; }
             public string AttributeName { get; set; }
             public int Quantity { get; set; }
-            public int[] ChildrenAttributeIDList { get; set; }
+            public bool HasChildren { get; set; }
             public int ErrorTypeID { get; set; }
         }
     }

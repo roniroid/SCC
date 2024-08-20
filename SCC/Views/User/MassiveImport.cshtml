@@ -13,6 +13,8 @@
     string logsControllerName = OverallController.GetControllerName(typeof(LogController));
     string logsActionName = nameof(LogController.Index);
 
+    List<User> allUserList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.MassiveImport.AllUserList.NAME];
+
     ViewBag.Title = "Importación de usuarios";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -130,12 +132,14 @@
                     <td>@uploadedFile.FileName</td>
                     <td data-order="@uploadedFile.BasicInfo.CreationDate.ToString("yyyyMMddHHmmss")">@uploadedFile.BasicInfo.CreationDate.ToString("dd MMM yyyy hh:mm:ss")</td>
                     <td>
-                        @{ 
+                        @{
                             string userWhoUploaded = string.Empty;
-                            using (SCC_BL.User user = new SCC_BL.User(uploadedFile.BasicInfo.CreationUserID.Value))
+
+                            //using (SCC_BL.User user = new SCC_BL.User(uploadedFile.BasicInfo.CreationUserID.Value))
+                            using (SCC_BL.User user = allUserList.Where(e => e.ID == uploadedFile.BasicInfo.CreationUserID.Value).FirstOrDefault())
                             {
-                                user.SetDataByID();
-                                userWhoUploaded = $"{ user.Person.Identification } - { user.Person.SurName }, { user.Person.FirstName }";
+                                //user.SetDataByID();
+                                userWhoUploaded = $"{user.Person.Identification} - {user.Person.SurName}, {user.Person.FirstName}";
                             }
                         }
 

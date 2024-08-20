@@ -1613,6 +1613,168 @@ namespace SCC_BL.Tools
             //return new Cell(new InlineString(new DocumentFormat.OpenXml.Drawing.Text(cellValue)));
         }
 
+        public void ExportUserListToExcel(List<User> userList, string filePath)
+        {
+            if (userList.Count() == 0) return;
+
+            List<Catalog> allLanguageList = new List<Catalog>();
+            List<Workspace> allWorkspaceList = new List<Workspace>();
+            List<User> allSupervisorList = new List<User>();
+            List<Role> allRoleList = new List<Role>();
+            List<Group> allGroupList = new List<Group>();
+            List<Program> allProgramList = new List<Program>();
+            List<Catalog> allCountryList = new List<Catalog>();
+
+            using (Catalog catalog =  Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.USER_LANGUAGE))
+                allLanguageList =  catalog.SelectByCategoryID();
+
+            using (Catalog catalog =  Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
+                allCountryList =  catalog.SelectByCategoryID();
+
+            using (User user = new User())
+                allSupervisorList =  user.SelectAll(true);
+
+            using (Workspace workspace = new Workspace())
+                allWorkspaceList =  workspace.SelectAll();
+
+            using (Role role = new Role())
+                allRoleList =  role.SelectAll();
+
+            using (Group group = new Group())
+                allGroupList =  group.SelectAll();
+
+            using (Program program = new Program())
+                allProgramList =  program.SelectAll();
+
+            using (SpreadsheetDocument spreadsheetDocument = SpreadsheetDocument.Create(filePath, SpreadsheetDocumentType.Workbook))
+            {
+                WorkbookPart workbookPart = spreadsheetDocument.AddWorkbookPart();
+                workbookPart.Workbook = new Workbook();
+
+                WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>();
+                worksheetPart.Worksheet = new Worksheet(new SheetData());
+
+                Sheets sheets = spreadsheetDocument.WorkbookPart.Workbook.AppendChild<Sheets>(new Sheets());
+
+                Sheet sheet = new Sheet()
+                {
+                    Id = spreadsheetDocument.WorkbookPart.GetIdOfPart(worksheetPart),
+                    SheetId = 1,
+                    Name = "Usuarios"
+                };
+
+                sheets.Append(sheet);
+
+                SheetData sheetData = worksheetPart.Worksheet.GetFirstChild<SheetData>();
+
+                // Create header row
+                Row headerRow = new Row();
+
+                headerRow.Append( CreateCell("Id"));
+                headerRow.Append( CreateCell("Name"));
+                headerRow.Append( CreateCell("Last Name"));
+                headerRow.Append( CreateCell("E-mail"));
+                headerRow.Append( CreateCell("Start"));
+                headerRow.Append( CreateCell("End"));
+                headerRow.Append( CreateCell("Language"));
+                headerRow.Append( CreateCell("Job"));
+                headerRow.Append( CreateCell("Parent"));
+                headerRow.Append( CreateCell("Parent start date"));
+                headerRow.Append( CreateCell("Role"));
+                headerRow.Append( CreateCell("Group"));
+                headerRow.Append( CreateCell("Programs"));
+                headerRow.Append( CreateCell("Can Login?"));
+                headerRow.Append( CreateCell("Country"));
+                headerRow.Append( CreateCell("Workspace start dates"));
+
+                sheetData.Append(headerRow);
+
+                foreach (User currentUser in userList)
+                {
+                    Row dataRow = new Row();
+
+                    string currentLanguageName = allLanguageList.Find(e => e.ID == currentUser.LanguageID).Description;
+
+                    string currentWorkspaceNameList =
+                        String.Join(",", allWorkspaceList
+                            .Where(e =>
+                                currentUser.UserWorkspaceCatalogList
+                                    .Select(s => s.WorkspaceID)
+                                .Contains(e.ID))
+                            .Select(e => e.Identifier));
+
+                    string currentSupervisorNameList =
+                        String.Join(",", allSupervisorList
+                            .Where(e =>
+                                currentUser.SupervisorList
+                                    .Select(s => s.SupervisorID)
+                                .Contains(e.ID))
+                            .OrderBy(e => e.ID)
+                            .Select(e => e.Person.Identification));
+
+                    string currentSupervisorStartDateList =
+                        String.Join(",", currentUser.SupervisorList
+                            .OrderBy(e => e.SupervisorID)
+                            .Select(e => e.StartDate.ToString("dd/MM/yyyy")));
+
+                    string currentRoleNameList =
+                        String.Join(",", allRoleList
+                            .Where(e =>
+                                currentUser.RoleList
+                                    .Select(s => s.RoleID)
+                                .Contains(e.ID))
+                            .Select(e => e.Name));
+
+                    string currentGroupNameList =
+                        String.Join(",", allGroupList
+                            .Where(e =>
+                                currentUser.GroupList
+                                    .Select(s => s.GroupID)
+                                .Contains(e.ID))
+                            .Select(e => e.Name));
+
+                    string currentProgramNameList =
+                        String.Join(",", allProgramList
+                            .Where(e =>
+                                currentUser.ProgramList
+                                    .Select(s => s.ProgramID)
+                                .Contains(e.ID))
+                            .Select(e => e.Name));
+
+                    string currentCountryName = allCountryList.Find(e => e.ID == currentUser.Person.CountryID).Description;
+
+                    string currentWorkspaceStartDateList =
+                        String.Join(",", currentUser.UserWorkspaceCatalogList
+                            .OrderBy(e => e.WorkspaceID)
+                            .Select(e => e.StartDate.ToString("dd/MM/yyyy HH:mm:ss")));
+
+                    dataRow.Append( CreateCell($"{currentUser.Person.Identification}"));
+                    dataRow.Append( CreateCell($"{currentUser.Person.FirstName}"));
+                    dataRow.Append( CreateCell($"{currentUser.Person.SurName}"));
+                    dataRow.Append( CreateCell($"{currentUser.Email}"));
+                    dataRow.Append( CreateCell($"{currentUser.StartDate.ToString("dd/MM/yyyy")}"));
+                    dataRow.Append( CreateCell(string.Empty));
+                    dataRow.Append( CreateCell($"{currentLanguageName}"));
+                    dataRow.Append( CreateCell($"{currentWorkspaceNameList}"));
+                    dataRow.Append( CreateCell($"{currentSupervisorNameList}"));
+                    dataRow.Append( CreateCell($"{currentSupervisorStartDateList}"));
+                    dataRow.Append( CreateCell($"{currentRoleNameList}"));
+                    dataRow.Append( CreateCell($"{currentGroupNameList}"));
+                    dataRow.Append( CreateCell($"{currentProgramNameList}"));
+                    dataRow.Append( CreateCell(currentUser.HasPassPermission ? "Yes" : "No"));
+                    dataRow.Append( CreateCell($"{currentCountryName}"));
+                    dataRow.Append( CreateCell($"{currentWorkspaceStartDateList}"));
+
+                    sheetData.Append(dataRow);
+                }
+
+                worksheetPart.Worksheet.Save();
+                spreadsheetDocument.Save();
+                //spreadsheetDocument.Close();
+                spreadsheetDocument.Dispose();
+            }
+        }
+
         public void Dispose()
         {
 

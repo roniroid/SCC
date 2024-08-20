@@ -5,7 +5,7 @@
 @model SCC.ViewModels.ReportResultsAccuracyTrendByAttributeViewModel
 
 @{
-    ViewBag.Title = "Restultados de tendencia de precisión por atributo";
+    ViewBag.Title = "Resultados de tendencia de precisión por atributo";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
@@ -269,8 +269,8 @@
                 {
                     int successfulResultCount =
                         accuracyTrendResult.AccuracyTrendByAttributeInPeriod
-                            .Where(e => 
-                                e.AttributeName.Equals(accuracyTrendByAttribute.AttributeName) && 
+                            .Where(e =>
+                                e.AttributeName.Equals(accuracyTrendByAttribute.AttributeName) &&
                                 e.SuccessfulResult).Count();
 
                     dataText +=
@@ -846,10 +846,13 @@
                     ? Html.Raw(OverallController.Serialize(Model.RequestObject.AttributeNamesArray))
                     : Html.Raw("null")
                 : Html.Raw("null")),
-        TransactionCustomFieldCatalogNamesAndValues: [
-            @for (int i = 0; i < Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.Count; i++)
+        TransactionCustomFieldCatalogNamesAndValues:
+            @if (Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues != null)
             {
-                @:"@Html.Raw(Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.ElementAt(i).Key.Substring(Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.ElementAt(i).Key.IndexOf('-') + 2)): @Html.Raw(Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.ElementAt(i).Value)",
+                for (int i = 0; i < Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.Count; i++)
+                {
+                    @:"@Html.Raw(Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.ElementAt(i).Key.Substring(Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.ElementAt(i).Key.IndexOf('-') + 2)): @Html.Raw(Model.RequestObject.TransactionCustomFieldCatalogNamesAndValues.ElementAt(i).Value)",
+                }
             }
         ],
     };

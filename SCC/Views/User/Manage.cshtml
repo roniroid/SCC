@@ -47,7 +47,10 @@
 
 @*<script src="~/Scripts/moment.min.js"></script>
     <script src="~/Scripts/datetime-moment.js"></script>*@
+@(Html.Partial(nameof(UserController._SearchFilters), new SCC_BL.Helpers.User.Search.UserSearchHelper()))
+<div id="searchFiltersContainer">
 
+</div>
 <div class="panel">
     <div class="accordion accordion-flush" id="accordionExample">
         <div class="accordion-item">
@@ -131,22 +134,23 @@
                                 Fecha de inicio <span class="required">*</span>
                             </div>
                             <div class="col-7">
-                                @Html.TextBoxFor(modelitem => 
-                                    Model.User.StartDate, 
-                                    null, 
-                                    new 
-                                    { 
-                                        @class = "property-field-control", 
-                                        placeholder = "Fecha de inicio", 
-                                        autocomplete = "off", 
+                                @Html.TextBoxFor(modelitem =>
+                                    Model.User.StartDate,
+                                    null,
+                                    new
+                                    {
+                                        @class = "property-field-control",
+                                        placeholder = "Fecha de inicio",
+                                        autocomplete = "off",
                                         type = "date",
-                                        @Value = 
-                                            Model.User.StartDate != null 
-                                                ? (Model.User.StartDate.Year > 2000 
-                                                    ? Model.User.StartDate.ToString("yyyy-MM-dd") 
-                                                    : DateTime.Now.ToString("yyyy-MM-dd")) 
+                                        @Value =
+                                            Model.User.StartDate != null
+                                                ? (Model.User.StartDate.Year > 2000
+                                                    ? Model.User.StartDate.ToString("yyyy-MM-dd")
+                                                    : DateTime.Now.ToString("yyyy-MM-dd"))
                                                 : DateTime.Now.ToString("yyyy-MM-dd"),
-                                        required = "" })
+                                        required = ""
+                                         })
                             </div>
                         </div>
                         <div class="row property-field">
@@ -407,7 +411,14 @@
         </div>
     </div>
 </div>
-@if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS))
+<div class="row text-center">
+    <div class="col-12">
+        <button id="btnShowFilters" class="btn btn-secondary m-2" onclick="onClickShowFiltersEvent();">Iniciar búsqueda</button>
+    </div>
+</div>
+<div id="tbInfoContainer">
+</div>
+@*@if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS))
 {
     <div class="d-none">
         <table class="display cell-border d-none" id="tbExport">
@@ -897,7 +908,7 @@
             </tbody>
         </table>
     </div>
-}
+}*@
 <script>
     $(document).ready(async function () {
         @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS) && !actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) && !actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS))
@@ -905,8 +916,8 @@
             @:window.open('@Url.Action(nameof(HomeController.Index), OverallController.GetControllerName(typeof(HomeController)))', '_self');
         }
 
-        await startTableExport();
-        await startTableInfo();
+        /*await startTableExport();
+        await startTableInfo();*/
 
         fetchMultiSelectBasicData().then(response => {
             let data = response;
@@ -925,6 +936,8 @@
             startMultiSelect('#groupList', data);
             startMultiSelect('#programList', data);
         });
+
+        //loadSearchFilters();
     });
 
     function startTableInfo() {
@@ -1044,8 +1057,15 @@
 
         const divPropertyField = '<div class="row property-field m-3">%replaceContent%</div>';
 
-        const divPropertyFieldLabel = '<div class="col-5 property-field-label">' + label + '</div>';
-        const contentContainer = '<div class="col-7">' + content + '</div>';
+        let divPropertyFieldLabel = '';
+        let contentContainer = '';
+
+        if (label != null && label != '') {
+            divPropertyFieldLabel = '<div class="col-5 property-field-label">' + label + '</div>';
+            contentContainer = '<div class="col-7">' + content + '</div>';
+        } else {
+            contentContainer = '<div class="col-12">' + content + '</div>';
+        }
 
         result =
             divPropertyField
@@ -1070,6 +1090,10 @@
         } else {
             window.open(url, '_self');
         }
+    }
+
+    function onClickShowFiltersEvent() {
+        $('#filterModal').modal('show');
     }
 
     $('.btn-user-edit').click((e) => {
@@ -1119,4 +1143,14 @@
             return false;
         }
     });
+
+    function loadSearchFilters() {
+        const containerID = 'searchFiltersContainer';
+
+        $('#' + containerID).html('');
+
+        let url = '@Url.Action(nameof(UserController._SearchFilters), mainControllerName)';
+
+        loadHtmlToControl(url, containerID);
+    }
 </script>

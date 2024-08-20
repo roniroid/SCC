@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_BL.Results
 {
@@ -1159,6 +1159,24 @@ namespace SCC_BL.Results
                 public const string MESSAGE_TITLE = "Error";
                 public const string MESSAGE_CONTENT = "Ha ocurrido un error al desactivar al usuario: " + REPLACE_EXCEPTION_MESSAGE;
             };
+        }
+
+        public struct Search
+        {
+            public struct NotAllowedToSearch
+            {
+                public const SCC_BL.DBValues.Catalog.ELEMENT METHOD_ELEMENT_CATEGORY = ELEMENT_CATEGORY;
+
+                public const Notification.Type TYPE = Notification.Type.WARNING;
+
+                public const Notification.LogLevel LOCAL_LOG_LEVEL = Notification.LogLevel.INFO;
+                public const string LOCAL_LOG = "Usted no cuenta con los permisos para buscar usuarios";
+
+                public const string DATABASE_LOG = "Usted no cuenta con los permisos para buscar usuarios";
+
+                public const string MESSAGE_TITLE = "Aviso";
+                public const string MESSAGE_CONTENT = "Usted no cuenta con los permisos para buscar usuarios";
+            }
         }
     }
 }

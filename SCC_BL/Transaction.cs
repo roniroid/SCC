@@ -4,7 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_BL
 {
@@ -70,30 +70,31 @@ namespace SCC_BL
 		public Catalog ControllableFulfillmentCriticalErrorResult { get; set; } = new Catalog();
 		//----------------------------------------------------
 		public List<TransactionLabel> TransactionLabelList { get; set; } = new List<TransactionLabel>();
+        public string CallIdentifier { get; set; }
 
-		public Transaction()
+        public Transaction()
 		{
-		}
+        }
 
-		//With Type Enum
-		public Transaction(SCC_BL.DBValues.Catalog.TRANSACTION_TYPE transactionType, int? calibratedTransactionID)
-		{
-			this.TypeID = (int)transactionType;
-			this.CalibratedTransactionID = calibratedTransactionID;
+        //With Type Enum
+        public Transaction(SCC_BL.DBValues.Catalog.TRANSACTION_TYPE transactionType, int? calibratedTransactionID)
+        {
+            this.TypeID = (int)transactionType;
+            this.CalibratedTransactionID = calibratedTransactionID;
 
             if (calibratedTransactionID != null)
             {
                 using (Transaction transaction = new Transaction(calibratedTransactionID.Value))
                 {
-					transaction.SetDataByID();
+                    transaction.SetDataByID();
 
 					this.FormID = transaction.FormID;
 				}
             }
-		}
+        }
 
-		//For SelectByID and DeleteByID
-		public Transaction(int id)
+        //For SelectByID and DeleteByID
+        public Transaction(int id)
 		{
 			this.ID = id;
 		}
@@ -306,9 +307,54 @@ namespace SCC_BL
 					this.TransactionLabelList.Add(transactionLabel);
 				}
 			}
-		}
+        }
 
-		public void SetDataByID(bool simpleData = false)
+        public void SetCallIdentifier()
+        {
+            int formId = this.FormID;
+
+            List<CustomField> customFieldList = new List<CustomField>();
+            List<CustomControl> customControlList = new List<CustomControl>();
+
+            using (CustomField auxCustomField = CustomField.CustomFieldWithFormID(formId))
+            {
+                customFieldList = auxCustomField.SelectByFormID();
+            }
+
+			foreach (CustomField e in customFieldList)
+            {
+                using (CustomControl auxCustomControl = new CustomControl(e.CustomControlID))
+                {
+                    auxCustomControl.SetDataByID();
+                    customControlList.Add(auxCustomControl);
+                }
+            }
+
+            CustomControl idealCustomControl =
+                customControlList
+                    .Where(e =>
+                        e.Description.ToLower().Contains("id") &&
+                        e.Description.ToLower().Contains("llamada") &&
+                        (e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DELETED &&
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_CUSTOM_FIELD.DISABLED))
+                    .FirstOrDefault();
+
+            if (idealCustomControl != null)
+            {
+                CustomField idealCustomField =
+                    customFieldList
+                        .Where(e =>
+                            e.CustomControlID == idealCustomControl.ID)
+                        .FirstOrDefault();
+
+                this.CallIdentifier =
+                    this.CustomFieldList
+                        .Find(e => e.CustomFieldID == idealCustomField.ID)
+                        .Comment;
+            }
+        }
+
+        public void SetDataByID(bool simpleData = false)
 		{
 			using (SCC_DATA.Repositories.Transaction repoTransaction = new SCC_DATA.Repositories.Transaction())
 			{
@@ -352,10 +398,10 @@ namespace SCC_BL
 
                 if (!simpleData)
                 {
-                    this.CustomFieldList = TransactionCustomFieldCatalog.TransactionCustomFieldCatalogWithTransactionID(this.ID).SelectByTransactionID();
-                    this.BIFieldList = TransactionBIFieldCatalog.TransactionBIFieldCatalogWithTransactionID(this.ID).SelectByTransactionID();
+                    this.SetCustomFieldList();
+                    this.SetBIFieldList();
                     this.SetAttributeList();
-                    this.TransactionLabelCatalogList = TransactionLabelCatalog.TransactionLabelCatalogWithTransactionID(this.ID).SelectByTransactionID();
+                    this.SetTransactionLabelCatalogList();
 
                     List<TransactionCommentary> transactionCommentaryList = new List<TransactionCommentary>();
 
@@ -390,46 +436,46 @@ namespace SCC_BL
         }
 
 		public void SetDataByIDForSearch()
-		{
-			using (SCC_DATA.Repositories.Transaction repoTransaction = new SCC_DATA.Repositories.Transaction())
-			{
-				DataRow dr = repoTransaction.SelectByID(this.ID);
+        {
+            using (SCC_DATA.Repositories.Transaction repoTransaction = new SCC_DATA.Repositories.Transaction())
+            {
+                DataRow dr = repoTransaction.SelectByID(this.ID);
 
-				int? calibratedTransactionID = null;
+                int? calibratedTransactionID = null;
 
-				try { calibratedTransactionID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CALIBRATED_TRANSACTION_ID]); } catch (Exception) { }
+                try { calibratedTransactionID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CALIBRATED_TRANSACTION_ID]); } catch (Exception) { }
 
-				this.ID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ID]);
-				this.Identifier = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.IDENTIFIER]);
-				this.UserToEvaluateID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.USERTOEVALUATEID]);
-				this.EvaluatorUserID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.EVALUATORUSERID]);
-				this.EvaluationDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.EVALUATIONDATE]);
-				this.TransactionDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.TRANSACTIONDATE]);
-				this.LoadDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.LOAD_DATE]);
-				this.FormID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.FORMID]);
-				this.Comment = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.COMMENT]);
-				this.GeneralResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALRESULTID]);
-				this.GeneralFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]);
-				this.GeneralBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]);
-				this.GeneralFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]);
-				this.GeneralNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALNONCRITICALERRORRESULT]);
-				this.AccurateResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATERESULTID]);
-				this.AccurateFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]);
-				this.AccurateBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]);
-				this.AccurateFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]);
-				this.AccurateNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATENONCRITICALERRORRESULT]);
-				this.ControllableResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLERESULTID]);
-				this.ControllableFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]);
-				this.ControllableBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]);
-				this.ControllableFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]);
-				this.ControllableNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLENONCRITICALERRORRESULT]);
-				this.TimeElapsed = (TimeSpan)(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.TIMEELAPSED]);
-				this.BasicInfoID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.BASICINFOID]);
-				this.TypeID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.TYPE_ID]);
-				this.CalibratedTransactionID = calibratedTransactionID;
+                this.ID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ID]);
+                this.Identifier = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.IDENTIFIER]);
+                this.UserToEvaluateID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.USERTOEVALUATEID]);
+                this.EvaluatorUserID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.EVALUATORUSERID]);
+                this.EvaluationDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.EVALUATIONDATE]);
+                this.TransactionDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.TRANSACTIONDATE]);
+                this.LoadDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.LOAD_DATE]);
+                this.FormID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.FORMID]);
+                this.Comment = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.COMMENT]);
+                this.GeneralResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALRESULTID]);
+                this.GeneralFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]);
+                this.GeneralBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]);
+                this.GeneralFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]);
+                this.GeneralNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.GENERALNONCRITICALERRORRESULT]);
+                this.AccurateResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATERESULTID]);
+                this.AccurateFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]);
+                this.AccurateBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]);
+                this.AccurateFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]);
+                this.AccurateNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.ACCURATENONCRITICALERRORRESULT]);
+                this.ControllableResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLERESULTID]);
+                this.ControllableFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]);
+                this.ControllableBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]);
+                this.ControllableFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]);
+                this.ControllableNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.CONTROLLABLENONCRITICALERRORRESULT]);
+                this.TimeElapsed = (TimeSpan)(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.TIMEELAPSED]);
+                this.BasicInfoID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.BASICINFOID]);
+                this.TypeID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByID.ResultFields.TYPE_ID]);
+                this.CalibratedTransactionID = calibratedTransactionID;
 
-				this.BasicInfo = new BasicInfo(this.BasicInfoID);
-				this.BasicInfo.SetDataByID();
+                this.BasicInfo = new BasicInfo(this.BasicInfoID);
+                this.BasicInfo.SetDataByID();
 
                 this.SetUserToEvaluate();
                 this.SetProgram();
@@ -444,7 +490,35 @@ namespace SCC_BL
                 this.DevolutionCommentaries = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_COMMENTARIES).ToList();
                 this.DevolutionUserStrengths = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_USER_STRENGTHS).ToList();
                 this.DevolutionImprovementSteps = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_IMPROVEMENT_STEPS).ToList();
-			}
+            }
+        }
+
+        public int? GetIdByCallIdentifier(string callIdentifier)
+        {
+            using (SCC_DATA.Repositories.Transaction repoTransaction = new SCC_DATA.Repositories.Transaction())
+            {
+                DataTable dt = repoTransaction.SelectIDByCallIdentifier(callIdentifier);
+
+                if (dt.Rows.Count <= 0)
+                    return null;
+
+                return Convert.ToInt32(dt.Rows[0][SCC_DATA.Queries.Transaction.StoredProcedures.SelectIDByCallIdentifier.ResultFields.ID]);
+            }
+        }
+
+        void SetCustomFieldList()
+        {
+            this.CustomFieldList =            TransactionCustomFieldCatalog.TransactionCustomFieldCatalogWithTransactionID(this.ID).SelectByTransactionID();
+        }
+
+        void SetBIFieldList()
+        {
+            this.BIFieldList =                TransactionBIFieldCatalog.TransactionBIFieldCatalogWithTransactionID(this.ID).SelectByTransactionID();
+        }
+
+        void SetTransactionLabelCatalogList()
+        {
+            this.TransactionLabelCatalogList = TransactionLabelCatalog.TransactionLabelCatalogWithTransactionID(this.ID).SelectByTransactionID();
         }
 
         void SetAttributeList()
@@ -635,88 +709,88 @@ namespace SCC_BL
         }
 
 		public void SetDataByIdentifier()
-		{
-			using (SCC_DATA.Repositories.Transaction repoTransaction = new SCC_DATA.Repositories.Transaction())
-			{
-				DataRow dr = repoTransaction.SelectByIdentifier(this.Identifier);
+        {
+            using (SCC_DATA.Repositories.Transaction repoTransaction = new SCC_DATA.Repositories.Transaction())
+            {
+                DataRow dr = repoTransaction.SelectByIdentifier(this.Identifier);
 
                 if (dr == null)
                 {
-					this.ID = -1;
-					return;
+                    this.ID = -1;
+                    return;
                 }
 
-				int? calibratedTransactionID = null;
+                int? calibratedTransactionID = null;
 
-				try { calibratedTransactionID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CALIBRATED_TRANSACTION_ID]); } catch (Exception) { }
+                try { calibratedTransactionID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CALIBRATED_TRANSACTION_ID]); } catch (Exception) { }
 
-				this.ID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ID]);
-				this.Identifier = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.IDENTIFIER]);
-				this.UserToEvaluateID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.USERTOEVALUATEID]);
-				this.EvaluatorUserID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.EVALUATORUSERID]);
-				this.EvaluationDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.EVALUATIONDATE]);
-				this.TransactionDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.TRANSACTIONDATE]);
-				this.LoadDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.LOAD_DATE]);
-				this.FormID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.FORMID]);
-				this.Comment = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.COMMENT]);
-				this.GeneralResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALRESULTID]);
-				this.GeneralFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]);
-				this.GeneralBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]);
-				this.GeneralFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]);
-				this.GeneralNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALNONCRITICALERRORRESULT]);
-				this.AccurateResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATERESULTID]);
-				this.AccurateFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]);
-				this.AccurateBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]);
-				this.AccurateFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]);
-				this.AccurateNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATENONCRITICALERRORRESULT]);
-				this.ControllableResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLERESULTID]);
-				this.ControllableFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]);
-				this.ControllableBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]);
-				this.ControllableFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]);
-				this.ControllableNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLENONCRITICALERRORRESULT]);
-				this.TimeElapsed = (TimeSpan)(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.TIMEELAPSED]);
-				this.BasicInfoID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.BASICINFOID]);
-				this.TypeID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.TYPE_ID]);
-				this.CalibratedTransactionID = calibratedTransactionID;
+                this.ID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ID]);
+                this.Identifier = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.IDENTIFIER]);
+                this.UserToEvaluateID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.USERTOEVALUATEID]);
+                this.EvaluatorUserID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.EVALUATORUSERID]);
+                this.EvaluationDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.EVALUATIONDATE]);
+                this.TransactionDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.TRANSACTIONDATE]);
+                this.LoadDate = Convert.ToDateTime(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.LOAD_DATE]);
+                this.FormID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.FORMID]);
+                this.Comment = Convert.ToString(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.COMMENT]);
+                this.GeneralResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALRESULTID]);
+                this.GeneralFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALFINALUSERCRITICALERRORRESULTID]);
+                this.GeneralBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALBUSINESSCRITICALERRORRESULTID]);
+                this.GeneralFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALFULFILLMENTCRITICALERRORRESULTID]);
+                this.GeneralNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.GENERALNONCRITICALERRORRESULT]);
+                this.AccurateResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATERESULTID]);
+                this.AccurateFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATEFINALUSERCRITICALERRORRESULTID]);
+                this.AccurateBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATEBUSINESSCRITICALERRORRESULTID]);
+                this.AccurateFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATEFULFILLMENTCRITICALERRORRESULTID]);
+                this.AccurateNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.ACCURATENONCRITICALERRORRESULT]);
+                this.ControllableResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLERESULTID]);
+                this.ControllableFinalUserCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLEFINALUSERCRITICALERRORRESULTID]);
+                this.ControllableBusinessCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLEBUSINESSCRITICALERRORRESULTID]);
+                this.ControllableFulfillmentCriticalErrorResultID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLEFULFILLMENTCRITICALERRORRESULTID]);
+                this.ControllableNonCriticalErrorResult = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.CONTROLLABLENONCRITICALERRORRESULT]);
+                this.TimeElapsed = (TimeSpan)(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.TIMEELAPSED]);
+                this.BasicInfoID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.BASICINFOID]);
+                this.TypeID = Convert.ToInt32(dr[SCC_DATA.Queries.Transaction.StoredProcedures.SelectByIdentifier.ResultFields.TYPE_ID]);
+                this.CalibratedTransactionID = calibratedTransactionID;
 
-				this.BasicInfo = new BasicInfo(this.BasicInfoID);
-				this.BasicInfo.SetDataByID();
+                this.BasicInfo = new BasicInfo(this.BasicInfoID);
+                this.BasicInfo.SetDataByID();
 
-				this.CustomFieldList = TransactionCustomFieldCatalog.TransactionCustomFieldCatalogWithTransactionID(this.ID).SelectByTransactionID();
-				this.BIFieldList = TransactionBIFieldCatalog.TransactionBIFieldCatalogWithTransactionID(this.ID).SelectByTransactionID();
+                this.SetCustomFieldList();
+                this.SetBIFieldList();
                 this.SetAttributeList();
-                this.TransactionLabelCatalogList = TransactionLabelCatalog.TransactionLabelCatalogWithTransactionID(this.ID).SelectByTransactionID();
+                this.SetTransactionLabelCatalogList();
 
-				List<TransactionCommentary> transactionCommentaryList = new List<TransactionCommentary>();
+                List<TransactionCommentary> transactionCommentaryList = new List<TransactionCommentary>();
 
-				using (TransactionCommentary transactionCommentary = TransactionCommentary.TransactionCommentaryWithTransactionID(this.ID))
-					transactionCommentaryList = transactionCommentary.SelectByTransactionID();
+                using (TransactionCommentary transactionCommentary = TransactionCommentary.TransactionCommentaryWithTransactionID(this.ID))
+                    transactionCommentaryList = transactionCommentary.SelectByTransactionID();
 
-				this.DisputeCommentaries = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DISPUTE).ToList();
-				this.InvalidationCommentaries = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.INVALIDATION).ToList();
-				this.DevolutionCommentaries = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_COMMENTARIES).ToList();
-				this.DevolutionUserStrengths = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_USER_STRENGTHS).ToList();
-				this.DevolutionImprovementSteps = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_IMPROVEMENT_STEPS).ToList();
+                this.DisputeCommentaries = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DISPUTE).ToList();
+                this.InvalidationCommentaries = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.INVALIDATION).ToList();
+                this.DevolutionCommentaries = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_COMMENTARIES).ToList();
+                this.DevolutionUserStrengths = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_USER_STRENGTHS).ToList();
+                this.DevolutionImprovementSteps = transactionCommentaryList.Where(e => e.TypeID == (int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_IMPROVEMENT_STEPS).ToList();
 
                 this.SetUserToEvaluate();
                 this.SetEvaluatorUser();
                 this.SetProgram();
-				this.SetGeneralResult();
-				this.SetGeneralFinalUserCriticalErrorResult();
-				this.SetGeneralBusinessCriticalErrorResult();
-				this.SetGeneralFulfillmentCriticalErrorResult();
-				this.SetAccurateResult();
-				this.SetAccurateFinalUserCriticalErrorResult();
-				this.SetAccurateBusinessCriticalErrorResult();
-				this.SetAccurateFulfillmentCriticalErrorResult();
-				this.SetControllableResult();
+                this.SetGeneralResult();
+                this.SetGeneralFinalUserCriticalErrorResult();
+                this.SetGeneralBusinessCriticalErrorResult();
+                this.SetGeneralFulfillmentCriticalErrorResult();
+                this.SetAccurateResult();
+                this.SetAccurateFinalUserCriticalErrorResult();
+                this.SetAccurateBusinessCriticalErrorResult();
+                this.SetAccurateFulfillmentCriticalErrorResult();
+                this.SetControllableResult();
                 this.SetControllableFinalUserCriticalErrorResult();
                 this.SetControllableBusinessCriticalErrorResult();
                 this.SetControllableFulfillmentCriticalErrorResult();
 
-                this.SetTransactionLabelList();
-			}
-		}
+				this.SetTransactionLabelList();
+            }
+        }
 
 		public List<Transaction> SelectByCalibratedTransactionID(bool simpleData = false)
 		{
@@ -770,10 +844,10 @@ namespace SCC_BL
 
 					if (!simpleData)
                     {
-                        transaction.CustomFieldList = TransactionCustomFieldCatalog.TransactionCustomFieldCatalogWithTransactionID(transaction.ID).SelectByTransactionID();
-                        transaction.BIFieldList = TransactionBIFieldCatalog.TransactionBIFieldCatalogWithTransactionID(transaction.ID).SelectByTransactionID();
+                        transaction.SetCustomFieldList();
+                        transaction.SetBIFieldList();
                         transaction.SetAttributeList();
-                        transaction.TransactionLabelCatalogList = TransactionLabelCatalog.TransactionLabelCatalogWithTransactionID(transaction.ID).SelectByTransactionID();
+                        transaction.SetTransactionLabelCatalogList();
 
                         List<TransactionCommentary> transactionCommentaryList = new List<TransactionCommentary>();
 
@@ -878,9 +952,9 @@ namespace SCC_BL
 				this.BasicInfo.DeleteByID();
 				return response;
 			}
-		}
+        }
 
-		public int Insert()
+        public int Insert()
 		{
 			this.BasicInfoID = this.BasicInfo.Insert();
 

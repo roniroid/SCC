@@ -1,0 +1,490 @@
+﻿@using SCC_BL;
+@using SCC.Controllers;
+
+@model List<User>
+
+@{ 
+    User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
+
+    string mainControllerName = OverallController.GetControllerName(typeof(UserController));
+
+    int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_USER;
+
+    string logsControllerName = OverallController.GetControllerName(typeof(LogController));
+    string logsActionName = nameof(LogController.Index);
+
+    List<Catalog> allLanguageList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.LanguageCatalog.NAME];
+    List<Catalog> allCountryList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.CountryCatalog.NAME];
+    List<User> allSupervisorList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.Supervisor.NAME];
+    List<Workspace> allWorkspaceList = (List<Workspace>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.Workspace.NAME];
+    List<Role> allRoleList = (List<Role>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.RoleCatalog.NAME];
+    List<Group> allGroupList = (List<Group>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.Group.NAME];
+
+    /*List<Catalog> allLanguageList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.LanguageCatalog.NAME];
+    List<Catalog> allCountryList = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.CountryCatalog.NAME];
+    List<User> allSupervisorList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Supervisor.NAME];
+    List<Workspace> allWorkspaceList = (List<Workspace>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Workspace.NAME];
+    List<Role> allRoleList = (List<Role>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.RoleCatalog.NAME];
+    List<Group> allGroupList = (List<Group>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Group.NAME];*/
+}
+
+@if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS) || actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEE_ALL_USERS))
+{
+    <div class="tableContainer">
+        <table class="display cell-border" id="tbInfo">
+            <thead>
+                <tr>
+                    <th>
+                        Identificación
+                    </th>
+                    <th>
+                        Nombre completo
+                    </th>
+                    <th>
+                        Correo electrónico
+                    </th>
+                    <th>
+                        Fecha de inicio
+                    </th>
+                    <th>
+                        Puesto de trabajo
+                    </th>
+                    <th>
+                        Fecha de inicio en puesto de trabajo
+                    </th>
+                    <th>
+                        Supervisor
+                    </th>
+                    <th>
+                        Fecha de inicio con el supervisor
+                    </th>
+                    <th>
+                        Roles
+                    </th>
+                    <th>
+                        Grupos
+                    </th>
+                    <th>
+                        Programas
+                    </th>
+                    <th>
+                        País
+                    </th>
+                    <th>
+                        Lenguaje
+                    </th>
+                    <th>
+                        Estado
+                    </th>
+                    <th>
+                        Puede ingresar
+                    </th>
+                    <th>
+                        Último ingreso
+                    </th>
+                    <th>
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (User user in Model)
+                {
+                    string tableRowClass = string.Empty;
+                    if (user.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED)
+                    {
+                        tableRowClass +=
+                            string.IsNullOrEmpty(tableRowClass) ?
+                                "strikethrough" :
+                                " strikethrough";
+                    }
+
+                    <tr data-elementid="@user.ID" class="@tableRowClass">
+                        <td>@user.Person.Identification</td>
+                        <td>@user.Person.SurName @user.Person.FirstName</td>
+                        <td>@user.Email</td>
+                        <td data-order="@user.StartDate.ToString("yyyy/MM/dd")">
+                            @user.StartDate.ToString("dd MMM yyyy")
+                        </td>
+                        <td>
+                            @foreach (UserWorkspaceCatalog userWorkspace in user.UserWorkspaceCatalogList)
+                            {
+                                Workspace tempWorkspace = allWorkspaceList.Where(e => e.ID == userWorkspace.WorkspaceID).FirstOrDefault();
+
+                                <span>
+                                    @tempWorkspace.Name
+                                </span>
+                                <br />
+                            }
+                        </td>
+                        <td>
+                            @foreach (UserWorkspaceCatalog userWorkspace in user.UserWorkspaceCatalogList)
+                            {
+                                <span>
+                                    @userWorkspace.StartDate.ToString("dd MMM yyyy")
+                                </span>
+                                <br />
+                            }
+                        </td>
+                        <td>
+                            @foreach (UserSupervisorCatalog userSupervisor in user.SupervisorList)
+                            {
+                                User tempSupervisor = allSupervisorList.Where(e => e.ID == userSupervisor.SupervisorID).FirstOrDefault();
+
+                                <span>
+                                    @tempSupervisor.Person.Identification
+                                </span>
+                                <br />
+                            }
+                        </td>
+                        <td>
+                            @foreach (UserSupervisorCatalog userSupervisor in user.SupervisorList)
+                            {
+                                <span>
+                                    @userSupervisor.StartDate.ToString("dd MMM yyyy")
+                                </span>
+                                <br />
+                            }
+                        </td>
+                        <td>
+                            @foreach (UserRoleCatalog userRole in user.RoleList)
+                            {
+                                Role tempRole = allRoleList.Where(e => e.ID == userRole.RoleID).FirstOrDefault();
+
+                                <span>
+                                    @tempRole.Name
+                                </span>
+                                <br />
+                            }
+                        </td>
+                        <td>
+                            @foreach (UserGroupCatalog userGroup in user.GroupList)
+                            {
+                                Group tempGroup = allGroupList.Where(e => e.ID == userGroup.GroupID).FirstOrDefault();
+
+                                <span>
+                                    @tempGroup.Name
+                                </span>
+                                <br />
+                            }
+                        </td>
+                        <td>
+                            @foreach (Program program in user.CurrentProgramList)
+                            {
+                                <span>
+                                    @program.Name
+                                </span>
+                                <br />
+                            }
+                        </td>
+                        <td>
+                            @{
+                                string countryName = string.Empty;
+
+                                using (Catalog countryCatalog = allCountryList.Where(e => e.ID == user.Person.CountryID).FirstOrDefault())
+                                {
+                                    countryName = countryCatalog.Description;
+                                }
+                            }
+
+                            @countryName
+                        </td>
+                        <td>
+                            @{
+                                string languageName = string.Empty;
+
+                                using (Catalog languageCatalog = allLanguageList.Where(e => e.ID == user.LanguageID).FirstOrDefault())
+                                {
+                                    languageName = languageCatalog.Description;
+                                }
+                            }
+
+                            @languageName
+                        </td>
+                        <td>
+                            @switch ((SCC_BL.DBValues.Catalog.STATUS_USER)user.BasicInfo.StatusID)
+                            {
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.CREATED:
+                                    <p class="text-success fw-bold">Activo</p>
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.UPDATED:
+                                    <p class="text-success fw-bold">Activo</p>
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.DELETED:
+                                    <p class="text-danger fw-bold">Inactivo</p>
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.ENABLED:
+                                    <p class="text-success fw-bold">Activo</p>
+                                    break;
+                                case SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED:
+                                    <p class="text-danger fw-bold">Inactivo</p>
+                                    break;
+                                default:
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            @if (user.HasPassPermission)
+                            {
+                                <p class="text-success fw-bold">Sí</p>
+                            }
+                            else
+                            {
+                                <p class="text-danger fw-bold">No</p>
+                            }
+                        </td>
+                        <td data-order="@user.LastLoginDate.ToString("yyyy/MM/dd")">
+                            @user.LastLoginDate.ToString("dd/MM/yyyy")
+                        </td>
+                        <td>
+                            @if (user.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED)
+                            {
+                                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
+                                {
+                                    <button data-elementid="@user.ID" class="btn-element-action btn-element-action-primary btn-user-edit" title="Editar">
+                                        <i class='bx bxs-pencil'></i>
+                                    </button>
+                                }
+                                if (actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_USERS))
+                                {
+                                    <form class="d-inline frm-activate" action="@Url.Action(nameof(UserController.Activate), mainControllerName)" method="post">
+                                        @{
+                                            bool activate = false;
+
+                                            if (user.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED || user.BasicInfo.StatusID == (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
+                                            {
+                                                activate = true;
+                                            }
+                                        }
+
+                                        @Html.Hidden("userID", user.ID)
+                                        @Html.Hidden("activate", activate)
+                                        <button class="btn-element-action @(activate ? "btn-element-action-success" : "btn-element-action-danger")" type="submit" title="@(activate ? "Activar" : "Desactivar")">
+                                            @if (activate)
+                                            {
+                                                <i class='bx bxs-key'></i>
+                                            }
+                                            else
+                                            {
+                                                <i class='bx bxs-lock-alt'></i>
+                                            }
+                                        </button>
+                                    </form>
+                                }
+                                <button data-elementid="@user.ID" class="btn-element-action btn-element-action-warning btn-user-logs" title="Ver logs">
+                                    <i class='bx bx-book-reader'></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <button data-elementid="@user.ID" class="btn-element-action btn-element-action-warning btn-user-logs" title="Ver logs">
+                                    <i class='bx bx-book-reader'></i>
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="row text-center">
+        <div class="col-12">
+            <h3>
+                Usted no cuenta con los permisos para ver la lista de usuarios
+            </h3>
+        </div>
+    </div>
+}
+<script>
+    function startTableInfo() {
+        fetchDatatableBasicData().then(response => {
+            const dateNow = new Date();
+            let fileName = 'Listado de usuarios' + '_' + dateNow.getFullYear() + '_' + (parseInt(dateNow.getMonth()) + 1).toString() + '_' + dateNow.getDate() + '_' + dateNow.getHours() + '_' + dateNow.getMinutes() + '_' + dateNow.getSeconds();
+
+            let data = response;
+
+            let customButton;
+
+            /*customButton = {
+                "text": 'Exportar en formato de importación',
+                "className": "btn-sm border border-dark",
+                "action": function (e, dt, node, config) {
+                    alert('Button activated');
+                }
+            };*/
+
+            let excelButton =
+                {
+                    "title": null,
+                    "filename": fileName,
+                    "extend": "excel",
+                    "className": "btn-sm",
+                    "exportOptions": {
+                        "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+                        "rows": ":not('.strikethrough')"
+                    }
+                };
+
+            let pdfButton =
+                {
+                    "title": null,
+                    "filename": fileName,
+                    "extend": "pdfHtml5",
+                    "className": "btn-sm",
+                    "orientation": "landscape",
+                    "pageSize": "LEGAL",
+                    "exportOptions": {
+                        "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+                        "rows": ":not('.strikethrough')"
+                    }
+                };
+
+            let copyButton =
+                {
+                    "title": null,
+                    "filename": fileName,
+                    "extend": 'copy',
+                    "text": 'Copiar',
+                    "exportOptions":
+                    {
+                        "modifier": {
+                            page: 'current'
+                        },
+                        "columns": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14],
+                        "rows": ":not('.strikethrough')"
+                    }
+                };
+
+            customButton = {
+                "title": "",
+                "text": "Exportar en formato de importación",
+                "className": "btn-sm border border-dark",
+                "action": () => {
+                    exportUsersFile();
+                }
+            };
+
+            data["buttons"].push(excelButton);
+            data["buttons"].push(pdfButton);
+            data["buttons"].push(copyButton);
+            data["buttons"].push(customButton);
+
+            startDataTable('#tbInfo', data);
+
+            let toolbarControls = '';
+
+            @*toolbarControls +=
+                getControlForToolbar(
+                    '<div class="radio-control d-inline-block"><input label="NO" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="false" @(Request["filterActiveElements"] == null || Request["filterActiveElements"] == "false" ? "checked" : string.Empty ) /><input label="SI" name="filterActiveElements" onchange="onChangefilterActiveElementsEvent(this);" type="radio" value="true" @(Request["filterActiveElements"] == "true" ? "checked" : string.Empty ) /></div>',
+                    'Mostrar sólo activos'
+                );*@
+
+            toolbarControls +=
+                getControlForToolbar(
+                    '',
+                    ''
+                );
+
+            $('div.toolbar').html(toolbarControls);
+        });
+    }
+
+    async function exportUsersFile() {
+        let userIDArray = await getUserIDArray();
+
+        if (userIDArray.length > 0) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '@Url.Action(nameof(UserController.ExportUsersToExcel), mainControllerName)';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'userIDArray';
+            input.value = userIDArray.join(',');
+
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+
+            //console.log(userIDArray);
+            form.submit();
+
+            alert('Esta operación puede durar algunos segundos');
+        }
+        else {
+            alert('No se han encontrado usuarios con los criterios de búsqueda');
+        }
+    }
+
+    async function getUserIDArray() {
+        let response = [];
+
+        let currentPage = $('#tbInfo').DataTable().page.info().page;
+        let currentSearch = $('#tbInfo').DataTable().search();
+
+        $('#tbInfo').DataTable().page.len(-1).draw();
+        $('#tbInfo').DataTable().search('', false, false).draw();
+
+        response =
+            $('#tbInfo')
+                .find('tbody tr')
+                .map((index, e) => {
+                    return $(e).data('elementid');
+                }).get();
+
+        $('#tbInfo').DataTable().page.len(10).draw();
+        $('#tbInfo').DataTable().page(currentPage).draw('page');
+        $('#tbInfo').DataTable().search(currentSearch, false, false).draw();
+
+        return await response;
+    }
+
+    function onChangefilterActiveElementsEvent(element) {
+        let url = '@Url.Action(nameof(UserController.Manage), mainControllerName)';
+
+        if (element.value == 'true') {
+            url += '?filterActiveElements=' + element.value;
+        }
+
+        if ($('#identification').val()) {
+            let message = 'Se actualizará todo el contenido de la página, ¿quieres continuar?';
+
+            if (confirm(message) == true) {
+                window.open(url, '_self');
+            }
+        } else {
+            window.open(url, '_self');
+        }
+    }
+
+    $('.btn-user-edit').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(UserController.Manage), mainControllerName)?userID=' + elementID, '_self');
+        }
+    });
+
+    $('.btn-user-logs').click((e) => {
+        const element = e.currentTarget;
+        const elementID = element.dataset.elementid;
+
+        window.open('@Url.Action(logsActionName, logsControllerName)?categoryID=' + @mainCategoryID + '&itemID=' + elementID, '_blank');
+    });
+
+    $('.frm-activate').submit((e) => {
+        let message = '¿Quieres cambiar el estado de este elemento en el sistema?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+    });
+
+    startTableInfo();
+</script>

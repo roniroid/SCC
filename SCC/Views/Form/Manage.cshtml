@@ -4,6 +4,8 @@
 @model List<Form>
 
 @{
+    List<ProgramFormCatalog> programFormCatalogList = (List<ProgramFormCatalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Manage.AllProgramFormCatalogList.NAME];
+
     User actualUser = (User)Session[SCC_BL.Settings.AppValues.Session.GLOBAL_ACTUAL_USER];
 
     int mainCategoryID = (int)SCC_BL.DBValues.Catalog.ELEMENT.ELEMENT_FORM;
@@ -70,11 +72,24 @@
                     <td>@form.ID</td>
                     <td>@form.Name</td>
                     <td>
+                        @*@{
+            Catalog tempCatalog = allTypeList.Where(e => e.ID == form.TypeID).FirstOrDefault();
+        }
+
+        @tempCatalog.Description*@
+
                         @{
-                            Catalog tempCatalog = allTypeList.Where(e => e.ID == form.TypeID).FirstOrDefault();
+                            bool isAssigned = programFormCatalogList.Select(e => e.FormID).Contains(form.ID);
                         }
 
-                        @tempCatalog.Description
+                        @if (isAssigned)
+                        {
+                            @:Asignado
+                        }
+                        else
+                        {
+                            @:Plantilla
+                        }
                     </td>
                     <td>@form.Comment</td>
                     <td>

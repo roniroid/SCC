@@ -606,7 +606,7 @@
                         <tbody id="attributeTableBody">
                             @{
                                 int attributeCounter = SCC_BL.Settings.Overall.MIN_EXISTING_ATTRIBUTE_GHOST_ID;
-                                List<Catalog> errotTypeCatalogListTemp = SCC_BL.Attribute.GetAttributeErrorType();
+                                List<Catalog> errotTypeCatalogListTemp = (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Edit.AttributeErrorTypeList.NAME];
                             }
 
                             @foreach (SCC_BL.Attribute attribute in Model.AttributeList)
@@ -750,7 +750,7 @@
     </div>
 </div>
 <script>
-    @{
+    @*@{
         List<AttributeValueCatalog> defineAnswerTypeList = new List<AttributeValueCatalog>();
 
         foreach (SCC_BL.Attribute attribute in Model.AttributeList)
@@ -764,6 +764,17 @@
         }
 
         string jsonDefineAnswerTypeList = OverallController.Serialize(defineAnswerTypeList);
+    }*@
+
+    @{
+        /*List<AttributeValueCatalog> defineAnswerTypeList = new List<AttributeValueCatalog>();
+
+        foreach (SCC_BL.Attribute attribute in Model.AttributeList)
+        {
+            defineAnswerTypeList.AddRange(Model.AttributeList.Where(e => e.ID == attribute.ID).FirstOrDefault().ValueList);
+        }*/
+
+        string jsonDefineAnswerTypeList = ViewData[SCC_BL.Settings.AppValues.ViewData.Form.Edit.JsonDefineAnswerTypeList.NAME].ToString();
     }
 
     let attributeCounter = @SCC_BL.Settings.Overall.MIN_NON_EXISTING_ATTRIBUTE_GHOST_ID;

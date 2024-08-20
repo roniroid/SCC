@@ -5,10 +5,12 @@
 @model SCC.ViewModels.ReportResultsComparativeByUserViewModel
 
 @{
-    ViewBag.Title = "Restultados de comparación de usuarios";
+    ViewBag.Title = "Resultados de comparación de usuarios";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
+
+    List<User> allUserList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.Report._ComparativeByUserResults.AllUserList.NAME];
 }
 
 <link href="~/Content/Custom/radio.css" rel="stylesheet" />
@@ -245,8 +247,12 @@
                 <tr>
                     <td>
                         @{
-                            User user = new User(resultsByUser.UserID);
-                            user.SetDataByID();
+                            /*User user = new User(resultsByUser.UserID);
+                            user.SetDataByID();*/
+
+                            User user = allUserList
+                                .Where(e => e.ID == resultsByUser.UserID)
+                                .FirstOrDefault();
                         }
                         @($"{ user.Person.SurName }, { user.Person.FirstName }")
                     </td>
@@ -482,8 +488,12 @@
                         Model.ResultsByUserList
                             .Select(e =>
                             {
-                                User user = new User(e.UserID);
-                                user.SetDataByID();
+                                /*User user = new User(e.UserID);
+                                user.SetDataByID();*/
+
+                                User user = allUserList
+                                    .Where(w => w.ID == e.UserID)
+                                    .FirstOrDefault();
 
                                 return $"'{user.Person.SurName}, {user.Person.FirstName}'";
                             }));

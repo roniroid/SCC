@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_DATA.Repositories
 {
@@ -382,9 +382,32 @@ namespace SCC_DATA.Repositories
 			{
 				throw ex;
 			}
-		}
+        }
 
-		public void Dispose()
+        public System.Data.DataTable SelectIDByCallIdentifier(string callIdentifier)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.Transaction.StoredProcedures.SelectIDByCallIdentifier.Parameters.CALL_IDENTIFIER, callIdentifier, System.Data.SqlDbType.VarChar)
+                    };
+
+                    return
+                        db.Select(
+                            Queries.Transaction.StoredProcedures.SelectIDByCallIdentifier.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void Dispose()
 		{
 		}
 	}

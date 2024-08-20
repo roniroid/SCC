@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_DATA.Queries
 {
@@ -343,8 +343,52 @@ namespace SCC_DATA.Queries
 				{
 					public const string ID = "@id";
 				}
-			}
+            }
 
-		}
+            public struct Search
+            {
+                public const string NAME = "[dbo].[usp_UserSearch]";
+
+                public struct Parameters
+                {
+                    public const string IDENTIFICATION_TYPE = "@identificationType";
+                    public const string IDENTIFICATION = "@identification";
+                    public const string FIRST_NAME_TYPE = "@firstNameType";
+                    public const string FIRST_NAME = "@firstName";
+                    public const string SUR_NAME_TYPE = "@surNameType";
+                    public const string SUR_NAME = "@surName";
+                    public const string COUNTRY_ID_LIST = "@countryIDList";
+                    public const string LANGUAGE_ID_LIST = "@languageIDList";
+
+                    public const string USERNAME_TYPE = "@usernameType";
+                    public const string USERNAME = "@username";
+                    public const string EMAIL_TYPE = "@emailType";
+                    public const string EMAIL = "@email";
+                    public const string HAS_PASS_PERMISSION = "@hasPassPermission";
+                    public const string USER_STATUS_ID = "@userStatusIDList";
+                    public const string GROUP_ID_LIST = "@groupIDList";
+                    public const string PERMISSION_ID_LIST = "@permissionIDList";
+                    public const string PROGRAM_ID_LIST = "@programIDList";
+                    public const string ROLE_ID_LIST = "@roleIDList";
+                    public const string SUPERVISOR_ID_LIST = "@supervisorIDList";
+                    public const string WORKSPACE_ID_LIST = "@workspaceIDList";
+                }
+
+                public struct ResultFields
+                {
+                    public const string ID = "ID";
+                    public const string PERSONID = "PersonID";
+                    public const string USERNAME = "Username";
+                    public const string PASSWORD = "Password";
+                    public const string SALT = "Salt";
+                    public const string EMAIL = "Email";
+                    public const string STARTDATE = "StartDate";
+                    public const string LANGUAGEID = "LanguageID";
+                    public const string HASPASSPERMISSION = "HasPassPermission";
+                    public const string LASTLOGINDATE = "LastLoginDate";
+                    public const string BASICINFOID = "BasicInfoID";
+                }
+            }
+        }
 	}
 }

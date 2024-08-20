@@ -656,7 +656,9 @@
                 }
             },
             onClick: clickHandler,
-            onHover: barHoverHandler
+            onHover: (event, chartElement) => {
+                event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+            }
         }
     });
 
@@ -702,7 +704,7 @@
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
             $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
             $($form).append('<input type="hidden" name="isControllable" value="@isControllable.ToString().ToLower()" /> ');
-            +
+            
             $(document.body).append($form);
 
             $form.submit();

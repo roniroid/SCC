@@ -193,25 +193,38 @@ namespace SCC.ViewModels
                                             e.AttributeID == attribute.ID)
                                         .FirstOrDefault();
 
-                                if (calibrationTransactionAttributeCatalog != null)
+                                try
                                 {
-                                    if (calibrationTransactionAttributeCatalog.ValueID != null)
+                                    if (calibrationTransactionAttributeCatalog != null)
                                     {
-                                        if (calibrationTransactionAttributeCatalog.ValueID == expertTransactionAttributeCatalog.ValueID)
-                                            this.Success++;
+                                        if (calibrationTransactionAttributeCatalog.ValueID != null)
+                                        {
+                                            if (calibrationTransactionAttributeCatalog.ValueID == expertTransactionAttributeCatalog.ValueID)
+                                                this.Success++;
+                                        }
+                                        else
+                                        {
+                                            if (calibrationTransactionAttributeCatalog.Checked == expertTransactionAttributeCatalog.Checked)
+                                                this.Success++;
+                                        }
                                     }
-                                    else
-                                    {
-                                        if (calibrationTransactionAttributeCatalog.Checked == expertTransactionAttributeCatalog.Checked)
-                                            this.Success++;
-                                    }
+                                }
+                                catch (Exception)
+                                {
                                 }
                             }
                         }
                         break;
                 }
 
-                this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                try
+                {
+                    this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                }
+                catch (Exception ex)
+                {
+                    string exceptionMessage = ex.ToString();
+                }
             }
 
             /*public void Calculate(int totalTransactionCount)
@@ -350,7 +363,14 @@ namespace SCC.ViewModels
                 total += this.FCE.Total;
                 //total += this.NCE.Total;
 
-                percentageScore = (Convert.ToDecimal(success) / total) * 100;
+                try
+                {
+                    percentageScore = (Convert.ToDecimal(success) / total) * 100;
+                }
+                catch (Exception ex)
+                {
+                    string exceptionMessage = ex.ToString();
+                }
 
                 return percentageScore;
             }
@@ -360,7 +380,7 @@ namespace SCC.ViewModels
                 public int AttributeID { get; set; }
                 public int Success { get; set; } = 0;
                 public int Total { get; set; }
-                public decimal PercentageScore { get; set; }
+                public decimal PercentageScore { get; set; } = 0;
 
                 public ResultByAttribute(int attributeID, List<SCC_BL.Transaction> calibrationList, List<SCC_BL.Transaction> expertEvaluationList, int totalTransactionCount)
                 {
@@ -404,22 +424,35 @@ namespace SCC.ViewModels
                                 .Where(e => e.AttributeID == attributeID)
                                 .FirstOrDefault();
 
-                        if (transactionAttributeCatalog != null)
+                        try
                         {
-                            if (transactionAttributeCatalog.ValueID != null)
+                            if (transactionAttributeCatalog != null)
                             {
-                                if (transactionAttributeCatalog.ValueID == expertTransactionAttributeCatalog.ValueID)
-                                    this.Success++;
+                                if (transactionAttributeCatalog.ValueID != null)
+                                {
+                                    if (transactionAttributeCatalog.ValueID == expertTransactionAttributeCatalog.ValueID)
+                                        this.Success++;
+                                }
+                                else
+                                {
+                                    if (transactionAttributeCatalog.Checked == expertTransactionAttributeCatalog.Checked)
+                                        this.Success++;
+                                }
                             }
-                            else
-                            {
-                                if (transactionAttributeCatalog.Checked == expertTransactionAttributeCatalog.Checked)
-                                    this.Success++;
-                            }
+                        }
+                        catch (Exception)
+                        {
                         }
                     }
 
-                    this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                    try
+                    {
+                        this.PercentageScore = (Convert.ToDecimal(this.Success) / this.Total) * 100;
+                    }
+                    catch (Exception ex)
+                    {
+                        string exceptionMessage = ex.ToString();
+                    }
                 }
             }
         }
@@ -521,7 +554,7 @@ namespace SCC.ViewModels
             public int AttributeID { get; set; }
             public int Success { get; set; } = 0;
             public int Total { get; set; }
-            public decimal PercentageScore { get; set; }
+            public decimal PercentageScore { get; set; } = 0;
 
             public ResultByAttribute(int attributeID, List<SCC_BL.Transaction> calibrationList, List<SCC_BL.Transaction> expertEvaluationList, int totalTransactionCount)
             {
@@ -548,18 +581,24 @@ namespace SCC.ViewModels
                             .Where(e => e.AttributeID == attributeID)
                             .FirstOrDefault();
 
-                    if (transactionAttributeCatalog != null)
+                    try
                     {
-                        if (transactionAttributeCatalog.ValueID != null)
+                        if (transactionAttributeCatalog != null)
                         {
-                            if (transactionAttributeCatalog.ValueID == expertTransactionAttributeCatalog.ValueID)
-                                this.Success++;
+                            if (transactionAttributeCatalog.ValueID != null)
+                            {
+                                if (transactionAttributeCatalog.ValueID == expertTransactionAttributeCatalog.ValueID)
+                                    this.Success++;
+                            }
+                            else
+                            {
+                                if (transactionAttributeCatalog.Checked == expertTransactionAttributeCatalog.Checked)
+                                    this.Success++;
+                            }
                         }
-                        else
-                        {
-                            if (transactionAttributeCatalog.Checked == expertTransactionAttributeCatalog.Checked)
-                                this.Success++;
-                        }
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
 

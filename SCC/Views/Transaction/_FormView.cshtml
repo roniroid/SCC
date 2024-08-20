@@ -17,11 +17,15 @@
             @Url.Action(nameof(TransactionController.Create), mainControllerName) :
             @Url.Action(nameof(TransactionController.Edit), mainControllerName);
 
+    CustomControl callIdentifierCustomControl = null;
+
     int? calibratedTransactionCallIDCustomControlID = null;
     string calibratedTransactionCallID = string.Empty;
+
+    SelectList selectListUser = (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserListByProgram.NAME] as SelectList);
 }
 
-@{ 
+@{
     if (Model.Transaction.CalibratedTransactionID != null)
     {
         try
@@ -31,6 +35,7 @@
         }
         catch (Exception ex)
         {
+            string exceptionMessage = ex.ToString();
         }
     }
 }
@@ -104,23 +109,23 @@
 
             @*OLD - SCC*@
             @*@if (hasUserToEvaluate)
-            {
-                <span>@((ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value.Equals(Model.Transaction.UserToEvaluateID.ToString())).FirstOrDefault().Text)</span>
-            }
+                {
+                    <span>@((ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value.Equals(Model.Transaction.UserToEvaluateID.ToString())).FirstOrDefault().Text)</span>
+                }
 
-            <div class="@(hasUserToEvaluate ? "d-none" : string.Empty)">
-                @Html.DropDownList(
-                    "userToEvaluate",
-                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value != actualUser.ID.ToString()),
-                    "Seleccione un usuario",
-                    new
-                    {
-                        @class = "property-field-control",
-                        placeholder = "Usuarios disponibles",
-                        title = "Usuarios disponibles"
-                    }
-                )
-            </div>*@
+                <div class="@(hasUserToEvaluate ? "d-none" : string.Empty)">
+                    @Html.DropDownList(
+                        "userToEvaluate",
+                        (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserList.NAME] as SelectList).Where(e => e.Value != actualUser.ID.ToString()),
+                        "Seleccione un usuario",
+                        new
+                        {
+                            @class = "property-field-control",
+                            placeholder = "Usuarios disponibles",
+                            title = "Usuarios disponibles"
+                        }
+                    )
+                </div>*@
 
             @if (hasUserToEvaluate)
             {
@@ -131,7 +136,7 @@
             <div class="@(hasUserToEvaluate ? "d-none" : string.Empty)">
                 @Html.DropDownList(
                     "userToEvaluate",
-                    (ViewData[SCC_BL.Settings.AppValues.ViewData.Transaction.FormView.UserListByProgram.NAME] as SelectList).Where(e => e.Value != actualUser.ID.ToString()),
+                    selectListUser.Where(e => e.Value != actualUser.ID.ToString()),
                     "Seleccione un usuario",
                     new
                     {
@@ -289,15 +294,20 @@
                     </button>
                 </h2>
                 <div id="collapseDisputationData" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionDisputeCommentaries">
+                    <div class="accordion-header">
+                        <div class="mt-2 text-center">
+                            <button id="btnCreateDisputeCommentary" class="btn btn-secondary border-1" type="button">Agregar comentario</button>
+                        </div>
+                    </div>
                     <div class="accordion-body">
-                        <div class="row property-field">
+                        <div class="row property-field" id="transactionCommentariesDisputation">
                             @if (Model.Transaction.DisputeCommentaries.Count() > 0)
                             {
                                 int disputationCommentCount = 0;
 
                                 foreach (TransactionCommentary transactionCommentary in Model.Transaction.DisputeCommentaries)
                                 {
-                                    <div class="col-12">
+                                    <div class="col-12 transaction-comment-disputation-container">
                                         <div class="d-flex align-items-start">
                                             <span class="required">* Rellene el comentario</span>
                                         </div>
@@ -320,7 +330,7 @@
                             }
                             else
                             {
-                                <div class="col-12">
+                                <div class="col-12 transaction-comment-disputation-container">
                                     <div class="d-flex align-items-start">
                                         <span class="required">* Rellene el comentario</span>
                                     </div>
@@ -361,15 +371,20 @@
                     </button>
                 </h2>
                 <div id="collapseInvalidationData" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionInvalidationCommentaries">
+                    <div class="accordion-header">
+                        <div class="mt-2 text-center">
+                            <button id="btnCreateInvalidationCommentary" class="btn btn-secondary border-1" type="button">Agregar comentario</button>
+                        </div>
+                    </div>
                     <div class="accordion-body">
-                        <div class="row property-field">
+                        <div class="row property-field" id="transactionCommentariesInvalidation">
                             @if (Model.Transaction.InvalidationCommentaries.Count() > 0)
                             {
                                 int invalidationCommentCount = 0;
 
                                 foreach (TransactionCommentary transactionCommentary in Model.Transaction.InvalidationCommentaries)
                                 {
-                                    <div class="col-12">
+                                    <div class="col-12 transaction-comment-invalidation-container">
                                         <div class="d-flex align-items-start">
                                             <span class="required">* Rellene el comentario</span>
                                         </div>
@@ -392,7 +407,7 @@
                             }
                             else
                             {
-                                <div class="col-12">
+                                <div class="col-12 transaction-comment-invalidation-container">
                                     <div class="d-flex align-items-start">
                                         <span class="required">* Rellene el comentario</span>
                                     </div>
@@ -438,15 +453,21 @@
                             <h5>
                                 Comentarios de devolución
                             </h5>
+                            <br />
+                            <div class="accordion-header">
+                                <div class="mt-2 text-center">
+                                    <button id="btnCreateDevolutionCommentary" class="btn btn-secondary border-1" type="button">Agregar comentario</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="row property-field">
+                        <div class="row property-field" id="transactionCommentariesDevolution">
                             @if (Model.Transaction.DevolutionCommentaries.Count() > 0)
                             {
                                 int devolutionCommentCount = 0;
 
                                 foreach (TransactionCommentary transactionCommentary in Model.Transaction.DevolutionCommentaries)
                                 {
-                                    <div class="col-12">
+                                    <div class="col-12 transaction-comment-devolution-container">
                                         <div class="d-flex align-items-start">
                                             <span class="required">* Rellene el comentario</span>
                                         </div>
@@ -469,7 +490,7 @@
                             }
                             else
                             {
-                                <div class="col-12">
+                                <div class="col-12 transaction-comment-devolution-container">
                                     <div class="d-flex align-items-start">
                                         <span class="required">* Rellene el comentario</span>
                                     </div>
@@ -491,15 +512,21 @@
                             <h5>
                                 Pasos de mejora
                             </h5>
+                            <br />
+                            <div class="accordion-header">
+                                <div class="mt-2 text-center">
+                                    <button id="btnCreateDevolutionImprovementStepsCommentary" class="btn btn-secondary border-1" type="button">Agregar comentario</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="row property-field">
+                        <div class="row property-field" id="transactionCommentariesDevolutionImprovementSteps">
                             @if (Model.Transaction.DevolutionImprovementSteps.Count() > 0)
                             {
                                 int devolutionImprovementStepsCommentCount = 0;
 
                                 foreach (TransactionCommentary transactionCommentary in Model.Transaction.DevolutionImprovementSteps)
                                 {
-                                    <div class="col-12">
+                                    <div class="col-12 transaction-comment-devolution-improvement-steps-container">
                                         <div class="d-flex align-items-start">
                                             <span class="required">* Rellene el comentario</span>
                                         </div>
@@ -522,7 +549,7 @@
                             }
                             else
                             {
-                                <div class="col-12">
+                                <div class="col-12 transaction-comment-devolution-improvement-steps-container">
                                     <div class="d-flex align-items-start">
                                         <span class="required">* Rellene el comentario</span>
                                     </div>
@@ -544,15 +571,21 @@
                             <h5>
                                 Fortalezas del usuario
                             </h5>
+                            <br />
+                            <div class="accordion-header">
+                                <div class="mt-2 text-center">
+                                    <button id="btnCreateDevolutionUserStrengthsCommentary" class="btn btn-secondary border-1" type="button">Agregar comentario</button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="row property-field">
+                        <div class="row property-field" id="transactionCommentariesDevolutionUserStrengths">
                             @if (Model.Transaction.DevolutionUserStrengths.Count() > 0)
                             {
                                 int devolutionUserStrengthsCommentCount = 0;
 
                                 foreach (TransactionCommentary transactionCommentary in Model.Transaction.DevolutionUserStrengths)
                                 {
-                                    <div class="col-12">
+                                    <div class="col-12 transaction-comment-devolution-user-strengths-container">
                                         <div class="d-flex align-items-start">
                                             <span class="required">* Rellene el comentario</span>
                                         </div>
@@ -575,7 +608,7 @@
                             }
                             else
                             {
-                                <div class="col-12">
+                                <div class="col-12 transaction-comment-devolution-user-strengths-container">
                                     <div class="d-flex align-items-start">
                                         <span class="required">* Rellene el comentario</span>
                                     </div>
@@ -713,6 +746,14 @@
                         @switch ((SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE)customControl.ControlTypeID)
                         {
                             case SCC_BL.DBValues.Catalog.CUSTOM_CONTROL_TYPE.TEXT_BOX:
+                                if (
+                                    Model.Transaction.ID <= 0 &&
+                                    customControl.Description.ToLower().Contains("id") &&
+                                    customControl.Description.ToLower().Contains("llamada"))
+                                {
+                                    callIdentifierCustomControl = customControl;
+                                    htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-call-identifier";
+                                }
                                 htmlAttributes["class"] = htmlAttributes["class"].ToString() + " custom-control-value-text";
 
                                 htmlAttributes.Add(
@@ -771,12 +812,12 @@
                                         }
 
                                         @*if (currentTransactionCustomFieldCatalog != null)
-                                        {
-                                            if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
                                             {
-                                                isChecked = true;
-                                            }
-                                        }*@
+                                                if (currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID)
+                                                {
+                                                    isChecked = true;
+                                                }
+                                            }*@
 
                                         <div>
                                             <input id="customControl_@customControlValueCatalog.ID" class="@htmlAttributes["class"]" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) @(customControl.IsRequired ? "required" : string.Empty) />
@@ -785,11 +826,11 @@
                                         @*<input id="customControl_@customControl.ID" label="@customControlValueCatalog.Name" name="customControl_@customControl.ID" type="checkbox" value="@customControlValueCatalog.ID" @(isChecked ? "checked" : string.Empty) />*@
 
                                         @*@Html.CheckBox(
-                                        "customControl_" + customControl.ID,
-                                        currentTransactionCustomFieldCatalog != null
-                                            ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
-                                            : customControlValueCatalog.IsDefaultValue,
-                                        htmlAttributes)*@
+                                            "customControl_" + customControl.ID,
+                                            currentTransactionCustomFieldCatalog != null
+                                                ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
+                                                : customControlValueCatalog.IsDefaultValue,
+                                            htmlAttributes)*@
                                     }
                                 </div>
                                 break;
@@ -824,15 +865,15 @@
                                             <label for="customControl_@customControlValueCatalog.ID">@customControlValueCatalog.Name</label>
                                         </div>
                                         @*htmlAttributes.Remove("label");
-                                        htmlAttributes.Add("label", customControlValueCatalog.Name);
+                                            htmlAttributes.Add("label", customControlValueCatalog.Name);
 
-                                        @Html.RadioButton(
-                                            "customControl_" + customControl.ID,
-                                            customControlValueCatalog.ID,
-                                            currentTransactionCustomFieldCatalog != null
-                                                ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
-                                                : customControlValueCatalog.IsDefaultValue,
-                                            htmlAttributes)*@
+                                            @Html.RadioButton(
+                                                "customControl_" + customControl.ID,
+                                                customControlValueCatalog.ID,
+                                                currentTransactionCustomFieldCatalog != null
+                                                    ? currentTransactionCustomFieldCatalog.ValueID == customControlValueCatalog.ID
+                                                    : customControlValueCatalog.IsDefaultValue,
+                                                htmlAttributes)*@
                                     }
                                 </div>
                                 break;
@@ -2071,7 +2112,17 @@
         }
 
         LoadTransactionCommentaries();
+        setCallIdentifier();
     });
+
+    function setCallIdentifier() {
+        @if (
+            Model.Transaction.ID <= 0 &&
+            callIdentifierCustomControl != null)
+        {
+            @:$('.custom-control-call-identifier').val(callIdentifier);
+        }
+    }
 
     const hasModel = @hasModel.ToString().ToLower();
 
@@ -2141,7 +2192,7 @@
     }
 
     function LoadTransactionCommentaries() {
-        console.log('@Request["hasDisputation"]');
+        //console.log('@Request["hasDisputation"]');
         if ('@Request["hasDisputation"]' === 'true') {
             window.location.href = '#accordionDisputeCommentaries';
         }
@@ -2988,7 +3039,7 @@
         }
 
         if (firstMissingElement) {
-            console.log(firstMissingElement);
+            //console.log(firstMissingElement);
             firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
@@ -3017,7 +3068,7 @@
         });
 
         if (firstMissingElement) {
-            console.log(firstMissingElement);
+            //console.log(firstMissingElement);
             firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
@@ -3046,7 +3097,7 @@
         });
 
         if (firstMissingElement) {
-            console.log(firstMissingElement);
+            //console.log(firstMissingElement);
             firstMissingElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return false;
         }
@@ -3055,7 +3106,7 @@
     }
 
 
-    $('#btnSubmit').click((e) => {
+    $('#btnSubmit').click(async (e) => {
         let requiredAdviseElement = $('.required-advise');
 
         /*if (
@@ -3109,7 +3160,9 @@
 
         $('#btnSubmit').prop('disabled', true);
 
-        showWaitingModal();
+
+        //await showWaitingModal();
+        alert("Este proceso podría durar unos minutos...");
 
         StopTimer();
 
@@ -3134,13 +3187,15 @@
                     }
                 });
             })
-            .catch((reject) => {
+            .catch(async (reject) => {
+                await hideWaitingModal();
+                console.log(reject);
                 alert(reject);
                 console.error(reject);
             })
-            .finally(() => {
+            .finally(async () => {
                 $('#btnSubmit').removeProp('disabled');
-                hideWaitingModal();
+                await hideWaitingModal();
             });
 
         return false;
@@ -3482,6 +3537,7 @@
                     }
 
                     if (!foundCheckedChildren) {
+                        $('#btnSubmit').removeAttr('disabled');
                         reject('Existen atributos seleccionados con ningún causal seleccionado');
                         break;
                     }
@@ -3501,8 +3557,8 @@
                 let currentCustomControlElement = customControlElements[i];
                 let customFieldID = $(currentCustomControlElement).data('customfieldid');
 
-                console.log(customFieldID);
-                console.log(transactionCustomFieldIDList.filter(x => x.CustomFieldID == customFieldID));
+                //console.log(customFieldID);
+                //console.log(transactionCustomFieldIDList.filter(x => x.CustomFieldID == customFieldID));
             }
 
             resolve(formObject);
@@ -3556,6 +3612,260 @@
                 }
             });
         }
+    });
+
+    function getMaxDisputationOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('.transaction-comment-disputation').length > 0) {
+                $('.transaction-comment-disputation').each(function () {
+                    const currentId = this.id;
+                    const currentOrder = currentId.replace('transactionDisputationComment-', '');
+                    let value = parseInt(currentOrder);
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    function getMaxInvalidationOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('.transaction-comment-invalidation').length > 0) {
+                $('.transaction-comment-invalidation').each(function () {
+                    const currentId = this.id;
+                    const currentOrder = currentId.replace('transactionInvalidationComment-', '');
+                    let value = parseInt(currentOrder);
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    function getMaxDevolutionOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('.transaction-comment-devolution').length > 0) {
+                $('.transaction-comment-devolution').each(function () {
+                    const currentId = this.id;
+                    const currentOrder = currentId.replace('transactionDevolutionComment-', '');
+                    let value = parseInt(currentOrder);
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    function getMaxDevolutionImprovementStepsOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('.transaction-comment-devolution-improvement-steps').length > 0) {
+                $('.transaction-comment-devolution-improvement-steps').each(function () {
+                    const currentId = this.id;
+                    const currentOrder = currentId.replace('transactionDevolutionImprovementStepsComment-', '');
+                    let value = parseInt(currentOrder);
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    function getMaxDevolutionUserStrengthsOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+
+            if ($('.transaction-comment-devolution-user-strengths').length > 0) {
+                $('.transaction-comment-devolution-user-strengths').each(function () {
+                    const currentId = this.id;
+                    const currentOrder = currentId.replace('transactionDevolutionUserStrengthsComment-', '');
+                    let value = parseInt(currentOrder);
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    async function createTransactionCommentary(typeId) {
+        let message = '';
+        let maxValue = 0;
+        let lastCommentBox = 0;
+        let commentsContainer = 0;
+        let commentContainerClassList = [];
+        let commentTextFieldId = '';
+        let commentTextFieldClassList = [];
+        let commentTextFieldPlaceholder = '';
+        let newValue = 0;
+
+        switch (typeId) {
+            case @((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DISPUTE):
+                message = '¿Quieres agregar otra caja de disputa?';
+                maxValue = await getMaxDisputationOrder();
+                newValue = maxValue + 1;
+                lastCommentBox = document.getElementById(`transactionDisputationComment-${maxValue}`);
+                commentsContainer = document.getElementById('transactionCommentariesDisputation');
+                commentContainerClassList = [
+                    'col-12',
+                    'transaction-comment-disputation-container'
+                ];
+                commentTextFieldId = `transactionDisputationComment-${newValue}`;
+                commentTextFieldClassList = [
+                    'property-field-control',
+                    'transaction-commentary',
+                    'transaction-comment-disputation',
+                ];
+                commentTextFieldPlaceholder = 'Ingrese sus comentarios de disputa';
+                break;
+            case @((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.INVALIDATION):
+                message = '¿Quieres agregar otra caja de invalidación?';
+                maxValue = await getMaxInvalidationOrder();
+                newValue = maxValue + 1;
+                lastCommentBox = document.getElementById(`transactionInvalidationComment-${maxValue}`);
+                commentsContainer = document.getElementById('transactionCommentariesInvalidation');
+                commentContainerClassList = [
+                    'col-12',
+                    'transaction-comment-invalidation-container'
+                ];
+                commentTextFieldId = `transactionInvalidationComment-${newValue}`;
+                commentTextFieldClassList = [
+                    'property-field-control',
+                    'transaction-commentary',
+                    'transaction-comment-invalidation',
+                ];
+                commentTextFieldPlaceholder = 'Ingrese sus comentarios de invalidación';
+                break;
+            case @((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_COMMENTARIES):
+                message = '¿Quieres agregar otra caja de devolución?';
+                maxValue = await getMaxDevolutionOrder();
+                newValue = maxValue + 1;
+                lastCommentBox = document.getElementById(`transactionDevolutionComment-${maxValue}`);
+                commentsContainer = document.getElementById('transactionCommentariesDevolution');
+                commentContainerClassList = [
+                    'col-12',
+                    'transaction-comment-devolution-container'
+                ];
+                commentTextFieldId = `transactionDevolutionComment-${newValue}`;
+                commentTextFieldClassList = [
+                    'property-field-control',
+                    'transaction-commentary',
+                    'transaction-comment-devolution',
+                ];
+                commentTextFieldPlaceholder = 'Ingrese sus comentarios de devolución';
+                break;
+            case @((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_IMPROVEMENT_STEPS):
+                message = '¿Quieres agregar otra caja de pasos de mejora?';
+                maxValue = await getMaxDevolutionImprovementStepsOrder();
+                newValue = maxValue + 1;
+                lastCommentBox = document.getElementById(`transactionDevolutionImprovementStepsComment-${maxValue}`);
+                commentsContainer = document.getElementById('transactionCommentariesDevolutionImprovementSteps');
+                commentContainerClassList = [
+                    'col-12',
+                    'transaction-comment-devolution-improvement-steps-container'
+                ];
+                commentTextFieldId = `transactionDevolutionImprovementStepsComment-${newValue}`;
+                commentTextFieldClassList = [
+                    'property-field-control',
+                    'transaction-commentary',
+                    'transaction-comment-devolution-improvement-steps',
+                ];
+                commentTextFieldPlaceholder = 'Ingrese sus comentarios de pasos de mejora';
+                break;
+            case @((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_USER_STRENGTHS):
+                message = '¿Quieres agregar otra caja de fortalezas de usuario?';
+                maxValue = await getMaxDevolutionUserStrengthsOrder();
+                newValue = maxValue + 1;
+                lastCommentBox = document.getElementById(`transactionDevolutionUserStrengthsComment-${maxValue}`);
+                commentsContainer = document.getElementById('transactionCommentariesDevolutionUserStrengths');
+                commentContainerClassList = [
+                    'col-12',
+                    'transaction-comment-devolution-user-strengths-container'
+                ];
+                commentTextFieldId = `transactionDevolutionUserStrengthsComment-${newValue}`;
+                commentTextFieldClassList = [
+                    'property-field-control',
+                    'transaction-commentary',
+                    'transaction-comment-devolution-user-strengths',
+                ];
+                commentTextFieldPlaceholder = 'Ingrese sus comentarios de fortalezas de usuario';
+                break;
+            default:
+                break;
+        }
+
+        if (lastCommentBox.value == '' || lastCommentBox.value == null) {
+            alert('La última caja de comentarios está vacía');
+            return false;
+        }
+
+        if (confirm(message) != true)
+            return false;
+
+        let newCommentContainer = document.createElement('div');
+        let newCommentIndicationsContainer = document.createElement('div');
+        let newCommentIndicationSpan = document.createElement('span');
+        let newCommentTextField = document.createElement('textarea');
+
+        commentContainerClassList.forEach(e => {
+            newCommentContainer.classList.add(e);
+        });
+
+        newCommentIndicationsContainer.classList.add('d-flex');
+        newCommentIndicationsContainer.classList.add('align-items-start');
+
+        newCommentIndicationSpan.classList.add('required');
+        newCommentIndicationSpan.innerText = '* Rellene el comentario';
+
+        newCommentTextField.id = commentTextFieldId;
+
+        commentTextFieldClassList.forEach(e => {
+            newCommentTextField.classList.add(e);
+        });
+
+        newCommentTextField.placeholder = commentTextFieldPlaceholder;
+        newCommentTextField.autocomplete = 'off';
+
+        newCommentTextField.dataset.transactioncommentaryid = 0;
+        newCommentTextField.dataset.transactioncommentarytypeid = typeId;
+        newCommentTextField.dataset.transactioncommentarybasicinfoid = 0;
+
+        newCommentIndicationsContainer.appendChild(newCommentIndicationSpan);
+        newCommentContainer.appendChild(newCommentIndicationsContainer);
+        newCommentContainer.appendChild(newCommentTextField);
+
+        commentsContainer.appendChild(newCommentContainer);
+    }
+
+    $('#btnCreateDisputeCommentary').click(async (e) => {
+        createTransactionCommentary(@((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DISPUTE));
+    });
+
+    $('#btnCreateInvalidationCommentary').click(async (e) => {
+        createTransactionCommentary(@((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.INVALIDATION));
+    });
+
+    $('#btnCreateDevolutionCommentary').click(async (e) => {
+        createTransactionCommentary(@((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_COMMENTARIES));
+    });
+
+    $('#btnCreateDevolutionImprovementStepsCommentary').click(async (e) => {
+        createTransactionCommentary(@((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_IMPROVEMENT_STEPS));
+    });
+
+    $('#btnCreateDevolutionUserStrengthsCommentary').click(async (e) => {
+        createTransactionCommentary(@((int)SCC_BL.DBValues.Catalog.TRANSACTION_COMMENT_TYPE.DEVOLUTION_USER_STRENGTHS));
     });
 
     $('#btnSendInvalidation').click((e) => {
@@ -3675,10 +3985,10 @@
                 let parsedDate;
 
                 for (const format of dateFormats) {
-                    console.log('Test 1: ' + pastedText);
-                    console.log('Test 2: ' + format);
+                    //console.log('Test 1: ' + pastedText);
+                    //console.log('Test 2: ' + format);
                     parsedDate = await parseDateString(pastedText, format);
-                    console.log('Test 3: ' + parsedDate);
+                    //console.log('Test 3: ' + parsedDate);
                     if (parsedDate.isValid()) {
                         break;
                     }

@@ -248,6 +248,42 @@
 
                                     calibrationTransactionCount++;
                                 }
+
+                                foreach (CalibrationCallIdentifierCatalog calibrationCallIdentifierCatalog in calibration.CallIdentifierList)
+                                {
+                                    /*List<Transaction> calibrationList =
+                                        calibration.CalibrationList
+                                            .Where(e =>
+                                                !string.IsNullOrEmpty(e.CallIdentifier))
+                                            .ToList();*/
+
+                                    List<Transaction> calibrationList = calibration.CalibrationList;
+
+                                    calibrationList = calibrationList.Where(e => e.EvaluatorUserID == actualUser.ID).ToList();
+
+                                    Transaction currentTransaction =
+                                        calibrationList
+                                            .Where(e => e.CallIdentifier == calibrationCallIdentifierCatalog.CallIdentifier)
+                                            .FirstOrDefault();
+
+                                    if (currentTransaction != null)
+                                    {
+                                        <button data-calibratedtransactionid="@currentTransaction.ID" data-calibrationsessionid="@calibration.ID" class="border border-success text-success btn border-3 bg-light btn-check-calibration" title="Ver resultados">@calibrationTransactionCount</button>
+                                    }
+                                    else
+                                    {
+                                        if (isUserInvited)
+                                        {
+                                            <button data-callidentifiertocalibrate="@calibrationCallIdentifierCatalog.CallIdentifier" class="border border-secondary btn border-3 bg-light btn-create-calibration-call-identifier" title="Evaluar transacción">@calibrationTransactionCount</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="border border-danger text-danger btn border-3 bg-light" title="Usted no está invitado a esta calibración" onclick="alert(this.title);">@calibrationTransactionCount</button>
+                                        }
+                                    }
+
+                                    calibrationTransactionCount++;
+                                }
                             }
                         </div>
                     </td>
@@ -341,6 +377,17 @@
 
         if (confirm(message) == true) {
             window.open('@Url.Action(nameof(TransactionController.Edit), transactionControllerName)?calibratedTransactionID=' + elementID + '&typeID=' + @((int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION), '_blank');
+        }
+    });
+
+    $('.btn-create-calibration-call-identifier').click((e) => {
+        let message = '¿Quieres salir de esta pantalla para editar el elemento?';
+
+        const element = e.currentTarget;
+        const elementID = element.dataset.callidentifiertocalibrate;
+
+        if (confirm(message) == true) {
+            window.open('@Url.Action(nameof(TransactionController.Edit), transactionControllerName)?callIdentifier=' + elementID + '&typeID=' + @((int)SCC_BL.DBValues.Catalog.TRANSACTION_TYPE.CALIBRATION), '_blank');
         }
     });
 

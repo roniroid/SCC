@@ -1,0 +1,655 @@
+﻿@using SCC_BL;
+@using SCC.Controllers;
+
+@model SCC_BL.Helpers.User.Search.UserSearchHelper
+
+@{ 
+    /*List<User> allSupervisorList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.AllData.SupervisorCatalog.NAME];
+
+    MultiSelectList selectListLanguage =
+        new MultiSelectList(
+            (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.AllData.LanguageCatalog.NAME],
+            nameof(Catalog.ID),
+            nameof(Catalog.Description));
+
+    MultiSelectList selectListCountry =
+        new MultiSelectList(
+            (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.AllData.CountryCatalog.NAME],
+            nameof(Catalog.ID),
+            nameof(Catalog.Description));
+
+    MultiSelectList selectListSupervisor =
+        new MultiSelectList(
+            allSupervisorList.Select(e => 
+                new { 
+                    Key = e.ID, 
+                    Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" 
+                }),
+            "Key",
+            "Value");
+
+    MultiSelectList selectListWorkspace =
+        new MultiSelectList(
+            (List<Workspace>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.AllData.WorkspaceCatalog.NAME],
+            nameof(Workspace.ID),
+            nameof(Workspace.Name));
+
+    MultiSelectList selectListRole =
+        new MultiSelectList(
+            (List<Role>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.AllData.RoleCatalog.NAME],
+            nameof(Role.ID),
+            nameof(Role.Name));
+
+    MultiSelectList selectListGroup =
+        new MultiSelectList(
+            (List<Group>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.AllData.GroupCatalog.NAME],
+            nameof(Group.ID),
+            nameof(Group.Name));
+
+    MultiSelectList selectListPermission =
+        new MultiSelectList(
+            (List<Permission>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.AllData.PermissionCatalog.NAME],
+            nameof(Permission.ID),
+            nameof(Permission.Description));
+
+    MultiSelectList selectListProgram =
+        new MultiSelectList(
+            (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.AllData.ProgramCatalog.NAME],
+            nameof(Program.ID),
+            nameof(Program.Name));
+
+    SelectList selectListStringType =
+        new SelectList(
+            (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.StringTypeID.NAME],
+            nameof(Catalog.ID),
+            nameof(Catalog.Description));
+
+    SelectList selectListYesNoQuestion = ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.YesNoQuestion.NAME] as SelectList;*/
+
+    List<User> allSupervisorList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Supervisor.NAME];
+
+    MultiSelectList selectListLanguage =
+        new MultiSelectList(
+            (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.LanguageCatalog.NAME],
+            nameof(Catalog.ID),
+            nameof(Catalog.Description));
+
+    MultiSelectList selectListCountry =
+        new MultiSelectList(
+            (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.CountryCatalog.NAME],
+            nameof(Catalog.ID),
+            nameof(Catalog.Description));
+
+    MultiSelectList selectListSupervisor =
+        new MultiSelectList(
+            allSupervisorList.Select(e => 
+                new { 
+                    Key = e.ID, 
+                    Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" 
+                }),
+            "Key",
+            "Value");
+
+    MultiSelectList selectListWorkspace =
+        new MultiSelectList(
+            (List<Workspace>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Workspace.NAME],
+            nameof(Workspace.ID),
+            nameof(Workspace.Name));
+
+    MultiSelectList selectListRole =
+        new MultiSelectList(
+            (List<Role>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.RoleCatalog.NAME],
+            nameof(Role.ID),
+            nameof(Role.Name));
+
+    MultiSelectList selectListGroup =
+        new MultiSelectList(
+            (List<Group>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Group.NAME],
+            nameof(Group.ID),
+            nameof(Group.Name));
+
+    MultiSelectList selectListPermission =
+        new MultiSelectList(
+            (List<Permission>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.PermissionCatalog.NAME],
+            nameof(Permission.ID),
+            nameof(Permission.Description));
+
+    MultiSelectList selectListProgram =
+        new MultiSelectList(
+            (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Program.NAME],
+            nameof(Program.ID),
+            nameof(Program.Name));
+
+    MultiSelectList selectListUserStatus =
+        new MultiSelectList(
+            (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.UserStatus.NAME],
+            nameof(Catalog.ID),
+            nameof(Catalog.Description));
+
+    SelectList selectListStringType =
+        new SelectList(
+            (List<Catalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.StringTypeID.NAME],
+            nameof(Catalog.ID),
+            nameof(Catalog.Description));
+
+    SelectList selectListYesNoQuestion = ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.YesNoQuestion.NAME] as SelectList;
+}
+
+<div class="modal fade" tabindex="-1" role="dialog" id="filterModal">
+    <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+        <div class="modal-content borer-top border-warning">
+            <div class="modal-body text-center">
+                <div class="mt-4 py-2">
+                    <h4 class="h5">Filtros para usuarios</h4>
+                    <p class="px-4 pb-0 mb-1 text-secondary">Agregue los datos relevantes para la búsqueda</p>
+                </div>
+
+                @{
+                    string mainControllerName = OverallController.GetControllerName(typeof(UserController));
+                    string formAction = @Url.Action(nameof(UserController._ManageUserList), mainControllerName);
+                }
+
+                <form id="frmSearch" action="@formAction" method="post">
+                    <div class="panel">
+                        <div class="accordion accordion-flush w-100" id="accordionPersonData">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePersonData" aria-expanded="true" aria-controls="collapsePersonData">
+                                        <strong> Datos relacionados con la persona</strong>
+                                    </button>
+                                </h2>
+                                <div id="collapsePersonData" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionPersonData">
+                                    <div class="accordion-body">
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Identificación
+                                            </div>
+                                            <div class="col-3">
+                                                @Html.DropDownListFor(modelitem =>
+                                                    Model.IdentificationTypeID,
+                                                    selectListStringType,
+                                                    "No importa",
+                                                    new
+                                                    {
+                                                        @class = "property-field-control search-type-select",
+                                                        data_placeholder = "Tipo de búsqueda",
+                                                        placeholder = "Tipo de búsqueda",
+                                                        title = "Tipo de búsqueda",
+                                                    }
+                                                )
+                                            </div>
+                                            <div class="col-6">
+                                                @*@{
+                                                List<User> userList = (List<User>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.Search.UserList.NAME];
+                                            }*@
+
+                                                @Html.TextBoxFor(modelitem =>
+                                                         Model.Identification,
+                                                         null,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control search-input",
+                                                             placeholder = "Identificación",
+                                                             autocomplete = "off",
+                                                             list = "dataListUser"
+                                                         })
+
+                                                @*<datalist id="dataListUser">
+                                                @foreach (User user in userList)
+                                                {
+                                                    <option value="@user.Person.Identification">@($"{ user.Person.Identification } - { user.Person.SurName }, { user.Person.FirstName } - { user.Email }")</option>
+                                                }
+                                            </datalist>*@
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Nombre
+                                            </div>
+                                            <div class="col-3">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.FirstNameTypeID,
+                                                         selectListStringType,
+                                                         "No importa",
+                                                         new
+                                                         {
+                                                             @class = "property-field-control search-type-select",
+                                                             data_placeholder = "Tipo de búsqueda",
+                                                             placeholder = "Tipo de búsqueda",
+                                                             title = "Tipo de búsqueda",
+                                                         }
+                                                     )
+                                            </div>
+                                            <div class="col-6">
+                                                @Html.TextBoxFor(modelitem =>
+                                                         Model.FirstName,
+                                                         null,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control search-input",
+                                                             placeholder = "Nombre",
+                                                             autocomplete = "off"
+                                                         })
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Apellidos
+                                            </div>
+                                            <div class="col-3">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.SurNameTypeID,
+                                                         selectListStringType,
+                                                         "No importa",
+                                                         new
+                                                         {
+                                                             @class = "property-field-control search-type-select",
+                                                             data_placeholder = "Tipo de búsqueda",
+                                                             placeholder = "Tipo de búsqueda",
+                                                             title = "Tipo de búsqueda",
+                                                         }
+                                                     )
+                                            </div>
+                                            <div class="col-6">
+                                                @Html.TextBoxFor(modelitem =>
+                                                         Model.SurName,
+                                                         null,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control search-input",
+                                                             placeholder = "Apellidos",
+                                                             autocomplete = "off"
+                                                         })
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                País
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.CountryIDList,
+                                                         selectListCountry,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control",
+                                                             data_placeholder = "País",
+                                                             placeholder = "País",
+                                                             title = "País",
+                                                             multiple = "",
+                                                         }
+                                                     )
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Lenguaje
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.LanguageIDList,
+                                                         selectListLanguage,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control",
+                                                             data_placeholder = "Lenguaje",
+                                                             placeholder = "Lenguaje",
+                                                             title = "Lenguaje",
+                                                             multiple = "",
+                                                         }
+                                                     )
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="accordion accordion-flush w-100" id="accordionUserData">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingOne">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUserData" aria-expanded="true" aria-controls="collapseUserData">
+                                        <strong> Datos relacionados con el usuario</strong>
+                                    </button>
+                                </h2>
+                                <div id="collapseUserData" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionUserData">
+                                    <div class="accordion-body">
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Activo
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                    Model.IsActive,
+                                                    selectListYesNoQuestion,
+                                                    new
+                                                    {
+                                                        @class = "property-field-control",
+                                                    })
+                                            </div>
+                                        </div>
+                                        @*<div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Estado
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                    Model.UserStatusIDList,
+                                                    selectListUserStatus,
+                                                    new
+                                                    {
+                                                        @class = "property-field-control",
+                                                        data_placeholder = "Estado",
+                                                        placeholder = "Estado",
+                                                        title = "Estado",
+                                                        multiple = "",
+                                                    })
+                                            </div>
+                                        </div>*@
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                ¿Tiene permiso de acceso?
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                    Model.HasPassPermission,
+                                                    selectListYesNoQuestion,
+                                                    new
+                                                    {
+                                                        @class = "property-field-control",
+                                                    })
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Nombre de usuario
+                                            </div>
+                                            <div class="col-3">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.UsernameTypeID,
+                                                         selectListStringType,
+                                                         "No importa",
+                                                         new
+                                                         {
+                                                             @class = "property-field-control search-type-select",
+                                                             data_placeholder = "Tipo de búsqueda",
+                                                             placeholder = "Tipo de búsqueda",
+                                                             title = "Tipo de búsqueda",
+                                                         }
+                                                     )
+                                            </div>
+                                            <div class="col-6">
+                                                @Html.TextBoxFor(modelitem =>
+                                                         Model.Username,
+                                                         null,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control search-input",
+                                                             placeholder = "Nombre de usuario",
+                                                             autocomplete = "off"
+                                                         })
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Email
+                                            </div>
+                                            <div class="col-3">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.EmailTypeID,
+                                                         selectListStringType,
+                                                         "No importa",
+                                                         new
+                                                         {
+                                                             @class = "property-field-control search-type-select",
+                                                             data_placeholder = "Tipo de búsqueda",
+                                                             placeholder = "Tipo de búsqueda",
+                                                             title = "Tipo de búsqueda",
+                                                         }
+                                                     )
+                                            </div>
+                                            <div class="col-6">
+                                                @Html.TextBoxFor(modelitem =>
+                                                         Model.Email,
+                                                         null,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control search-input",
+                                                             placeholder = "Email",
+                                                             autocomplete = "off"
+                                                         })
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Grupo
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.GroupIDList,
+                                                         selectListGroup,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control",
+                                                             data_placeholder = "Grupo",
+                                                             placeholder = "Grupo",
+                                                             title = "Grupo",
+                                                             multiple = "",
+                                                         }
+                                                     )
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Permiso
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.PermissionIDList,
+                                                         selectListPermission,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control",
+                                                             data_placeholder = "Permiso",
+                                                             placeholder = "Permiso",
+                                                             title = "Permiso",
+                                                             multiple = "",
+                                                         }
+                                                     )
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Programa
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.ProgramIDList,
+                                                         selectListProgram,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control",
+                                                             data_placeholder = "Programa",
+                                                             placeholder = "Programa",
+                                                             title = "Programa",
+                                                             multiple = "",
+                                                         }
+                                                     )
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Rol
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.RoleIDList,
+                                                         selectListRole,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control",
+                                                             data_placeholder = "Rol",
+                                                             placeholder = "Rol",
+                                                             title = "Rol",
+                                                             multiple = "",
+                                                         }
+                                                     )
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Supervisor
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.SupervisorIDList,
+                                                         selectListSupervisor,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control",
+                                                             data_placeholder = "Supervisor",
+                                                             placeholder = "Supervisor",
+                                                             title = "Supervisor",
+                                                             multiple = "",
+                                                         }
+                                                     )
+                                            </div>
+                                        </div>
+                                        <div class="row property-field">
+                                            <div class="col-3 property-field-label">
+                                                Puesto de trabajo
+                                            </div>
+                                            <div class="col-9">
+                                                @Html.DropDownListFor(modelitem =>
+                                                         Model.WorkspaceIDList,
+                                                         selectListWorkspace,
+                                                         new
+                                                         {
+                                                             @class = "property-field-control",
+                                                             data_placeholder = "Puesto de trabajo",
+                                                             placeholder = "Puesto de trabajo",
+                                                             title = "Puesto de trabajo",
+                                                             multiple = "",
+                                                         }
+                                                     )
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer text-center">
+                <button id="btnUserSearch" type="button" class="btn btn-primary text-white rounded-0 w-100">Buscar</button>
+                <a type="button" class="text-secondary rounded-0 w-100" data-bs-dismiss="modal">
+                    <small>Volver</small>
+                </a>
+
+                @*<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Volver</button>
+                <button type="button" class="btn btn-primary">Enviar</button>*@
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const MODAL_FILTER = $('#filterModal');
+    const BUTTON_SHOW_FILTERS = $('#btnShowFilters');
+    const USER_LIST_CONTAINER = $('#tbInfoContainer'); //AQUI problema con referencia
+
+
+    $('#btnUserSearch').click(() => {
+        $('#frmSearch').submit();
+    });
+
+    $('#frmSearch').submit((e) => {
+        e.preventDefault();
+
+        let message = '¿Está de acuerdo con los filtros de búsqueda?';
+
+        if (confirm(message) == true) {
+            showWaitingModal();
+
+            const formElement = e.currentTarget;
+
+            const formAction = $(formElement).attr("action");
+            const formMethod = $(formElement).attr("method").toUpperCase();
+
+            const formData = new FormData(formElement);
+
+            const formDataObject = {};
+            for (let [key, value] of formData.entries()) {
+                formDataObject[key] = value;
+            }
+
+            $.ajax({
+                "url": formAction,
+                "contentType": 'application/json',
+                "data": JSON.stringify(formDataObject),
+                "method": formMethod,
+                "timeout": 0,
+                "beforeSend": () => {
+                    $(MODAL_FILTER).modal('hide');
+                },
+                "success": function (response) {
+                    $(USER_LIST_CONTAINER).html(response);
+                },
+                "error": function (error) {
+                    console.error(error);
+                    $(MODAL_FILTER).modal('hide');
+                },
+                "complete": function (response) {
+                    hideWaitingModal();
+                    $(MODAL_FILTER).modal('hide');
+                    $('#tbInfoContainer').html('');
+                    $('#tbInfoContainer').html(response.responseText);
+                }
+            });
+        }
+    });
+
+    $(BUTTON_SHOW_FILTERS).removeClass('d-none');
+
+    fetchMultiSelectBasicData().then(response => {
+        let data = response;
+
+        let customData;
+
+        /*customData = {
+        };
+        data.push(customButton);*/
+
+        startMultiSelect('#@(nameof(Model.IdentificationTypeID))', data);
+        startMultiSelect('#@(nameof(Model.FirstNameTypeID))', data);
+        startMultiSelect('#@(nameof(Model.SurNameTypeID))', data);
+        startMultiSelect('#@(nameof(Model.CountryIDList))', data);
+        startMultiSelect('#@(nameof(Model.LanguageIDList))', data);
+        startMultiSelect('#@(nameof(Model.UsernameTypeID))', data);
+        startMultiSelect('#@(nameof(Model.EmailTypeID))', data);
+        startMultiSelect('#@(nameof(Model.IsActive))', data);
+        startMultiSelect('#@(nameof(Model.HasPassPermission))', data);
+        //startMultiSelect('#@(nameof(Model.UserStatusIDList))', data);
+        startMultiSelect('#@(nameof(Model.GroupIDList))', data);
+        startMultiSelect('#@(nameof(Model.PermissionIDList))', data);
+        startMultiSelect('#@(nameof(Model.ProgramIDList))', data);
+        startMultiSelect('#@(nameof(Model.RoleIDList))', data);
+        startMultiSelect('#@(nameof(Model.SupervisorIDList))', data);
+        startMultiSelect('#@(nameof(Model.WorkspaceIDList))', data);
+    });
+
+    $('.search-type-select').change((e) => {
+        const CURRENT_SELECT = e.currentTarget;
+        const CLOSEST_TEXTBOX = $(CURRENT_SELECT).parent().parent().find('.search-input')[0];
+
+        if ($(CURRENT_SELECT).val() == '' || $(CURRENT_SELECT).val() == null) {
+            $(CLOSEST_TEXTBOX).val('');
+            $(CLOSEST_TEXTBOX).prop('disabled', true);
+        } else {
+            $(CLOSEST_TEXTBOX).prop('disabled', false);
+        }
+    });
+
+    $('.search-type-select').change();
+</script>

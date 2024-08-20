@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_BL
 {
@@ -277,39 +277,38 @@ namespace SCC_BL
 			}
 
 			return accuracyTrendResultList;
-		}
-		
-		public List<SCC_BL.Reports.Results.AccuracyByAttribute> AccuracyByAttribute(string transactionIDArray, string errorTypeIDList, int constraintTypeID, bool mustBeControllable, string attributeIDArray = null)
-		{
-			List<SCC_BL.Reports.Results.AccuracyByAttribute> accuracyByAttributeResultList = new List<SCC_BL.Reports.Results.AccuracyByAttribute>();
+        }
 
-			using (SCC_DATA.Repositories.Report report = new SCC_DATA.Repositories.Report())
-			{
-				DataTable dt = report.AccuracyByAttribute(
-					transactionIDArray, 
-					errorTypeIDList,
+        public List<SCC_BL.Reports.Results.AccuracyByAttribute> AccuracyByAttribute(string transactionIDArray, string errorTypeIDList, int constraintTypeID, bool mustBeControllable, string attributeIDArray = null)
+        {
+            List<SCC_BL.Reports.Results.AccuracyByAttribute> accuracyByAttributeResultList = new List<SCC_BL.Reports.Results.AccuracyByAttribute>();
+
+            using (SCC_DATA.Repositories.Report report = new SCC_DATA.Repositories.Report())
+            {
+                DataTable dt = report.AccuracyByAttribute(
+                    transactionIDArray,
+                    errorTypeIDList,
                     constraintTypeID,
-					attributeIDArray);
+                    attributeIDArray);
 
-				foreach (DataRow dr in dt.Rows)
-				{
-					SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult = new SCC_BL.Reports.Results.AccuracyByAttribute(
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.TRANSACTION_ATTRIBUTE_ID]),
+                foreach (DataRow dr in dt.Rows)
+                {
+                    SCC_BL.Reports.Results.AccuracyByAttribute accuracyByAttributeResult = new SCC_BL.Reports.Results.AccuracyByAttribute(
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.TRANSACTION_ATTRIBUTE_ID]),
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.TRANSACTION_ID]),
                         Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.ATTRIBUTE_ID]),
-						Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.ATTRIBUTE_NAME]),
-						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.SUCCESSFUL_RESULT]),
-                        mustBeControllable,
-                        Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.CHILDREN_ATTRIBUTE_ID_LIST]));
+                        Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.ATTRIBUTE_NAME]),
+                        Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyByAttribute.ResultFields.SUCCESSFUL_RESULT]),
+                        mustBeControllable);
 
-					accuracyByAttributeResultList.Add(accuracyByAttributeResult);
-				}
-			}
+                    accuracyByAttributeResultList.Add(accuracyByAttributeResult);
+                }
+            }
 
-			return accuracyByAttributeResultList;
-		}
-		
-		public List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> AccuracyTrendByAttribute(string transactionIDArray, string errorTypeIDList, bool mustBeControllable, string attributeIDArray = null)
+            return accuracyByAttributeResultList;
+        }
+
+        public List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> AccuracyTrendByAttribute(string transactionIDArray, string errorTypeIDList, bool mustBeControllable, string attributeIDArray = null)
 		{
 			List<SCC_BL.Reports.Results.AccuracyTrendByAttribute> accuracyTrendByAttributeResultList = new List<SCC_BL.Reports.Results.AccuracyTrendByAttribute>();
 
@@ -336,36 +335,36 @@ namespace SCC_BL
 			}
 
 			return accuracyTrendByAttributeResultList;
-		}
-		
-		public List<SCC_BL.Reports.Results.AccuracyBySubattribute> AccuracyBySubattribute(string selectedAttributeID, string transactionAttributeIDList, bool mustBeControllable)
-		{
-			List<SCC_BL.Reports.Results.AccuracyBySubattribute> accuracyBySubattributeResultList = new List<SCC_BL.Reports.Results.AccuracyBySubattribute>();
+        }
 
-			using (SCC_DATA.Repositories.Report report = new SCC_DATA.Repositories.Report())
-			{
-				DataTable dt = report.AccuracyBySubattribute(selectedAttributeID, transactionAttributeIDList);
+        public List<SCC_BL.Reports.Results.AccuracyBySubattribute> AccuracyBySubattribute(string selectedAttributeID, string transactionAttributeIDList, bool mustBeControllable)
+        {
+            List<SCC_BL.Reports.Results.AccuracyBySubattribute> accuracyBySubattributeResultList = new List<SCC_BL.Reports.Results.AccuracyBySubattribute>();
 
-				foreach (DataRow dr in dt.Rows)
-				{
-					SCC_BL.Reports.Results.AccuracyBySubattribute accuracyBySubattributeResult = new SCC_BL.Reports.Results.AccuracyBySubattribute(
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.TRANSACTION_ATTRIBUTE_ID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.TRANSACTION_ID]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ATTRIBUTE_ID]),
-						Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ATTRIBUTE_NAME]),
-						Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.SUCCESSFUL_RESULT]),
-						Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.CHILDREN_ATTRIBUTE_ID_LIST]),
-						Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ERROR_TYPE_ID]),
+            using (SCC_DATA.Repositories.Report report = new SCC_DATA.Repositories.Report())
+            {
+                DataTable dt = report.AccuracyBySubattribute(selectedAttributeID, transactionAttributeIDList);
+
+                foreach (DataRow dr in dt.Rows)
+                {
+                    SCC_BL.Reports.Results.AccuracyBySubattribute accuracyBySubattributeResult = new SCC_BL.Reports.Results.AccuracyBySubattribute(
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.TRANSACTION_ATTRIBUTE_ID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.TRANSACTION_ID]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ATTRIBUTE_ID]),
+                        Convert.ToString(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ATTRIBUTE_NAME]),
+                        Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.SUCCESSFUL_RESULT]),
+                        Convert.ToBoolean(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.HAS_CHILDREN]),
+                        Convert.ToInt32(dr[SCC_DATA.Queries.Report.StoredProcedures.AccuracyBySubattribute.ResultFields.ERROR_TYPE_ID]),
                         mustBeControllable);
 
-					accuracyBySubattributeResultList.Add(accuracyBySubattributeResult);
-				}
-			}
+                    accuracyBySubattributeResultList.Add(accuracyBySubattributeResult);
+                }
+            }
 
-			return accuracyBySubattributeResultList;
-		}
-		
-		public List<SCC_BL.Reports.Results.ParetoBI> ParetoBI(string transactionIDList, string biFieldIDList)
+            return accuracyBySubattributeResultList;
+        }
+
+        public List<SCC_BL.Reports.Results.ParetoBI> ParetoBI(string transactionIDList, string biFieldIDList)
 		{
 			List<SCC_BL.Reports.Results.ParetoBI> paretoBIResultList = new List<SCC_BL.Reports.Results.ParetoBI>();
 

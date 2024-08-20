@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_BL.Settings
 {
@@ -15,7 +15,8 @@ namespace SCC_BL.Settings
             public const int PORT = 587;
             public const bool ENABLE_SSL = true;
             public const string SYSTEM_EMAIL_ADDRESS = "scc@netcom.com.pa";
-            public const string PASSWORD = "iM178*B4kCyJe0";
+            //public const string PASSWORD_OLD = "iM178*B4kCyJe0";
+            public const string PASSWORD = "Martes20240813***";
             public const bool IS_BODY_HTML = true;
         }
 

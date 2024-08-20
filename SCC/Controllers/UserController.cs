@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+
 using System.Web;
 using System.Web.Mvc;
 
@@ -15,8 +16,248 @@ namespace SCC.Controllers
     public class UserController : OverallController
     {
         string _mainControllerName = GetControllerName(typeof(UserController));
+        void SetManageViewData(User currentUser, UserManagementViewModel userManagementViewModel)
+        {
+            List<Catalog> allLanguageList = new List<Catalog>();
+            List<Catalog> allCountryList = new List<Catalog>();
+            List<User> allSupervisorList = new List<User>();
+            List<Workspace> allWorkspaceList = new List<Workspace>();
+            List<Role> allRoleList = new List<Role>();
+            List<Group> allGroupList = new List<Group>();
+            List<Program> allProgramList = new List<Program>();
+            List<Permission> allPermissionList = new List<Permission>();
+            List<Catalog> allUserStatusList = new List<Catalog>();
+
+            using (Catalog catalog = Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.USER_LANGUAGE))
+                allLanguageList = catalog.SelectByCategoryID();
+
+            using (Catalog catalog =  Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
+                allCountryList =  catalog.SelectByCategoryID();
+
+            using (User user = new User())
+                allSupervisorList =  user.SelectAll(true);
+
+            using (Workspace workspace = new Workspace())
+                allWorkspaceList =  workspace.SelectAll();
+
+            using (Role role = new Role())
+                allRoleList =  role.SelectAll();
+
+            using (Group group = new Group())
+                allGroupList =  group.SelectAll();
+
+            using (Program program = new Program())
+                allProgramList =  program.SelectAll();
+
+            using (Permission auxPermission = new Permission())
+                allPermissionList =  auxPermission.SelectAll();
+
+            using (Catalog auxCatalog =  Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.STATUS_USER))
+                allUserStatusList =  auxCatalog.SelectByCategoryID();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.LanguageCatalog.NAME] = allLanguageList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.CountryCatalog.NAME] = allCountryList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Supervisor.NAME] = allSupervisorList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Workspace.NAME] = allWorkspaceList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.RoleCatalog.NAME] = allRoleList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Group.NAME] = allGroupList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.Program.NAME] = allProgramList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.PermissionCatalog.NAME] = allPermissionList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.AllData.UserStatus.NAME] = allUserStatusList;
+
+            using (Catalog catalog =  Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.USER_LANGUAGE))
+                allLanguageList =
+                    allLanguageList
+                        .Where(e => e.Active)
+                        .ToList();
+
+            using (Catalog catalog =  Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
+                allCountryList =
+                    allCountryList
+                        .Where(e => e.Active)
+                        .ToList();
+
+            using (User user = new User())
+                allSupervisorList =
+                    allSupervisorList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
+                        .ToList();
+
+            using (Workspace workspace = new Workspace())
+                allWorkspaceList =
+                    allWorkspaceList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_WORKSPACE.DISABLED)
+                        .ToList();
+
+            using (Role role = new Role())
+                allRoleList =
+                    allRoleList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DISABLED)
+                        .ToList();
+
+            using (Group group = new Group())
+                allGroupList =
+                    allGroupList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_GROUP.DISABLED)
+                        .ToList();
+
+            using (Program program = new Program())
+                allProgramList =
+                    allProgramList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                        .ToList();
+
+            allProgramList =
+                allProgramList
+                    .Where(e =>
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
+                    .ToList();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.LanguageCatalog.NAME] =
+                new SelectList(
+                    allLanguageList,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.LanguageCatalog.SelectList.VALUE,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.LanguageCatalog.SelectList.TEXT,
+                    userManagementViewModel.User.LanguageID);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.CountryCatalog.NAME] =
+                new SelectList(
+                    allCountryList,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.CountryCatalog.SelectList.VALUE,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.CountryCatalog.SelectList.TEXT,
+                    userManagementViewModel.Person.CountryID);
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Supervisor.NAME] =
+                new MultiSelectList(
+                    allSupervisorList.Select(e => new { Key = e.ID, Value = $"{e.Person.Identification} - {e.Person.SurName} {e.Person.FirstName}" }),
+                    "Key",
+                    "Value",
+                    userManagementViewModel.User.SupervisorList.Select(s => s.SupervisorID));
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Workspace.NAME] =
+                new MultiSelectList(
+                    allWorkspaceList,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.Workspace.SelectList.VALUE,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.Workspace.SelectList.TEXT,
+                    userManagementViewModel.User.UserWorkspaceCatalogList.Select(s => s.WorkspaceID));
+
+            if (
+                !currentUser.RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.ADMINISTRATOR) &&
+                !currentUser.RoleList.Select(e => e.RoleID).Contains((int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER))
+            {
+                allRoleList =
+                    allRoleList
+                        .Where(e => e.ID != (int)SCC_BL.DBValues.Catalog.USER_ROLE.SUPERUSER)
+                        .OrderBy(e => e.Name)
+                        .ToList();
+            }
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.RoleCatalog.NAME] =
+                new MultiSelectList(
+                    allRoleList,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.RoleCatalog.SelectList.VALUE,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.RoleCatalog.SelectList.TEXT,
+                    userManagementViewModel.User.RoleList.Select(s => s.RoleID));
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Group.NAME] =
+                new MultiSelectList(
+                    allGroupList,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.Group.SelectList.VALUE,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.Group.SelectList.TEXT,
+                    userManagementViewModel.User.GroupList.Select(s => s.GroupID));
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Program.NAME] =
+                new MultiSelectList(
+                    allProgramList,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.Program.SelectList.VALUE,
+                    SCC_BL.Settings.AppValues.ViewData.User.Edit.Program.SelectList.TEXT,
+                    userManagementViewModel.User.ProgramList.Select(s => s.ProgramID));
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.Permission.NAME] =
+                new MultiSelectList(
+                    allPermissionList,
+                    nameof(Permission.ID),
+                    nameof(Permission.Description),
+                    userManagementViewModel.User.PermissionList.Select(s => s.PermissionID));
+
+            List<Catalog> catalogSearchStringType = new List<Catalog>();
+            List<Catalog> catalogSearchYesNoQuestion = new List<Catalog>();
+
+            using (Catalog catalog =  Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.TRANSACTION_SEARCH_STRING_TYPE))
+                catalogSearchStringType =
+                    ( catalog.SelectByCategoryID())
+                        .Where(e => e.Active)
+                        .ToList();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.StringTypeID.NAME] = catalogSearchStringType;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.Edit.YesNoQuestion.NAME] =
+                new SelectList(
+                    new SelectListItem[]
+                    {
+                        new SelectListItem()
+                        {
+                            Text = "No importa",
+                            Value = null
+                        },
+                        new SelectListItem()
+                        {
+                            Text = "Sí",
+                            Value = "true",
+                            //Value = ((int)SCC_BL.Settings.AppValues.ViewData.User.Edit.YesNoQuestion.Values.YES).ToString(),
+                        },
+                        new SelectListItem()
+                        {
+                            Text = "No",
+                            Value = "false",
+                            //Value = ((int)SCC_BL.Settings.AppValues.ViewData.User.Edit.YesNoQuestion.Values.NO).ToString(),
+                        }
+                    },
+                    nameof(SelectListItem.Value),
+                    nameof(SelectListItem.Text));
+        }
 
         public ActionResult Manage(int? userID, bool filterActiveElements = false)
+        {
+            User currentUser = GetCurrentUser();
+
+            UserManagementViewModel userManagementViewModel = new UserManagementViewModel();
+
+            if (userID != null)
+            {
+                userManagementViewModel.User = new User(userID.Value);
+                userManagementViewModel.User.SetDataByID();
+
+                userManagementViewModel.Person = new Person(userManagementViewModel.User.PersonID);
+                userManagementViewModel.Person.SetDataByID();
+            }
+
+            SetManageViewData(currentUser, userManagementViewModel);
+
+            //userManagementViewModel.UserList = await new User().SelectAll();
+
+            if (filterActiveElements)
+                userManagementViewModel.UserList =
+                    userManagementViewModel.UserList
+                        .Where(e =>
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED &&
+                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED)
+                        .ToList();
+
+            return View(userManagementViewModel);
+        }
+        
+        /*public ActionResult Manage(int? userID, bool filterActiveElements = false)
         {
             UserManagementViewModel userManagementViewModel = new UserManagementViewModel();
 
@@ -199,13 +440,15 @@ namespace SCC.Controllers
                         .ToList();
 
             return View(userManagementViewModel);
-        }
+        }*/
 
         public ActionResult AsignRolesAndPermissions(int? userID = null)
         {
             UserRoleAndPermissionManagementViewModel userRoleAndPermissionManagementViewModel = new UserRoleAndPermissionManagementViewModel();
 
+            List<Permission> allPermissionList = new List<Permission>();
             List<Permission> permissionList = new List<Permission>();
+            List<Role> allRoleList = new List<Role>();
             List<Role> roleList = new List<Role>();
             List<User> userList = new List<User>();
 
@@ -216,22 +459,26 @@ namespace SCC.Controllers
             }
 
             using (Permission permission = new Permission())
-                permissionList =
-                    permission.SelectAll()
-                        .Where(e =>
-                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PERMISSION.DELETED &&
-                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PERMISSION.DISABLED)
-                        .OrderBy(e => e.Description)
-                        .ToList();
+                allPermissionList = permission.SelectAll();
+
+            permissionList =
+                allPermissionList
+                    .Where(e =>
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PERMISSION.DELETED &&
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PERMISSION.DISABLED)
+                    .OrderBy(e => e.Description)
+                    .ToList();
 
             using (Role role = new Role())
-                roleList =
-                    role.SelectAll()
-                        .Where(e =>
-                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED &&
-                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DISABLED)
-                        .OrderBy(e => e.Name)
-                        .ToList();
+                allRoleList = role.SelectAll();
+
+            roleList =
+                allRoleList
+                    .Where(e =>
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DELETED &&
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_ROLE.DISABLED)
+                    .OrderBy(e => e.Name)
+                    .ToList();
 
             using (User user = new User())
                 userList =
@@ -243,12 +490,16 @@ namespace SCC.Controllers
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignRolesAndPermissions.AllPermissionList.NAME] = allPermissionList;
+
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignRolesAndPermissions.PermissionList.NAME] =
                 new MultiSelectList(
                     permissionList,
                     nameof(Permission.ID),
                     nameof(Permission.Description),
                     userRoleAndPermissionManagementViewModel.User.PermissionList.Select(s => s.PermissionID));
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignRolesAndPermissions.AllRoleList.NAME] = allRoleList;
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignRolesAndPermissions.RoleList.NAME] =
                 new MultiSelectList(
@@ -280,6 +531,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult AsignRolesAndPermissions(int[] permissionArray, int[] roleArray, int[] userArray)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
                 User tempUser = new User();
@@ -304,12 +557,12 @@ namespace SCC.Controllers
                                 ? new int[0]
                                 : permissionArray;
 
-                        tempUser.UpdateRoleList(roleArray, GetCurrentUser().ID);
+                        tempUser.UpdateRoleList(roleArray, currentUser.ID);
                         //tempUser.UpdateRoleList(roleArray, GetActualUser().ID, true);
 
-                        if (GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_USERS))
+                        if (currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_PERMISSIONS_TO_USERS))
                         {
-                            tempUser.UpdatePermissionList(permissionArray, GetCurrentUser().ID);
+                            tempUser.UpdatePermissionList(permissionArray, currentUser.ID);
                             //tempUser.UpdatePermissionList(permissionArray, GetActualUser().ID, true);
                         }
                         else
@@ -335,7 +588,9 @@ namespace SCC.Controllers
         {
             UserProgramAndProgramGroupManagementViewModel userProgramAndProgramGroupManagementViewModel = new UserProgramAndProgramGroupManagementViewModel();
 
+            List<Program> allProgramList = new List<Program>();
             List<Program> programList = new List<Program>();
+            List<ProgramGroup> allProgramGroupList = new List<ProgramGroup>();
             List<ProgramGroup> programGroupList = new List<ProgramGroup>();
             List<User> userList = new List<User>();
 
@@ -346,8 +601,11 @@ namespace SCC.Controllers
             }
 
             using (Program program = new Program())
+                allProgramList = program.SelectAll();
+
+            using (Program program = new Program())
                 programList =
-                    program.SelectAll()
+                    allProgramList
                         .Where(e =>
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED &&
                             e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DISABLED)
@@ -355,13 +613,15 @@ namespace SCC.Controllers
                         .ToList();
 
             using (ProgramGroup programGroup = new ProgramGroup())
-                programGroupList =
-                    programGroup.SelectAll()
-                        .Where(e =>
-                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.DELETED &&
-                            e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.DISABLED)
-                        .OrderBy(e => e.Name)
-                        .ToList();
+                allProgramGroupList = programGroup.SelectAll();
+
+            programGroupList =
+                allProgramGroupList
+                    .Where(e =>
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.DELETED &&
+                        e.BasicInfo.StatusID != (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM_GROUP.DISABLED)
+                    .OrderBy(e => e.Name)
+                    .ToList();
 
             using (User user = new User())
                 userList =
@@ -373,12 +633,16 @@ namespace SCC.Controllers
                         .ThenBy(o => o.Person.FirstName)
                         .ToList();
 
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.AllProgramList.NAME] = allProgramList;
+
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.ProgramList.NAME] =
                 new MultiSelectList(
                     programList,
                     nameof(Program.ID),
                     nameof(Program.Name),
                     userProgramAndProgramGroupManagementViewModel.User.ProgramList.Select(s => s.ProgramID));
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.AllProgramGroupList.NAME] = allProgramGroupList;
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.ProgramGroupList.NAME] =
                 new MultiSelectList(
@@ -710,9 +974,11 @@ namespace SCC.Controllers
 
         void UpdateSupervisorList(User user, int[] supervisorList, DateTime startDate)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (user.UpdateSupervisorList(supervisorList != null ? supervisorList : new int[0], startDate, GetCurrentUser().ID))
+                switch (user.UpdateSupervisorList(supervisorList != null ? supervisorList : new int[0], startDate, currentUser.ID))
                 {
                     case SCC_BL.Results.User.UpdateSupervisorList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.User.UpdateSupervisorList.Success>(user.ID, user.BasicInfo.StatusID, user);
@@ -730,9 +996,11 @@ namespace SCC.Controllers
 
         void UpdateWorkspaceList(User user, int[] workspaceList, DateTime startDate)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (user.UpdateWorkspaceList(workspaceList != null ? workspaceList : new int[0], startDate, GetCurrentUser().ID))
+                switch (user.UpdateWorkspaceList(workspaceList != null ? workspaceList : new int[0], startDate, currentUser.ID))
                 {
                     case SCC_BL.Results.User.UpdateWorkspaceList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.User.UpdateWorkspaceList.Success>(user.ID, user.BasicInfo.StatusID, user);
@@ -750,9 +1018,11 @@ namespace SCC.Controllers
 
         void UpdateGroupList(User user, int[] groupList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (user.UpdateGroupList(groupList != null ? groupList : new int[0], GetCurrentUser().ID))
+                switch (user.UpdateGroupList(groupList != null ? groupList : new int[0], currentUser.ID))
                 {
                     case SCC_BL.Results.User.UpdateGroupList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.User.UpdateGroupList.Success>(user.ID, user.BasicInfo.StatusID, user);
@@ -770,9 +1040,11 @@ namespace SCC.Controllers
 
         void UpdateProgramList(User user, int[] programList)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
-                switch (user.UpdateProgramList(programList != null ? programList : new int[0], GetCurrentUser().ID))
+                switch (user.UpdateProgramList(programList != null ? programList : new int[0], currentUser.ID))
                 {
                     case SCC_BL.Results.User.UpdateProgramList.CODE.SUCCESS:
                         SaveProcessingInformation<SCC_BL.Results.User.UpdateProgramList.Success>(user.ID, user.BasicInfo.StatusID, user);
@@ -791,7 +1063,9 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(UserPersonViewModel userPerson, int? userStatus, int[] supervisorList, DateTime? supervisorStartDate, int[] workspaceList, DateTime? workspaceStartDate, int[] roleList, int[] groupList, int[] programList)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_USERS))
             {
                 SaveProcessingInformation<SCC_BL.Results.User.Update.NotAllowedToModifyUsers>();
                 return RedirectToAction(nameof(UserController.Manage), GetControllerName(typeof(UserController)));
@@ -810,8 +1084,8 @@ namespace SCC.Controllers
                 userPerson.Person.FirstName, 
                 userPerson.Person.SurName,
                 userPerson.Person.CountryID, 
-                userPerson.Person.BasicInfoID, 
-                GetCurrentUser().ID, 
+                userPerson.Person.BasicInfoID,
+                currentUser.ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.UPDATED);
             try
             {
@@ -852,7 +1126,7 @@ namespace SCC.Controllers
                         TEMP: 
                     */
 
-                    User newUser = new User(userPerson.User.ID, userPerson.User.Username, userPerson.User.Email, userPerson.User.StartDate, userPerson.User.LanguageID, userPerson.User.HasPassPermission, userPerson.User.BasicInfoID, GetCurrentUser().ID, newStatusID);
+                    User newUser = new User(userPerson.User.ID, userPerson.User.Username, userPerson.User.Email, userPerson.User.StartDate, userPerson.User.LanguageID, userPerson.User.HasPassPermission, userPerson.User.BasicInfoID, currentUser.ID, newStatusID);
 
                     try
                     {
@@ -983,7 +1257,9 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(UserPersonViewModel userPerson, int[] supervisorList, DateTime? supervisorStartDate, int[] workspaceList, DateTime? workspaceStartDate, int[] roleList, int[] groupList, int[] programList)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_USERS))
             {
                 SaveProcessingInformation<SCC_BL.Results.User.Insert.NotAllowedToCreateUsers>();
                 return RedirectToAction(nameof(UserController.Manage), GetControllerName(typeof(UserController)));
@@ -997,8 +1273,8 @@ namespace SCC.Controllers
                 userPerson.Person.Identification, 
                 userPerson.Person.FirstName, 
                 userPerson.Person.SurName, 
-                userPerson.Person.CountryID, 
-                GetCurrentUser().ID, 
+                userPerson.Person.CountryID,
+                currentUser.ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.CREATED);
 
             try
@@ -1041,7 +1317,7 @@ namespace SCC.Controllers
                         TEMP: 
                     */
 
-                    User newUser = new User(newPerson.ID, userPerson.User.Username, hashedPassword, salt, userPerson.User.Email, userPerson.User.StartDate, userPerson.User.LanguageID, userPerson.User.HasPassPermission, DateTime.Now, GetCurrentUser().ID, (int)SCC_BL.DBValues.Catalog.STATUS_USER.CREATED);
+                    User newUser = new User(newPerson.ID, userPerson.User.Username, hashedPassword, salt, userPerson.User.Email, userPerson.User.StartDate, userPerson.User.LanguageID, userPerson.User.HasPassPermission, DateTime.Now, currentUser.ID, (int)SCC_BL.DBValues.Catalog.STATUS_USER.CREATED);
 
                     try
                     {
@@ -1303,7 +1579,9 @@ namespace SCC.Controllers
 
         public ActionResult MassiveImport()
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MASSIVELY_IMPORT_USERS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MASSIVELY_IMPORT_USERS))
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
 
             List<UploadedFile> uploadedFileList = new List<UploadedFile>();
@@ -1318,11 +1596,22 @@ namespace SCC.Controllers
 
             }
 
+            List<User> allUserList = new List<User>();
+
+            using (User auxUser = new SCC_BL.User())
+            {
+                allUserList = auxUser.SelectAll(true);
+            }
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.MassiveImport.AllUserList.NAME] = allUserList;
+
             return View(uploadedFileList);
         }
 
         public ActionResult MassivePasswordChange()
         {
+            User currentUser = GetCurrentUser();
+
             List<User> userList = new List<User>();
 
             /*if (!GetActualUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
@@ -1331,7 +1620,7 @@ namespace SCC.Controllers
                 return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
             }*/
             
-            if (GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
+            if (currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS))
             {
                 using (User user = new User())
                 {
@@ -1344,7 +1633,7 @@ namespace SCC.Controllers
             }
             else
             {
-                userList.Add(GetCurrentUser());
+                userList.Add(currentUser);
             }
 
             ViewData[SCC_BL.Settings.AppValues.ViewData.User.MassivePasswordChange.User.NAME] =
@@ -1352,8 +1641,8 @@ namespace SCC.Controllers
                     userList.Select(e => new { Key = e.ID, Value = $"{ e.Person.Identification } - { e.Person.SurName } { e.Person.FirstName }" }),
                     "Key",
                     "Value",
-                    !GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS)
-                        ? new int[] { GetCurrentUser().ID }
+                    !currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_MODIFY_OTHER_USER_PASSWORDS)
+                        ? new int[] { currentUser.ID }
                         : null);
             
             /*Dictionary<int, string> userListDictionary = new Dictionary<int, string>();
@@ -1374,6 +1663,8 @@ namespace SCC.Controllers
 
         public void ChangePassword(int userID, string password, string passwordConfirmation)
         {
+            User currentUser = GetCurrentUser();
+
             User user = new User(userID);
             user.SetDataByID();
 
@@ -1385,7 +1676,7 @@ namespace SCC.Controllers
                     return;
                 }
 
-                switch (user.ProcessPasswordRecovery(password, GetCurrentUser().ID, user.BasicInfo.StatusID))
+                switch (user.ProcessPasswordRecovery(password, currentUser.ID, user.BasicInfo.StatusID))
                 {
                     case SCC_BL.Results.User.PasswordRecovery.CODE.SUCCESS:
                         //SendMail(SCC_BL.Settings.AppValues.MailTopic.CHANGE_PASSWORD, user, password);
@@ -1477,6 +1768,8 @@ namespace SCC.Controllers
 
         public SCC_BL.Results.UploadedFile.UserMassiveImport.CODE ProcessImportExcel(string filePath, bool modifyExistingOnes = false)
         {
+            User currentUser = GetCurrentUser();
+
             List<User> userList = new List<User>();
 
             List<int> linesWithErrors = new List<int>();
@@ -1654,7 +1947,7 @@ namespace SCC.Controllers
                                     user.Person.SurName,
                                     user.Person.CountryID,
                                     existingPerson.BasicInfoID,
-                                    GetCurrentUser().ID,
+                                    currentUser.ID,
                                     (int)SCC_BL.DBValues.Catalog.STATUS_PERSON.UPDATED);
 
                                 user.Person.ID = existingPersonID;
@@ -1723,7 +2016,7 @@ namespace SCC.Controllers
                                             user.LanguageID,
                                             user.HasPassPermission,
                                             existingUser.BasicInfoID,
-                                            GetCurrentUser().ID,
+                                            currentUser.ID,
                                             (int)SCC_BL.DBValues.Catalog.STATUS_USER.UPDATED);
 
                                         user.ID = existingUserID;
@@ -1852,6 +2145,8 @@ namespace SCC.Controllers
 
         public List<User> ProcessExcelForMassiveImport(string filePath, bool modifyExistingOnes = false)
         {
+            User currentUser = GetCurrentUser();
+
             List<User> elementList = new List<User>();
 
             List<User> allUserList = new List<User>();
@@ -1904,7 +2199,7 @@ namespace SCC.Controllers
                             {
                                 var newRow = excelParser.GetRowCells(row, headersCount).ToArray();
 
-                                User user = new User(newRow, rowCount, GetCurrentUser().ID, allUserList, allWorkspaceList, allRoleList, allGroupList, allProgramList, allCountryList);
+                                User user = new User(newRow, rowCount, currentUser.ID, allUserList, allWorkspaceList, allRoleList, allGroupList, allProgramList, allCountryList);
 
                                 elementList.Add(user);
                             }
@@ -1936,6 +2231,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult PasswordRecovery(string username, string password, string passwordConfirmation, string token)
         {
+            User currentUser = GetCurrentUser();
+
             User user = new User(username, token);
 
             user.SetDataByUsername();
@@ -1953,7 +2250,7 @@ namespace SCC.Controllers
                     SaveProcessingInformation<SCC_BL.Results.User.PasswordRecovery.PasswordsDoNotMatch>(user.ID, user.BasicInfo.StatusID, user);
                 }
 
-                switch (user.ProcessPasswordRecovery(password, GetCurrentUser().ID, user.BasicInfo.StatusID))
+                switch (user.ProcessPasswordRecovery(password, currentUser.ID, user.BasicInfo.StatusID))
                 {
                     case SCC_BL.Results.User.PasswordRecovery.CODE.SUCCESS:
                         SendMail(SCC_BL.Settings.AppValues.MailTopic.CHANGE_PASSWORD, user, password);
@@ -1978,7 +2275,9 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Delete(int userID)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_USERS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_DELETE_USERS))
             {
                 SaveProcessingInformation<SCC_BL.Results.User.Delete.NotAllowedToDeleteUsers>();
                 return RedirectToAction(nameof(UserController.Manage), GetControllerName(typeof(UserController)));
@@ -1991,7 +2290,7 @@ namespace SCC.Controllers
             {
                 //user.Delete();
 
-                user.BasicInfo.ModificationUserID = GetCurrentUser().ID;
+                user.BasicInfo.ModificationUserID = currentUser.ID;
                 user.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED;
 
                 int result = user.BasicInfo.Update();
@@ -2014,6 +2313,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Activate(int userID, bool activate)
         {
+            User currentUser = GetCurrentUser();
+
             User user = new User(userID);
             user.SetDataByID(true);
 
@@ -2024,7 +2325,7 @@ namespace SCC.Controllers
                 else
                     user.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED;
 
-                user.BasicInfo.ModificationUserID = GetCurrentUser().ID;
+                user.BasicInfo.ModificationUserID = currentUser.ID;
 
                 int result = user.BasicInfo.Update();
 
@@ -2052,6 +2353,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult ForgottenPassword(string username)
         {
+            User currentUser = GetCurrentUser();
+
             try
             {
                 string token = string.Empty;
@@ -2080,6 +2383,143 @@ namespace SCC.Controllers
             }
 
             return RedirectToAction(nameof(UserController.LogIn), _mainControllerName);
+        }
+
+        public ActionResult _SearchFilters()
+        {
+            SCC_BL.Helpers.User.Search.UserSearchHelper userSearchHelper = new SCC_BL.Helpers.User.Search.UserSearchHelper();
+
+            return PartialView(userSearchHelper);
+        }
+
+        public ActionResult _ManageUserList(SCC_BL.Helpers.User.Search.UserSearchHelper userSearchHelper = null)
+        {
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_SEARCH_USERS))
+            {
+                 SaveProcessingInformation<SCC_BL.Results.User.Search.NotAllowedToSearch>();
+                return RedirectToAction(nameof(HomeController.Index), GetControllerName(typeof(HomeController)));
+            }
+
+            if (userSearchHelper == null)
+            {
+                userSearchHelper = new SCC_BL.Helpers.User.Search.UserSearchHelper();
+            }
+
+            bool hasHelper = false;
+
+            foreach (System.Reflection.PropertyInfo propertyInfo in userSearchHelper.GetType().GetProperties())
+            {
+                if (propertyInfo.GetValue(userSearchHelper) != null)
+                {
+                    hasHelper = true;
+                    break;
+                }
+            }
+
+            List<User> userList = new List<User>();
+
+            if (hasHelper)
+            {
+                if (userSearchHelper.IsActive != null)
+                {
+                    int[] userStatusIDList = new int[] {
+                        (int)SCC_BL.DBValues.Catalog.STATUS_USER.CREATED,
+                        (int)SCC_BL.DBValues.Catalog.STATUS_USER.ENABLED,
+                        (int)SCC_BL.DBValues.Catalog.STATUS_USER.UPDATED,
+                    };
+
+                    if (!userSearchHelper.IsActive.Value)
+                    {
+                        userStatusIDList = new int[] {
+                            (int)SCC_BL.DBValues.Catalog.STATUS_USER.DISABLED,
+                            (int)SCC_BL.DBValues.Catalog.STATUS_USER.DELETED,
+                        };
+                    }
+
+                    userSearchHelper.UserStatusIDList = userStatusIDList;
+                }
+            }
+
+            using (User auxUser = new User())
+            {
+                userList =  auxUser.Search(userSearchHelper);
+            }
+
+            List<Catalog> allLanguageList = new List<Catalog>();
+            List<Catalog> allCountryList = new List<Catalog>();
+            List<User> allSupervisorList = new List<User>();
+            List<Workspace> allWorkspaceList = new List<Workspace>();
+            List<Role> allRoleList = new List<Role>();
+            List<Group> allGroupList = new List<Group>();
+
+            using (Catalog catalog =  Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.USER_LANGUAGE))
+                allLanguageList =  catalog.SelectByCategoryID();
+
+            using (Catalog catalog =  Catalog.CatalogWithCategoryID((int)SCC_BL.DBValues.Catalog.Category.PERSON_COUNTRY))
+                allCountryList =  catalog.SelectByCategoryID();
+
+            using (User user = new User())
+                allSupervisorList =  user.SelectAll(true);
+
+            using (Workspace workspace = new Workspace())
+                allWorkspaceList =  workspace.SelectAll();
+
+            using (Role role = new Role())
+                allRoleList =  role.SelectAll();
+
+            using (Group group = new Group())
+                allGroupList =  group.SelectAll();
+
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.LanguageCatalog.NAME] = allLanguageList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.CountryCatalog.NAME] = allCountryList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.Supervisor.NAME] = allSupervisorList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.Workspace.NAME] = allWorkspaceList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.RoleCatalog.NAME] = allRoleList;
+            ViewData[SCC_BL.Settings.AppValues.ViewData.User.ManageUserList.AllData.Group.NAME] = allGroupList;
+
+            return PartialView(userList);
+        }
+
+        [HttpPost]
+        public ActionResult ExportUsersToExcel(string userIDArray)
+        {
+            string newFileName = $"Lista de usuarios {DateTime.Now.ToString("yyyyMMddHHmmss")}.xlsx";
+
+            string filePath =
+                AppDomain.CurrentDomain.BaseDirectory +
+                SCC_BL.Settings.Paths.User.EXPORT.Substring(SCC_BL.Settings.Paths.User.EXPORT.IndexOf('/') + 1) +
+                newFileName;
+
+            List<User> userList = new List<User>();
+
+            if (string.IsNullOrEmpty(userIDArray))
+            {
+                throw new Exception("No se obtuvieron IDs de usuario para exportar");
+            }
+
+            int[] ids = userIDArray
+                .Split(',')
+                .Select(e =>
+                    Convert.ToInt32(e))
+                .ToArray();
+
+            for (int i = 0; i < ids.Length; i++)
+            {
+                using (User auxUser = new User(ids[i]))
+                {
+                    auxUser.SetDataByID();
+                    userList.Add(auxUser);
+                }
+            }
+
+            using (ExcelParser excelParser = new ExcelParser())
+            {
+                excelParser.ExportUserListToExcel(userList, filePath);
+            }
+
+            return DownLoadFileFromServer(filePath, SCC_BL.Settings.AppValues.File.ContentType.EXCEL_FILES_XLSX);
         }
     }
 }

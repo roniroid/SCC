@@ -49,7 +49,9 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(BusinessIntelligenceField businessIntelligenceField, List<BusinessIntelligenceField> childList = null/*, List<BusinessIntelligenceValueCatalog> valueList = null*/)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_BI_QUESTIONS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_BI_QUESTIONS))
             {
                 SaveProcessingInformation<SCC_BL.Results.BusinessIntelligenceField.Update.NotAllowedToCreateBIQuestions>();
                 return RedirectToAction(nameof(BIFieldController.Manage), GetControllerName(typeof(BIFieldController)));
@@ -65,8 +67,8 @@ namespace SCC.Controllers
                 businessIntelligenceField.ParentBIFieldID, 
                 businessIntelligenceField.HasForcedComment,
                 businessIntelligenceField.Order,
-                businessIntelligenceField.BasicInfoID, 
-                GetCurrentUser().ID, 
+                businessIntelligenceField.BasicInfoID,
+                currentUser.ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.UPDATED);
 
             try
@@ -95,7 +97,7 @@ namespace SCC.Controllers
 
                     try
                     {
-                        response = newBIField.UpdateBIFieldChildList(childList, newBIField, GetCurrentUser().ID);
+                        response = newBIField.UpdateBIFieldChildList(childList, newBIField, currentUser.ID);
                     }
                     catch (Exception ex)
                     {
@@ -127,7 +129,9 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(BusinessIntelligenceField businessIntelligenceField, List<BusinessIntelligenceField> childList = null/*, List<BusinessIntelligenceValueCatalog> valueList = null*/)
         {
-            if (!GetCurrentUser().HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_BI_QUESTIONS))
+            User currentUser = GetCurrentUser();
+
+            if (!currentUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_CREATE_BI_QUESTIONS))
             {
                 SaveProcessingInformation<SCC_BL.Results.BusinessIntelligenceField.Insert.NotAllowedToCreateBIQuestions>();
                 return RedirectToAction(nameof(BIFieldController.Manage), GetControllerName(typeof(BIFieldController)));
@@ -138,8 +142,8 @@ namespace SCC.Controllers
                 businessIntelligenceField.Description, 
                 businessIntelligenceField.ParentBIFieldID, 
                 businessIntelligenceField.HasForcedComment, 
-                businessIntelligenceField.ID, 
-                GetCurrentUser().ID, 
+                businessIntelligenceField.ID,
+                currentUser.ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.CREATED);
 
             try
@@ -164,7 +168,7 @@ namespace SCC.Controllers
 
                     try
                     {
-                        response = newBIField.UpdateBIFieldChildList(childList, newBIField, GetCurrentUser().ID);
+                        response = newBIField.UpdateBIFieldChildList(childList, newBIField, currentUser.ID);
                     }
                     catch (Exception ex)
                     {
@@ -196,6 +200,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Delete(int biFieldID)
         {
+            User currentUser = GetCurrentUser();
+
             BusinessIntelligenceField biField = new BusinessIntelligenceField(biFieldID);
             biField.SetDataByID();
 
@@ -203,7 +209,7 @@ namespace SCC.Controllers
             {
                 //biField.Delete();
 
-                biField.BasicInfo.ModificationUserID = GetCurrentUser().ID;
+                biField.BasicInfo.ModificationUserID = currentUser.ID;
                 biField.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_BI_FIELD.DELETED;
 
                 int result = biField.BasicInfo.Update();
@@ -312,6 +318,11 @@ namespace SCC.Controllers
 
                         e.Order = orderNumber;
                     });
+
+                businessIntelligenceFieldList = businessIntelligenceFieldList
+                    .GroupBy(b => new { b.ParentBIFieldGhostID, b.Name })
+                    .Select(group => group.First())
+                    .ToList();
 
                 UpdateBIFieldList(businessIntelligenceFieldList, creationUserID);
             }
@@ -423,6 +434,8 @@ namespace SCC.Controllers
 
         public List<SCC_BL.BusinessIntelligenceField> ProcessExcelForUpload(string filePath)
         {
+            User currentUser = GetCurrentUser();
+
             List<SCC_BL.BusinessIntelligenceField> elementList = new List<SCC_BL.BusinessIntelligenceField>();
 
             List<int> linesWithErrors = new List<int>();
@@ -445,7 +458,7 @@ namespace SCC.Controllers
 
                         using (SCC_BL.BusinessIntelligenceField businessIntelligenceField = new SCC_BL.BusinessIntelligenceField())
                         {
-                            elementList = businessIntelligenceField.GetBIFieldListFromExcel(rows.Skip(1), biFieldUploadInfo, headersCount, GetCurrentUser().ID);
+                            elementList = businessIntelligenceField.GetBIFieldListFromExcel(rows.Skip(1), biFieldUploadInfo, headersCount, currentUser.ID);
                         }
                     }
                 }

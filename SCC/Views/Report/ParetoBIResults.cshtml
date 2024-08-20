@@ -4,7 +4,7 @@
 @model SCC.ViewModels.ReportResultsParetoBIViewModel
 
 @{
-    ViewBag.Title = "Restultados de pareto de inteligencia de negocios";
+    ViewBag.Title = "Resultados de pareto de inteligencia de negocios";
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     string mainControllerName = OverallController.GetControllerName(typeof(ReportController));
@@ -588,7 +588,7 @@
         }
     });
 
-    function clickHandler(evt) {
+    @*function clickHandler(evt) {
         const points = myChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
 
         if (points.length) {
@@ -612,6 +612,60 @@
                 $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
 
                 $(document.body).append($form);
+
+                $form.submit();
+            }
+        }
+    }*@
+
+    function clickHandler(evt) {
+        const points = myChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+
+        if (points.length) {
+            const firstPoint = points[0];
+            const datasetIndex = firstPoint.datasetIndex;
+            const dataIndex = firstPoint.index;
+            /*const label = myChart.data.labels[firstPoint.index];
+            const value = myChart.data.datasets[firstPoint.datasetIndex].data[firstPoint.index];*/
+
+            let hasChildren = myChart.data.datasets[firstPoint.datasetIndex].customData.hasChildren[firstPoint.index];
+
+            if (hasChildren) {
+                const selectedBusinessIntelligenceFieldID = myChart.data.datasets[datasetIndex].customData.currentBusinessIntelligenceFieldID[dataIndex];
+                const selectedTransactionID = myChart.data.datasets[datasetIndex].customData.transactionBIFieldIDList[dataIndex];
+
+                console.log(selectedBusinessIntelligenceFieldID);
+                console.log(selectedTransactionID);
+
+                const url = '@Url.Action(nameof(ReportController.ParetoBIWithParent), mainControllerName)';
+
+                const $form = $('<form action="' + url + '" method="post" target="_blank"></form>');
+
+                $($form).append('<input type="hidden" name="selectedBusinessIntelligenceFieldID" value="' + selectedBusinessIntelligenceFieldID + '" /> ');
+                $($form).append('<input type="hidden" name="transactionIDList" value="' + selectedTransactionID + '" /> ');
+                @*$($form).append('<input type="hidden" name="transactionIDList" value="@String.Join(",", Model.AccuracyBySubattributeResultList.Select(e => e.TransactionAttributeID))" /> ');*@
+                $($form).append('<input type="hidden" name="totalTransactions" value="@Model.TotalTransactions" /> ');
+
+                $(document.body).append($form);
+
+                function printFormData($form) {
+                    var form = $($form)[0];
+                    var formData = {};
+                    console.log(form);
+
+                    // Loop through form elements
+                    for (var i = 0; i < form.elements.length; i++) {
+                        var element = form.elements[i];
+                        // Check if the element has a name and is not a submit button
+                        if (element.name && element.type !== 'submit') {
+                            formData[element.name] = element.value;
+                        }
+                    }
+
+                    console.log("Form data:", formData);
+                }
+
+                printFormData($form);
 
                 $form.submit();
             }

@@ -15,6 +15,10 @@
 
     bool hasModel = Model.Calibration.ID != null && Model.Calibration.ID > 0;
 
+    bool hasAnyTransaction = Model.TransactionList.Count() > 0;
+
+    List<Program> allProgramList = (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.ProgramList.NAME];
+
     ViewBag.Title = "Edición de calibración";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -50,6 +54,7 @@
                     @Html.HiddenFor(modelitem => Model.Calibration.BasicInfoID)
 
                     @Html.Hidden("transactionList")
+                    @Html.Hidden("callIdentifierList")
 
                     <div class="accordion-body">
                         <div class="row d-block text-center text-danger required-advise d-none m-5">
@@ -74,11 +79,11 @@
                                         @Value =
                                             Model.Calibration.StartDate != null
                                                 ? (Model.Calibration.StartDate.Year > 2000
-                                                    ? Model.Calibration.StartDate.ToString("yyyy-MM-ddThh:mm")
-                                                    : DateTime.Now.ToString("yyyy-MM-ddThh:mm"))
-                                                : DateTime.Now.ToString("yyyy-MM-ddThh:mm"),
-                                             required = ""
-                                         })
+                                                    ? Model.Calibration.StartDate.ToString("yyyy-MM-ddTHH:mm")
+                                                    : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))
+                                                : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"),
+                                        required = ""
+                                    })
                             </div>
                         </div>
                         <div class="row property-field">
@@ -100,11 +105,11 @@
                                         @Value =
                                             Model.Calibration.EndDate != null
                                                 ? (Model.Calibration.EndDate.Year > 2000
-                                                    ? Model.Calibration.EndDate.ToString("yyyy-MM-ddThh:mm")
-                                                    : DateTime.Now.ToString("yyyy-MM-ddThh:mm"))
-                                                : DateTime.Now.ToString("yyyy-MM-ddThh:mm"),
-                                             required = ""
-                                         })
+                                                    ? Model.Calibration.EndDate.ToString("yyyy-MM-ddTHH:mm")
+                                                    : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"))
+                                                : DateTime.Now.ToString("yyyy-MM-ddTHH:mm"),
+                                        required = ""
+                                    })
                             </div>
                         </div>
                         <div class="row property-field">
@@ -227,7 +232,7 @@
                                 </div>
                             </div>
                         </div>
-                        @if (Model.TransactionList.Count() > 0)
+                        @if (hasAnyTransaction)
                         {
                             <hr />
                             <div class="row m-4 text-center">
@@ -239,7 +244,7 @@
                             {
                                 <div class="row transaction-row px-4 py-2 text-center" data-transactionid="@transaction.ID">
                                     <div class="col-1">
-                                        <button class="btn-element-action btn-element-action-danger btn-transaction-remove" title="Quitar transacción">
+                                        <button class="btn-element-action btn-element-action-danger btn-transaction-remove" title="Remover transacción">
                                             <i class='bx bxs-x-circle'></i>
                                         </button>
                                     </div>
@@ -256,6 +261,71 @@
                                 transactionCount++;
                             }
                         }
+
+                        <hr />
+                        <div class="row m-4 text-center">
+                            <h5>Llamadas a calibrar</h5>
+                            <br />
+                            <div class="row text-center my-2 d-flex justify-content-center">
+                                <div class="col-2">
+                                    <button id="btnAddCallIdentifier" class="btn-element-action btn-element-action-secondary p-2" type="button" title="Agregar">
+                                        <i class='bx bx-plus-medical'></i> Agregar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="callIdentifierContainer">
+                            @{
+                                int callIdentifierCount = 1;
+                            }
+
+                            @foreach (SCC.ViewModels.CalibrationEditViewModel.CallIdentifier callIdentifier in Model.CallIdentifierList)
+                            {
+                                <div class="row px-4 py-2 text-center row-callIdentifier-container" data-callidentifierorder="@callIdentifierCount">
+                                    <div class="col-1">
+                                        <button class="btn-element-action btn-element-action-danger btn-callIdentifier-remove" title="Remover llamada" type="button">
+                                            <i class='bx bxs-x-circle'></i>
+                                        </button>
+                                    </div>
+                                    <div class="col-3">
+                                        <label>
+                                            Llamada #@callIdentifierCount
+                                        </label>
+                                    </div>
+                                    <div class="col-4 col-callIdentifier-program-container">
+                                        @Html.DropDownList(
+                                            $"callIdentifierProgram-{callIdentifierCount}",
+                                            new SelectList(
+                                                (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.Calibration.Edit.ProgramList.NAME],
+                                                nameof(Program.ID),
+                                                nameof(Program.Name),
+                                                callIdentifier.ProgramID
+                                            ),
+                                            "Seleccione un programa",
+                                            new
+                                            {
+                                                @class = "property-field-control call-identifier-program",
+                                                placeholder = "Programas disponibles",
+                                                title = "Programas disponibles"
+                                            }
+                                        )
+                                    </div>
+                                    <div class="col-4 col-callIdentifier-input-container">
+                                        Indentificador de la llamada:
+                                        @if (callIdentifier.Exists)
+                                        {
+                                            <a class="call-identifier-label" href="@Url.Action(nameof(TransactionController.Edit), OverallController.GetControllerName(typeof(TransactionController)), new { transactionID = callIdentifier.TransactionID })" target="_blank">@callIdentifier.Identifier</a>
+                                        }
+                                        else
+                                        {
+                                            <span class="call-identifier-label">@callIdentifier.Identifier</span>
+                                        }
+                                    </div>
+                                </div>
+
+                                callIdentifierCount++;
+                            }
+                        </div>
                     </div>
                     <div class="accordion-footer">
                         <div class="accordion-footer-info">
@@ -283,15 +353,18 @@
     </div>
 </div>
 <script>
-    $(document).ready(() => {
-        fetchMultiSelectBasicData().then(response => {
-            let data = response;
+    let defaultChosenConfig = null;
 
-            startMultiSelect('#ddlCalibrationTypeID', data);
-            startMultiSelect('#ddlExperiencedUserID', data);
-            startMultiSelect('#ddlCalibratorUserIDList', data);
-            startMultiSelect('#ddlCalibratorUserGroupIDList', data);
+    $(document).ready(async () => {
+        fetchMultiSelectBasicData().then(response => {
+            defaultChosenConfig = response;
         });
+
+        await startMultiSelect('#ddlCalibrationTypeID', defaultChosenConfig);
+        await startMultiSelect('#ddlExperiencedUserID', defaultChosenConfig);
+        await startMultiSelect('#ddlCalibratorUserIDList', defaultChosenConfig);
+        await startMultiSelect('#ddlCalibratorUserGroupIDList', defaultChosenConfig);
+        await startMultiSelect('.call-identifier-program', defaultChosenConfig);
     });
 
     $('#ddlExperiencedUserID').change((e) => {
@@ -317,6 +390,12 @@
     });
 
     $('#btnSubmit').click(() => {
+        const message = '¿Quiere guardar los cambios?';
+
+        if (confirm(message) != true) {
+            return false;
+        }
+
         const requiredAdviseElement = $('.required-advise');
 
         if (
@@ -339,24 +418,212 @@
 
         $('.transaction-row').each((index, e) => {
             let currentTransactionID = parseInt($(e).data('transactionid'));
+            if (currentTransactionID != '') {
+                transactionIDArray.push(currentTransactionID);
+            }
 
             transactionIDArray.push(currentTransactionID);
         });
 
         $('#transactionList').val(transactionIDArray);
 
-        const message = '¿Quiere guardar los cambios?';
+        /*let callIdentifierArray = [];
 
-        if (confirm(message) != true) {
-            return false;
-        }
+        $('.call-identifier-input').each((index, e) => {
+            let currentCallIdentifier = $(e).val();
+            if (currentCallIdentifier != '') {
+                callIdentifierArray.push(currentCallIdentifier);
+            }
+        });
+
+        $('.call-identifier-label').each((index, e) => {
+            let currentCallIdentifier = $(e).text();
+            if (currentCallIdentifier != '') {
+                callIdentifierArray.push(currentCallIdentifier);
+            }
+        });
+
+        $('#callIdentifierList').val(callIdentifierArray);*/
+
+        let callIdentifierArray = [];
+
+        $('.row-callIdentifier-container').each((index, e) => {
+            let currentCallIdentifierRow = $(e);
+
+            let currentCallIdentifierInputColumn = $(e).find('.col-callIdentifier-input-container')[0];
+            let currentCallIdentifierProgramColumn = $(e).find('.col-callIdentifier-program-container')[0];
+
+            let currentCallIdentifierInputControl = null;
+            let currentCallIdentifierProgramControl = null;
+
+            currentCallIdentifierProgramControl = $(currentCallIdentifierProgramColumn).find('select')[0];
+            let programId = $(currentCallIdentifierProgramControl).val();
+            let callIdentifier = null;
+
+            const hasInput = $(currentCallIdentifierInputColumn).find('input').length > 0;
+            const hasSpan = $(currentCallIdentifierInputColumn).find('span').length > 0;
+
+            if (hasInput) {
+                currentCallIdentifierInputControl = $(currentCallIdentifierInputColumn).find('input')[0];
+                callIdentifier = $(currentCallIdentifierInputControl).val();
+            } else {
+                if (hasSpan) {
+                    currentCallIdentifierInputControl = $(currentCallIdentifierInputColumn).find('span')[0];
+                    callIdentifier = $(currentCallIdentifierInputControl).text();
+                } else {
+                    currentCallIdentifierInputControl = $(currentCallIdentifierInputColumn).find('a')[0];
+                    callIdentifier = $(currentCallIdentifierInputControl).text();
+                }
+            }
+
+            if (callIdentifier != '' && (programId != '' && programId != null && programId != 'null')) {
+                /*callIdentifierArray.push({
+                    Item1: callIdentifier,
+                    Item2: programId,
+                });*/
+
+                callIdentifierArray.push({
+                    CallIdentifier: callIdentifier,
+                    ProgramID: parseInt(programId),
+                });
+            }
+        });
+
+        $('#callIdentifierList').val(JSON.stringify(callIdentifierArray));
+        console.log(JSON.stringify(callIdentifierArray));
+
+        //return false;
     });
 
     $('.btn-transaction-remove').off('click').on('click', function (e) {
         $(e.currentTarget).parent().parent().remove();
     });
 
+    $('.btn-callIdentifier-remove').off('click').on('click', function (e) {
+        $(e.currentTarget).parent().parent().remove();
+    });
+
     $('#btnCancel').click(() => {
         window.open('@Url.Action(nameof(CalibrationController.Manage), mainControllerName)', '_self');
+    });
+
+    function getMaxCallIdentifierOrder() {
+        return new Promise((resolve, reject) => {
+            let max = 0;
+            const callIdentifierContainer = $('#callIdentifierContainer');
+
+            if ($(callIdentifierContainer).find('.row').length > 0) {
+                $(callIdentifierContainer).find('.row').each(function () {
+                    let value = parseInt($(this).data('callidentifierorder'));
+                    max = (value > max) ? value : max;
+                });
+            }
+
+            resolve(max);
+        });
+    }
+
+    const jsonAllProgramList = @Html.Raw(OverallController.Serialize(allProgramList));
+
+    async function fillTemplateProgramSelect() {
+        $(templateSelectProgram).html('');
+
+        let currentOption = document.createElement('option');
+        currentOption.text = "Seleccione un programa";
+        currentOption.value = null;
+        templateSelectProgram.appendChild(currentOption);
+
+        for (let i = 0; i < jsonAllProgramList.length; i++) {
+            currentOption = document.createElement('option');
+            let currentObject = jsonAllProgramList[i];
+
+            for (let key in currentObject) {
+                let value = currentObject[key];
+
+                if (key === '@nameof(Program.Name)') {
+                    currentOption.text = value;
+                }
+
+                if (key === '@nameof(Program.ID)') {
+                    currentOption.value = value;
+                }
+            }
+
+            templateSelectProgram.appendChild(currentOption);
+        }
+    }
+
+    let templateSelectProgram = document.createElement('select');
+    templateSelectProgram.classList.add('property-field-control');
+    templateSelectProgram.classList.add('call-identifier-program');
+    templateSelectProgram.placeholder = 'Programas disponibles';
+    templateSelectProgram.title = 'Programas disponibles';
+    fillTemplateProgramSelect();
+
+    $('#btnAddCallIdentifier').click(async () => {
+        const newTemplateSelectProgram = $(templateSelectProgram).clone()[0];
+
+        const maxOrder = await getMaxCallIdentifierOrder() + 1;
+        const callIdentifierContainer = $('#callIdentifierContainer');
+
+        let newRow = document.createElement('div');
+
+        let newColRemove = document.createElement('div');
+        let newColCount = document.createElement('div');
+        let newColProgram = document.createElement('div');
+        let newColIdentifierContainer = document.createElement('div');
+
+        let newButtonRemove = document.createElement('button');
+        let newLabelIdentifierCount = document.createElement('label');
+        let newInputIdentifier = document.createElement('input');
+
+        newRow.classList.add('row');
+        newRow.classList.add('px-4');
+        newRow.classList.add('py-2');
+        newRow.classList.add('text-center');
+        newRow.classList.add('row-callIdentifier-container');
+        newRow.dataset.callidentifierorder = maxOrder;
+
+        newColRemove.classList.add('col-1');
+
+        newButtonRemove.classList.add('btn-element-action');
+        newButtonRemove.classList.add('btn-element-action-danger');
+        newButtonRemove.classList.add('btn-callIdentifier-remove');
+        newButtonRemove.type = 'button';
+        newButtonRemove.title = 'Remover llamada';
+        newButtonRemove.innerHTML = '<i class="bx bxs-x-circle"></i>';
+
+        newColCount.classList.add('col-3');
+
+        newLabelIdentifierCount.innerText = `Llamada #${maxOrder}`;
+
+        newColProgram.classList.add('col-4');
+        newColProgram.classList.add('col-callIdentifier-program-container');
+
+        newColIdentifierContainer.classList.add('col-4');
+        newColIdentifierContainer.classList.add('d-flex');
+        newColIdentifierContainer.classList.add('justify-content-center');
+        newColIdentifierContainer.classList.add('col-callIdentifier-input-container');
+
+        newInputIdentifier.type = 'text';
+        newInputIdentifier.classList.add('call-identifier-input');
+        newInputIdentifier.classList.add('form-control');
+        newInputIdentifier.placeholder = 'Identificador de la llamada';
+
+        newColIdentifierContainer.appendChild(newInputIdentifier);
+        newColProgram.appendChild(newTemplateSelectProgram);
+        newColCount.appendChild(newLabelIdentifierCount);
+        newColRemove.appendChild(newButtonRemove);
+
+        newRow.appendChild(newColRemove);
+        newRow.appendChild(newColCount);
+        newRow.appendChild(newColProgram);
+        newRow.appendChild(newColIdentifierContainer);
+
+        $(callIdentifierContainer).append(newRow);
+
+        await startMultiSelect(newTemplateSelectProgram, defaultChosenConfig);
+
+        //$(newTemplateSelectProgram).trigger("chosen:updated");
     });
 </script>

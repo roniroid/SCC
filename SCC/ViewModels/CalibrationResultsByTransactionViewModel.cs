@@ -154,7 +154,8 @@ namespace SCC.ViewModels
                                 Transaction expertTransaction =
                                     this.ExpertEvaluationList
                                         .Where(f =>
-                                            f.CalibratedTransactionID == calibration.CalibratedTransactionID)
+                                            f.CalibratedTransactionID == calibration.CalibratedTransactionID ||
+                                            f.CallIdentifier == calibration.CallIdentifier)
                                         .FirstOrDefault();
 
                                 TransactionAttributeCatalog expertTransactionAttributeCatalog =
@@ -188,7 +189,8 @@ namespace SCC.ViewModels
                                 Transaction expertTransaction =
                                     this.ExpertEvaluationList
                                         .Where(f =>
-                                            f.CalibratedTransactionID == calibration.CalibratedTransactionID)
+                                            f.CalibratedTransactionID == calibration.CalibratedTransactionID ||
+                                            f.CallIdentifier == calibration.CallIdentifier)
                                         .FirstOrDefault();
 
                                 TransactionAttributeCatalog expertTransactionAttributeCatalog =
@@ -339,6 +341,7 @@ namespace SCC.ViewModels
         public class ResultsByTransaction
         {
             public int TransactionID { get; set; }
+            public string CallIdentifier { get; set; }
             public List<SCC_BL.Transaction> CalibrationList { get; set; } = new List<SCC_BL.Transaction>();
             public List<SCC_BL.Transaction> ExpertEvaluationList { get; set; } = new List<SCC_BL.Transaction>();
             public Form Form { get; set; }
@@ -457,7 +460,8 @@ namespace SCC.ViewModels
                         SCC_BL.Transaction expertEvaluation =
                             expertEvaluationList
                                 .Where(e =>
-                                    e.CalibratedTransactionID == calibration.CalibratedTransactionID.Value)
+                                    e.CalibratedTransactionID == calibration.CalibratedTransactionID.Value ||
+                                    e.CallIdentifier == calibration.CallIdentifier)
                                 .FirstOrDefault();
 
                         TransactionAttributeCatalog transactionAttributeCatalog =
@@ -604,7 +608,8 @@ namespace SCC.ViewModels
                     SCC_BL.Transaction expertEvaluation =
                         expertEvaluationList
                             .Where(e =>
-                                e.CalibratedTransactionID == calibration.CalibratedTransactionID.Value)
+                                e.CalibratedTransactionID == calibration.CalibratedTransactionID.Value ||
+                                e.CallIdentifier == calibration.CallIdentifier)
                             .FirstOrDefault();
 
                     TransactionAttributeCatalog transactionAttributeCatalog =
@@ -662,7 +667,8 @@ namespace SCC.ViewModels
                     SCC_BL.Transaction expertEvaluation =
                         expertEvaluationList
                             .Where(e =>
-                                e.CalibratedTransactionID == calibration.CalibratedTransactionID.Value)
+                                e.CalibratedTransactionID == calibration.CalibratedTransactionID.Value ||
+                                e.CallIdentifier == calibration.CallIdentifier)
                             .FirstOrDefault();
 
                     TransactionBIFieldCatalog transactionBIFieldCatalog =

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_BL.Settings
 {
@@ -472,6 +472,11 @@ namespace SCC_BL.Settings
                     {
                         public const string NAME = "EDIT_TRANSACTION_PROGRAM_FORM_LIST";
                     }
+
+                    public struct ProgramID
+                    {
+                        public const string NAME = "EDIT_TRANSACTION_PROGRAM_ID";
+                    }
                 }
 
                 public struct FormView
@@ -680,6 +685,16 @@ namespace SCC_BL.Settings
                     {
                         public const string NAME = "EDIT_CALIBRATION_TRANSACTION_LIST";
                     }
+                    public struct ProgramList
+                    {
+                        public const string NAME = "EDIT_CALIBRATION_PROGRAM_LIST";
+
+                        public struct SelectList
+                        {
+                            public const string TEXT = "Name";
+                            public const string VALUE = "ID";
+                        }
+                    }
                 }
             }
 
@@ -720,7 +735,6 @@ namespace SCC_BL.Settings
             public struct Role
             {
                 public const string ROLES = "ROLES";
-
                 public struct Manage
                 {
                     public struct PermissionList
@@ -733,6 +747,12 @@ namespace SCC_BL.Settings
                             public const string VALUE = "ID";
                         }
                     }
+
+                    public struct AllPermissionList
+                    {
+                        public const string NAME = "MANAGE_ROLE_ALL_PERMISSION_LIST";
+                    }
+
                 }
             }
 
@@ -746,10 +766,25 @@ namespace SCC_BL.Settings
                     {
                         public const string NAME = "MANAGE_FORM_ALL_TYPE_LIST";
                     }
+
+                    public struct AllProgramFormCatalogList
+                    {
+                        public const string NAME = "MANAGE_FORM_ALL_PROGRAM_FORM_CATALOG_LIST";
+                    }
                 }
 
                 public struct Edit
                 {
+                    public struct AttributeErrorTypeList
+                    {
+                        public const string NAME = "FORM_EDIT_ATTRIBUTE_ERROR_TYPE_LIST";
+                    }
+
+                    public struct JsonDefineAnswerTypeList
+                    {
+                        public const string NAME = "FORM_EDIT_JSON_DEFINE_ANSWER_TYPE_LIST";
+                    }
+
                     public struct TypeList
                     {
                         public const string NAME = "EDIT_FORM_TYPE_LIST";
@@ -835,6 +870,10 @@ namespace SCC_BL.Settings
                     {
                         public const string NAME = "FORM_BINDING_ALL_PROGRAM_LIST";
                     }
+                    public struct AllProgramFormCatalogList
+                    {
+                        public const string NAME = "FORM_BINDING_ALL_PROGRAM_FORM_CATALOG_LIST";
+                    }
                 }
             }
 
@@ -844,6 +883,11 @@ namespace SCC_BL.Settings
 
                 public struct AsignRolesAndPermissions
                 {
+                    public struct AllPermissionList
+                    {
+                        public const string NAME = "ASIGN_ROLES_AND_PERMISSIONS_ALL_PERMISSION_LIST";
+                    }
+
                     public struct PermissionList
                     {
                         public const string NAME = "ASIGN_ROLES_AND_PERMISSIONS_PERMISSION_LIST";
@@ -853,6 +897,11 @@ namespace SCC_BL.Settings
                             public const string TEXT = "Description";
                             public const string VALUE = "ID";
                         }
+                    }
+
+                    public struct AllRoleList
+                    {
+                        public const string NAME = "ASIGN_ROLES_AND_PERMISSIONS_ALL_ROLE_LIST";
                     }
 
                     public struct RoleList
@@ -880,6 +929,11 @@ namespace SCC_BL.Settings
 
                 public struct AsignProgramsAndProgramGroups
                 {
+                    public struct AllProgramList
+                    {
+                        public const string NAME = "ASIGN_PROGRAMS_AND_PROGRAM_GROUPS_ALL_PROGRAM_LIST";
+                    }
+
                     public struct ProgramList
                     {
                         public const string NAME = "ASIGN_PROGRAMS_AND_PROGRAM_GROUPS_PROGRAM_LIST";
@@ -889,6 +943,11 @@ namespace SCC_BL.Settings
                             public const string TEXT = "Name";
                             public const string VALUE = "ID";
                         }
+                    }
+
+                    public struct AllProgramGroupList
+                    {
+                        public const string NAME = "ASIGN_PROGRAMS_AND_PROGRAM_GROUPS_ALL_PROGRAM_GROUP_LIST";
                     }
 
                     public struct ProgramGroupList
@@ -1082,6 +1141,82 @@ namespace SCC_BL.Settings
                         {
                             public const string NAME = "ALL_PROGRAM_CATALOG";
                         }
+
+                        public struct PermissionCatalog
+                        {
+                            public const string NAME = "ALL_PERMISSION_CATALOG";
+                        }
+
+                        public struct UserStatus
+                        {
+                            public const string NAME = "ALL_USER_STATUS_CATALOG";
+                        }
+                    }
+
+                    public struct Permission
+                    {
+                        public const string NAME = "PERMISSION_CATALOG";
+                    }
+                    public struct StringTypeID
+                    {
+                        public const string NAME = "USER_SEARCH_STRING_TYPE_ID";
+                    }
+
+                    public struct YesNoQuestion
+                    {
+                        public enum Values
+                        {
+                            NO_VALUE,
+                            YES = 1,
+                            NO = 0
+                        }
+
+                        public const string NAME = "USER_SEARCH_YES_NO_QUESTION_ID";
+                    }
+
+                }
+
+                public struct MassiveImport
+                {
+                    public struct AllUserList
+                    {
+                        public const string NAME = "USER_MASSIVE_IMPORT_ALL_USER_LIST";
+                    }
+                }
+
+                public struct ManageUserList
+                {
+                    public struct AllData
+                    {
+                        public struct LanguageCatalog
+                        {
+                            public const string NAME = "ALL_LANGUAGE_CATALOG";
+                        }
+
+                        public struct CountryCatalog
+                        {
+                            public const string NAME = "ALL_COUNTRY_CATALOG";
+                        }
+
+                        public struct RoleCatalog
+                        {
+                            public const string NAME = "ALL_ROLE_CATALOG";
+                        }
+
+                        public struct Supervisor
+                        {
+                            public const string NAME = "ALL_SUPERVISOR_CATALOG";
+                        }
+
+                        public struct Workspace
+                        {
+                            public const string NAME = "ALL_WORKSPACE_CATALOG";
+                        }
+
+                        public struct Group
+                        {
+                            public const string NAME = "ALL_GROUP_CATALOG";
+                        }
                     }
                 }
             }
@@ -1102,6 +1237,22 @@ namespace SCC_BL.Settings
 
             public struct Report
             {
+
+                public struct _ComparativeByUserResults
+                {
+                    public struct AllUserList
+                    {
+                        public const string NAME = "REPORT_COMPARATIVE_BY_USER_RESULTS_ALL_USER_LIST";
+                    }
+                }
+
+                public struct _ComparativeByProgramResults
+                {
+                    public struct AllProgramList
+                    {
+                        public const string NAME = "REPORT_COMPARATIVE_BY_PROGRAM_RESULTS_ALL_PROGRAM_LIST";
+                    }
+                }
                 public struct _OverallAccuracy
                 {
                     public struct ProgramList

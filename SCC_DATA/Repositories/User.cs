@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_DATA.Repositories
 {
@@ -409,6 +409,70 @@ namespace SCC_DATA.Repositories
                     return
                         (int)db.ReadFirstColumn(
                             Queries.User.StoredProcedures.CheckExistence.NAME,
+                            parameters
+                        );
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public System.Data.DataTable Search(
+            int? identificationTypeID,
+            string identification,
+            int? firstNameTypeID,
+            string firstName,
+            int? surNameTypeID,
+            string surName,
+            int[] countryIDList,
+            int[] languageIDList,
+
+            int? usernameTypeID,
+            string username,
+            int? emailTypeID,
+            string email,
+            bool? hasPassPermission,
+            int[] userStatusIDList,
+            int[] groupIDList,
+            int[] permissionIDList,
+            int[] programIDList,
+            int[] roleIDList,
+            int[] supervisorIDList,
+            int[] workspaceIDList)
+        {
+            try
+            {
+                using (DBDriver db = new DBDriver())
+                {
+                    SqlParameter[] parameters = new SqlParameter[] {
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.IDENTIFICATION_TYPE, identificationTypeID, System.Data.SqlDbType.Int),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.IDENTIFICATION, identification, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.FIRST_NAME_TYPE, firstNameTypeID, System.Data.SqlDbType.Int),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.FIRST_NAME, firstName, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.SUR_NAME_TYPE, surNameTypeID, System.Data.SqlDbType.Int),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.SUR_NAME, surName, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.COUNTRY_ID_LIST, countryIDList != null ? String.Join(",", countryIDList) : null, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.LANGUAGE_ID_LIST, languageIDList != null ? String.Join(",", languageIDList) : null, System.Data.SqlDbType.VarChar),
+
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.USERNAME_TYPE, usernameTypeID, System.Data.SqlDbType.Int),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.USERNAME, username, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.EMAIL_TYPE, emailTypeID, System.Data.SqlDbType.Int),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.EMAIL, email, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.HAS_PASS_PERMISSION, hasPassPermission, System.Data.SqlDbType.Bit),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.USER_STATUS_ID, userStatusIDList != null ? String.Join(",", userStatusIDList) : null, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.GROUP_ID_LIST, groupIDList != null ? String.Join(",", groupIDList) : null, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.PERMISSION_ID_LIST, permissionIDList != null ? String.Join(",", permissionIDList) : null, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.PROGRAM_ID_LIST, programIDList != null ? String.Join(",", programIDList) : null, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.ROLE_ID_LIST, roleIDList != null ? String.Join(",", roleIDList) : null, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.SUPERVISOR_ID_LIST, supervisorIDList != null ? String.Join(",", supervisorIDList) : null, System.Data.SqlDbType.VarChar),
+                        db.CreateParameter(Queries.User.StoredProcedures.Search.Parameters.WORKSPACE_ID_LIST, workspaceIDList != null ? String.Join(",", workspaceIDList) : null, System.Data.SqlDbType.VarChar),
+                    };
+
+                    return
+                        db.Select(
+                            Queries.User.StoredProcedures.Search.NAME,
                             parameters
                         );
                 }

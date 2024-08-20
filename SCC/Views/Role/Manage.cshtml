@@ -15,6 +15,8 @@
 
     bool hasModel = Model.Role.ID != null && Model.Role.ID > 0;
 
+    List<Permission> allPermissionList = (List<Permission>)ViewData[SCC_BL.Settings.AppValues.ViewData.Role.Manage.AllPermissionList.NAME];
+
     ViewBag.Title = "Administración de roles";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -171,8 +173,12 @@
                             <ol>
                                 @foreach (RolPermissionCatalog permission in role.PermissionList)
                                 {
-                                    Permission tempPermission = new Permission(permission.PermissionID);
-                                    tempPermission.SetDataByID();
+                                    /*Permission tempPermission = new Permission(permission.PermissionID);
+                                    tempPermission.SetDataByID();*/
+
+                                    Permission tempPermission = allPermissionList
+                                        .Where(e => e.ID == permission.PermissionID)
+                                        .FirstOrDefault();
 
                                     <li>
                                         @tempPermission.Description

@@ -47,6 +47,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Edit(ProgramManagementViewModel programManagementViewModel)
         {
+            User currentUser = GetCurrentUser();
+
             Program oldProgram = new Program(programManagementViewModel.Program.ID);
             oldProgram.SetDataByID();
 
@@ -55,8 +57,8 @@ namespace SCC.Controllers
                 programManagementViewModel.Program.Name, 
                 programManagementViewModel.Program.StartDate, 
                 programManagementViewModel.Program.EndDate, 
-                programManagementViewModel.Program.BasicInfoID, 
-                GetCurrentUser().ID, 
+                programManagementViewModel.Program.BasicInfoID,
+                currentUser.ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.UPDATED);
 
             try
@@ -90,11 +92,13 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Create(ProgramManagementViewModel programManagementViewModel)
         {
+            User currentUser = GetCurrentUser();
+
             Program newProgram = new Program(
                 programManagementViewModel.Program.Name, 
                 programManagementViewModel.Program.StartDate, 
-                programManagementViewModel.Program.EndDate, 
-                GetCurrentUser().ID, 
+                programManagementViewModel.Program.EndDate,
+                currentUser.ID, 
                 (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.CREATED);
 
             try
@@ -128,6 +132,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Delete(int programID)
         {
+            User currentUser = GetCurrentUser();
+
             Program program = new Program(programID);
             program.SetDataByID();
 
@@ -135,7 +141,7 @@ namespace SCC.Controllers
             {
                 //program.Delete();
 
-                program.BasicInfo.ModificationUserID = GetCurrentUser().ID;
+                program.BasicInfo.ModificationUserID = currentUser.ID;
                 program.BasicInfo.StatusID = (int)SCC_BL.DBValues.Catalog.STATUS_PROGRAM.DELETED;
 
                 int result = program.BasicInfo.Update();
@@ -158,6 +164,8 @@ namespace SCC.Controllers
         [HttpPost]
         public ActionResult Activate(int programID)
         {
+            User currentUser = GetCurrentUser();
+
             Program program = new Program(programID);
             program.SetDataByID();
 
@@ -165,7 +173,7 @@ namespace SCC.Controllers
             {
                 //program.Delete();
 
-                program.BasicInfo.ModificationUserID = GetCurrentUser().ID;
+                program.BasicInfo.ModificationUserID = currentUser.ID;
 
                 switch ((SCC_BL.DBValues.Catalog.STATUS_PROGRAM)program.BasicInfo.StatusID)
                 {

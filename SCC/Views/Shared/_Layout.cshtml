@@ -318,7 +318,7 @@
             </span>
         </div>
         <main>
-            <div id="waitingModal" class="modal fade bd-example-modal-lg" data-backdrop="static" data-keyboard="false" tabindex="-1">
+            <div id="waitingModal" class="modal fade bd-example-modal-lg" style="z-index:1000;" data-backdrop="static" data-keyboard="false" tabindex="-1">
                 <div class="modal-dialog modal-sm">
                     <div class="modal-content" style="width: 48px">
                         <div class="d-flex justify-content-center">
@@ -359,6 +359,8 @@
         });
     </script>
     <script>
+        var waitingModal = $('#waitingModal');
+
         $('#logOut').click(() => {
             let message = '¿Quieres salir del sistema?';
 
@@ -368,11 +370,13 @@
         });
 
         function showWaitingModal() {
-            $('#waitingModal').modal('show');
+            //notification = new Notification('Cargando...');
+            waitingModal = $(waitingModal).modal('show');
         }
 
         function hideWaitingModal() {
-            $('#waitingModal').modal('hide');
+            //notification.close();
+            $(waitingModal).modal('hide');
         }
     </script>
     @RenderSection("scripts", required: false)

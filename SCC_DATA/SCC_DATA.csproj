@@ -52,6 +52,7 @@
     <Compile Include="Queries\BusinessIntelligenceField.cs" />
     <Compile Include="Queries\BusinessIntelligenceValueCatalog.cs" />
     <Compile Include="Queries\Calibration.cs" />
+    <Compile Include="Queries\CalibrationCallIdentifierCatalog.cs" />
     <Compile Include="Queries\CalibrationGroupCatalog.cs" />
     <Compile Include="Queries\CalibrationTransactionCatalog.cs" />
     <Compile Include="Queries\CalibrationUserCatalog.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Repositories\BusinessIntelligenceField.cs" />
     <Compile Include="Repositories\BusinessIntelligenceValueCatalog.cs" />
     <Compile Include="Repositories\Calibration.cs" />
+    <Compile Include="Repositories\CalibrationCallIdentifierCatalog.cs" />
     <Compile Include="Repositories\CalibrationGroupCatalog.cs" />
     <Compile Include="Repositories\CalibrationTransactionCatalog.cs" />
     <Compile Include="Repositories\CalibrationUserCatalog.cs" />

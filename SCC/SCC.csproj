@@ -982,6 +982,9 @@
     <Content Include="Views\Report\AccuracyTrendByAttributeResults_bak_20231018102900.cshtml" />
     <Content Include="Views\Report\AccuracyBySubattributeResults_bak_20231018102900.cshtml" />
     <Content Include="Views\BIField\UploadBIFields.cshtml" />
+    <Content Include="Views\Transaction\_FormView_bk_20240814113400.cshtml" />
+    <Content Include="Views\User\_ManageUserList.cshtml" />
+    <Content Include="Views\User\_SearchFilters.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

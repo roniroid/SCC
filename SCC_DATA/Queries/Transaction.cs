@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+
 
 namespace SCC_DATA.Queries
 {
@@ -336,7 +336,22 @@ namespace SCC_DATA.Queries
 					public const string GENERALRESULTNCE = "GeneralResultNCE";
 					public const string TRANSACTIONTIMEELAPSED = "TransactionTimeElapsed";
 				}
-			}
-		}
+            }
+
+            public struct SelectIDByCallIdentifier
+            {
+                public const string NAME = "[dbo].[usp_TransactionSelectIDByCallIdentifier]";
+
+                public struct Parameters
+                {
+                    public const string CALL_IDENTIFIER = "@callIdentifier";
+                }
+
+                public struct ResultFields
+                {
+                    public const string ID = "ID";
+                }
+            }
+        }
 	}
 }

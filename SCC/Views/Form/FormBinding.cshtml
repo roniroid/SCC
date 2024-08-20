@@ -16,6 +16,8 @@
 
     List<Program> allProgramList = (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.FormBinding.AllProgramList.NAME];
 
+    List<ProgramFormCatalog> allProgramFormCatalogList = (List<ProgramFormCatalog>)ViewData[SCC_BL.Settings.AppValues.ViewData.Form.FormBinding.AllProgramFormCatalogList.NAME];
+
     ViewBag.Title = "Asignación de formularios a programas";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -209,6 +211,8 @@
     </table>
 </div>
 <script>
+    var allProgramFormCatalogList = @Html.Raw(SCC.Controllers.OverallController.Serialize(allProgramFormCatalogList));
+
     $(document).ready(function () {
         @if (!actualUser.HasPermission(SCC_BL.DBValues.Catalog.Permission.CAN_ASIGN_FORMS_TO_PROGRAMS))
         {
@@ -283,6 +287,45 @@
             startMultiSelect('#formIDArray', data);
         });
     });
+
+    $('#formIDArray').change((e) => {
+        let currentControl = e.currentTarget;
+        let currentValue = $(currentControl).val();
+        updateProgramFormDisplay(currentValue);
+    });
+
+    function updateProgramFormDisplay(formIDArray) {
+        if (formIDArray == null || formIDArray == '') return;
+
+        const programIDArrayControl = $('#programIDArray');
+        $(programIDArrayControl).val('').trigger("chosen:updated");
+
+        let programIDArrayOptionsToShow = [];
+
+        if (typeof (formIDArray) === 'string') {
+            const elementsByForm =
+                allProgramFormCatalogList.filter((e, index) => e.FormID === parseInt(formIDArray));
+
+            programIDArrayOptionsToShow =
+                programIDArrayOptionsToShow
+                    .concat(elementsByForm);
+        } else {
+            for (let i = 0; i < formIDArray.length; i++) {
+                const elementsByForm =
+                    allProgramFormCatalogList.filter((e, index) => e.FormID === formIDArray[i]);
+
+                programIDArrayOptionsToShow =
+                    programIDArrayOptionsToShow
+                        .concat(elementsByForm);
+            }
+        }
+
+        for (let i = 0; i < programIDArrayOptionsToShow.length; i++) {
+            $(programIDArrayControl).find('option[value="' + programIDArrayOptionsToShow[i].ProgramID + '"]').prop('selected', true);
+        }
+
+        $(programIDArrayControl).trigger("chosen:updated");
+    }
 
     $('#btnCancel').click(() => {
         window.open('@Url.Action(nameof(FormController.FormBinding), mainControllerName)', '_self');

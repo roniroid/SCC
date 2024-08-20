@@ -14,6 +14,9 @@
     string logsControllerName = OverallController.GetControllerName(typeof(LogController));
     string logsActionName = nameof(LogController.Index);
 
+    List<ProgramGroup> allProgramGroupList = (List<ProgramGroup>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.AllProgramGroupList.NAME];
+    List<Program> allProgramList = (List<Program>)ViewData[SCC_BL.Settings.AppValues.ViewData.User.AsignProgramsAndProgramGroups.AllProgramList.NAME];
+
     ViewBag.Title = "Asignación de programas y grupos de programas";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -158,8 +161,12 @@
                             {
                                 <li>
                                     @{
-                                        ProgramGroup tempProgramGroup = new ProgramGroup(userProgramGroupCatalog.ProgramGroupID);
-                                        tempProgramGroup.SetDataByID();
+                                        /*ProgramGroup tempProgramGroup = new ProgramGroup(userProgramGroupCatalog.ProgramGroupID);
+                                        tempProgramGroup.SetDataByID();*/
+
+                                        ProgramGroup tempProgramGroup = allProgramGroupList
+                                            .Where(e => e.ID == userProgramGroupCatalog.ProgramGroupID)
+                                            .FirstOrDefault();
                                     }
 
                                     @tempProgramGroup.Name
@@ -173,8 +180,12 @@
                             {
                                 <li>
                                     @{
-                                        Program tempProgram = new Program(userProgramCatalog.ProgramID);
-                                        tempProgram.SetDataByID();
+                                        /*Program tempProgram = new Program(userProgramCatalog.ProgramID);
+                                        tempProgram.SetDataByID();*/
+
+                                        Program tempProgram = allProgramList
+                                            .Where(e => e.ID == userProgramCatalog.ProgramID)
+                                            .FirstOrDefault();
                                     }
 
                                     @tempProgram.Name
